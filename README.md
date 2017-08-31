@@ -12,9 +12,9 @@ MVC
 #### TypeScript装饰器注入
 框架提供TypeScript装饰器注入功能，便捷获取托管对象。例如：
 
-    export class Fuck
+    export class SomeClass
     {
-		@Inject(model.SomeModel)// 折行就是装饰器注入的写法
+		@Inject(model.SomeModel)// 这行就是装饰器注入的写法
 		private someModel:model.SomeModel;
 	}
 #### 其他值得说的
