@@ -46,64 +46,52 @@ declare module "core/context/ContextMessage" {
 declare module "core/context/Context" {
     import { IContextMessage } from "core/context/ContextMessage";
     /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
+     * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
-     * 内核消息处理函数接口
-    */
-    export interface IContextMessageHandler {
-        (msg: IContextMessage): void;
-    }
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-08-31
-     * @modify date 2017-08-31
-     *
-     * Olympus核心对象，负责实现框架内消息转发、对象注入等核心功能
-    */
-    export default class Context {
-        private static _listenerDict;
+     * @export
+     * @class Context
+     */
+    export class Context {
+        private static _instance;
+        private _listenerDict;
+        constructor();
         /**
          * 派发内核消息
          *
-         * @static
          * @param {IContextMessage} msg 内核消息实例
          * @memberof Context
          */
-        static dispatch(msg: IContextMessage): void;
+        dispatch(msg: IContextMessage): void;
         /**
          * 派发内核消息，消息会转变为ContextMessage类型对象
          *
-         * @static
          * @param {string} type 消息类型
          * @param {...any[]} params 消息参数列表
          * @memberof Context
          */
-        static dispatch(type: string, ...params: any[]): void;
+        dispatch(type: string, ...params: any[]): void;
         /**
          * 监听内核消息
          *
-         * @static
          * @param {string} type 消息类型
-         * @param {IContextMessageHandler} handler 消息处理函数
+         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Context
          */
-        static listen(type: string, handler: IContextMessageHandler, thisArg?: any): void;
+        listen(type: string, handler: (msg: IContextMessage) => void, thisArg?: any): void;
         /**
          * 移除内核消息监听
          *
-         * @static
+         * @
          * @param {string} type 消息类型
-         * @param {IContextMessageHandler} handler 消息处理函数
+         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Context
          */
-        static unlisten(type: string, handler: IContextMessageHandler, thisArg?: any): void;
+        unlisten(type: string, handler: (msg: IContextMessage) => void, thisArg?: any): void;
     }
+    const _default: Context;
+    export default _default;
 }
 declare module "core/view/IView" {
     /**

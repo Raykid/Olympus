@@ -35,18 +35,21 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-08-31
-     * @modify date 2017-08-31
+     * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
-     * Olympus核心对象，负责实现框架内消息转发、对象注入等核心功能
-    */
+     * @export
+     * @class Context
+     */
     var Context = (function () {
         function Context() {
+            // 进行单例判断
+            if (Context._instance)
+                throw new Error("已生成过Context实例，不允许多次生成");
+            Context._instance = this;
+            this._listenerDict = {};
         }
         /** dispatch方法实现 */
-        Context.dispatch = function (typeOrMsg) {
+        Context.prototype.dispatch = function (typeOrMsg) {
             var params = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
@@ -58,7 +61,7 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
                 msg.params = params;
             }
             // 派发消息
-            var listeners = Context._listenerDict[msg.getType()];
+            var listeners = this._listenerDict[msg.getType()];
             if (listeners) {
                 for (var i = 0, len = listeners.length; i < len; i++) {
                     var temp = listeners[i];
@@ -69,16 +72,15 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
         /**
          * 监听内核消息
          *
-         * @static
          * @param {string} type 消息类型
-         * @param {IContextMessageHandler} handler 消息处理函数
+         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Context
          */
-        Context.listen = function (type, handler, thisArg) {
-            var listeners = Context._listenerDict[type];
+        Context.prototype.listen = function (type, handler, thisArg) {
+            var listeners = this._listenerDict[type];
             if (!listeners)
-                Context._listenerDict[type] = listeners = [];
+                this._listenerDict[type] = listeners = [];
             // 检查存在性
             for (var i = 0, len = listeners.length; i < len; i++) {
                 var temp = listeners[i];
@@ -92,14 +94,14 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
         /**
          * 移除内核消息监听
          *
-         * @static
+         * @
          * @param {string} type 消息类型
-         * @param {IContextMessageHandler} handler 消息处理函数
+         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Context
          */
-        Context.unlisten = function (type, handler, thisArg) {
-            var listeners = Context._listenerDict[type];
+        Context.prototype.unlisten = function (type, handler, thisArg) {
+            var listeners = this._listenerDict[type];
             // 检查存在性
             if (listeners) {
                 for (var i = 0, len = listeners.length; i < len; i++) {
@@ -112,10 +114,11 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
                 }
             }
         };
-        Context._listenerDict = {};
         return Context;
     }());
-    exports.default = Context;
+    exports.Context = Context;
+    /** 默认导出Context实例 */
+    exports.default = new Context();
 });
 define("core/view/IView", ["require", "exports"], function (require, exports) {
     "use strict";

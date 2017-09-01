@@ -4,47 +4,60 @@ import ContextMessage from "ContextMessage"
 /**
  * @author Raykid
  * @email initial_r@qq.com
- * @create date 2017-09-01
+ * @create date 2017-08-31
  * @modify date 2017-09-01
  * 
- * 内核消息处理函数接口
+ * Olympus核心上下文模块，负责实现框架内消息转发、对象注入等核心功能
 */
-export interface IContextMessageHandler
+
+/**
+ * 上下文模块内部使用的记录转发数据的接口
+ * 
+ * @interface IContextMessageData
+ */
+interface IContextMessageData
 {
-    (msg:IContextMessage):void;
+    handler:(msg:IContextMessage)=>void;
+    thisArg:any;
 }
 
 /**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-08-31
- * @modify date 2017-08-31
+ * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
  * 
- * Olympus核心对象，负责实现框架内消息转发、对象注入等核心功能
-*/
-export default class Context
+ * @export
+ * @class Context
+ */
+export class Context
 {
-    private static _listenerDict:{[type:string]:IContextMessageData[]} = {};
+    private static _instance:Context;
+
+    private _listenerDict:{[type:string]:IContextMessageData[]};
+
+    public constructor()
+    {
+        // 进行单例判断
+        if(Context._instance) throw new Error("已生成过Context实例，不允许多次生成");
+        Context._instance = this;
+        this._listenerDict = {};
+    }
 
     /**
      * 派发内核消息
      * 
-     * @static
      * @param {IContextMessage} msg 内核消息实例
      * @memberof Context
      */
-    public static dispatch(msg:IContextMessage):void;
+    public dispatch(msg:IContextMessage):void;
     /**
      * 派发内核消息，消息会转变为ContextMessage类型对象
      * 
-     * @static
      * @param {string} type 消息类型
      * @param {...any[]} params 消息参数列表
      * @memberof Context
      */
-    public static dispatch(type:string, ...params:any[]):void;
+    public dispatch(type:string, ...params:any[]):void;
     /** dispatch方法实现 */
-    public static dispatch(typeOrMsg:string|IContextMessage, ...params:any[]):void
+    public dispatch(typeOrMsg:string|IContextMessage, ...params:any[]):void
     {
         // 统一事件对象
         var msg:IContextMessage = typeOrMsg as IContextMessage;
@@ -54,7 +67,7 @@ export default class Context
             (msg as ContextMessage).params = params;
         }
         // 派发消息
-        var listeners:IContextMessageData[] = Context._listenerDict[msg.getType()];
+        var listeners:IContextMessageData[] = this._listenerDict[msg.getType()];
         if(listeners)
         {
             for(var i:number = 0, len:number = listeners.length; i < len; i++)
@@ -68,16 +81,15 @@ export default class Context
     /**
      * 监听内核消息
      * 
-     * @static
      * @param {string} type 消息类型
-     * @param {IContextMessageHandler} handler 消息处理函数
+     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Context
      */
-    public static listen(type:string, handler:IContextMessageHandler, thisArg?:any):void
+    public listen(type:string, handler:(msg:IContextMessage)=>void, thisArg?:any):void
     {
-        var listeners:IContextMessageData[] = Context._listenerDict[type];
-        if(!listeners) Context._listenerDict[type] = listeners = [];
+        var listeners:IContextMessageData[] = this._listenerDict[type];
+        if(!listeners) this._listenerDict[type] = listeners = [];
         // 检查存在性
         for(var i:number = 0, len:number = listeners.length; i < len; i++)
         {
@@ -92,15 +104,15 @@ export default class Context
     /**
      * 移除内核消息监听
      * 
-     * @static
+     * @
      * @param {string} type 消息类型
-     * @param {IContextMessageHandler} handler 消息处理函数
+     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Context
      */
-    public static unlisten(type:string, handler:IContextMessageHandler, thisArg?:any):void
+    public unlisten(type:string, handler:(msg:IContextMessage)=>void, thisArg?:any):void
     {
-        var listeners:IContextMessageData[] = Context._listenerDict[type];
+        var listeners:IContextMessageData[] = this._listenerDict[type];
         // 检查存在性
         if(listeners)
         {
@@ -118,8 +130,5 @@ export default class Context
     }
 }
 
-interface IContextMessageData
-{
-    handler:IContextMessageHandler;
-    thisArg:any;
-}
+/** 默认导出Context实例 */
+export default new Context();
