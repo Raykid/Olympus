@@ -3,6 +3,7 @@
     "module": "amd",
     "target": "es5",
     "sourceMap": true,
+    "declaration": true,
     "experimentalDecorators": true,
     "outFile": "../dist/Olympus.js"
   },

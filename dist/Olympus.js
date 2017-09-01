@@ -131,7 +131,7 @@ define("Olympus", ["require", "exports"], function (require, exports) {
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-08-31
-     * @modify date 2017-08-31
+     * @modify date 2017-09-01
      *
      * 这是Olympus框架的外观类，绝大多数与Olympus框架的交互都可以通过这个类解决
     */
