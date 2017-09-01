@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "outFile": "../dist/Olympus.js"
+  },
+  "files": [
+    "Olympus.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
