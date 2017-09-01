@@ -1,6 +1,7 @@
 /// <reference path="../dist/Olympus.d.ts"/>
+/// <reference path="../src/core/declarations/Inject.d.ts"/>
 
-import ctx from "core/context/Context"
+import * as Olympus from "Olympus"
 
 /**
  * @author Raykid
@@ -10,13 +11,30 @@ import ctx from "core/context/Context"
  * 
  * 测试项目
 */
+Olympus.context.listen("fuck", handler, "this");
 
-ctx.listen("fuck", handler, "this");
+Olympus.context.dispatch("fuck");
 
-ctx.dispatch("fuck");
-
-function handler(msg:any):void
+function handler(msg:Olympus.IMessage):void
 {
-    ctx.unlisten("fuck", handler, this);
-    console.log(this, msg);
+    Olympus.context.unlisten("fuck", handler, this);
+    console.log(this, msg.getType());
+
+    console.log(function(){}.prototype);
+    console.log(Olympus.Context.prototype);
 }
+
+
+@Injectable
+class Fuck
+{
+    private _fuck:string;
+}
+
+class Fuck2
+{
+    @Inject(Fuck)
+    public fuck:Fuck;
+}
+
+console.log(new Fuck2().fuck);

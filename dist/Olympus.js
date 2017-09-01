@@ -1,4 +1,4 @@
-define("core/context/ContextMessage", ["require", "exports"], function (require, exports) {
+define("core/message/Message", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -9,14 +9,14 @@ define("core/context/ContextMessage", ["require", "exports"], function (require,
      *
      * 框架内核消息基类
     */
-    var ContextMessage = (function () {
+    var Message = (function () {
         /**
          * Creates an instance of ContextMessage.
          * @param {string} type 消息类型
          * @param {...any[]} params 可能的消息参数列表
          * @memberof ContextMessage
          */
-        function ContextMessage(type) {
+        function Message(type) {
             var params = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
@@ -24,16 +24,71 @@ define("core/context/ContextMessage", ["require", "exports"], function (require,
             this._type = type;
             this.params = params;
         }
-        ContextMessage.prototype.getType = function () {
+        Message.prototype.getType = function () {
             return this._type;
         };
-        return ContextMessage;
+        return Message;
     }());
-    exports.default = ContextMessage;
+    exports.Message = Message;
 });
-define("core/context/Context", ["require", "exports", "core/context/ContextMessage"], function (require, exports, ContextMessage_1) {
+define("core/command/Command", ["require", "exports", "core/context/Context"], function (require, exports, Context_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * 内和命令的类形式
+     *
+     * @export
+     * @class Command
+     */
+    var Command = (function () {
+        function Command(msg) {
+            this.msg = msg;
+            this.context = Context_1.context;
+        }
+        Command.prototype.exec = function () {
+            // 留待子类完善
+        };
+        return Command;
+    }());
+    exports.Command = Command;
+});
+define("core/interfaces/Constructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+/// <reference path="../declarations/Inject.d.ts"/>
+define("core/context/Context", ["require", "exports", "core/message/Message"], function (require, exports, Message_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    // 修复Array.findIndex会被遍历到的问题
+    if (Array.prototype.hasOwnProperty("findIndex")) {
+        var desc = Object.getOwnPropertyDescriptor(Array.prototype, "findIndex");
+        if (desc.enumerable) {
+            desc.enumerable = false;
+            Object.defineProperty(Array.prototype, "findIndex", desc);
+        }
+    }
+    // 下面是为了装饰器功能做的
+    window["Inject"] = function (cls) {
+        return function (prototype, propertyKey) {
+            return {
+                get: function () { return exports.context.getInject(cls); }
+            };
+        };
+    };
+    window["Injectable"] = function (cls) {
+        var params = cls;
+        if (params.type instanceof Function) {
+            // 需要转换注册类型，需要返回一个ClassDecorator
+            return function (realCls) {
+                exports.context.mapInject(realCls, params.type);
+            };
+        }
+        else {
+            // 不需要转换注册类型，直接注册
+            exports.context.mapInject(cls);
+        }
+    };
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -42,12 +97,55 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
      */
     var Context = (function () {
         function Context() {
+            /*********************** 下面是依赖注入系统 ***********************/
+            this._injectDict = {};
+            /*********************** 下面是内核消息系统 ***********************/
+            this._listenerDict = {};
+            /*********************** 下面是内核命令系统 ***********************/
+            this._commandDict = {};
             // 进行单例判断
             if (Context._instance)
                 throw new Error("已生成过Context实例，不允许多次生成");
+            // 赋值单例
             Context._instance = this;
-            this._listenerDict = {};
         }
+        /**
+         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
+         *
+         * @param {Constructor} target 要注入的类型（注意不是实例）
+         * @param {Constructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @memberof Context
+         */
+        Context.prototype.mapInject = function (target, type) {
+            var key = (type || target).toString();
+            var value = new target();
+            this._injectDict[key] = value;
+        };
+        /**
+         * 获取注入的对象实例
+         *
+         * @param {(Constructor)} type 注入对象的类型
+         * @returns {*} 注入的对象实例
+         * @memberof Context
+         */
+        Context.prototype.getInject = function (type) {
+            return this._injectDict[type.toString()];
+        };
+        Context.prototype.handleMessages = function (msg) {
+            var listeners = this._listenerDict[msg.getType()];
+            if (listeners) {
+                for (var i = 0, len = listeners.length; i < len; i++) {
+                    var temp = listeners[i];
+                    try {
+                        // 调用处理函数
+                        temp.handler.call(temp.thisArg, msg);
+                    }
+                    catch (error) {
+                        console.error(error);
+                    }
+                }
+            }
+        };
         /** dispatch方法实现 */
         Context.prototype.dispatch = function (typeOrMsg) {
             var params = [];
@@ -57,17 +155,13 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
             // 统一事件对象
             var msg = typeOrMsg;
             if (typeof typeOrMsg == "string") {
-                msg = new ContextMessage_1.default(typeOrMsg);
+                msg = new Message_1.Message(typeOrMsg);
                 msg.params = params;
             }
-            // 派发消息
-            var listeners = this._listenerDict[msg.getType()];
-            if (listeners) {
-                for (var i = 0, len = listeners.length; i < len; i++) {
-                    var temp = listeners[i];
-                    temp.handler.call(temp.thisArg, msg);
-                }
-            }
+            // 触发命令
+            this.handleCommands(msg);
+            // 触发用listen形式监听的消息
+            this.handleMessages(msg);
         };
         /**
          * 监听内核消息
@@ -94,7 +188,6 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
         /**
          * 移除内核消息监听
          *
-         * @
          * @param {string} type 消息类型
          * @param {(msg:IContextMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
@@ -114,42 +207,86 @@ define("core/context/Context", ["require", "exports", "core/context/ContextMessa
                 }
             }
         };
+        Context.prototype.handleCommands = function (msg) {
+            var commands = this._commandDict[msg.getType()];
+            if (!commands)
+                return;
+            for (var i = 0, len = commands.length; i < len; i++) {
+                var cls = commands[i];
+                try {
+                    // 执行命令
+                    new cls(msg).exec();
+                }
+                catch (error) {
+                    console.error(error);
+                }
+            }
+        };
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Context
+         */
+        Context.prototype.mapCommand = function (type, cmd) {
+            var commands = this._commandDict[type];
+            if (!commands)
+                this._commandDict[type] = commands = [];
+            if (commands.indexOf(cmd) < 0)
+                commands.push(cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(CommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Context
+         */
+        Context.prototype.unmapCommand = function (type, cmd) {
+            var commands = this._commandDict[type];
+            if (!commands)
+                return;
+            var index = commands.indexOf(cmd);
+            if (index < 0)
+                return;
+            commands.splice(index, 1);
+        };
         return Context;
     }());
     exports.Context = Context;
-    /** 默认导出Context实例 */
-    exports.default = new Context();
+    /** 导出Context实例 */
+    exports.context = new Context();
 });
 define("core/view/IView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("Olympus", ["require", "exports"], function (require, exports) {
+define("Olympus", ["require", "exports", "core/context/Context", "core/message/Message"], function (require, exports, Context_2, Message_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.context = Context_2.context;
+    exports.Context = Context_2.Context;
+    exports.Message = Message_2.Message;
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-08-31
      * @modify date 2017-09-01
      *
-     * 这是Olympus框架的外观类，绝大多数与Olympus框架的交互都可以通过这个类解决
+     * 这是Olympus框架的外观模块，绝大多数与Olympus框架的交互都可以通过这个模块解决
     */
-    var Olympus = (function () {
-        function Olympus() {
-        }
-        /**
-         * 添加一个表现层实例到框架中
-         *
-         * @static
-         * @param {IView} view 要添加的表现层实例
-         * @param {string} [name] 为此表现层实例起名
-         * @memberof Olympus
-         */
-        Olympus.addView = function (view, name) {
-        };
-        return Olympus;
-    }());
-    exports.default = Olympus;
+    /**
+     * 添加一个表现层实例到框架中
+     *
+     * @static
+     * @param {IView} view 要添加的表现层实例
+     * @param {string} [name] 为此表现层实例起名
+     * @memberof Olympus
+     */
+    function addView(view, name) {
+    }
+    exports.addView = addView;
 });
 //# sourceMappingURL=Olympus.js.map

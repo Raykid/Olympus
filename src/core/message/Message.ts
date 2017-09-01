@@ -6,7 +6,7 @@
  * 
  * 框架内核消息接口
 */
-export interface IContextMessage
+export interface IMessage
 {
     /**
      * 获取消息类型
@@ -25,7 +25,7 @@ export interface IContextMessage
  * 
  * 框架内核消息基类
 */
-export default class ContextMessage implements IContextMessage
+export class Message implements IMessage
 {
     private _type:string;
     public getType():string

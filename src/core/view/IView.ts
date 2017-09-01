@@ -6,7 +6,7 @@
  * 
  * 这是表现层接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
 */
-export default interface IView
+export interface IView
 {
     /**
      * 获取表现层类型名称
