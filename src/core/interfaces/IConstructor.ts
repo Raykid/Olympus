@@ -6,7 +6,7 @@
  * 
  * 任意构造器接口
 */
-export default interface Constructor extends Function
+export default interface IConstructor extends Function
 {
     new (...args:any[]):any;
 }

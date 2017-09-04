@@ -1,3 +1,7 @@
+define("core/message/IMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("core/message/Message", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -35,11 +39,13 @@ define("core/command/Command", ["require", "exports", "core/context/Context"], f
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
-     * 内和命令的类形式
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
      *
-     * @export
-     * @class Command
-     */
+     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
+    */
     var Command = (function () {
         function Command(msg) {
             this.msg = msg;
@@ -52,7 +58,11 @@ define("core/command/Command", ["require", "exports", "core/context/Context"], f
     }());
     exports.default = Command;
 });
-define("core/interfaces/Constructor", ["require", "exports"], function (require, exports) {
+define("core/command/ICommandConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -60,6 +70,14 @@ define("core/interfaces/Constructor", ["require", "exports"], function (require,
 define("core/context/Context", ["require", "exports", "core/context/Context", "core/message/Message"], function (require, exports, Context_2, Message_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-08-31
+     * @modify date 2017-09-01
+     *
+     * Olympus核心上下文模块，负责实现框架内消息转发、对象注入等核心功能
+    */
     // 修复Array.findIndex会被遍历到的问题
     if (Array.prototype.hasOwnProperty("findIndex")) {
         var desc = Object.getOwnPropertyDescriptor(Array.prototype, "findIndex");

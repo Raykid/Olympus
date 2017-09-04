@@ -4,7 +4,7 @@
  * @create date 2017-09-01
  * @modify date 2017-09-01
  * 
- * 这个d.ts文件是为了让编译器认识装饰器注入功能而造的
+ * 这个ts文件是为了让编译器认识装饰器注入功能而造的
 */
 declare function Inject(cls:Constructor):PropertyDecorator;
 declare function Injectable(cls:Constructor):void;

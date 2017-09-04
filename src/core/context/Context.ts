@@ -1,10 +1,20 @@
 /// <reference path="../declarations/Inject.ts"/>
 
 import context from "./Context";
-import Message, {IMessage} from "../message/Message"
-import Command, {CommandConstructor} from "../command/Command"
-import Constructor from "../interfaces/Constructor"
+import IMessage from "../message/IMessage"
+import Message from "../message/Message"
+import ICommandConstructor from "../command/ICommandConstructor"
+import Command from "../command/Command"
+import IConstructor from "../interfaces/IConstructor"
 
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-08-31
+ * @modify date 2017-09-01
+ * 
+ * Olympus核心上下文模块，负责实现框架内消息转发、对象注入等核心功能
+*/
 
 // 修复Array.findIndex会被遍历到的问题
 if(Array.prototype.hasOwnProperty("findIndex"))
@@ -44,15 +54,6 @@ window["Injectable"] = function(cls:InjectableParams|Constructor):ClassDecorator
         context.mapInject(cls as Constructor);
     }
 };
-
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-08-31
- * @modify date 2017-09-01
- * 
- * Olympus核心上下文模块，负责实现框架内消息转发、对象注入等核心功能
-*/
 
 /**
  * 上下文模块内部使用的记录转发数据的接口
@@ -218,15 +219,15 @@ export class Context
 
     /*********************** 下面是内核命令系统 ***********************/
 
-    private _commandDict:{[type:string]:(CommandConstructor)[]} = {};
+    private _commandDict:{[type:string]:(ICommandConstructor)[]} = {};
 
     private handleCommands(msg:IMessage):void
     {
-        var commands:(CommandConstructor)[] = this._commandDict[msg.getType()];
+        var commands:(ICommandConstructor)[] = this._commandDict[msg.getType()];
         if(!commands) return;
         for(var i:number = 0, len:number = commands.length; i < len; i++)
         {
-            var cls:CommandConstructor = commands[i];
+            var cls:ICommandConstructor = commands[i];
             try {
                 // 执行命令
                 new cls(msg).exec();
@@ -243,9 +244,9 @@ export class Context
      * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
      * @memberof Context
      */
-    public mapCommand(type:string, cmd:CommandConstructor):void
+    public mapCommand(type:string, cmd:ICommandConstructor):void
     {
-        var commands:(CommandConstructor)[] = this._commandDict[type];
+        var commands:(ICommandConstructor)[] = this._commandDict[type];
         if(!commands) this._commandDict[type] = commands = [];
         if(commands.indexOf(cmd) < 0) commands.push(cmd);
     }
@@ -258,9 +259,9 @@ export class Context
      * @returns {void} 
      * @memberof Context
      */
-    public unmapCommand(type:string, cmd:CommandConstructor):void
+    public unmapCommand(type:string, cmd:ICommandConstructor):void
     {
-        var commands:(CommandConstructor)[] = this._commandDict[type];
+        var commands:(ICommandConstructor)[] = this._commandDict[type];
         if(!commands) return;
         var index:number = commands.indexOf(cmd);
         if(index < 0) return;

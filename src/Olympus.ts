@@ -1,7 +1,9 @@
 import context, {Context} from "core/context/Context"
 import IView from "core/view/IView"
-import Message, {IMessage} from "core/message/Message"
-import Command, {CommandConstructor} from "core/command/Command"
+import IMessage from "core/message/IMessage"
+import Message from "core/message/Message"
+import ICommandConstructor from "core/command/ICommandConstructor"
+import Command from "core/command/Command"
 
 /**
  * @author Raykid
@@ -66,7 +68,7 @@ export function unlisten(type:string, handler:(msg:IMessage)=>void, thisArg?:any
  * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
  * @memberof Context
  */
-export function mapCommand(type:string, cmd:CommandConstructor):void
+export function mapCommand(type:string, cmd:ICommandConstructor):void
 {
     context.mapCommand(type, cmd);
 }
@@ -79,7 +81,7 @@ export function mapCommand(type:string, cmd:CommandConstructor):void
  * @returns {void} 
  * @memberof Context
  */
-export function unmapCommand(type:string, cmd:CommandConstructor):void
+export function unmapCommand(type:string, cmd:ICommandConstructor):void
 {
     context.unmapCommand(type, cmd);
 }
@@ -91,6 +93,6 @@ export {
     IView,
     IMessage,
     Message,
-    CommandConstructor,
+    ICommandConstructor,
     Command
 }

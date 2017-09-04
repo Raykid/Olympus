@@ -1,5 +1,5 @@
 import context, {Context} from "../context/Context"
-import {IMessage} from "../message/Message"
+import IMessage from "../message/IMessage"
 
 /**
  * @author Raykid
@@ -7,26 +7,8 @@ import {IMessage} from "../message/Message"
  * @create date 2017-09-01
  * @modify date 2017-09-01
  * 
- * 内核命令模块，内核命令在注册了消息后可以在消息派发时被执行
+ * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
 */
-
-/**
- * 命令构造器接口
- * 
- * @export
- * @interface CommandConstructor
- */
-export interface CommandConstructor
-{
-    new (msg:IMessage):Command;
-}
-
-/**
- * 内和命令的类形式
- * 
- * @export
- * @class Command
- */
 export default class Command
 {
     /**

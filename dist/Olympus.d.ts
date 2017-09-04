@@ -15,7 +15,7 @@ interface Constructor extends Function {
 interface InjectableParams {
     type: Constructor;
 }
-declare module "core/message/Message" {
+declare module "core/message/IMessage" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -24,7 +24,7 @@ declare module "core/message/Message" {
      *
      * 框架内核消息接口
     */
-    export interface IMessage {
+    export default interface IMessage {
         /**
          * 获取消息类型
          *
@@ -33,6 +33,9 @@ declare module "core/message/Message" {
          */
         getType(): string;
     }
+}
+declare module "core/message/Message" {
+    import IMessage from "core/message/IMessage";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -62,30 +65,15 @@ declare module "core/message/Message" {
 }
 declare module "core/command/Command" {
     import { Context } from "core/context/Context";
-    import { IMessage } from "core/message/Message";
+    import IMessage from "core/message/IMessage";
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-09-01
      * @modify date 2017-09-01
      *
-     * 内核命令模块，内核命令在注册了消息后可以在消息派发时被执行
+     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
     */
-    /**
-     * 命令构造器接口
-     *
-     * @export
-     * @interface CommandConstructor
-     */
-    export interface CommandConstructor {
-        new (msg: IMessage): Command;
-    }
-    /**
-     * 内和命令的类形式
-     *
-     * @export
-     * @class Command
-     */
     export default class Command {
         /**
          * 触发该Command运行的Message实例
@@ -105,7 +93,22 @@ declare module "core/command/Command" {
         exec(): void;
     }
 }
-declare module "core/interfaces/Constructor" {
+declare module "core/command/ICommandConstructor" {
+    import IMessage from "core/message/IMessage";
+    import Command from "core/command/Command";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 内核命令接口
+    */
+    export default interface CommandConstructor {
+        new (msg: IMessage): Command;
+    }
+}
+declare module "core/interfaces/IConstructor" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -114,14 +117,13 @@ declare module "core/interfaces/Constructor" {
      *
      * 任意构造器接口
     */
-    export default interface Constructor extends Function {
+    export default interface IConstructor extends Function {
         new (...args: any[]): any;
     }
 }
 declare module "core/context/Context" {
-    import { IMessage } from "core/message/Message";
-    import { CommandConstructor } from "core/command/Command";
-    import Constructor from "core/interfaces/Constructor";
+    import IMessage from "core/message/IMessage";
+    import ICommandConstructor from "core/command/ICommandConstructor";
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -195,7 +197,7 @@ declare module "core/context/Context" {
          * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
          * @memberof Context
          */
-        mapCommand(type: string, cmd: CommandConstructor): void;
+        mapCommand(type: string, cmd: ICommandConstructor): void;
         /**
          * 注销命令
          *
@@ -204,7 +206,7 @@ declare module "core/context/Context" {
          * @returns {void}
          * @memberof Context
          */
-        unmapCommand(type: string, cmd: CommandConstructor): void;
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
     }
     const _default: Context;
     export default _default;
@@ -239,8 +241,10 @@ declare module "core/view/IView" {
 declare module "Olympus" {
     import context, { Context } from "core/context/Context";
     import IView from "core/view/IView";
-    import Message, { IMessage } from "core/message/Message";
-    import Command, { CommandConstructor } from "core/command/Command";
+    import IMessage from "core/message/IMessage";
+    import Message from "core/message/Message";
+    import ICommandConstructor from "core/command/ICommandConstructor";
+    import Command from "core/command/Command";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -289,7 +293,7 @@ declare module "Olympus" {
      * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
      * @memberof Context
      */
-    export function mapCommand(type: string, cmd: CommandConstructor): void;
+    export function mapCommand(type: string, cmd: ICommandConstructor): void;
     /**
      * 注销命令
      *
@@ -298,7 +302,7 @@ declare module "Olympus" {
      * @returns {void}
      * @memberof Context
      */
-    export function unmapCommand(type: string, cmd: CommandConstructor): void;
+    export function unmapCommand(type: string, cmd: ICommandConstructor): void;
     /** 导出常用的对象 */
-    export { context, Context, IView, IMessage, Message, CommandConstructor, Command };
+    export { context, Context, IView, IMessage, Message, ICommandConstructor, Command };
 }
