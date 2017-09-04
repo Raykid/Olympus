@@ -6,7 +6,7 @@
  * 
  * 可回收接口
 */
-export interface Disposable
+export default interface Disposable
 {
     dispose():void;
 }

@@ -1,4 +1,4 @@
-import {context, Context} from "../context/Context"
+import context, {Context} from "../context/Context"
 import {IMessage} from "../message/Message"
 
 /**
@@ -27,7 +27,7 @@ export interface CommandConstructor
  * @export
  * @class Command
  */
-export class Command
+export default class Command
 {
     /**
      * 触发该Command运行的Message实例

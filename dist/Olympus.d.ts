@@ -41,7 +41,7 @@ declare module "core/message/Message" {
      *
      * 框架内核消息基类
     */
-    export class Message implements IMessage {
+    export default class Message implements IMessage {
         private _type;
         getType(): string;
         /**
@@ -86,7 +86,7 @@ declare module "core/command/Command" {
      * @export
      * @class Command
      */
-    export class Command {
+    export default class Command {
         /**
          * 触发该Command运行的Message实例
          *
@@ -114,14 +114,14 @@ declare module "core/interfaces/Constructor" {
      *
      * 任意构造器接口
     */
-    export interface Constructor extends Function {
+    export default interface Constructor extends Function {
         new (...args: any[]): any;
     }
 }
 declare module "core/context/Context" {
     import { IMessage } from "core/message/Message";
     import { CommandConstructor } from "core/command/Command";
-    import { Constructor } from "core/interfaces/Constructor";
+    import Constructor from "core/interfaces/Constructor";
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -206,8 +206,8 @@ declare module "core/context/Context" {
          */
         unmapCommand(type: string, cmd: CommandConstructor): void;
     }
-    /** 导出Context实例 */
-    export const context: Context;
+    const _default: Context;
+    export default _default;
 }
 declare module "core/view/IView" {
     /**
@@ -218,7 +218,7 @@ declare module "core/view/IView" {
      *
      * 这是表现层接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
     */
-    export interface IView {
+    export default interface IView {
         /**
          * 获取表现层类型名称
          * @return {string} 一个字符串，代表表现层类型名称
@@ -237,10 +237,10 @@ declare module "core/view/IView" {
     }
 }
 declare module "Olympus" {
-    import { context, Context } from "core/context/Context";
-    import { IView } from "core/view/IView";
-    import { IMessage, Message } from "core/message/Message";
-    import { CommandConstructor, Command } from "core/command/Command";
+    import context, { Context } from "core/context/Context";
+    import IView from "core/view/IView";
+    import Message, { IMessage } from "core/message/Message";
+    import Command, { CommandConstructor } from "core/command/Command";
     /**
      * @author Raykid
      * @email initial_r@qq.com

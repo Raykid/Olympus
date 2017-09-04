@@ -25,7 +25,7 @@ export interface IMessage
  * 
  * 框架内核消息基类
 */
-export class Message implements IMessage
+export default class Message implements IMessage
 {
     private _type:string;
     public getType():string

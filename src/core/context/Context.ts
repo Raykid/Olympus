@@ -1,8 +1,9 @@
 /// <reference path="../declarations/Inject.ts"/>
 
-import {IMessage, Message} from "../message/Message"
-import {CommandConstructor, Command} from "../command/Command"
-import {Constructor} from "../interfaces/Constructor"
+import context from "./Context";
+import Message, {IMessage} from "../message/Message"
+import Command, {CommandConstructor} from "../command/Command"
+import Constructor from "../interfaces/Constructor"
 
 
 // 修复Array.findIndex会被遍历到的问题
@@ -268,4 +269,4 @@ export class Context
 }
 
 /** 导出Context实例 */
-export const context:Context = new Context();
+export default new Context();

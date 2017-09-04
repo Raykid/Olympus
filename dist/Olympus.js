@@ -29,7 +29,7 @@ define("core/message/Message", ["require", "exports"], function (require, export
         };
         return Message;
     }());
-    exports.Message = Message;
+    exports.default = Message;
 });
 define("core/command/Command", ["require", "exports", "core/context/Context"], function (require, exports, Context_1) {
     "use strict";
@@ -43,21 +43,21 @@ define("core/command/Command", ["require", "exports", "core/context/Context"], f
     var Command = (function () {
         function Command(msg) {
             this.msg = msg;
-            this.context = Context_1.context;
+            this.context = Context_1.default;
         }
         Command.prototype.exec = function () {
             // 留待子类完善
         };
         return Command;
     }());
-    exports.Command = Command;
+    exports.default = Command;
 });
 define("core/interfaces/Constructor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 /// <reference path="../declarations/Inject.ts"/>
-define("core/context/Context", ["require", "exports", "core/message/Message"], function (require, exports, Message_1) {
+define("core/context/Context", ["require", "exports", "core/context/Context", "core/message/Message"], function (require, exports, Context_2, Message_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     // 修复Array.findIndex会被遍历到的问题
@@ -72,7 +72,7 @@ define("core/context/Context", ["require", "exports", "core/message/Message"], f
     window["Inject"] = function (cls) {
         return function (prototype, propertyKey) {
             return {
-                get: function () { return exports.context.getInject(cls); }
+                get: function () { return Context_2.default.getInject(cls); }
             };
         };
     };
@@ -81,12 +81,12 @@ define("core/context/Context", ["require", "exports", "core/message/Message"], f
         if (params.type instanceof Function) {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
-                exports.context.mapInject(realCls, params.type);
+                Context_2.default.mapInject(realCls, params.type);
             };
         }
         else {
             // 不需要转换注册类型，直接注册
-            exports.context.mapInject(cls);
+            Context_2.default.mapInject(cls);
         }
     };
     /**
@@ -155,7 +155,7 @@ define("core/context/Context", ["require", "exports", "core/message/Message"], f
             // 统一事件对象
             var msg = typeOrMsg;
             if (typeof typeOrMsg == "string") {
-                msg = new Message_1.Message(typeOrMsg);
+                msg = new Message_1.default(typeOrMsg);
                 msg.params = params;
             }
             // 触发命令
@@ -257,26 +257,26 @@ define("core/context/Context", ["require", "exports", "core/message/Message"], f
     }());
     exports.Context = Context;
     /** 导出Context实例 */
-    exports.context = new Context();
+    exports.default = new Context();
 });
 define("core/view/IView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("Olympus", ["require", "exports", "core/context/Context", "core/message/Message", "core/command/Command"], function (require, exports, Context_2, Message_2, Command_1) {
+define("Olympus", ["require", "exports", "core/context/Context", "core/message/Message", "core/command/Command"], function (require, exports, Context_3, Message_2, Command_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.context = Context_2.context;
-    exports.Context = Context_2.Context;
-    exports.Message = Message_2.Message;
-    exports.Command = Command_1.Command;
+    exports.context = Context_3.default;
+    exports.Context = Context_3.Context;
+    exports.Message = Message_2.default;
+    exports.Command = Command_1.default;
     /** dispatch方法实现 */
     function dispatch(typeOrMsg) {
         var params = [];
         for (var _i = 1; _i < arguments.length; _i++) {
             params[_i - 1] = arguments[_i];
         }
-        Context_2.context.dispatch.apply(Context_2.context, arguments);
+        Context_3.default.dispatch.apply(Context_3.default, arguments);
     }
     exports.dispatch = dispatch;
     /**
@@ -288,7 +288,7 @@ define("Olympus", ["require", "exports", "core/context/Context", "core/message/M
      * @memberof Context
      */
     function listen(type, handler, thisArg) {
-        Context_2.context.listen(type, handler, thisArg);
+        Context_3.default.listen(type, handler, thisArg);
     }
     exports.listen = listen;
     /**
@@ -300,7 +300,7 @@ define("Olympus", ["require", "exports", "core/context/Context", "core/message/M
      * @memberof Context
      */
     function unlisten(type, handler, thisArg) {
-        Context_2.context.unlisten(type, handler, thisArg);
+        Context_3.default.unlisten(type, handler, thisArg);
     }
     exports.unlisten = unlisten;
     /**
@@ -311,7 +311,7 @@ define("Olympus", ["require", "exports", "core/context/Context", "core/message/M
      * @memberof Context
      */
     function mapCommand(type, cmd) {
-        Context_2.context.mapCommand(type, cmd);
+        Context_3.default.mapCommand(type, cmd);
     }
     exports.mapCommand = mapCommand;
     /**
@@ -323,7 +323,7 @@ define("Olympus", ["require", "exports", "core/context/Context", "core/message/M
      * @memberof Context
      */
     function unmapCommand(type, cmd) {
-        Context_2.context.unmapCommand(type, cmd);
+        Context_3.default.unmapCommand(type, cmd);
     }
     exports.unmapCommand = unmapCommand;
 });

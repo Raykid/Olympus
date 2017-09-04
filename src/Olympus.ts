@@ -1,7 +1,7 @@
-import {context, Context} from "core/context/Context"
-import {IView} from "core/view/IView"
-import {IMessage, Message} from "core/message/Message"
-import {CommandConstructor, Command} from "core/command/Command"
+import context, {Context} from "core/context/Context"
+import IView from "core/view/IView"
+import Message, {IMessage} from "core/message/Message"
+import Command, {CommandConstructor} from "core/command/Command"
 
 /**
  * @author Raykid

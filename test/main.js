@@ -42,3 +42,4 @@ define("main", ["require", "exports", "Olympus"], function (require, exports, Ol
     }());
     console.log(new Fuck2().fuck);
 });
+//# sourceMappingURL=main.js.map
