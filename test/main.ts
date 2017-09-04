@@ -10,13 +10,13 @@ import * as Olympus from "Olympus"
  * 
  * 测试项目
 */
-Olympus.context.listen("fuck", handler, "this");
+Olympus.listen("fuck", handler, "this");
 
-Olympus.context.dispatch("fuck");
+Olympus.dispatch("fuck");
 
 function handler(msg:Olympus.IMessage):void
 {
-    Olympus.context.unlisten("fuck", handler, this);
+    Olympus.unlisten("fuck", handler, this);
     console.log(this, msg.getType());
 
     console.log(function(){}.prototype);

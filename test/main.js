@@ -16,10 +16,10 @@ define("main", ["require", "exports", "Olympus"], function (require, exports, Ol
      *
      * 测试项目
     */
-    Olympus.context.listen("fuck", handler, "this");
-    Olympus.context.dispatch("fuck");
+    Olympus.listen("fuck", handler, "this");
+    Olympus.dispatch("fuck");
     function handler(msg) {
-        Olympus.context.unlisten("fuck", handler, this);
+        Olympus.unlisten("fuck", handler, this);
         console.log(this, msg.getType());
         console.log(function () { }.prototype);
         console.log(Olympus.Context.prototype);

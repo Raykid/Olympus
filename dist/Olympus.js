@@ -276,7 +276,7 @@ define("Olympus", ["require", "exports", "core/context/Context", "core/message/M
         for (var _i = 1; _i < arguments.length; _i++) {
             params[_i - 1] = arguments[_i];
         }
-        Context_2.context.dispatch.call(Context_2.context, arguments);
+        Context_2.context.dispatch.apply(Context_2.context, arguments);
     }
     exports.dispatch = dispatch;
     /**

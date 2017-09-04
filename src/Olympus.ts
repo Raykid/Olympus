@@ -30,7 +30,7 @@ export function dispatch(type:string, ...params:any[]):void;
 /** dispatch方法实现 */
 export function dispatch(typeOrMsg:string|IMessage, ...params:any[]):void
 {
-    context.dispatch.call(context, arguments);
+    context.dispatch.apply(context, arguments);
 }
 
 /**
