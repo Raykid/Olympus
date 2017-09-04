@@ -20,9 +20,6 @@ define("main", ["require", "exports", "Olympus"], function (require, exports, Ol
     Olympus.dispatch("fuck");
     function handler(msg) {
         Olympus.unlisten("fuck", handler, this);
-        console.log(this, msg.getType());
-        console.log(function () { }.prototype);
-        console.log(Olympus.Context.prototype);
     }
     var Fuck = (function () {
         function Fuck() {

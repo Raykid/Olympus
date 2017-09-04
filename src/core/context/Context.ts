@@ -6,6 +6,7 @@ import IMessage from "../message/IMessage"
 import Message from "../message/Message"
 import ICommandConstructor from "../command/ICommandConstructor"
 import Command from "../command/Command"
+import IMediator from "../mediator/IMediator"
 
 /**
  * @author Raykid
@@ -35,7 +36,7 @@ window["Inject"] = function(cls:IConstructor):PropertyDecorator
         return {
             get: ()=>context.getInject(cls)
         };
-    }
+    };
 };
 window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorator|void
 {
@@ -46,7 +47,7 @@ window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorat
         return function(realCls:IConstructor):void
         {
             context.mapInject(realCls, params.type);
-        } as any;
+        } as ClassDecorator;
     }
     else
     {
@@ -83,35 +84,16 @@ export class Context
         // 赋值单例
         Context._instance = this;
     }
+    
+    /*********************** 内核消息语法糖处理逻辑 ***********************/
 
-    /*********************** 下面是依赖注入系统 ***********************/
+    private _messageHandlerDict:{[msg:string]:{target:any, name:string}} = {};
 
-    private _injectDict:{[key:string]:any} = {};
-
-    /**
-     * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
-     * 
-     * @param {IConstructor} target 要注入的类型（注意不是实例）
-     * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-     * @memberof Context
-     */
-    public mapInject(target:IConstructor, type?:IConstructor):void
+    private handleMessageSugars(msg:IMessage, target:any):void
     {
-        var key:string = (type || target).toString();
-        var value:any = new target();
-        this._injectDict[key] = value;
-    }
-
-    /**
-     * 获取注入的对象实例
-     * 
-     * @param {(IConstructor)} type 注入对象的类型
-     * @returns {*} 注入的对象实例
-     * @memberof Context
-     */
-    public getInject(type:IConstructor):any
-    {
-        return this._injectDict[type.toString()];
+        // 调用以Message类型为前缀，以_handler为后缀的方法
+        var name:string = msg.getType() + "_handler";
+        if(target[name] instanceof Function) target[name](msg);
     }
 
     /*********************** 下面是内核消息系统 ***********************/
@@ -161,6 +143,10 @@ export class Context
             msg = new Message(typeOrMsg);
             (msg as Message).params = params;
         }
+        // 触发依赖注入对象操作
+        this.handleInjects(msg);
+        // 触发中介者相关操作
+        this.handleMediators(msg);
         // 触发命令
         this.handleCommands(msg);
         // 触发用listen形式监听的消息
@@ -216,6 +202,58 @@ export class Context
             }
         }
     }
+    
+    /*********************** 下面是依赖注入系统 ***********************/
+
+    private _injectDict:{[key:string]:any} = {};
+
+    private handleInjects(msg:IMessage):void
+    {
+        for(var key in this._injectDict)
+        {
+            var inject:any = this._injectDict[key];
+            // 执行语法糖
+            this.handleMessageSugars(msg, inject);
+        }
+    }
+
+    /**
+     * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
+     * 
+     * @param {IConstructor} target 要注入的类型（注意不是实例）
+     * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+     * @memberof Context
+     */
+    public mapInject(target:IConstructor, type?:IConstructor):void
+    {
+        var key:string = (type || target).toString();
+        var value:any = new target();
+        this._injectDict[key] = value;
+    }
+
+    /**
+     * 移除类型注入
+     * 
+     * @param {IConstructor} target 要移除注入的类型
+     * @memberof Context
+     */
+    public unmapInject(target:IConstructor):void
+    {
+        var key:string = target.toString();
+        delete this._injectDict[key];
+    }
+
+    /**
+     * 获取注入的对象实例
+     * 
+     * @param {(IConstructor)} type 注入对象的类型
+     * @returns {*} 注入的对象实例
+     * @memberof Context
+     */
+    public getInject(type:IConstructor):any
+    {
+        return this._injectDict[type.toString()];
+    }
 
     /*********************** 下面是内核命令系统 ***********************/
 
@@ -230,7 +268,8 @@ export class Context
             var cls:ICommandConstructor = commands[i];
             try {
                 // 执行命令
-                new cls(msg).exec();
+                var cmd:Command = new cls(msg);
+                cmd.exec();
             } catch(error) {
                 console.error(error);
             }
@@ -266,6 +305,44 @@ export class Context
         var index:number = commands.indexOf(cmd);
         if(index < 0) return;
         commands.splice(index, 1);
+    }
+    
+    /*********************** 下面是界面中介者系统 ***********************/
+
+    private _mediatorList:IMediator[] = [];
+
+    private handleMediators(msg:IMessage):void
+    {
+        for(var i:number = 0, len:number = this._mediatorList.length; i < len; i++)
+        {
+            var mediator:IMediator = this._mediatorList[i];
+            // 执行语法糖
+            this.handleMessageSugars(msg, mediator);
+        }
+    }
+
+    /**
+     * 注册界面中介者
+     * 
+     * @param {IMediator} mediator 要注册的界面中介者实例
+     * @memberof Context
+     */
+    public mapMediator(mediator:IMediator):void
+    {
+        if(this._mediatorList.indexOf(mediator) < 0)
+            this._mediatorList.push(mediator);
+    }
+
+    /**
+     * 注销界面中介者
+     * 
+     * @param {IMediator} mediator 要注销的界面中介者实例
+     * @memberof Context
+     */
+    public unmapMediator(mediator:IMediator):void
+    {
+        var index:number = this._mediatorList.indexOf(mediator);
+        if(index >= 0) this._mediatorList.splice(index, 1);
     }
 }
 

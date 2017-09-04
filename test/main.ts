@@ -17,10 +17,6 @@ Olympus.dispatch("fuck");
 function handler(msg:Olympus.IMessage):void
 {
     Olympus.unlisten("fuck", handler, this);
-    console.log(this, msg.getType());
-
-    console.log(function(){}.prototype);
-    console.log(Olympus.Context.prototype);
 }
 
 

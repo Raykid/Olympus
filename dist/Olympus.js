@@ -66,6 +66,14 @@ define("core/command/ICommandConstructor", ["require", "exports"], function (req
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/mediator/IMediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 /// <reference path="../declarations/Inject.ts"/>
 define("core/context/Context", ["require", "exports", "core/context/Context", "core/message/Message"], function (require, exports, Context_2, Message_1) {
     "use strict";
@@ -115,39 +123,27 @@ define("core/context/Context", ["require", "exports", "core/context/Context", "c
      */
     var Context = (function () {
         function Context() {
-            /*********************** 下面是依赖注入系统 ***********************/
-            this._injectDict = {};
+            /*********************** 内核消息语法糖处理逻辑 ***********************/
+            this._messageHandlerDict = {};
             /*********************** 下面是内核消息系统 ***********************/
             this._listenerDict = {};
+            /*********************** 下面是依赖注入系统 ***********************/
+            this._injectDict = {};
             /*********************** 下面是内核命令系统 ***********************/
             this._commandDict = {};
+            /*********************** 下面是界面中介者系统 ***********************/
+            this._mediatorList = [];
             // 进行单例判断
             if (Context._instance)
                 throw new Error("已生成过Context实例，不允许多次生成");
             // 赋值单例
             Context._instance = this;
         }
-        /**
-         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
-         *
-         * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-         * @memberof Context
-         */
-        Context.prototype.mapInject = function (target, type) {
-            var key = (type || target).toString();
-            var value = new target();
-            this._injectDict[key] = value;
-        };
-        /**
-         * 获取注入的对象实例
-         *
-         * @param {(IConstructor)} type 注入对象的类型
-         * @returns {*} 注入的对象实例
-         * @memberof Context
-         */
-        Context.prototype.getInject = function (type) {
-            return this._injectDict[type.toString()];
+        Context.prototype.handleMessageSugars = function (msg, target) {
+            // 调用以Message类型为前缀，以_handler为后缀的方法
+            var name = msg.getType() + "_handler";
+            if (target[name] instanceof Function)
+                target[name](msg);
         };
         Context.prototype.handleMessages = function (msg) {
             var listeners = this._listenerDict[msg.getType()];
@@ -176,6 +172,10 @@ define("core/context/Context", ["require", "exports", "core/context/Context", "c
                 msg = new Message_1.default(typeOrMsg);
                 msg.params = params;
             }
+            // 触发依赖注入对象操作
+            this.handleInjects(msg);
+            // 触发中介者相关操作
+            this.handleMediators(msg);
             // 触发命令
             this.handleCommands(msg);
             // 触发用listen形式监听的消息
@@ -225,6 +225,45 @@ define("core/context/Context", ["require", "exports", "core/context/Context", "c
                 }
             }
         };
+        Context.prototype.handleInjects = function (msg) {
+            for (var key in this._injectDict) {
+                var inject = this._injectDict[key];
+                // 执行语法糖
+                this.handleMessageSugars(msg, inject);
+            }
+        };
+        /**
+         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
+         *
+         * @param {IConstructor} target 要注入的类型（注意不是实例）
+         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @memberof Context
+         */
+        Context.prototype.mapInject = function (target, type) {
+            var key = (type || target).toString();
+            var value = new target();
+            this._injectDict[key] = value;
+        };
+        /**
+         * 移除类型注入
+         *
+         * @param {IConstructor} target 要移除注入的类型
+         * @memberof Context
+         */
+        Context.prototype.unmapInject = function (target) {
+            var key = target.toString();
+            delete this._injectDict[key];
+        };
+        /**
+         * 获取注入的对象实例
+         *
+         * @param {(IConstructor)} type 注入对象的类型
+         * @returns {*} 注入的对象实例
+         * @memberof Context
+         */
+        Context.prototype.getInject = function (type) {
+            return this._injectDict[type.toString()];
+        };
         Context.prototype.handleCommands = function (msg) {
             var commands = this._commandDict[msg.getType()];
             if (!commands)
@@ -233,7 +272,8 @@ define("core/context/Context", ["require", "exports", "core/context/Context", "c
                 var cls = commands[i];
                 try {
                     // 执行命令
-                    new cls(msg).exec();
+                    var cmd = new cls(msg);
+                    cmd.exec();
                 }
                 catch (error) {
                     console.error(error);
@@ -270,6 +310,34 @@ define("core/context/Context", ["require", "exports", "core/context/Context", "c
             if (index < 0)
                 return;
             commands.splice(index, 1);
+        };
+        Context.prototype.handleMediators = function (msg) {
+            for (var i = 0, len = this._mediatorList.length; i < len; i++) {
+                var mediator = this._mediatorList[i];
+                // 执行语法糖
+                this.handleMessageSugars(msg, mediator);
+            }
+        };
+        /**
+         * 注册界面中介者
+         *
+         * @param {IMediator} mediator 要注册的界面中介者实例
+         * @memberof Context
+         */
+        Context.prototype.mapMediator = function (mediator) {
+            if (this._mediatorList.indexOf(mediator) < 0)
+                this._mediatorList.push(mediator);
+        };
+        /**
+         * 注销界面中介者
+         *
+         * @param {IMediator} mediator 要注销的界面中介者实例
+         * @memberof Context
+         */
+        Context.prototype.unmapMediator = function (mediator) {
+            var index = this._mediatorList.indexOf(mediator);
+            if (index >= 0)
+                this._mediatorList.splice(index, 1);
         };
         return Context;
     }());

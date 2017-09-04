@@ -121,10 +121,37 @@ declare module "core/command/ICommandConstructor" {
         new (msg: IMessage): Command;
     }
 }
+declare module "core/interfaces/IDisposable" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 可回收接口
+    */
+    export default interface IDisposable {
+        dispose(): void;
+    }
+}
+declare module "core/mediator/IMediator" {
+    import IDisposable from "core/interfaces/IDisposable";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-04
+     * @modify date 2017-09-04
+     *
+     * 界面中介者接口
+    */
+    export default interface IMediator extends IDisposable {
+    }
+}
 declare module "core/context/Context" {
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
+    import IMediator from "core/mediator/IMediator";
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -134,24 +161,9 @@ declare module "core/context/Context" {
     export class Context {
         private static _instance;
         constructor();
-        /*********************** 下面是依赖注入系统 ***********************/
-        private _injectDict;
-        /**
-         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
-         *
-         * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-         * @memberof Context
-         */
-        mapInject(target: IConstructor, type?: IConstructor): void;
-        /**
-         * 获取注入的对象实例
-         *
-         * @param {(IConstructor)} type 注入对象的类型
-         * @returns {*} 注入的对象实例
-         * @memberof Context
-         */
-        getInject(type: IConstructor): any;
+        /*********************** 内核消息语法糖处理逻辑 ***********************/
+        private _messageHandlerDict;
+        private handleMessageSugars(msg, target);
         /*********************** 下面是内核消息系统 ***********************/
         private _listenerDict;
         private handleMessages(msg);
@@ -188,6 +200,32 @@ declare module "core/context/Context" {
          * @memberof Context
          */
         unlisten(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
+        /*********************** 下面是依赖注入系统 ***********************/
+        private _injectDict;
+        private handleInjects(msg);
+        /**
+         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
+         *
+         * @param {IConstructor} target 要注入的类型（注意不是实例）
+         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @memberof Context
+         */
+        mapInject(target: IConstructor, type?: IConstructor): void;
+        /**
+         * 移除类型注入
+         *
+         * @param {IConstructor} target 要移除注入的类型
+         * @memberof Context
+         */
+        unmapInject(target: IConstructor): void;
+        /**
+         * 获取注入的对象实例
+         *
+         * @param {(IConstructor)} type 注入对象的类型
+         * @returns {*} 注入的对象实例
+         * @memberof Context
+         */
+        getInject(type: IConstructor): any;
         /*********************** 下面是内核命令系统 ***********************/
         private _commandDict;
         private handleCommands(msg);
@@ -208,6 +246,23 @@ declare module "core/context/Context" {
          * @memberof Context
          */
         unmapCommand(type: string, cmd: ICommandConstructor): void;
+        /*********************** 下面是界面中介者系统 ***********************/
+        private _mediatorList;
+        private handleMediators(msg);
+        /**
+         * 注册界面中介者
+         *
+         * @param {IMediator} mediator 要注册的界面中介者实例
+         * @memberof Context
+         */
+        mapMediator(mediator: IMediator): void;
+        /**
+         * 注销界面中介者
+         *
+         * @param {IMediator} mediator 要注销的界面中介者实例
+         * @memberof Context
+         */
+        unmapMediator(mediator: IMediator): void;
     }
     const _default: Context;
     export default _default;
