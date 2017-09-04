@@ -117,7 +117,7 @@ declare module "core/command/ICommandConstructor" {
      *
      * 内核命令接口
     */
-    export default interface CommandConstructor {
+    export default interface ICommandConstructor {
         new (msg: IMessage): Command;
     }
 }
@@ -195,7 +195,7 @@ declare module "core/context/Context" {
          * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
          *
          * @param {string} type 要注册的消息类型
-         * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
          * @memberof Context
          */
         mapCommand(type: string, cmd: ICommandConstructor): void;
@@ -203,7 +203,7 @@ declare module "core/context/Context" {
          * 注销命令
          *
          * @param {string} type 要注销的消息类型
-         * @param {(CommandConstructor)} cmd 命令处理器
+         * @param {(ICommandConstructor)} cmd 命令处理器
          * @returns {void}
          * @memberof Context
          */

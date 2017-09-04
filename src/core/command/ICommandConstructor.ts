@@ -9,7 +9,7 @@ import Command from "./Command"
  * 
  * 内核命令接口
 */
-export default interface CommandConstructor
+export default interface ICommandConstructor
 {
     new (msg:IMessage):Command;
 }

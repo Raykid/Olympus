@@ -244,7 +244,7 @@ define("core/context/Context", ["require", "exports", "core/context/Context", "c
          * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
          *
          * @param {string} type 要注册的消息类型
-         * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
          * @memberof Context
          */
         Context.prototype.mapCommand = function (type, cmd) {
@@ -258,7 +258,7 @@ define("core/context/Context", ["require", "exports", "core/context/Context", "c
          * 注销命令
          *
          * @param {string} type 要注销的消息类型
-         * @param {(CommandConstructor)} cmd 命令处理器
+         * @param {(ICommandConstructor)} cmd 命令处理器
          * @returns {void}
          * @memberof Context
          */
