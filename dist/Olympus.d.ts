@@ -6,14 +6,27 @@
  *
  * 这个ts文件是为了让编译器认识装饰器注入功能而造的
 */
-declare function Inject(cls: Constructor): PropertyDecorator;
-declare function Injectable(cls: Constructor): void;
-declare function Injectable(cls: InjectableParams): ClassDecorator;
-interface Constructor extends Function {
+declare function Inject(cls: IConstructor): PropertyDecorator;
+declare function Injectable(cls: IConstructor): void;
+declare function Injectable(cls: IInjectableParams): ClassDecorator;
+interface IConstructor extends Function {
     new (...args: any[]): any;
 }
-interface InjectableParams {
-    type: Constructor;
+interface IInjectableParams {
+    type: IConstructor;
+}
+declare module "core/interfaces/IConstructor" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 任意构造器接口
+    */
+    export default interface IConstructor extends Function {
+        new (...args: any[]): any;
+    }
 }
 declare module "core/message/IMessage" {
     /**
@@ -108,20 +121,8 @@ declare module "core/command/ICommandConstructor" {
         new (msg: IMessage): Command;
     }
 }
-declare module "core/interfaces/IConstructor" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 任意构造器接口
-    */
-    export default interface IConstructor extends Function {
-        new (...args: any[]): any;
-    }
-}
 declare module "core/context/Context" {
+    import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
     /**
@@ -138,19 +139,19 @@ declare module "core/context/Context" {
         /**
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
-         * @param {Constructor} target 要注入的类型（注意不是实例）
-         * @param {Constructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @param {IConstructor} target 要注入的类型（注意不是实例）
+         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
          * @memberof Context
          */
-        mapInject(target: Constructor, type?: Constructor): void;
+        mapInject(target: IConstructor, type?: IConstructor): void;
         /**
          * 获取注入的对象实例
          *
-         * @param {(Constructor)} type 注入对象的类型
+         * @param {(IConstructor)} type 注入对象的类型
          * @returns {*} 注入的对象实例
          * @memberof Context
          */
-        getInject(type: Constructor): any;
+        getInject(type: IConstructor): any;
         /*********************** 下面是内核消息系统 ***********************/
         private _listenerDict;
         private handleMessages(msg);
@@ -240,6 +241,7 @@ declare module "core/view/IView" {
 }
 declare module "Olympus" {
     import context, { Context } from "core/context/Context";
+    import IConstructor from "core/interfaces/IConstructor";
     import IView from "core/view/IView";
     import IMessage from "core/message/IMessage";
     import Message from "core/message/Message";
@@ -248,19 +250,19 @@ declare module "Olympus" {
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      *
-     * @param {Constructor} target 要注入的类型（注意不是实例）
-     * @param {Constructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+     * @param {IConstructor} target 要注入的类型（注意不是实例）
+     * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
      * @memberof Context
      */
-    export function mapInject(target: Constructor, type?: Constructor): void;
+    export function mapInject(target: IConstructor, type?: IConstructor): void;
     /**
      * 获取注入的对象实例
      *
-     * @param {(Constructor)} type 注入对象的类型
+     * @param {(IConstructor)} type 注入对象的类型
      * @returns {*} 注入的对象实例
      * @memberof Context
      */
-    export function getInject(type: Constructor): any;
+    export function getInject(type: IConstructor): any;
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -288,7 +290,7 @@ declare module "Olympus" {
      * 监听内核消息
      *
      * @param {string} type 消息类型
-     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+     * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Context
      */
@@ -297,7 +299,7 @@ declare module "Olympus" {
      * 移除内核消息监听
      *
      * @param {string} type 消息类型
-     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+     * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Context
      */
@@ -306,7 +308,7 @@ declare module "Olympus" {
      * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
      *
      * @param {string} type 要注册的消息类型
-     * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+     * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
      * @memberof Context
      */
     export function mapCommand(type: string, cmd: ICommandConstructor): void;
@@ -314,11 +316,11 @@ declare module "Olympus" {
      * 注销命令
      *
      * @param {string} type 要注销的消息类型
-     * @param {(CommandConstructor)} cmd 命令处理器
+     * @param {(ICommandConstructor)} cmd 命令处理器
      * @returns {void}
      * @memberof Context
      */
     export function unmapCommand(type: string, cmd: ICommandConstructor): void;
     /** 导出常用的对象 */
-    export { context, Context, IView, IMessage, Message, ICommandConstructor, Command };
+    export { context, Context, IConstructor, IView, IMessage, Message, ICommandConstructor, Command };
 }

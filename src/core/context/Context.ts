@@ -1,11 +1,11 @@
 /// <reference path="../declarations/Inject.ts"/>
 
 import context from "./Context";
+import IConstructor from "../interfaces/IConstructor"
 import IMessage from "../message/IMessage"
 import Message from "../message/Message"
 import ICommandConstructor from "../command/ICommandConstructor"
 import Command from "../command/Command"
-import IConstructor from "../interfaces/IConstructor"
 
 /**
  * @author Raykid
@@ -28,7 +28,7 @@ if(Array.prototype.hasOwnProperty("findIndex"))
 }
 
 // 下面是为了装饰器功能做的
-window["Inject"] = function(cls:Constructor):PropertyDecorator
+window["Inject"] = function(cls:IConstructor):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):PropertyDescriptor
     {
@@ -37,13 +37,13 @@ window["Inject"] = function(cls:Constructor):PropertyDecorator
         };
     }
 };
-window["Injectable"] = function(cls:InjectableParams|Constructor):ClassDecorator|void
+window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorator|void
 {
-    var params:InjectableParams = cls as InjectableParams;
+    var params:IInjectableParams = cls as IInjectableParams;
     if(params.type instanceof Function)
     {
         // 需要转换注册类型，需要返回一个ClassDecorator
-        return function(realCls:Constructor):void
+        return function(realCls:IConstructor):void
         {
             context.mapInject(realCls, params.type);
         } as any;
@@ -51,7 +51,7 @@ window["Injectable"] = function(cls:InjectableParams|Constructor):ClassDecorator
     else
     {
         // 不需要转换注册类型，直接注册
-        context.mapInject(cls as Constructor);
+        context.mapInject(cls as IConstructor);
     }
 };
 
@@ -91,11 +91,11 @@ export class Context
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      * 
-     * @param {Constructor} target 要注入的类型（注意不是实例）
-     * @param {Constructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+     * @param {IConstructor} target 要注入的类型（注意不是实例）
+     * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
      * @memberof Context
      */
-    public mapInject(target:Constructor, type?:Constructor):void
+    public mapInject(target:IConstructor, type?:IConstructor):void
     {
         var key:string = (type || target).toString();
         var value:any = new target();
@@ -105,11 +105,11 @@ export class Context
     /**
      * 获取注入的对象实例
      * 
-     * @param {(Constructor)} type 注入对象的类型
+     * @param {(IConstructor)} type 注入对象的类型
      * @returns {*} 注入的对象实例
      * @memberof Context
      */
-    public getInject(type:Constructor):any
+    public getInject(type:IConstructor):any
     {
         return this._injectDict[type.toString()];
     }

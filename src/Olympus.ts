@@ -1,4 +1,5 @@
 import context, {Context} from "core/context/Context"
+import IConstructor from "core/interfaces/IConstructor"
 import IView from "core/view/IView"
 import IMessage from "core/message/IMessage"
 import Message from "core/message/Message"
@@ -8,11 +9,11 @@ import Command from "core/command/Command"
 /**
  * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
  * 
- * @param {Constructor} target 要注入的类型（注意不是实例）
- * @param {Constructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+ * @param {IConstructor} target 要注入的类型（注意不是实例）
+ * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
  * @memberof Context
  */
-export function mapInject(target:Constructor, type?:Constructor):void
+export function mapInject(target:IConstructor, type?:IConstructor):void
 {
     context.mapInject(target, type);
 }
@@ -20,11 +21,11 @@ export function mapInject(target:Constructor, type?:Constructor):void
 /**
  * 获取注入的对象实例
  * 
- * @param {(Constructor)} type 注入对象的类型
+ * @param {(IConstructor)} type 注入对象的类型
  * @returns {*} 注入的对象实例
  * @memberof Context
  */
-export function getInject(type:Constructor):any
+export function getInject(type:IConstructor):any
 {
     return context.getInject(type);
 }
@@ -63,7 +64,7 @@ export function dispatch(typeOrMsg:string|IMessage, ...params:any[]):void
  * 监听内核消息
  * 
  * @param {string} type 消息类型
- * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+ * @param {(msg:IMessage)=>void} handler 消息处理函数
  * @param {*} [thisArg] 消息this指向
  * @memberof Context
  */
@@ -76,7 +77,7 @@ export function listen(type:string, handler:(msg:IMessage)=>void, thisArg?:any):
  * 移除内核消息监听
  * 
  * @param {string} type 消息类型
- * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+ * @param {(msg:IMessage)=>void} handler 消息处理函数
  * @param {*} [thisArg] 消息this指向
  * @memberof Context
  */
@@ -89,7 +90,7 @@ export function unlisten(type:string, handler:(msg:IMessage)=>void, thisArg?:any
  * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
  * 
  * @param {string} type 要注册的消息类型
- * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+ * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
  * @memberof Context
  */
 export function mapCommand(type:string, cmd:ICommandConstructor):void
@@ -101,7 +102,7 @@ export function mapCommand(type:string, cmd:ICommandConstructor):void
  * 注销命令
  * 
  * @param {string} type 要注销的消息类型
- * @param {(CommandConstructor)} cmd 命令处理器
+ * @param {(ICommandConstructor)} cmd 命令处理器
  * @returns {void} 
  * @memberof Context
  */
@@ -114,6 +115,7 @@ export function unmapCommand(type:string, cmd:ICommandConstructor):void
 export {
     context,
     Context,
+    IConstructor,
     IView,
     IMessage,
     Message,

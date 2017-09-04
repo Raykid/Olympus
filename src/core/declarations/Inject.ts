@@ -6,16 +6,16 @@
  * 
  * 这个ts文件是为了让编译器认识装饰器注入功能而造的
 */
-declare function Inject(cls:Constructor):PropertyDecorator;
-declare function Injectable(cls:Constructor):void;
-declare function Injectable(cls:InjectableParams):ClassDecorator;
+declare function Inject(cls:IConstructor):PropertyDecorator;
+declare function Injectable(cls:IConstructor):void;
+declare function Injectable(cls:IInjectableParams):ClassDecorator;
 
-declare interface Constructor extends Function
+declare interface IConstructor extends Function
 {
     new (...args:any[]):any;
 }
 
-declare interface InjectableParams
+declare interface IInjectableParams
 {
-    type:Constructor;
+    type:IConstructor;
 }
