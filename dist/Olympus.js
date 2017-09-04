@@ -288,6 +288,28 @@ define("Olympus", ["require", "exports", "core/context/Context", "core/message/M
     exports.Context = Context_3.Context;
     exports.Message = Message_2.default;
     exports.Command = Command_1.default;
+    /**
+     * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
+     *
+     * @param {Constructor} target 要注入的类型（注意不是实例）
+     * @param {Constructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+     * @memberof Context
+     */
+    function mapInject(target, type) {
+        Context_3.default.mapInject(target, type);
+    }
+    exports.mapInject = mapInject;
+    /**
+     * 获取注入的对象实例
+     *
+     * @param {(Constructor)} type 注入对象的类型
+     * @returns {*} 注入的对象实例
+     * @memberof Context
+     */
+    function getInject(type) {
+        return Context_3.default.getInject(type);
+    }
+    exports.getInject = getInject;
     /** dispatch方法实现 */
     function dispatch(typeOrMsg) {
         var params = [];

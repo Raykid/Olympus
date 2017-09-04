@@ -4,7 +4,7 @@
  * @create date 2017-09-01
  * @modify date 2017-09-01
  *
- * 这个d.ts文件是为了让编译器认识装饰器注入功能而造的
+ * 这个ts文件是为了让编译器认识装饰器注入功能而造的
 */
 declare function Inject(cls: Constructor): PropertyDecorator;
 declare function Injectable(cls: Constructor): void;
@@ -245,6 +245,22 @@ declare module "Olympus" {
     import Message from "core/message/Message";
     import ICommandConstructor from "core/command/ICommandConstructor";
     import Command from "core/command/Command";
+    /**
+     * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
+     *
+     * @param {Constructor} target 要注入的类型（注意不是实例）
+     * @param {Constructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+     * @memberof Context
+     */
+    export function mapInject(target: Constructor, type?: Constructor): void;
+    /**
+     * 获取注入的对象实例
+     *
+     * @param {(Constructor)} type 注入对象的类型
+     * @returns {*} 注入的对象实例
+     * @memberof Context
+     */
+    export function getInject(type: Constructor): any;
     /**
      * @author Raykid
      * @email initial_r@qq.com
