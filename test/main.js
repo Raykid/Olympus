@@ -5,7 +5,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path="../dist/Olympus.d.ts"/>
-/// <reference path="../src/core/declarations/Inject.d.ts"/>
 define("main", ["require", "exports", "Olympus"], function (require, exports, Olympus) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

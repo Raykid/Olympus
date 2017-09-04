@@ -1,5 +1,4 @@
 /// <reference path="../dist/Olympus.d.ts"/>
-/// <reference path="../src/core/declarations/Inject.d.ts"/>
 
 import * as Olympus from "Olympus"
 

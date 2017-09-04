@@ -56,7 +56,7 @@ define("core/interfaces/Constructor", ["require", "exports"], function (require,
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-/// <reference path="../declarations/Inject.d.ts"/>
+/// <reference path="../declarations/Inject.ts"/>
 define("core/context/Context", ["require", "exports", "core/message/Message"], function (require, exports, Message_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -263,30 +263,68 @@ define("core/view/IView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("Olympus", ["require", "exports", "core/context/Context", "core/message/Message"], function (require, exports, Context_2, Message_2) {
+define("Olympus", ["require", "exports", "core/context/Context", "core/message/Message", "core/command/Command"], function (require, exports, Context_2, Message_2, Command_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.context = Context_2.context;
     exports.Context = Context_2.Context;
     exports.Message = Message_2.Message;
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-08-31
-     * @modify date 2017-09-01
-     *
-     * 这是Olympus框架的外观模块，绝大多数与Olympus框架的交互都可以通过这个模块解决
-    */
-    /**
-     * 添加一个表现层实例到框架中
-     *
-     * @static
-     * @param {IView} view 要添加的表现层实例
-     * @param {string} [name] 为此表现层实例起名
-     * @memberof Olympus
-     */
-    function addView(view, name) {
+    exports.Command = Command_1.Command;
+    /** dispatch方法实现 */
+    function dispatch(typeOrMsg) {
+        var params = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            params[_i - 1] = arguments[_i];
+        }
+        Context_2.context.dispatch.call(Context_2.context, arguments);
     }
-    exports.addView = addView;
+    exports.dispatch = dispatch;
+    /**
+     * 监听内核消息
+     *
+     * @param {string} type 消息类型
+     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof Context
+     */
+    function listen(type, handler, thisArg) {
+        Context_2.context.listen(type, handler, thisArg);
+    }
+    exports.listen = listen;
+    /**
+     * 移除内核消息监听
+     *
+     * @param {string} type 消息类型
+     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof Context
+     */
+    function unlisten(type, handler, thisArg) {
+        Context_2.context.unlisten(type, handler, thisArg);
+    }
+    exports.unlisten = unlisten;
+    /**
+     * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+     *
+     * @param {string} type 要注册的消息类型
+     * @param {(CommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+     * @memberof Context
+     */
+    function mapCommand(type, cmd) {
+        Context_2.context.mapCommand(type, cmd);
+    }
+    exports.mapCommand = mapCommand;
+    /**
+     * 注销命令
+     *
+     * @param {string} type 要注销的消息类型
+     * @param {(CommandConstructor)} cmd 命令处理器
+     * @returns {void}
+     * @memberof Context
+     */
+    function unmapCommand(type, cmd) {
+        Context_2.context.unmapCommand(type, cmd);
+    }
+    exports.unmapCommand = unmapCommand;
 });
 //# sourceMappingURL=Olympus.js.map

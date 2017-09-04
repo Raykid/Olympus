@@ -1,4 +1,4 @@
-/// <reference path="../declarations/Inject.d.ts"/>
+/// <reference path="../declarations/Inject.ts"/>
 
 import {IMessage, Message} from "../message/Message"
 import {CommandConstructor, Command} from "../command/Command"
