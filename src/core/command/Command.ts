@@ -1,4 +1,3 @@
-import context, {Context} from "../context/Context"
 import IMessage from "../message/IMessage"
 
 /**
@@ -19,18 +18,9 @@ export default class Command
      */
     public msg:IMessage;
 
-    /**
-     * 内核上下文实例
-     * 
-     * @type {Context}
-     * @memberof Command
-     */
-    public context:Context;
-
     public constructor(msg:IMessage)
     {
         this.msg = msg;
-        this.context = context;
     }
 
     public exec():void

@@ -35,8 +35,12 @@ define("main", ["require", "exports", "Olympus"], function (require, exports, Ol
         __decorate([
             Inject(Fuck)
         ], Fuck2.prototype, "fuck", void 0);
+        __decorate([
+            Inject(Olympus.Context)
+        ], Fuck2.prototype, "ctx", void 0);
         return Fuck2;
     }());
-    console.log(new Fuck2().fuck);
+    var fuck2 = new Fuck2();
+    console.log(fuck2.fuck, fuck2.ctx);
 });
 //# sourceMappingURL=main.js.map

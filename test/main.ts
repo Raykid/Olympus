@@ -30,6 +30,10 @@ class Fuck2
 {
     @Inject(Fuck)
     public fuck:Fuck;
+
+    @Inject(Olympus.Context)
+    public ctx:Olympus.Context;
 }
 
-console.log(new Fuck2().fuck);
+var fuck2:Fuck2 = new Fuck2();
+console.log(fuck2.fuck, fuck2.ctx);

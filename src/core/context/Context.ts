@@ -83,6 +83,8 @@ export class Context
         if(Context._instance) throw new Error("已生成过Context实例，不允许多次生成");
         // 赋值单例
         Context._instance = this;
+        // 注入自身
+        this.mapInjectValue(this);
     }
     
     /*********************** 内核消息语法糖处理逻辑 ***********************/
@@ -226,8 +228,20 @@ export class Context
      */
     public mapInject(target:IConstructor, type?:IConstructor):void
     {
-        var key:string = (type || target).toString();
         var value:any = new target();
+        this.mapInjectValue(value, type);
+    }
+
+    /**
+     * 注入一个对象实例
+     * 
+     * @param {*} value 要注入的对象实例
+     * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+     * @memberof Context
+     */
+    public mapInjectValue(value:any, type?:IConstructor):void
+    {
+        var key:string = (type || value.constructor).toString();
         this._injectDict[key] = value;
     }
 

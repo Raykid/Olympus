@@ -77,7 +77,6 @@ declare module "core/message/Message" {
     }
 }
 declare module "core/command/Command" {
-    import { Context } from "core/context/Context";
     import IMessage from "core/message/IMessage";
     /**
      * @author Raykid
@@ -95,13 +94,6 @@ declare module "core/command/Command" {
          * @memberof Command
          */
         msg: IMessage;
-        /**
-         * 内核上下文实例
-         *
-         * @type {Context}
-         * @memberof Command
-         */
-        context: Context;
         constructor(msg: IMessage);
         exec(): void;
     }
@@ -211,6 +203,14 @@ declare module "core/context/Context" {
          * @memberof Context
          */
         mapInject(target: IConstructor, type?: IConstructor): void;
+        /**
+         * 注入一个对象实例
+         *
+         * @param {*} value 要注入的对象实例
+         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+         * @memberof Context
+         */
+        mapInjectValue(value: any, type?: IConstructor): void;
         /**
          * 移除类型注入
          *
