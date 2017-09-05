@@ -6,6 +6,8 @@ import Message from "core/message/Message"
 import ICommandConstructor from "core/command/ICommandConstructor"
 import Command from "core/command/Command"
 
+/*********************** 下面是Core模组的常用接口 ***********************/
+
 /**
  * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
  * 
