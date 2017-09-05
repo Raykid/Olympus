@@ -23,7 +23,8 @@ function handler(msg:Olympus.IMessage):void
 @Injectable
 class Fuck
 {
-    private _fuck:string;
+    @Inject(Olympus.Core)
+    public core:Olympus.Core;
 }
 
 class Fuck2
@@ -33,7 +34,17 @@ class Fuck2
 
     @Inject(Olympus.Core)
     public core:Olympus.Core;
+
+    @Inject(Olympus.Explorer)
+    public explorer:Olympus.Explorer;
+
+    @Inject(Olympus.Query)
+    public query:Olympus.Query;
+
+    @Inject(Olympus.External)
+    public external:Olympus.External;
 }
 
 var fuck2:Fuck2 = new Fuck2();
-console.log(fuck2.fuck, fuck2.core);
+window["fuck2"] = fuck2;
+console.log(fuck2);

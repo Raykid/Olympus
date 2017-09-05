@@ -8,7 +8,9 @@ import core, {
     IMediator,
     Mediator,
     IView
-} from "core/Core"
+} from "./core/Core"
+
+export * from "./env/Env"
 
 /*********************** 下面是Core模组的常用接口 ***********************/
 

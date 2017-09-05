@@ -215,8 +215,8 @@ define("core/Core", ["require", "exports", "core/Core", "core/message/Message", 
      * @create date 2017-08-31
      * @modify date 2017-09-01
      *
-     * Core模组是Olympus框架的核心模块，负责实现框架内消息转发、对象注入等核心功能
-     * COre模组是一切其他模组实现的基础和围绕的核心
+     * Core模组是Olympus框架的核心模组，负责实现框架内消息转发、对象注入等核心功能
+     * Core模组是一切其他模组实现的基础和围绕的核心
     */
     // 修复Array.findIndex会被遍历到的问题
     if (Array.prototype.hasOwnProperty("findIndex")) {
@@ -489,13 +489,270 @@ define("core/Core", ["require", "exports", "core/Core", "core/message/Message", 
     /** 导出Core实例 */
     exports.default = new Core();
 });
-define("Olympus", ["require", "exports", "core/Core"], function (require, exports, Core_2) {
+define("env/explorer/ExplorerType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.core = Core_2.default;
-    exports.Core = Core_2.Core;
-    exports.Message = Core_2.Message;
-    exports.Command = Core_2.Command;
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * 浏览器类型枚举
+    */
+    var ExplorerType;
+    (function (ExplorerType) {
+        ExplorerType[ExplorerType["IE"] = 0] = "IE";
+        ExplorerType[ExplorerType["EDGE"] = 1] = "EDGE";
+        ExplorerType[ExplorerType["OPERA"] = 2] = "OPERA";
+        ExplorerType[ExplorerType["FIREFOX"] = 3] = "FIREFOX";
+        ExplorerType[ExplorerType["SAFARI"] = 4] = "SAFARI";
+        ExplorerType[ExplorerType["CHROME"] = 5] = "CHROME";
+        ExplorerType[ExplorerType["OTHERS"] = 6] = "OTHERS";
+    })(ExplorerType || (ExplorerType = {}));
+    /** 默认导出 */
+    exports.default = ExplorerType;
+});
+define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerType"], function (require, exports, ExplorerType_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Explorer类记录浏览器相关数据
+    */
+    var Explorer = (function () {
+        function Explorer() {
+            //取得浏览器的userAgent字符串
+            var userAgent = navigator.userAgent;
+            // 判断浏览器类型
+            var regExp;
+            var result;
+            if (window["ActiveXObject"] != null) {
+                // IE浏览器
+                this._type = ExplorerType_1.default.IE;
+                // 获取IE版本号
+                regExp = new RegExp("MSIE ([^ ;\\)]+);");
+                result = regExp.exec(userAgent);
+                if (result != null) {
+                    // 是IE8以前
+                    this._version = result[1];
+                }
+                else {
+                    // 是IE9以后
+                    regExp = new RegExp("rv:([^ ;\\)]+)");
+                    result = regExp.exec(userAgent);
+                    this._version = result[1];
+                }
+            }
+            else if (userAgent.indexOf("Edge") > -1) {
+                // Edge浏览器
+                this._type = ExplorerType_1.default.EDGE;
+                // 获取Edge版本号
+                regExp = new RegExp("Edge/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Firefox") > -1) {
+                // Firefox浏览器
+                this._type = ExplorerType_1.default.FIREFOX;
+                // 获取Firefox版本号
+                regExp = new RegExp("Firefox/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Opera") > -1) {
+                // Opera浏览器
+                this._type = ExplorerType_1.default.OPERA;
+                // 获取Opera版本号
+                regExp = new RegExp("OPR/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Chrome") > -1) {
+                // Chrome浏览器
+                this._type = ExplorerType_1.default.CHROME;
+                // 获取Crhome版本号
+                regExp = new RegExp("Chrome/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Safari") > -1) {
+                // Safari浏览器
+                this._type = ExplorerType_1.default.SAFARI;
+                // 获取Safari版本号
+                regExp = new RegExp("Safari/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else {
+                // 其他浏览器
+                this._type = ExplorerType_1.default.OTHERS;
+                // 随意设置一个版本号
+                this._version = "0.0";
+            }
+            // 赋值类型字符串
+            this._typeStr = ExplorerType_1.default[this._type];
+            // 赋值大版本号
+            this._bigVersion = this._version.split(".")[0];
+        }
+        /**
+         * 获取浏览器类型枚举值
+         *
+         * @returns {ExplorerType} 浏览器类型枚举值
+         * @memberof Env
+         */
+        Explorer.prototype.getType = function () {
+            return this._type;
+        };
+        /**
+         * 获取浏览器类型字符串
+         *
+         * @returns {string} 浏览器类型字符串
+         * @memberof Env
+         */
+        Explorer.prototype.getTypeStr = function () {
+            return this._typeStr;
+        };
+        /**
+         * 获取浏览器版本
+         *
+         * @returns {string} 浏览器版本
+         * @memberof Explorer
+         */
+        Explorer.prototype.getVersion = function () {
+            return this._version;
+        };
+        /**
+         * 获取浏览器大版本
+         *
+         * @returns {string} 浏览器大版本
+         * @memberof Explorer
+         */
+        Explorer.prototype.getBigVersion = function () {
+            return this._bigVersion;
+        };
+        return Explorer;
+    }());
+    exports.default = Explorer;
+});
+define("env/query/Query", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Query类记录通过GET参数传递给框架的参数字典
+    */
+    var Query = (function () {
+        function Query() {
+            this._params = {};
+            var loc = window.location.href;
+            var query = loc.substring(loc.search(/\?/) + 1);
+            var vars = query.split('&');
+            for (var i = 0, len = vars.length; i < len; i++) {
+                var pair = vars[i].split('=', 2);
+                if (pair.length != 2 || !pair[0])
+                    continue;
+                var name = pair[0];
+                var value = pair[1];
+                name = decodeURIComponent(name);
+                value = decodeURIComponent(value);
+                // decode twice for ios
+                name = decodeURIComponent(name);
+                value = decodeURIComponent(value);
+                this._params[name] = value;
+            }
+        }
+        /**
+         * 获取GET参数
+         *
+         * @param {string} key 参数key
+         * @returns {string} 参数值
+         * @memberof Query
+         */
+        Query.prototype.getParam = function (key) {
+            return this._params[key];
+        };
+        return Query;
+    }());
+    exports.default = Query;
+});
+define("env/external/External", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * External类为window.external参数字典包装类
+    */
+    var External = (function () {
+        function External() {
+            this._params = {};
+            // 处理window.external
+            try {
+                if (!(window.external && typeof window.external === "object")) {
+                    window.external = {};
+                }
+            }
+            catch (err) {
+                window.external = {};
+            }
+            this._params = window.external;
+        }
+        /**
+         * 获取window.external中的参数
+         *
+         * @param {string} key 参数名
+         * @returns {*} 参数值
+         * @memberof External
+         */
+        External.prototype.getParam = function (key) {
+            return this._params[key];
+        };
+        return External;
+    }());
+    exports.default = External;
+});
+define("env/Env", ["require", "exports", "core/Core", "env/explorer/Explorer", "env/query/Query", "env/external/External"], function (require, exports, Core_2, Explorer_1, Query_1, External_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Explorer = Explorer_1.default;
+    exports.Query = Query_1.default;
+    exports.External = External_1.default;
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Env模块是Olympus框架用来集成与运行时环境相关的部分，如浏览器环境、开发环境、运行时参数等
+    */
+    // 注入
+    Core_2.default.mapInject(Explorer_1.default);
+    Core_2.default.mapInject(Query_1.default);
+    Core_2.default.mapInject(External_1.default);
+});
+define("Olympus", ["require", "exports", "core/Core", "env/Env"], function (require, exports, Core_3, Env_1) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.core = Core_3.default;
+    exports.Core = Core_3.Core;
+    exports.Message = Core_3.Message;
+    exports.Command = Core_3.Command;
+    __export(Env_1);
     /*********************** 下面是Core模组的常用接口 ***********************/
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
@@ -505,7 +762,7 @@ define("Olympus", ["require", "exports", "core/Core"], function (require, export
      * @memberof Core
      */
     function mapInject(target, type) {
-        Core_2.default.mapInject(target, type);
+        Core_3.default.mapInject(target, type);
     }
     exports.mapInject = mapInject;
     /**
@@ -516,7 +773,7 @@ define("Olympus", ["require", "exports", "core/Core"], function (require, export
      * @memberof Core
      */
     function getInject(type) {
-        return Core_2.default.getInject(type);
+        return Core_3.default.getInject(type);
     }
     exports.getInject = getInject;
     /** dispatch方法实现 */
@@ -525,7 +782,7 @@ define("Olympus", ["require", "exports", "core/Core"], function (require, export
         for (var _i = 1; _i < arguments.length; _i++) {
             params[_i - 1] = arguments[_i];
         }
-        Core_2.default.dispatch.apply(Core_2.default, arguments);
+        Core_3.default.dispatch.apply(Core_3.default, arguments);
     }
     exports.dispatch = dispatch;
     /**
@@ -537,7 +794,7 @@ define("Olympus", ["require", "exports", "core/Core"], function (require, export
      * @memberof Core
      */
     function listen(type, handler, thisArg) {
-        Core_2.default.listen(type, handler, thisArg);
+        Core_3.default.listen(type, handler, thisArg);
     }
     exports.listen = listen;
     /**
@@ -549,7 +806,7 @@ define("Olympus", ["require", "exports", "core/Core"], function (require, export
      * @memberof Core
      */
     function unlisten(type, handler, thisArg) {
-        Core_2.default.unlisten(type, handler, thisArg);
+        Core_3.default.unlisten(type, handler, thisArg);
     }
     exports.unlisten = unlisten;
     /**
@@ -560,7 +817,7 @@ define("Olympus", ["require", "exports", "core/Core"], function (require, export
      * @memberof Core
      */
     function mapCommand(type, cmd) {
-        Core_2.default.mapCommand(type, cmd);
+        Core_3.default.mapCommand(type, cmd);
     }
     exports.mapCommand = mapCommand;
     /**
@@ -572,7 +829,7 @@ define("Olympus", ["require", "exports", "core/Core"], function (require, export
      * @memberof Core
      */
     function unmapCommand(type, cmd) {
-        Core_2.default.unmapCommand(type, cmd);
+        Core_3.default.unmapCommand(type, cmd);
     }
     exports.unmapCommand = unmapCommand;
 });

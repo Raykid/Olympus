@@ -419,8 +419,125 @@ declare module "core/Core" {
     /** 导出Core模组常用模块 */
     export { IConstructor, IMessage, Message, ICommandConstructor, Command, IMediator, Mediator, IView };
 }
+declare module "env/explorer/ExplorerType" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * 浏览器类型枚举
+    */
+    enum ExplorerType {
+        IE = 0,
+        EDGE = 1,
+        OPERA = 2,
+        FIREFOX = 3,
+        SAFARI = 4,
+        CHROME = 5,
+        OTHERS = 6,
+    }
+    export default ExplorerType;
+}
+declare module "env/explorer/Explorer" {
+    import ExplorerType from "env/explorer/ExplorerType";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Explorer类记录浏览器相关数据
+    */
+    export default class Explorer {
+        private _type;
+        /**
+         * 获取浏览器类型枚举值
+         *
+         * @returns {ExplorerType} 浏览器类型枚举值
+         * @memberof Env
+         */
+        getType(): ExplorerType;
+        private _typeStr;
+        /**
+         * 获取浏览器类型字符串
+         *
+         * @returns {string} 浏览器类型字符串
+         * @memberof Env
+         */
+        getTypeStr(): string;
+        private _version;
+        /**
+         * 获取浏览器版本
+         *
+         * @returns {string} 浏览器版本
+         * @memberof Explorer
+         */
+        getVersion(): string;
+        private _bigVersion;
+        /**
+         * 获取浏览器大版本
+         *
+         * @returns {string} 浏览器大版本
+         * @memberof Explorer
+         */
+        getBigVersion(): string;
+        constructor();
+    }
+}
+declare module "env/query/Query" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Query类记录通过GET参数传递给框架的参数字典
+    */
+    export default class Query {
+        private _params;
+        constructor();
+        /**
+         * 获取GET参数
+         *
+         * @param {string} key 参数key
+         * @returns {string} 参数值
+         * @memberof Query
+         */
+        getParam(key: string): string;
+    }
+}
+declare module "env/external/External" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * External类为window.external参数字典包装类
+    */
+    export default class External {
+        private _params;
+        constructor();
+        /**
+         * 获取window.external中的参数
+         *
+         * @param {string} key 参数名
+         * @returns {*} 参数值
+         * @memberof External
+         */
+        getParam(key: string): any;
+    }
+}
+declare module "env/Env" {
+    import Explorer from "env/explorer/Explorer";
+    import Query from "env/query/Query";
+    import External from "env/external/External";
+    export { Explorer, Query, External };
+}
 declare module "Olympus" {
     import core, { Core, IConstructor, IMessage, Message, ICommandConstructor, Command, IView } from "core/Core";
+    export * from "env/Env";
     /*********************** 下面是Core模组的常用接口 ***********************/
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中

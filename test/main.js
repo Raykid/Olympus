@@ -24,6 +24,9 @@ define("main", ["require", "exports", "Olympus"], function (require, exports, Ol
     var Fuck = (function () {
         function Fuck() {
         }
+        __decorate([
+            Inject(Olympus.Core)
+        ], Fuck.prototype, "core", void 0);
         Fuck = __decorate([
             Injectable
         ], Fuck);
@@ -38,9 +41,19 @@ define("main", ["require", "exports", "Olympus"], function (require, exports, Ol
         __decorate([
             Inject(Olympus.Core)
         ], Fuck2.prototype, "core", void 0);
+        __decorate([
+            Inject(Olympus.Explorer)
+        ], Fuck2.prototype, "explorer", void 0);
+        __decorate([
+            Inject(Olympus.Query)
+        ], Fuck2.prototype, "query", void 0);
+        __decorate([
+            Inject(Olympus.External)
+        ], Fuck2.prototype, "external", void 0);
         return Fuck2;
     }());
     var fuck2 = new Fuck2();
-    console.log(fuck2.fuck, fuck2.core);
+    window["fuck2"] = fuck2;
+    console.log(fuck2);
 });
 //# sourceMappingURL=main.js.map
