@@ -73,6 +73,131 @@ define("core/mediator/IMediator", ["require", "exports"], function (require, exp
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("core/mediator/Mediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-04
+     * @modify date 2017-09-04
+     *
+     * 界面中介者基类，不能直接继承使用该基类，而需要继承不同表现层提供的中介者类
+    */
+    var Mediator = (function () {
+        function Mediator(skin) {
+            this._isDestroyed = false;
+            this._listeners = [];
+            if (skin)
+                this.setSkin(skin);
+        }
+        /**
+         * 获取中介者是否已被销毁
+         *
+         * @returns {boolean} 是否已被销毁
+         * @memberof Mediator
+         */
+        Mediator.prototype.isDisposed = function () {
+            return this._isDestroyed;
+        };
+        /**
+         * 获取皮肤
+         *
+         * @returns {*} 皮肤引用
+         * @memberof Mediator
+         */
+        Mediator.prototype.getSkin = function () {
+            return this._skin;
+        };
+        /**
+         * 设置皮肤
+         *
+         * @param {*} value 皮肤引用
+         * @memberof Mediator
+         */
+        Mediator.prototype.setSkin = function (value) {
+            this._skin = value;
+        };
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.mapListener = function (target, type, handler, thisArg) {
+            for (var i = 0, len = this._listeners.length; i < len; i++) {
+                var data = this._listeners[i];
+                if (data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg) {
+                    // 已经存在一样的监听，不再监听
+                    return;
+                }
+            }
+            // 记录监听
+            this._listeners.push({ target: target, type: type, handler: handler, thisArg: thisArg });
+            // 调用自主实现部分接口
+            this.doMalListener(target, type, handler, thisArg);
+        };
+        Mediator.prototype.doMalListener = function (target, type, handler, thisArg) {
+            // 留待子类实现
+        };
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapListener = function (target, type, handler, thisArg) {
+            for (var i = 0, len = this._listeners.length; i < len; i++) {
+                var data = this._listeners[i];
+                if (data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg) {
+                    // 调用自主实现部分接口
+                    this.doUnmalListener(target, type, handler, thisArg);
+                    // 移除记录
+                    this._listeners.splice(i, 1);
+                    break;
+                }
+            }
+        };
+        Mediator.prototype.doUnmalListener = function (target, type, handler, thisArg) {
+            // 留待子类实现
+        };
+        /**
+         * 注销所有注册在当前中介者上的事件监听
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapAllListeners = function () {
+            for (var i = 0, len = this._listeners.length; i < len; i++) {
+                var data = this._listeners[i];
+                // 调用自主实现部分接口
+                this.doUnmalListener(data.target, data.type, data.handler, data.thisArg);
+                // 移除记录
+                this._listeners.splice(i, 1);
+            }
+        };
+        /**
+         * 销毁中介者
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.dispose = function () {
+            // 注销事件监听
+            this.unmapAllListeners();
+            // 移除皮肤
+            this._skin = null;
+            // 设置已被销毁
+            this._isDestroyed = true;
+        };
+        return Mediator;
+    }());
+    exports.default = Mediator;
+});
 /// <reference path="../declarations/Inject.ts"/>
 define("core/context/Context", ["require", "exports", "core/context/Context", "core/message/Message"], function (require, exports, Context_1, Message_1) {
     "use strict";

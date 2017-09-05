@@ -7,6 +7,7 @@ import Message from "../message/Message"
 import ICommandConstructor from "../command/ICommandConstructor"
 import Command from "../command/Command"
 import IMediator from "../mediator/IMediator"
+import Mediator from "../mediator/Mediator"
 
 /**
  * @author Raykid
