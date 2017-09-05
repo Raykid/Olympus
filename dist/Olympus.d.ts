@@ -258,7 +258,7 @@ declare module "core/mediator/Mediator" {
         dispose(): void;
     }
 }
-declare module "core/context/Context" {
+declare module "core/Context" {
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
@@ -414,7 +414,7 @@ declare module "core/view/IView" {
     }
 }
 declare module "Olympus" {
-    import context, { Context } from "core/context/Context";
+    import context, { Context } from "core/Context";
     import IConstructor from "core/interfaces/IConstructor";
     import IView from "core/view/IView";
     import IMessage from "core/message/IMessage";

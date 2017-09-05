@@ -1,4 +1,4 @@
-import context, {Context} from "core/context/Context"
+import context, {Context} from "core/Context"
 import IConstructor from "core/interfaces/IConstructor"
 import IView from "core/view/IView"
 import IMessage from "core/message/IMessage"

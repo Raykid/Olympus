@@ -1,13 +1,13 @@
-/// <reference path="../declarations/Inject.ts"/>
+/// <reference path="./declarations/Inject.ts"/>
 
 import context from "./Context";
-import IConstructor from "../interfaces/IConstructor"
-import IMessage from "../message/IMessage"
-import Message from "../message/Message"
-import ICommandConstructor from "../command/ICommandConstructor"
-import Command from "../command/Command"
-import IMediator from "../mediator/IMediator"
-import Mediator from "../mediator/Mediator"
+import IConstructor from "./interfaces/IConstructor"
+import IMessage from "./message/IMessage"
+import Message from "./message/Message"
+import ICommandConstructor from "./command/ICommandConstructor"
+import Command from "./command/Command"
+import IMediator from "./mediator/IMediator"
+import Mediator from "./mediator/Mediator"
 
 /**
  * @author Raykid

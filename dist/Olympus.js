@@ -198,8 +198,8 @@ define("core/mediator/Mediator", ["require", "exports"], function (require, expo
     }());
     exports.default = Mediator;
 });
-/// <reference path="../declarations/Inject.ts"/>
-define("core/context/Context", ["require", "exports", "core/context/Context", "core/message/Message"], function (require, exports, Context_1, Message_1) {
+/// <reference path="./declarations/Inject.ts"/>
+define("core/Context", ["require", "exports", "core/Context", "core/message/Message"], function (require, exports, Context_1, Message_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -485,7 +485,7 @@ define("core/view/IView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("Olympus", ["require", "exports", "core/context/Context", "core/message/Message", "core/command/Command"], function (require, exports, Context_2, Message_2, Command_1) {
+define("Olympus", ["require", "exports", "core/Context", "core/message/Message", "core/command/Command"], function (require, exports, Context_2, Message_2, Command_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.context = Context_2.default;
