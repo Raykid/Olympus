@@ -198,17 +198,25 @@ define("core/mediator/Mediator", ["require", "exports"], function (require, expo
     }());
     exports.default = Mediator;
 });
-/// <reference path="./declarations/Inject.ts"/>
-define("core/Core", ["require", "exports", "core/Core", "core/message/Message"], function (require, exports, Core_1, Message_1) {
+define("core/view/IView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+});
+/// <reference path="./declarations/Inject.ts"/>
+define("core/Core", ["require", "exports", "core/Core", "core/message/Message", "core/command/Command", "core/mediator/Mediator"], function (require, exports, Core_1, Message_1, Command_1, Mediator_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.Message = Message_1.default;
+    exports.Command = Command_1.default;
+    exports.Mediator = Mediator_1.default;
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-08-31
      * @modify date 2017-09-01
      *
-     * Core模块是Olympus核心模块，负责实现框架内消息转发、对象注入等核心功能
+     * Core模组是Olympus框架的核心模块，负责实现框架内消息转发、对象注入等核心功能
+     * COre模组是一切其他模组实现的基础和围绕的核心
     */
     // 修复Array.findIndex会被遍历到的问题
     if (Array.prototype.hasOwnProperty("findIndex")) {
@@ -481,17 +489,14 @@ define("core/Core", ["require", "exports", "core/Core", "core/message/Message"],
     /** 导出Core实例 */
     exports.default = new Core();
 });
-define("core/view/IView", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("Olympus", ["require", "exports", "core/Core", "core/message/Message", "core/command/Command"], function (require, exports, Core_2, Message_2, Command_1) {
+define("Olympus", ["require", "exports", "core/Core"], function (require, exports, Core_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.core = Core_2.default;
     exports.Core = Core_2.Core;
-    exports.Message = Message_2.default;
-    exports.Command = Command_1.default;
+    exports.Message = Core_2.Message;
+    exports.Command = Core_2.Command;
+    /*********************** 下面是Core模组的常用接口 ***********************/
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      *

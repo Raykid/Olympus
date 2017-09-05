@@ -258,11 +258,42 @@ declare module "core/mediator/Mediator" {
         dispose(): void;
     }
 }
+declare module "core/view/IView" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-08-31
+     * @modify date 2017-08-31
+     *
+     * 这是表现层接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
+    */
+    export default interface IView {
+        /**
+         * 获取表现层类型名称
+         * @return {string} 一个字符串，代表表现层类型名称
+         */
+        getType(): string;
+        /**
+         * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
+         */
+        getHTMLWrapper(): HTMLElement;
+        /**
+         * 初始化表现层
+         * @param {()=>void} complete 初始化完毕后的回调
+         */
+        initView(complete: () => void): void;
+    }
+}
 declare module "core/Core" {
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
+    import Message from "core/message/Message";
     import ICommandConstructor from "core/command/ICommandConstructor";
+    import Command from "core/command/Command";
     import IMediator from "core/mediator/IMediator";
+    import Mediator from "core/mediator/Mediator";
+    import IView from "core/view/IView";
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -385,42 +416,12 @@ declare module "core/Core" {
     }
     const _default: Core;
     export default _default;
-}
-declare module "core/view/IView" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-08-31
-     * @modify date 2017-08-31
-     *
-     * 这是表现层接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
-    */
-    export default interface IView {
-        /**
-         * 获取表现层类型名称
-         * @return {string} 一个字符串，代表表现层类型名称
-         */
-        getType(): string;
-        /**
-         * 获取表现层HTML包装器，可以对其样式进行自定义调整
-         * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
-         */
-        getHTMLWrapper(): HTMLElement;
-        /**
-         * 初始化表现层
-         * @param {()=>void} complete 初始化完毕后的回调
-         */
-        initView(complete: () => void): void;
-    }
+    /** 导出Core模组常用模块 */
+    export { IConstructor, IMessage, Message, ICommandConstructor, Command, IMediator, Mediator, IView };
 }
 declare module "Olympus" {
-    import core, { Core } from "core/Core";
-    import IConstructor from "core/interfaces/IConstructor";
-    import IView from "core/view/IView";
-    import IMessage from "core/message/IMessage";
-    import Message from "core/message/Message";
-    import ICommandConstructor from "core/command/ICommandConstructor";
-    import Command from "core/command/Command";
+    import core, { Core, IConstructor, IMessage, Message, ICommandConstructor, Command, IView } from "core/Core";
+    /*********************** 下面是Core模组的常用接口 ***********************/
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      *

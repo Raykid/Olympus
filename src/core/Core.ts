@@ -8,6 +8,7 @@ import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
 import IMediator from "./mediator/IMediator"
 import Mediator from "./mediator/Mediator"
+import IView from "./view/IView"
 
 /**
  * @author Raykid
@@ -364,3 +365,14 @@ export class Core
 
 /** 导出Core实例 */
 export default new Core();
+/** 导出Core模组常用模块 */
+export {
+    IConstructor,
+    IMessage,
+    Message,
+    ICommandConstructor,
+    Command,
+    IMediator,
+    Mediator,
+    IView
+}

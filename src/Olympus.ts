@@ -1,10 +1,14 @@
-import core, {Core} from "core/Core"
-import IConstructor from "core/interfaces/IConstructor"
-import IView from "core/view/IView"
-import IMessage from "core/message/IMessage"
-import Message from "core/message/Message"
-import ICommandConstructor from "core/command/ICommandConstructor"
-import Command from "core/command/Command"
+import core, {
+    Core,
+    IConstructor,
+    IMessage,
+    Message,
+    ICommandConstructor,
+    Command,
+    IMediator,
+    Mediator,
+    IView
+} from "core/Core"
 
 /*********************** 下面是Core模组的常用接口 ***********************/
 
