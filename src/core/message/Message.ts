@@ -20,15 +20,15 @@ export default class Message implements IMessage
      * 消息参数列表
      * 
      * @type {any[]}
-     * @memberof ContextMessage
+     * @memberof Message
      */
     public params:any[];
 
     /**
-     * Creates an instance of ContextMessage.
+     * Creates an instance of Message.
      * @param {string} type 消息类型
      * @param {...any[]} params 可能的消息参数列表
-     * @memberof ContextMessage
+     * @memberof Message
      */
     public constructor(type:string, ...params:any[])
     {

@@ -19,10 +19,10 @@ define("core/message/Message", ["require", "exports"], function (require, export
     */
     var Message = (function () {
         /**
-         * Creates an instance of ContextMessage.
+         * Creates an instance of Message.
          * @param {string} type 消息类型
          * @param {...any[]} params 可能的消息参数列表
-         * @memberof ContextMessage
+         * @memberof Message
          */
         function Message(type) {
             var params = [];
@@ -199,7 +199,7 @@ define("core/mediator/Mediator", ["require", "exports"], function (require, expo
     exports.default = Mediator;
 });
 /// <reference path="./declarations/Inject.ts"/>
-define("core/Context", ["require", "exports", "core/Context", "core/message/Message"], function (require, exports, Context_1, Message_1) {
+define("core/Core", ["require", "exports", "core/Core", "core/message/Message"], function (require, exports, Core_1, Message_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -208,7 +208,7 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
      * @create date 2017-08-31
      * @modify date 2017-09-01
      *
-     * Olympus核心上下文模块，负责实现框架内消息转发、对象注入等核心功能
+     * Core模块是Olympus核心模块，负责实现框架内消息转发、对象注入等核心功能
     */
     // 修复Array.findIndex会被遍历到的问题
     if (Array.prototype.hasOwnProperty("findIndex")) {
@@ -222,7 +222,7 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
     window["Inject"] = function (cls) {
         return function (prototype, propertyKey) {
             return {
-                get: function () { return Context_1.default.getInject(cls); }
+                get: function () { return Core_1.default.getInject(cls); }
             };
         };
     };
@@ -231,22 +231,22 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
         if (params.type instanceof Function) {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
-                Context_1.default.mapInject(realCls, params.type);
+                Core_1.default.mapInject(realCls, params.type);
             };
         }
         else {
             // 不需要转换注册类型，直接注册
-            Context_1.default.mapInject(cls);
+            Core_1.default.mapInject(cls);
         }
     };
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
      * @export
-     * @class Context
+     * @class Core
      */
-    var Context = (function () {
-        function Context() {
+    var Core = (function () {
+        function Core() {
             /*********************** 内核消息语法糖处理逻辑 ***********************/
             this._messageHandlerDict = {};
             /*********************** 下面是内核消息系统 ***********************/
@@ -258,20 +258,20 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
             /*********************** 下面是界面中介者系统 ***********************/
             this._mediatorList = [];
             // 进行单例判断
-            if (Context._instance)
-                throw new Error("已生成过Context实例，不允许多次生成");
+            if (Core._instance)
+                throw new Error("已生成过Core实例，不允许多次生成");
             // 赋值单例
-            Context._instance = this;
+            Core._instance = this;
             // 注入自身
             this.mapInjectValue(this);
         }
-        Context.prototype.handleMessageSugars = function (msg, target) {
+        Core.prototype.handleMessageSugars = function (msg, target) {
             // 调用以Message类型为前缀，以_handler为后缀的方法
             var name = msg.getType() + "_handler";
             if (target[name] instanceof Function)
                 target[name](msg);
         };
-        Context.prototype.handleMessages = function (msg) {
+        Core.prototype.handleMessages = function (msg) {
             var listeners = this._listenerDict[msg.getType()];
             if (listeners) {
                 for (var i = 0, len = listeners.length; i < len; i++) {
@@ -287,7 +287,7 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
             }
         };
         /** dispatch方法实现 */
-        Context.prototype.dispatch = function (typeOrMsg) {
+        Core.prototype.dispatch = function (typeOrMsg) {
             var params = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
@@ -311,11 +311,11 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          * 监听内核消息
          *
          * @param {string} type 消息类型
-         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+         * @param {(msg:IMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.listen = function (type, handler, thisArg) {
+        Core.prototype.listen = function (type, handler, thisArg) {
             var listeners = this._listenerDict[type];
             if (!listeners)
                 this._listenerDict[type] = listeners = [];
@@ -333,11 +333,11 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          * 移除内核消息监听
          *
          * @param {string} type 消息类型
-         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+         * @param {(msg:IMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.unlisten = function (type, handler, thisArg) {
+        Core.prototype.unlisten = function (type, handler, thisArg) {
             var listeners = this._listenerDict[type];
             // 检查存在性
             if (listeners) {
@@ -351,7 +351,7 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
                 }
             }
         };
-        Context.prototype.handleInjects = function (msg) {
+        Core.prototype.handleInjects = function (msg) {
             for (var key in this._injectDict) {
                 var inject = this._injectDict[key];
                 // 执行语法糖
@@ -363,9 +363,9 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          *
          * @param {IConstructor} target 要注入的类型（注意不是实例）
          * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.mapInject = function (target, type) {
+        Core.prototype.mapInject = function (target, type) {
             var value = new target();
             this.mapInjectValue(value, type);
         };
@@ -374,9 +374,9 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          *
          * @param {*} value 要注入的对象实例
          * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.mapInjectValue = function (value, type) {
+        Core.prototype.mapInjectValue = function (value, type) {
             var key = (type || value.constructor).toString();
             this._injectDict[key] = value;
         };
@@ -384,9 +384,9 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          * 移除类型注入
          *
          * @param {IConstructor} target 要移除注入的类型
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.unmapInject = function (target) {
+        Core.prototype.unmapInject = function (target) {
             var key = target.toString();
             delete this._injectDict[key];
         };
@@ -395,12 +395,12 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          *
          * @param {(IConstructor)} type 注入对象的类型
          * @returns {*} 注入的对象实例
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.getInject = function (type) {
+        Core.prototype.getInject = function (type) {
             return this._injectDict[type.toString()];
         };
-        Context.prototype.handleCommands = function (msg) {
+        Core.prototype.handleCommands = function (msg) {
             var commands = this._commandDict[msg.getType()];
             if (!commands)
                 return;
@@ -421,9 +421,9 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          *
          * @param {string} type 要注册的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.mapCommand = function (type, cmd) {
+        Core.prototype.mapCommand = function (type, cmd) {
             var commands = this._commandDict[type];
             if (!commands)
                 this._commandDict[type] = commands = [];
@@ -436,9 +436,9 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          * @param {string} type 要注销的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器
          * @returns {void}
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.unmapCommand = function (type, cmd) {
+        Core.prototype.unmapCommand = function (type, cmd) {
             var commands = this._commandDict[type];
             if (!commands)
                 return;
@@ -447,7 +447,7 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
                 return;
             commands.splice(index, 1);
         };
-        Context.prototype.handleMediators = function (msg) {
+        Core.prototype.handleMediators = function (msg) {
             for (var i = 0, len = this._mediatorList.length; i < len; i++) {
                 var mediator = this._mediatorList[i];
                 // 执行语法糖
@@ -458,9 +458,9 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          * 注册界面中介者
          *
          * @param {IMediator} mediator 要注册的界面中介者实例
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.mapMediator = function (mediator) {
+        Core.prototype.mapMediator = function (mediator) {
             if (this._mediatorList.indexOf(mediator) < 0)
                 this._mediatorList.push(mediator);
         };
@@ -468,28 +468,28 @@ define("core/Context", ["require", "exports", "core/Context", "core/message/Mess
          * 注销界面中介者
          *
          * @param {IMediator} mediator 要注销的界面中介者实例
-         * @memberof Context
+         * @memberof Core
          */
-        Context.prototype.unmapMediator = function (mediator) {
+        Core.prototype.unmapMediator = function (mediator) {
             var index = this._mediatorList.indexOf(mediator);
             if (index >= 0)
                 this._mediatorList.splice(index, 1);
         };
-        return Context;
+        return Core;
     }());
-    exports.Context = Context;
-    /** 导出Context实例 */
-    exports.default = new Context();
+    exports.Core = Core;
+    /** 导出Core实例 */
+    exports.default = new Core();
 });
 define("core/view/IView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("Olympus", ["require", "exports", "core/Context", "core/message/Message", "core/command/Command"], function (require, exports, Context_2, Message_2, Command_1) {
+define("Olympus", ["require", "exports", "core/Core", "core/message/Message", "core/command/Command"], function (require, exports, Core_2, Message_2, Command_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.context = Context_2.default;
-    exports.Context = Context_2.Context;
+    exports.core = Core_2.default;
+    exports.Core = Core_2.Core;
     exports.Message = Message_2.default;
     exports.Command = Command_1.default;
     /**
@@ -497,10 +497,10 @@ define("Olympus", ["require", "exports", "core/Context", "core/message/Message",
      *
      * @param {IConstructor} target 要注入的类型（注意不是实例）
      * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-     * @memberof Context
+     * @memberof Core
      */
     function mapInject(target, type) {
-        Context_2.default.mapInject(target, type);
+        Core_2.default.mapInject(target, type);
     }
     exports.mapInject = mapInject;
     /**
@@ -508,10 +508,10 @@ define("Olympus", ["require", "exports", "core/Context", "core/message/Message",
      *
      * @param {(IConstructor)} type 注入对象的类型
      * @returns {*} 注入的对象实例
-     * @memberof Context
+     * @memberof Core
      */
     function getInject(type) {
-        return Context_2.default.getInject(type);
+        return Core_2.default.getInject(type);
     }
     exports.getInject = getInject;
     /** dispatch方法实现 */
@@ -520,7 +520,7 @@ define("Olympus", ["require", "exports", "core/Context", "core/message/Message",
         for (var _i = 1; _i < arguments.length; _i++) {
             params[_i - 1] = arguments[_i];
         }
-        Context_2.default.dispatch.apply(Context_2.default, arguments);
+        Core_2.default.dispatch.apply(Core_2.default, arguments);
     }
     exports.dispatch = dispatch;
     /**
@@ -529,10 +529,10 @@ define("Olympus", ["require", "exports", "core/Context", "core/message/Message",
      * @param {string} type 消息类型
      * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof Context
+     * @memberof Core
      */
     function listen(type, handler, thisArg) {
-        Context_2.default.listen(type, handler, thisArg);
+        Core_2.default.listen(type, handler, thisArg);
     }
     exports.listen = listen;
     /**
@@ -541,10 +541,10 @@ define("Olympus", ["require", "exports", "core/Context", "core/message/Message",
      * @param {string} type 消息类型
      * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof Context
+     * @memberof Core
      */
     function unlisten(type, handler, thisArg) {
-        Context_2.default.unlisten(type, handler, thisArg);
+        Core_2.default.unlisten(type, handler, thisArg);
     }
     exports.unlisten = unlisten;
     /**
@@ -552,10 +552,10 @@ define("Olympus", ["require", "exports", "core/Context", "core/message/Message",
      *
      * @param {string} type 要注册的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-     * @memberof Context
+     * @memberof Core
      */
     function mapCommand(type, cmd) {
-        Context_2.default.mapCommand(type, cmd);
+        Core_2.default.mapCommand(type, cmd);
     }
     exports.mapCommand = mapCommand;
     /**
@@ -564,10 +564,10 @@ define("Olympus", ["require", "exports", "core/Context", "core/message/Message",
      * @param {string} type 要注销的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器
      * @returns {void}
-     * @memberof Context
+     * @memberof Core
      */
     function unmapCommand(type, cmd) {
-        Context_2.default.unmapCommand(type, cmd);
+        Core_2.default.unmapCommand(type, cmd);
     }
     exports.unmapCommand = unmapCommand;
 });

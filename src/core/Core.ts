@@ -1,6 +1,6 @@
 /// <reference path="./declarations/Inject.ts"/>
 
-import context from "./Context";
+import core from "./Core";
 import IConstructor from "./interfaces/IConstructor"
 import IMessage from "./message/IMessage"
 import Message from "./message/Message"
@@ -15,7 +15,7 @@ import Mediator from "./mediator/Mediator"
  * @create date 2017-08-31
  * @modify date 2017-09-01
  * 
- * Olympus核心上下文模块，负责实现框架内消息转发、对象注入等核心功能
+ * Core模块是Olympus框架的核心模块，负责实现框架内消息转发、对象注入等核心功能
 */
 
 // 修复Array.findIndex会被遍历到的问题
@@ -35,7 +35,7 @@ window["Inject"] = function(cls:IConstructor):PropertyDecorator
     return function(prototype:any, propertyKey:string):PropertyDescriptor
     {
         return {
-            get: ()=>context.getInject(cls)
+            get: ()=>core.getInject(cls)
         };
     };
 };
@@ -47,22 +47,22 @@ window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorat
         // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):void
         {
-            context.mapInject(realCls, params.type);
+            core.mapInject(realCls, params.type);
         } as ClassDecorator;
     }
     else
     {
         // 不需要转换注册类型，直接注册
-        context.mapInject(cls as IConstructor);
+        core.mapInject(cls as IConstructor);
     }
 };
 
 /**
  * 上下文模块内部使用的记录转发数据的接口
  * 
- * @interface IContextMessageData
+ * @interface IMessageData
  */
-interface IContextMessageData
+interface IMessageData
 {
     handler:(msg:IMessage)=>void;
     thisArg:any;
@@ -72,18 +72,18 @@ interface IContextMessageData
  * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
  * 
  * @export
- * @class Context
+ * @class Core
  */
-export class Context
+export class Core
 {
-    private static _instance:Context;
+    private static _instance:Core;
     
     public constructor()
     {
         // 进行单例判断
-        if(Context._instance) throw new Error("已生成过Context实例，不允许多次生成");
+        if(Core._instance) throw new Error("已生成过Core实例，不允许多次生成");
         // 赋值单例
-        Context._instance = this;
+        Core._instance = this;
         // 注入自身
         this.mapInjectValue(this);
     }
@@ -101,16 +101,16 @@ export class Context
 
     /*********************** 下面是内核消息系统 ***********************/
 
-    private _listenerDict:{[type:string]:IContextMessageData[]} = {};
+    private _listenerDict:{[type:string]:IMessageData[]} = {};
 
     private handleMessages(msg:IMessage):void
     {
-        var listeners:IContextMessageData[] = this._listenerDict[msg.getType()];
+        var listeners:IMessageData[] = this._listenerDict[msg.getType()];
         if(listeners)
         {
             for(var i:number = 0, len:number = listeners.length; i < len; i++)
             {
-                var temp:IContextMessageData = listeners[i];
+                var temp:IMessageData = listeners[i];
                 try {
                     // 调用处理函数
                     temp.handler.call(temp.thisArg, msg);
@@ -125,15 +125,15 @@ export class Context
      * 派发内核消息
      * 
      * @param {IMessage} msg 内核消息实例
-     * @memberof Context
+     * @memberof Core
      */
     public dispatch(msg:IMessage):void;
     /**
-     * 派发内核消息，消息会转变为ContextMessage类型对象
+     * 派发内核消息，消息会转变为Message类型对象
      * 
      * @param {string} type 消息类型
      * @param {...any[]} params 消息参数列表
-     * @memberof Context
+     * @memberof Core
      */
     public dispatch(type:string, ...params:any[]):void;
     /** dispatch方法实现 */
@@ -160,18 +160,18 @@ export class Context
      * 监听内核消息
      * 
      * @param {string} type 消息类型
-     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+     * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof Context
+     * @memberof Core
      */
     public listen(type:string, handler:(msg:IMessage)=>void, thisArg?:any):void
     {
-        var listeners:IContextMessageData[] = this._listenerDict[type];
+        var listeners:IMessageData[] = this._listenerDict[type];
         if(!listeners) this._listenerDict[type] = listeners = [];
         // 检查存在性
         for(var i:number = 0, len:number = listeners.length; i < len; i++)
         {
-            var temp:IContextMessageData = listeners[i];
+            var temp:IMessageData = listeners[i];
             // 如果已经存在监听则直接返回
             if(temp.handler == handler && temp.thisArg == thisArg) return;
         }
@@ -183,19 +183,19 @@ export class Context
      * 移除内核消息监听
      * 
      * @param {string} type 消息类型
-     * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+     * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof Context
+     * @memberof Core
      */
     public unlisten(type:string, handler:(msg:IMessage)=>void, thisArg?:any):void
     {
-        var listeners:IContextMessageData[] = this._listenerDict[type];
+        var listeners:IMessageData[] = this._listenerDict[type];
         // 检查存在性
         if(listeners)
         {
             for(var i:number = 0, len:number = listeners.length; i < len; i++)
             {
-                var temp:IContextMessageData = listeners[i];
+                var temp:IMessageData = listeners[i];
                 // 如果已经存在监听则直接返回
                 if(temp.handler == handler && temp.thisArg == thisArg)
                 {
@@ -225,7 +225,7 @@ export class Context
      * 
      * @param {IConstructor} target 要注入的类型（注意不是实例）
      * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-     * @memberof Context
+     * @memberof Core
      */
     public mapInject(target:IConstructor, type?:IConstructor):void
     {
@@ -238,7 +238,7 @@ export class Context
      * 
      * @param {*} value 要注入的对象实例
      * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
-     * @memberof Context
+     * @memberof Core
      */
     public mapInjectValue(value:any, type?:IConstructor):void
     {
@@ -250,7 +250,7 @@ export class Context
      * 移除类型注入
      * 
      * @param {IConstructor} target 要移除注入的类型
-     * @memberof Context
+     * @memberof Core
      */
     public unmapInject(target:IConstructor):void
     {
@@ -263,7 +263,7 @@ export class Context
      * 
      * @param {(IConstructor)} type 注入对象的类型
      * @returns {*} 注入的对象实例
-     * @memberof Context
+     * @memberof Core
      */
     public getInject(type:IConstructor):any
     {
@@ -296,7 +296,7 @@ export class Context
      * 
      * @param {string} type 要注册的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-     * @memberof Context
+     * @memberof Core
      */
     public mapCommand(type:string, cmd:ICommandConstructor):void
     {
@@ -311,7 +311,7 @@ export class Context
      * @param {string} type 要注销的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器
      * @returns {void} 
-     * @memberof Context
+     * @memberof Core
      */
     public unmapCommand(type:string, cmd:ICommandConstructor):void
     {
@@ -340,7 +340,7 @@ export class Context
      * 注册界面中介者
      * 
      * @param {IMediator} mediator 要注册的界面中介者实例
-     * @memberof Context
+     * @memberof Core
      */
     public mapMediator(mediator:IMediator):void
     {
@@ -352,7 +352,7 @@ export class Context
      * 注销界面中介者
      * 
      * @param {IMediator} mediator 要注销的界面中介者实例
-     * @memberof Context
+     * @memberof Core
      */
     public unmapMediator(mediator:IMediator):void
     {
@@ -361,5 +361,5 @@ export class Context
     }
 }
 
-/** 导出Context实例 */
-export default new Context();
+/** 导出Core实例 */
+export default new Core();

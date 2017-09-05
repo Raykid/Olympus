@@ -1,4 +1,4 @@
-import context, {Context} from "core/Context"
+import core, {Core} from "core/Core"
 import IConstructor from "core/interfaces/IConstructor"
 import IView from "core/view/IView"
 import IMessage from "core/message/IMessage"
@@ -11,11 +11,11 @@ import Command from "core/command/Command"
  * 
  * @param {IConstructor} target 要注入的类型（注意不是实例）
  * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
- * @memberof Context
+ * @memberof Core
  */
 export function mapInject(target:IConstructor, type?:IConstructor):void
 {
-    context.mapInject(target, type);
+    core.mapInject(target, type);
 }
 
 /**
@@ -23,11 +23,11 @@ export function mapInject(target:IConstructor, type?:IConstructor):void
  * 
  * @param {(IConstructor)} type 注入对象的类型
  * @returns {*} 注入的对象实例
- * @memberof Context
+ * @memberof Core
  */
 export function getInject(type:IConstructor):any
 {
-    return context.getInject(type);
+    return core.getInject(type);
 }
 
 /**
@@ -43,21 +43,21 @@ export function getInject(type:IConstructor):any
  * 派发内核消息
  * 
  * @param {IMessage} msg 内核消息实例
- * @memberof Context
+ * @memberof Core
  */
 export function dispatch(msg:IMessage):void;
 /**
- * 派发内核消息，消息会转变为ContextMessage类型对象
+ * 派发内核消息，消息会转变为Message类型对象
  * 
  * @param {string} type 消息类型
  * @param {...any[]} params 消息参数列表
- * @memberof Context
+ * @memberof Core
  */
 export function dispatch(type:string, ...params:any[]):void;
 /** dispatch方法实现 */
 export function dispatch(typeOrMsg:string|IMessage, ...params:any[]):void
 {
-    context.dispatch.apply(context, arguments);
+    core.dispatch.apply(core, arguments);
 }
 
 /**
@@ -66,11 +66,11 @@ export function dispatch(typeOrMsg:string|IMessage, ...params:any[]):void
  * @param {string} type 消息类型
  * @param {(msg:IMessage)=>void} handler 消息处理函数
  * @param {*} [thisArg] 消息this指向
- * @memberof Context
+ * @memberof Core
  */
 export function listen(type:string, handler:(msg:IMessage)=>void, thisArg?:any):void
 {
-    context.listen(type, handler, thisArg);
+    core.listen(type, handler, thisArg);
 }
 
 /**
@@ -79,11 +79,11 @@ export function listen(type:string, handler:(msg:IMessage)=>void, thisArg?:any):
  * @param {string} type 消息类型
  * @param {(msg:IMessage)=>void} handler 消息处理函数
  * @param {*} [thisArg] 消息this指向
- * @memberof Context
+ * @memberof Core
  */
 export function unlisten(type:string, handler:(msg:IMessage)=>void, thisArg?:any):void
 {
-    context.unlisten(type, handler, thisArg);
+    core.unlisten(type, handler, thisArg);
 }
 
 /**
@@ -91,11 +91,11 @@ export function unlisten(type:string, handler:(msg:IMessage)=>void, thisArg?:any
  * 
  * @param {string} type 要注册的消息类型
  * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
- * @memberof Context
+ * @memberof Core
  */
 export function mapCommand(type:string, cmd:ICommandConstructor):void
 {
-    context.mapCommand(type, cmd);
+    core.mapCommand(type, cmd);
 }
 
 /**
@@ -104,17 +104,17 @@ export function mapCommand(type:string, cmd:ICommandConstructor):void
  * @param {string} type 要注销的消息类型
  * @param {(ICommandConstructor)} cmd 命令处理器
  * @returns {void} 
- * @memberof Context
+ * @memberof Core
  */
 export function unmapCommand(type:string, cmd:ICommandConstructor):void
 {
-    context.unmapCommand(type, cmd);
+    core.unmapCommand(type, cmd);
 }
 
 /** 导出常用的对象 */
 export {
-    context,
-    Context,
+    core,
+    Core,
     IConstructor,
     IView,
     IMessage,

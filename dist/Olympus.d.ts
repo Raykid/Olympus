@@ -42,7 +42,7 @@ declare module "core/message/IMessage" {
          * 获取消息类型
          *
          * @returns {string} 消息类型
-         * @memberof IContextMessage
+         * @memberof IMessage
          */
         getType(): string;
     }
@@ -64,14 +64,14 @@ declare module "core/message/Message" {
          * 消息参数列表
          *
          * @type {any[]}
-         * @memberof ContextMessage
+         * @memberof Message
          */
         params: any[];
         /**
-         * Creates an instance of ContextMessage.
+         * Creates an instance of Message.
          * @param {string} type 消息类型
          * @param {...any[]} params 可能的消息参数列表
-         * @memberof ContextMessage
+         * @memberof Message
          */
         constructor(type: string, ...params: any[]);
     }
@@ -258,7 +258,7 @@ declare module "core/mediator/Mediator" {
         dispose(): void;
     }
 }
-declare module "core/Context" {
+declare module "core/Core" {
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
@@ -267,9 +267,9 @@ declare module "core/Context" {
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
      * @export
-     * @class Context
+     * @class Core
      */
-    export class Context {
+    export class Core {
         private static _instance;
         constructor();
         /*********************** 内核消息语法糖处理逻辑 ***********************/
@@ -282,33 +282,33 @@ declare module "core/Context" {
          * 派发内核消息
          *
          * @param {IMessage} msg 内核消息实例
-         * @memberof Context
+         * @memberof Core
          */
         dispatch(msg: IMessage): void;
         /**
-         * 派发内核消息，消息会转变为ContextMessage类型对象
+         * 派发内核消息，消息会转变为Message类型对象
          *
          * @param {string} type 消息类型
          * @param {...any[]} params 消息参数列表
-         * @memberof Context
+         * @memberof Core
          */
         dispatch(type: string, ...params: any[]): void;
         /**
          * 监听内核消息
          *
          * @param {string} type 消息类型
-         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+         * @param {(msg:IMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof Context
+         * @memberof Core
          */
         listen(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
         /**
          * 移除内核消息监听
          *
          * @param {string} type 消息类型
-         * @param {(msg:IContextMessage)=>void} handler 消息处理函数
+         * @param {(msg:IMessage)=>void} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof Context
+         * @memberof Core
          */
         unlisten(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
         /*********************** 下面是依赖注入系统 ***********************/
@@ -319,7 +319,7 @@ declare module "core/Context" {
          *
          * @param {IConstructor} target 要注入的类型（注意不是实例）
          * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-         * @memberof Context
+         * @memberof Core
          */
         mapInject(target: IConstructor, type?: IConstructor): void;
         /**
@@ -327,14 +327,14 @@ declare module "core/Context" {
          *
          * @param {*} value 要注入的对象实例
          * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
-         * @memberof Context
+         * @memberof Core
          */
         mapInjectValue(value: any, type?: IConstructor): void;
         /**
          * 移除类型注入
          *
          * @param {IConstructor} target 要移除注入的类型
-         * @memberof Context
+         * @memberof Core
          */
         unmapInject(target: IConstructor): void;
         /**
@@ -342,7 +342,7 @@ declare module "core/Context" {
          *
          * @param {(IConstructor)} type 注入对象的类型
          * @returns {*} 注入的对象实例
-         * @memberof Context
+         * @memberof Core
          */
         getInject(type: IConstructor): any;
         /*********************** 下面是内核命令系统 ***********************/
@@ -353,7 +353,7 @@ declare module "core/Context" {
          *
          * @param {string} type 要注册的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof Context
+         * @memberof Core
          */
         mapCommand(type: string, cmd: ICommandConstructor): void;
         /**
@@ -362,7 +362,7 @@ declare module "core/Context" {
          * @param {string} type 要注销的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器
          * @returns {void}
-         * @memberof Context
+         * @memberof Core
          */
         unmapCommand(type: string, cmd: ICommandConstructor): void;
         /*********************** 下面是界面中介者系统 ***********************/
@@ -372,18 +372,18 @@ declare module "core/Context" {
          * 注册界面中介者
          *
          * @param {IMediator} mediator 要注册的界面中介者实例
-         * @memberof Context
+         * @memberof Core
          */
         mapMediator(mediator: IMediator): void;
         /**
          * 注销界面中介者
          *
          * @param {IMediator} mediator 要注销的界面中介者实例
-         * @memberof Context
+         * @memberof Core
          */
         unmapMediator(mediator: IMediator): void;
     }
-    const _default: Context;
+    const _default: Core;
     export default _default;
 }
 declare module "core/view/IView" {
@@ -414,7 +414,7 @@ declare module "core/view/IView" {
     }
 }
 declare module "Olympus" {
-    import context, { Context } from "core/Context";
+    import core, { Core } from "core/Core";
     import IConstructor from "core/interfaces/IConstructor";
     import IView from "core/view/IView";
     import IMessage from "core/message/IMessage";
@@ -426,7 +426,7 @@ declare module "Olympus" {
      *
      * @param {IConstructor} target 要注入的类型（注意不是实例）
      * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-     * @memberof Context
+     * @memberof Core
      */
     export function mapInject(target: IConstructor, type?: IConstructor): void;
     /**
@@ -434,7 +434,7 @@ declare module "Olympus" {
      *
      * @param {(IConstructor)} type 注入对象的类型
      * @returns {*} 注入的对象实例
-     * @memberof Context
+     * @memberof Core
      */
     export function getInject(type: IConstructor): any;
     /**
@@ -449,15 +449,15 @@ declare module "Olympus" {
      * 派发内核消息
      *
      * @param {IMessage} msg 内核消息实例
-     * @memberof Context
+     * @memberof Core
      */
     export function dispatch(msg: IMessage): void;
     /**
-     * 派发内核消息，消息会转变为ContextMessage类型对象
+     * 派发内核消息，消息会转变为Message类型对象
      *
      * @param {string} type 消息类型
      * @param {...any[]} params 消息参数列表
-     * @memberof Context
+     * @memberof Core
      */
     export function dispatch(type: string, ...params: any[]): void;
     /**
@@ -466,7 +466,7 @@ declare module "Olympus" {
      * @param {string} type 消息类型
      * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof Context
+     * @memberof Core
      */
     export function listen(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
     /**
@@ -475,7 +475,7 @@ declare module "Olympus" {
      * @param {string} type 消息类型
      * @param {(msg:IMessage)=>void} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof Context
+     * @memberof Core
      */
     export function unlisten(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
     /**
@@ -483,7 +483,7 @@ declare module "Olympus" {
      *
      * @param {string} type 要注册的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-     * @memberof Context
+     * @memberof Core
      */
     export function mapCommand(type: string, cmd: ICommandConstructor): void;
     /**
@@ -492,9 +492,9 @@ declare module "Olympus" {
      * @param {string} type 要注销的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器
      * @returns {void}
-     * @memberof Context
+     * @memberof Core
      */
     export function unmapCommand(type: string, cmd: ICommandConstructor): void;
     /** 导出常用的对象 */
-    export { context, Context, IConstructor, IView, IMessage, Message, ICommandConstructor, Command };
+    export { core, Core, IConstructor, IView, IMessage, Message, ICommandConstructor, Command };
 }

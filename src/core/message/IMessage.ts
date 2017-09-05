@@ -12,7 +12,7 @@ export default interface IMessage
      * 获取消息类型
      * 
      * @returns {string} 消息类型
-     * @memberof IContextMessage
+     * @memberof IMessage
      */
     getType():string;
 }
