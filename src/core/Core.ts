@@ -16,8 +16,8 @@ import IView from "./view/IView"
  * @create date 2017-08-31
  * @modify date 2017-09-01
  * 
- * Core模组是Olympus框架的核心模块，负责实现框架内消息转发、对象注入等核心功能
- * COre模组是一切其他模组实现的基础和围绕的核心
+ * Core模组是Olympus框架的核心模组，负责实现框架内消息转发、对象注入等核心功能
+ * Core模组是一切其他模组实现的基础和围绕的核心
 */
 
 // 修复Array.findIndex会被遍历到的问题
