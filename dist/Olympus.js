@@ -639,6 +639,45 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
     }());
     exports.default = Explorer;
 });
+define("env/external/External", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * External类为window.external参数字典包装类
+    */
+    var External = (function () {
+        function External() {
+            this._params = {};
+            // 处理window.external
+            try {
+                if (!(window.external && typeof window.external === "object")) {
+                    window.external = {};
+                }
+            }
+            catch (err) {
+                window.external = {};
+            }
+            this._params = window.external;
+        }
+        /**
+         * 获取window.external中的参数
+         *
+         * @param {string} key 参数名
+         * @returns {*} 参数值
+         * @memberof External
+         */
+        External.prototype.getParam = function (key) {
+            return this._params[key];
+        };
+        return External;
+    }());
+    exports.default = External;
+});
 define("env/query/Query", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -684,51 +723,121 @@ define("env/query/Query", ["require", "exports"], function (require, exports) {
     }());
     exports.default = Query;
 });
-define("env/external/External", ["require", "exports"], function (require, exports) {
+define("env/hash/Hash", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
      *
-     * External类为window.external参数字典包装类
+     * Hash类是地址路由（网页哈希）管理器，规定哈希格式为：#[模块名]?[参数名]=[参数值]&[参数名]=[参数值]&...
     */
-    var External = (function () {
-        function External() {
+    var Hash = (function () {
+        function Hash() {
             this._params = {};
-            // 处理window.external
-            try {
-                if (!(window.external && typeof window.external === "object")) {
-                    window.external = {};
+            this._direct = false;
+            this._keepHash = false;
+            this._hash = window.location.hash;
+            var reg = /#([^\?&]+)(\?([^\?&=]+=[^\?&=]+)(&([^\?&=]+=[^\?&=]+))*)?/;
+            var result = reg.exec(this._hash);
+            if (result) {
+                // 解析模块名称
+                this._moduleName = result[1];
+                // 解析模块参数
+                var paramsStr = result[2];
+                if (paramsStr != null) {
+                    paramsStr = paramsStr.substr(1);
+                    var params = paramsStr.split("&");
+                    for (var i = 0, len = params.length; i < len; i++) {
+                        var pair = params[i];
+                        if (pair != null) {
+                            var temp = pair.split("=");
+                            // 键和值都要做一次URL解码
+                            var key = decodeURIComponent(temp[0]);
+                            var value = decodeURIComponent(temp[1]);
+                            this._params[key] = value;
+                        }
+                    }
                 }
+                // 处理direct参数
+                this._direct = (this._params.direct == "true");
+                delete this._params.direct;
+                // 处理keepHash参数
+                this._keepHash = (this._params.keepHash == "true");
+                delete this._params.keepHash;
+                // 如果keepHash不是true，则移除哈希值
+                if (!this._keepHash)
+                    window.location.hash = "";
             }
-            catch (err) {
-                window.external = {};
-            }
-            this._params = window.external;
         }
         /**
-         * 获取window.external中的参数
+         * 获取原始的哈希字符串
+         *
+         * @returns {string}
+         * @memberof Hash
+         */
+        Hash.prototype.getHash = function () {
+            return this._hash;
+        };
+        /**
+         * 获取模块名
+         *
+         * @returns {string} 模块名
+         * @memberof Hash
+         */
+        Hash.prototype.getModuleName = function () {
+            return this._moduleName;
+        };
+        /**
+         * 获取传递给模块的参数
+         *
+         * @returns {{[key:string]:string}} 模块参数
+         * @memberof Hash
+         */
+        Hash.prototype.getParams = function () {
+            return this._params;
+        };
+        /**
+         * 获取是否直接跳转模块
+         *
+         * @returns {boolean} 是否直接跳转模块
+         * @memberof Hash
+         */
+        Hash.prototype.getDirect = function () {
+            return this._direct;
+        };
+        /**
+         * 获取是否保持哈希值
+         *
+         * @returns {boolean} 是否保持哈希值
+         * @memberof Hash
+         */
+        Hash.prototype.getKeepHash = function () {
+            return this._keepHash;
+        };
+        /**
+         * 获取指定哈希参数
          *
          * @param {string} key 参数名
-         * @returns {*} 参数值
-         * @memberof External
+         * @returns {string} 参数值
+         * @memberof Hash
          */
-        External.prototype.getParam = function (key) {
+        Hash.prototype.getParam = function (key) {
             return this._params[key];
         };
-        return External;
+        return Hash;
     }());
-    exports.default = External;
+    exports.default = Hash;
 });
-define("env/Env", ["require", "exports", "core/Core", "env/explorer/Explorer", "env/query/Query", "env/external/External"], function (require, exports, Core_2, Explorer_1, Query_1, External_1) {
+define("env/Env", ["require", "exports", "core/Core", "env/explorer/Explorer", "env/external/External", "env/query/Query", "env/hash/Hash"], function (require, exports, Core_2, Explorer_1, External_1, Query_1, Hash_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Explorer = Explorer_1.default;
-    exports.Query = Query_1.default;
     exports.External = External_1.default;
+    exports.Query = Query_1.default;
+    exports.Hash = Hash_1.default;
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -739,8 +848,9 @@ define("env/Env", ["require", "exports", "core/Core", "env/explorer/Explorer", "
     */
     // 注入
     Core_2.default.mapInject(Explorer_1.default);
-    Core_2.default.mapInject(Query_1.default);
     Core_2.default.mapInject(External_1.default);
+    Core_2.default.mapInject(Query_1.default);
+    Core_2.default.mapInject(Hash_1.default);
 });
 define("Olympus", ["require", "exports", "core/Core", "env/Env"], function (require, exports, Core_3, Env_1) {
     "use strict";

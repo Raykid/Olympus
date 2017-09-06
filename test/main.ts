@@ -43,6 +43,9 @@ class Fuck2
 
     @Inject(Olympus.External)
     public external:Olympus.External;
+
+    @Inject(Olympus.Hash)
+    public hash:Olympus.Hash;
 }
 
 var fuck2:Fuck2 = new Fuck2();

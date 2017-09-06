@@ -50,6 +50,9 @@ define("main", ["require", "exports", "Olympus"], function (require, exports, Ol
         __decorate([
             Inject(Olympus.External)
         ], Fuck2.prototype, "external", void 0);
+        __decorate([
+            Inject(Olympus.Hash)
+        ], Fuck2.prototype, "hash", void 0);
         return Fuck2;
     }());
     var fuck2 = new Fuck2();

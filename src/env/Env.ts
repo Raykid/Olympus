@@ -1,7 +1,8 @@
 import core from "../core/Core"
 import Explorer from "./explorer/Explorer"
-import Query from "./query/Query"
 import External from "./external/External"
+import Query from "./query/Query"
+import Hash from "./hash/Hash"
 
 /**
  * @author Raykid
@@ -13,7 +14,8 @@ import External from "./external/External"
 */
 // 注入
 core.mapInject(Explorer);
-core.mapInject(Query);
 core.mapInject(External);
+core.mapInject(Query);
+core.mapInject(Hash);
 // 导出
-export {Explorer, Query, External}
+export {Explorer, Query, External, Hash}

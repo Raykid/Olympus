@@ -485,28 +485,6 @@ declare module "env/explorer/Explorer" {
         constructor();
     }
 }
-declare module "env/query/Query" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * Query类记录通过GET参数传递给框架的参数字典
-    */
-    export default class Query {
-        private _params;
-        constructor();
-        /**
-         * 获取GET参数
-         *
-         * @param {string} key 参数key
-         * @returns {string} 参数值
-         * @memberof Query
-         */
-        getParam(key: string): string;
-    }
-}
 declare module "env/external/External" {
     /**
      * @author Raykid
@@ -529,11 +507,97 @@ declare module "env/external/External" {
         getParam(key: string): any;
     }
 }
+declare module "env/query/Query" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Query类记录通过GET参数传递给框架的参数字典
+    */
+    export default class Query {
+        private _params;
+        constructor();
+        /**
+         * 获取GET参数
+         *
+         * @param {string} key 参数key
+         * @returns {string} 参数值
+         * @memberof Query
+         */
+        getParam(key: string): string;
+    }
+}
+declare module "env/hash/Hash" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * Hash类是地址路由（网页哈希）管理器，规定哈希格式为：#[模块名]?[参数名]=[参数值]&[参数名]=[参数值]&...
+    */
+    export default class Hash {
+        private _hash;
+        /**
+         * 获取原始的哈希字符串
+         *
+         * @returns {string}
+         * @memberof Hash
+         */
+        getHash(): string;
+        private _moduleName;
+        /**
+         * 获取模块名
+         *
+         * @returns {string} 模块名
+         * @memberof Hash
+         */
+        getModuleName(): string;
+        private _params;
+        /**
+         * 获取传递给模块的参数
+         *
+         * @returns {{[key:string]:string}} 模块参数
+         * @memberof Hash
+         */
+        getParams(): {
+            [key: string]: string;
+        };
+        private _direct;
+        /**
+         * 获取是否直接跳转模块
+         *
+         * @returns {boolean} 是否直接跳转模块
+         * @memberof Hash
+         */
+        getDirect(): boolean;
+        private _keepHash;
+        /**
+         * 获取是否保持哈希值
+         *
+         * @returns {boolean} 是否保持哈希值
+         * @memberof Hash
+         */
+        getKeepHash(): boolean;
+        constructor();
+        /**
+         * 获取指定哈希参数
+         *
+         * @param {string} key 参数名
+         * @returns {string} 参数值
+         * @memberof Hash
+         */
+        getParam(key: string): string;
+    }
+}
 declare module "env/Env" {
     import Explorer from "env/explorer/Explorer";
-    import Query from "env/query/Query";
     import External from "env/external/External";
-    export { Explorer, Query, External };
+    import Query from "env/query/Query";
+    import Hash from "env/hash/Hash";
+    export { Explorer, Query, External, Hash };
 }
 declare module "Olympus" {
     import core, { Core, IConstructor, IMessage, Message, ICommandConstructor, Command, IView } from "core/Core";
