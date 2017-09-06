@@ -371,6 +371,27 @@ declare module "core/Core" {
     /** 再额外导出一个core单例 */
     export const core: Core;
 }
+declare module "engine/system/System" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
+    */
+    export default class System {
+        private _timer;
+        /**
+         * 获取从程序运行到当前所经过的毫秒数
+         *
+         * @returns {number} 毫秒数
+         * @memberof System
+         */
+        getTimer(): number;
+        constructor();
+    }
+}
 declare module "engine/popup/IPopupPolicy" {
     import IPopup from "engine/popup/IPopup";
     /**
@@ -522,7 +543,6 @@ declare module "engine/popup/PopupManager" {
      * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
     */
     export default class PopupManager {
-        private _core;
         private _popups;
         /**
          * 获取当前显示的弹窗数组（副本）
@@ -736,7 +756,7 @@ declare module "env/hash/Hash" {
 }
 declare module "env/Env" {
 }
-declare module "view/IView" {
+declare module "view/IFrameworkView" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -745,7 +765,7 @@ declare module "view/IView" {
      *
      * 这是表现层接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
     */
-    export default interface IView {
+    export default interface IFrameworkView {
         /**
          * 获取表现层类型名称
          * @return {string} 一个字符串，代表表现层类型名称
@@ -763,15 +783,53 @@ declare module "view/IView" {
         initView(complete: () => void): void;
     }
 }
-declare module "view/View" {
+declare module "view/ViewMessage" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-09-06
      * @modify date 2017-09-06
      *
-     * View是表现层模组，用来管理所有表现层对象
+     * 表现层消息
     */
+    export default class ViewMessage {
+        /**
+         * 初始化表现层实例前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static VIEW_BEFORE_INIT: string;
+        /**
+         * 初始化表现层实例后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static VIEW_AFTER_INIT: string;
+        /**
+         * 所有表现层实例都初始化完毕的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static VIEW_ALL_INIT: string;
+    }
+}
+declare module "view/View" {
+    import IFrameworkView from "view/IFrameworkView";
     export default class View {
+        private _viewDict;
+        /**
+         * 添加一个表现层实例到框架中
+         *
+         * @param {IFrameworkView} view
+         * @memberof View
+         */
+        addView(view: IFrameworkView): void;
+        private testAllInit();
     }
 }

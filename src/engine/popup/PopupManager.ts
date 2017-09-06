@@ -1,4 +1,4 @@
-import Core from "../../core/Core"
+import {core} from "../../core/Core"
 import IConstructor from "../../core/interfaces/IConstructor"
 import IPopup from "./IPopup"
 import IPopupPolicy from "./IPopupPolicy"
@@ -16,9 +16,6 @@ import PopupMessage from "./PopupMessage"
 @Injectable
 export default class PopupManager
 {
-    @Inject(Core)
-    private _core:Core;
-
     private _popups:IPopup[] = [];
 
     /**
@@ -50,13 +47,13 @@ export default class PopupManager
             var policy:IPopupPolicy = popup.getPolicy();
             if(policy == null) policy = none;
             // 派发消息
-            this._core.dispatch(PopupMessage.POPUP_BEFORE_OPEN, popup, isModel, from);
+            core.dispatch(PopupMessage.POPUP_BEFORE_OPEN, popup, isModel, from);
             // 调用回调
             popup.onBeforeOpen(isModel, from);
             // 调用策略接口
             policy.open(popup, ()=>{
                 // 派发消息
-                this._core.dispatch(PopupMessage.POPUP_AFTER_OPEN, popup, isModel, from);
+                core.dispatch(PopupMessage.POPUP_AFTER_OPEN, popup, isModel, from);
                 // 调用回调
                 popup.onAfterOpen(isModel, from);
             }, from);
@@ -80,13 +77,13 @@ export default class PopupManager
             var policy:IPopupPolicy = popup.getPolicy();
             if(policy == null) policy = none;
             // 派发消息
-            this._core.dispatch(PopupMessage.POPUP_BEFORE_CLOSE, popup, to);
+            core.dispatch(PopupMessage.POPUP_BEFORE_CLOSE, popup, to);
             // 调用回调
             popup.onBeforeClose(to);
             // 调用策略接口
             policy.close(popup, ()=>{
                 // 派发消息
-                this._core.dispatch(PopupMessage.POPUP_AFTER_CLOSE, popup, to);
+                core.dispatch(PopupMessage.POPUP_AFTER_CLOSE, popup, to);
                 // 调用回调
                 popup.onAfterClose(to);
             }, to);

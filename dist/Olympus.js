@@ -445,6 +445,56 @@ define("core/Core", ["require", "exports", "core/message/Message"], function (re
     /** 再额外导出一个core单例 */
     exports.core = global.Inject.getInject(Core);
 });
+define("engine/system/System", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
+    */
+    var System = (function () {
+        function System() {
+            this._timer = 0;
+            var self = this;
+            try {
+                requestAnimationFrame(onRequestAnimationFrame);
+            }
+            catch (err) {
+                // 如果不支持requestAnimationFrame则改用setTimeout计时，延迟时间1000/60毫秒
+                var startTime = Date.now();
+                setInterval(function () {
+                    var curTime = Date.now();
+                    // 赋值timer
+                    self._timer = curTime - startTime;
+                }, 1000 / 60);
+            }
+            function onRequestAnimationFrame(timer) {
+                // 赋值timer，这个方法里无法获取this，因此需要通过注入的静态属性取到自身实例
+                self._timer = timer;
+                // 计划下一次执行
+                requestAnimationFrame(onRequestAnimationFrame);
+            }
+        }
+        /**
+         * 获取从程序运行到当前所经过的毫秒数
+         *
+         * @returns {number} 毫秒数
+         * @memberof System
+         */
+        System.prototype.getTimer = function () {
+            return this._timer;
+        };
+        System = __decorate([
+            Injectable
+        ], System);
+        return System;
+    }());
+    exports.default = System;
+});
 define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -567,20 +617,19 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
          * @memberof PopupManager
          */
         PopupManager.prototype.open = function (popup, isModel, from) {
-            var _this = this;
             if (isModel === void 0) { isModel = true; }
             if (this._popups.indexOf(popup) < 0) {
                 var policy = popup.getPolicy();
                 if (policy == null)
                     policy = NonePopupPolicy_1.default;
                 // 派发消息
-                this._core.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
+                Core_2.core.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
                 // 调用回调
                 popup.onBeforeOpen(isModel, from);
                 // 调用策略接口
                 policy.open(popup, function () {
                     // 派发消息
-                    _this._core.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
+                    Core_2.core.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
                     // 调用回调
                     popup.onAfterOpen(isModel, from);
                 }, from);
@@ -596,29 +645,25 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
          * @memberof PopupManager
          */
         PopupManager.prototype.close = function (popup, to) {
-            var _this = this;
             var index = this._popups.indexOf(popup);
             if (index >= 0) {
                 var policy = popup.getPolicy();
                 if (policy == null)
                     policy = NonePopupPolicy_1.default;
                 // 派发消息
-                this._core.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
+                Core_2.core.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
                 // 调用回调
                 popup.onBeforeClose(to);
                 // 调用策略接口
                 policy.close(popup, function () {
                     // 派发消息
-                    _this._core.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
+                    Core_2.core.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
                     // 调用回调
                     popup.onAfterClose(to);
                 }, to);
             }
             return popup;
         };
-        __decorate([
-            Inject(Core_2.default)
-        ], PopupManager.prototype, "_core", void 0);
         PopupManager = __decorate([
             Injectable
         ], PopupManager);
@@ -1006,11 +1051,11 @@ define("env/Env", ["require", "exports"], function (require, exports) {
  * Env模组是Olympus框架用来集成与运行时环境相关的部分，如浏览器环境、开发环境、运行时参数等
  * 这个模组没有什么逻辑，都是保存了各种静态数据，因此仅仅把各个部分集中起来方便编译
 */ 
-define("view/IView", ["require", "exports"], function (require, exports) {
+define("view/IFrameworkView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("view/View", ["require", "exports"], function (require, exports) {
+define("view/ViewMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1019,11 +1064,73 @@ define("view/View", ["require", "exports"], function (require, exports) {
      * @create date 2017-09-06
      * @modify date 2017-09-06
      *
-     * View是表现层模组，用来管理所有表现层对象
+     * 表现层消息
     */
+    var ViewMessage = (function () {
+        function ViewMessage() {
+        }
+        /**
+         * 初始化表现层实例前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        ViewMessage.VIEW_BEFORE_INIT = "viewBeforeInit";
+        /**
+         * 初始化表现层实例后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        ViewMessage.VIEW_AFTER_INIT = "viewAfterInit";
+        /**
+         * 所有表现层实例都初始化完毕的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        ViewMessage.VIEW_ALL_INIT = "viewAllInit";
+        return ViewMessage;
+    }());
+    exports.default = ViewMessage;
+});
+define("view/View", ["require", "exports", "core/Core", "view/ViewMessage"], function (require, exports, Core_3, ViewMessage_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var View = (function () {
         function View() {
+            this._viewDict = {};
         }
+        /**
+         * 添加一个表现层实例到框架中
+         *
+         * @param {IFrameworkView} view
+         * @memberof View
+         */
+        View.prototype.addView = function (view) {
+            var _this = this;
+            var type = view.getType();
+            if (!this._viewDict[type]) {
+                var data = { view: view, inited: false };
+                this._viewDict[type] = data;
+                // 派发消息
+                Core_3.core.dispatch(ViewMessage_1.default.VIEW_BEFORE_INIT, view);
+                // 初始化该表现层实例
+                view.initView(function () {
+                    // 派发消息
+                    Core_3.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
+                    // 设置初始化完毕属性
+                    data.inited = true;
+                    // 测试是否全部初始化完毕
+                    _this.testAllInit();
+                });
+            }
+        };
+        View.prototype.testAllInit = function () {
+        };
         View = __decorate([
             Injectable
         ], View);

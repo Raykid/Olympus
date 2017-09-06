@@ -8,6 +8,7 @@ import Query from "env/query/Query"
 import External from "env/external/External"
 import Hash from "env/hash/Hash"
 import PopupManager from "engine/popup/PopupManager"
+import System from "engine/system/System"
 
 /**
  * @author Raykid
@@ -59,6 +60,9 @@ class Fuck2
 
     @Inject(PopupManager)
     public popupManager:PopupManager;
+
+    @Inject(System)
+    public system:System;
 }
 
 var fuck2:Fuck2 = new Fuck2();
