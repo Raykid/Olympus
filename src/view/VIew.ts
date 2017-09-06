@@ -1,4 +1,3 @@
-import core from "../core/Core"
 import IView from "./IView"
 
 /**

@@ -5,7 +5,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path="../dist/Olympus.d.ts"/>
-define("main", ["require", "exports", "core/Core", "view/View", "env/Env", "engine/Engine"], function (require, exports, Core_1, View_1, Env_1, Engine_1) {
+define("main", ["require", "exports", "core/Core", "view/View", "env/explorer/Explorer", "env/query/Query", "env/external/External", "env/hash/Hash", "engine/popup/PopupManager"], function (require, exports, Core_1, View_1, Explorer_1, Query_1, External_1, Hash_1, PopupManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -16,16 +16,17 @@ define("main", ["require", "exports", "core/Core", "view/View", "env/Env", "engi
      *
      * 测试项目
     */
-    Core_1.default.listen("fuck", handler, "this");
-    Core_1.default.dispatch("fuck");
+    var core = global.Inject.getInject(Core_1.default);
+    core.listen("fuck", handler, "this");
+    core.dispatch("fuck");
     function handler(msg) {
-        Core_1.default.unlisten("fuck", handler, this);
+        core.unlisten("fuck", handler, this);
     }
     var Fuck = (function () {
         function Fuck() {
         }
         __decorate([
-            Inject(Core_1.Core)
+            Inject(Core_1.default)
         ], Fuck.prototype, "core", void 0);
         Fuck = __decorate([
             Injectable
@@ -39,25 +40,25 @@ define("main", ["require", "exports", "core/Core", "view/View", "env/Env", "engi
             Inject(Fuck)
         ], Fuck2.prototype, "fuck", void 0);
         __decorate([
-            Inject(Core_1.Core)
+            Inject(Core_1.default)
         ], Fuck2.prototype, "core", void 0);
         __decorate([
             Inject(View_1.default)
         ], Fuck2.prototype, "view", void 0);
         __decorate([
-            Inject(Env_1.Explorer)
+            Inject(Explorer_1.default)
         ], Fuck2.prototype, "explorer", void 0);
         __decorate([
-            Inject(Env_1.Query)
+            Inject(Query_1.default)
         ], Fuck2.prototype, "query", void 0);
         __decorate([
-            Inject(Env_1.External)
+            Inject(External_1.default)
         ], Fuck2.prototype, "external", void 0);
         __decorate([
-            Inject(Env_1.Hash)
+            Inject(Hash_1.default)
         ], Fuck2.prototype, "hash", void 0);
         __decorate([
-            Inject(Engine_1.PopupManager)
+            Inject(PopupManager_1.default)
         ], Fuck2.prototype, "popupManager", void 0);
         return Fuck2;
     }());

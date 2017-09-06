@@ -198,139 +198,11 @@ define("core/mediator/IMediator", ["require", "exports"], function (require, exp
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("core/mediator/Mediator", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-04
-     * @modify date 2017-09-04
-     *
-     * 界面中介者基类，不能直接继承使用该基类，而需要继承不同表现层提供的中介者类
-    */
-    var Mediator = (function () {
-        function Mediator(skin) {
-            this._isDestroyed = false;
-            this._listeners = [];
-            if (skin)
-                this.setSkin(skin);
-        }
-        /**
-         * 获取中介者是否已被销毁
-         *
-         * @returns {boolean} 是否已被销毁
-         * @memberof Mediator
-         */
-        Mediator.prototype.isDisposed = function () {
-            return this._isDestroyed;
-        };
-        /**
-         * 获取皮肤
-         *
-         * @returns {*} 皮肤引用
-         * @memberof Mediator
-         */
-        Mediator.prototype.getSkin = function () {
-            return this._skin;
-        };
-        /**
-         * 设置皮肤
-         *
-         * @param {*} value 皮肤引用
-         * @memberof Mediator
-         */
-        Mediator.prototype.setSkin = function (value) {
-            this._skin = value;
-        };
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        Mediator.prototype.mapListener = function (target, type, handler, thisArg) {
-            for (var i = 0, len = this._listeners.length; i < len; i++) {
-                var data = this._listeners[i];
-                if (data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg) {
-                    // 已经存在一样的监听，不再监听
-                    return;
-                }
-            }
-            // 记录监听
-            this._listeners.push({ target: target, type: type, handler: handler, thisArg: thisArg });
-            // 调用自主实现部分接口
-            this.doMalListener(target, type, handler, thisArg);
-        };
-        Mediator.prototype.doMalListener = function (target, type, handler, thisArg) {
-            // 留待子类实现
-        };
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        Mediator.prototype.unmapListener = function (target, type, handler, thisArg) {
-            for (var i = 0, len = this._listeners.length; i < len; i++) {
-                var data = this._listeners[i];
-                if (data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg) {
-                    // 调用自主实现部分接口
-                    this.doUnmalListener(target, type, handler, thisArg);
-                    // 移除记录
-                    this._listeners.splice(i, 1);
-                    break;
-                }
-            }
-        };
-        Mediator.prototype.doUnmalListener = function (target, type, handler, thisArg) {
-            // 留待子类实现
-        };
-        /**
-         * 注销所有注册在当前中介者上的事件监听
-         *
-         * @memberof Mediator
-         */
-        Mediator.prototype.unmapAllListeners = function () {
-            for (var i = 0, len = this._listeners.length; i < len; i++) {
-                var data = this._listeners[i];
-                // 调用自主实现部分接口
-                this.doUnmalListener(data.target, data.type, data.handler, data.thisArg);
-                // 移除记录
-                this._listeners.splice(i, 1);
-            }
-        };
-        /**
-         * 销毁中介者
-         *
-         * @memberof Mediator
-         */
-        Mediator.prototype.dispose = function () {
-            // 注销事件监听
-            this.unmapAllListeners();
-            // 移除皮肤
-            this._skin = null;
-            // 设置已被销毁
-            this._isDestroyed = true;
-        };
-        return Mediator;
-    }());
-    exports.default = Mediator;
-});
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
-define("core/Core", ["require", "exports", "core/message/Message", "core/command/Command", "core/mediator/Mediator"], function (require, exports, Message_1, Command_1, Mediator_1) {
+define("core/Core", ["require", "exports", "core/message/Message"], function (require, exports, Message_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Message = Message_1.default;
-    exports.Command = Command_1.default;
-    exports.Mediator = Mediator_1.default;
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -569,9 +441,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/command
         return Core;
         var Core_1;
     }());
-    exports.Core = Core;
-    /** 导出Core实例 */
-    exports.default = global.Inject.getInject(Core);
+    exports.default = Core;
 });
 define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -695,19 +565,20 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
          * @memberof PopupManager
          */
         PopupManager.prototype.open = function (popup, isModel, from) {
+            var _this = this;
             if (isModel === void 0) { isModel = true; }
             if (this._popups.indexOf(popup) < 0) {
                 var policy = popup.getPolicy();
                 if (policy == null)
                     policy = NonePopupPolicy_1.default;
                 // 派发消息
-                Core_2.default.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
+                this._core.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
                 // 调用回调
                 popup.onBeforeOpen(isModel, from);
                 // 调用策略接口
                 policy.open(popup, function () {
                     // 派发消息
-                    Core_2.default.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
+                    _this._core.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
                     // 调用回调
                     popup.onAfterOpen(isModel, from);
                 }, from);
@@ -723,25 +594,29 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
          * @memberof PopupManager
          */
         PopupManager.prototype.close = function (popup, to) {
+            var _this = this;
             var index = this._popups.indexOf(popup);
             if (index >= 0) {
                 var policy = popup.getPolicy();
                 if (policy == null)
                     policy = NonePopupPolicy_1.default;
                 // 派发消息
-                Core_2.default.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
+                this._core.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
                 // 调用回调
                 popup.onBeforeClose(to);
                 // 调用策略接口
                 policy.close(popup, function () {
                     // 派发消息
-                    Core_2.default.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
+                    _this._core.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
                     // 调用回调
                     popup.onAfterClose(to);
                 }, to);
             }
             return popup;
         };
+        __decorate([
+            Inject(Core_2.default)
+        ], PopupManager.prototype, "_core", void 0);
         PopupManager = __decorate([
             Injectable
         ], PopupManager);
@@ -749,11 +624,19 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
     }());
     exports.default = PopupManager;
 });
-define("engine/Engine", ["require", "exports", "engine/popup/PopupManager"], function (require, exports, PopupManager_1) {
+define("engine/Engine", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PopupManager = PopupManager_1.default;
 });
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-06
+ * @modify date 2017-09-06
+ *
+ * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
+ * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
+*/ 
 define("env/explorer/ExplorerType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1108,14 +991,19 @@ define("env/hash/Hash", ["require", "exports"], function (require, exports) {
     }());
     exports.default = Hash;
 });
-define("env/Env", ["require", "exports", "env/explorer/Explorer", "env/external/External", "env/query/Query", "env/hash/Hash"], function (require, exports, Explorer_1, External_1, Query_1, Hash_1) {
+define("env/Env", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Explorer = Explorer_1.default;
-    exports.External = External_1.default;
-    exports.Query = Query_1.default;
-    exports.Hash = Hash_1.default;
 });
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-05
+ * @modify date 2017-09-05
+ *
+ * Env模组是Olympus框架用来集成与运行时环境相关的部分，如浏览器环境、开发环境、运行时参数等
+ * 这个模组没有什么逻辑，都是保存了各种静态数据，因此仅仅把各个部分集中起来方便编译
+*/ 
 define("view/IView", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

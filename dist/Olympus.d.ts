@@ -244,93 +244,18 @@ declare module "core/mediator/IMediator" {
         unmapAllListeners(): void;
     }
 }
-declare module "core/mediator/Mediator" {
-    import IMediator from "core/mediator/IMediator";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-04
-     * @modify date 2017-09-04
-     *
-     * 界面中介者基类，不能直接继承使用该基类，而需要继承不同表现层提供的中介者类
-    */
-    export default class Mediator implements IMediator {
-        constructor(skin?: any);
-        private _isDestroyed;
-        /**
-         * 获取中介者是否已被销毁
-         *
-         * @returns {boolean} 是否已被销毁
-         * @memberof Mediator
-         */
-        isDisposed(): boolean;
-        private _skin;
-        /**
-         * 获取皮肤
-         *
-         * @returns {*} 皮肤引用
-         * @memberof Mediator
-         */
-        getSkin(): any;
-        /**
-         * 设置皮肤
-         *
-         * @param {*} value 皮肤引用
-         * @memberof Mediator
-         */
-        setSkin(value: any): void;
-        private _listeners;
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        protected doMalListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        protected doUnmalListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销所有注册在当前中介者上的事件监听
-         *
-         * @memberof Mediator
-         */
-        unmapAllListeners(): void;
-        /**
-         * 销毁中介者
-         *
-         * @memberof Mediator
-         */
-        dispose(): void;
-    }
-}
 declare module "core/Core" {
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
-    import Message from "core/message/Message";
     import ICommandConstructor from "core/command/ICommandConstructor";
-    import Command from "core/command/Command";
     import IMediator from "core/mediator/IMediator";
-    import Mediator from "core/mediator/Mediator";
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
      * @export
      * @class Core
      */
-    export class Core {
+    export default class Core {
         private static _instance;
         constructor();
         /*********************** 内核消息语法糖处理逻辑 ***********************/
@@ -443,10 +368,6 @@ declare module "core/Core" {
          */
         unmapMediator(mediator: IMediator): void;
     }
-    const _default: any;
-    export default _default;
-    /** 导出Core模组常用模块 */
-    export { IConstructor, IMessage, Message, ICommandConstructor, Command, IMediator, Mediator };
 }
 declare module "engine/popup/IPopupPolicy" {
     import IPopup from "engine/popup/IPopup";
@@ -588,7 +509,7 @@ declare module "engine/popup/PopupMessage" {
     }
 }
 declare module "engine/popup/PopupManager" {
-    import { IConstructor } from "core/Core";
+    import IConstructor from "core/interfaces/IConstructor";
     import IPopup from "engine/popup/IPopup";
     /**
      * @author Raykid
@@ -599,6 +520,7 @@ declare module "engine/popup/PopupManager" {
      * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
     */
     export default class PopupManager {
+        private _core;
         private _popups;
         /**
          * 获取当前显示的弹窗数组（副本）
@@ -636,16 +558,6 @@ declare module "engine/popup/PopupManager" {
     }
 }
 declare module "engine/Engine" {
-    import PopupManager from "engine/popup/PopupManager";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
-    */
-    export { PopupManager };
 }
 declare module "env/explorer/ExplorerType" {
     /**
@@ -821,19 +733,6 @@ declare module "env/hash/Hash" {
     }
 }
 declare module "env/Env" {
-    import Explorer from "env/explorer/Explorer";
-    import External from "env/external/External";
-    import Query from "env/query/Query";
-    import Hash from "env/hash/Hash";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * Env模块是Olympus框架用来集成与运行时环境相关的部分，如浏览器环境、开发环境、运行时参数等
-    */
-    export { Explorer, Query, External, Hash };
 }
 declare module "view/IView" {
     /**

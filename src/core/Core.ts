@@ -1,14 +1,12 @@
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
 
-import core from "./Core";
 import IConstructor from "./interfaces/IConstructor"
 import IMessage from "./message/IMessage"
 import Message from "./message/Message"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
 import IMediator from "./mediator/IMediator"
-import Mediator from "./mediator/Mediator"
 
 /**
  * @author Raykid
@@ -38,7 +36,7 @@ interface IMessageData
  * @class Core
  */
 @Injectable
-export class Core
+export default class Core
 {
     private static _instance:Core;
     
@@ -317,17 +315,4 @@ export class Core
         var index:number = this._mediatorList.indexOf(mediator);
         if(index >= 0) this._mediatorList.splice(index, 1);
     }
-}
-
-/** 导出Core实例 */
-export default global.Inject.getInject(Core);
-/** 导出Core模组常用模块 */
-export {
-    IConstructor,
-    IMessage,
-    Message,
-    ICommandConstructor,
-    Command,
-    IMediator,
-    Mediator
 }

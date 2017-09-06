@@ -1,9 +1,13 @@
 /// <reference path="../dist/Olympus.d.ts"/>
 
-import core, {Core, IMessage} from "core/Core"
+import Core from "core/Core"
+import IMessage from "core/message/IMessage"
 import View from "view/View"
-import {Explorer, Query, External, Hash} from "env/Env"
-import {PopupManager} from "engine/Engine"
+import Explorer from "env/explorer/Explorer"
+import Query from "env/query/Query"
+import External from "env/external/External"
+import Hash from "env/hash/Hash"
+import PopupManager from "engine/popup/PopupManager"
 
 /**
  * @author Raykid
@@ -13,6 +17,7 @@ import {PopupManager} from "engine/Engine"
  * 
  * 测试项目
 */
+var core:Core = global.Inject.getInject(Core);
 core.listen("fuck", handler, "this");
 
 core.dispatch("fuck");
