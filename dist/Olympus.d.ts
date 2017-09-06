@@ -368,6 +368,8 @@ declare module "core/Core" {
          */
         unmapMediator(mediator: IMediator): void;
     }
+    /** 再额外导出一个core单例 */
+    export const core: Core;
 }
 declare module "engine/popup/IPopupPolicy" {
     import IPopup from "engine/popup/IPopup";

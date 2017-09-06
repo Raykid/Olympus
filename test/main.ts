@@ -1,6 +1,6 @@
 /// <reference path="../dist/Olympus.d.ts"/>
 
-import Core from "core/Core"
+import Core, {core} from "core/Core"
 import IMessage from "core/message/IMessage"
 import View from "view/View"
 import Explorer from "env/explorer/Explorer"
@@ -17,7 +17,6 @@ import PopupManager from "engine/popup/PopupManager"
  * 
  * 测试项目
 */
-var core:Core = global.Inject.getInject(Core);
 core.listen("fuck", handler, "this");
 
 core.dispatch("fuck");

@@ -442,6 +442,8 @@ define("core/Core", ["require", "exports", "core/message/Message"], function (re
         var Core_1;
     }());
     exports.default = Core;
+    /** 再额外导出一个core单例 */
+    exports.core = global.Inject.getInject(Core);
 });
 define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
     "use strict";

@@ -16,11 +16,10 @@ define("main", ["require", "exports", "core/Core", "view/View", "env/explorer/Ex
      *
      * 测试项目
     */
-    var core = global.Inject.getInject(Core_1.default);
-    core.listen("fuck", handler, "this");
-    core.dispatch("fuck");
+    Core_1.core.listen("fuck", handler, "this");
+    Core_1.core.dispatch("fuck");
     function handler(msg) {
-        core.unlisten("fuck", handler, this);
+        Core_1.core.unlisten("fuck", handler, this);
     }
     var Fuck = (function () {
         function Fuck() {
