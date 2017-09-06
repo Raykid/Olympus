@@ -443,7 +443,7 @@ declare module "core/Core" {
          */
         unmapMediator(mediator: IMediator): void;
     }
-    const _default: Core;
+    const _default: any;
     export default _default;
     /** 导出Core模组常用模块 */
     export { IConstructor, IMessage, Message, ICommandConstructor, Command, IMediator, Mediator };

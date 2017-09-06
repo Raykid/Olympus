@@ -37,6 +37,7 @@ interface IMessageData
  * @export
  * @class Core
  */
+@Injectable
 export class Core
 {
     private static _instance:Core;
@@ -47,8 +48,6 @@ export class Core
         if(Core._instance) throw new Error("已生成过Core实例，不允许多次生成");
         // 赋值单例
         Core._instance = this;
-        // 注入自身
-        this.mapInjectValue(this);
     }
     
     /*********************** 内核消息语法糖处理逻辑 ***********************/
@@ -321,7 +320,7 @@ export class Core
 }
 
 /** 导出Core实例 */
-export default new Core();
+export default global.Inject.getInject(Core);
 /** 导出Core模组常用模块 */
 export {
     IConstructor,

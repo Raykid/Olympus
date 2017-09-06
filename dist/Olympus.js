@@ -348,13 +348,12 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/command
             /*********************** 下面是界面中介者系统 ***********************/
             this._mediatorList = [];
             // 进行单例判断
-            if (Core._instance)
+            if (Core_1._instance)
                 throw new Error("已生成过Core实例，不允许多次生成");
             // 赋值单例
-            Core._instance = this;
-            // 注入自身
-            this.mapInjectValue(this);
+            Core_1._instance = this;
         }
+        Core_1 = Core;
         Core.prototype.handleMessageSugars = function (msg, target) {
             // 调用以Message类型为前缀，以_handler为后缀的方法
             var name = msg.getType() + "_handler";
@@ -564,11 +563,15 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/command
             if (index >= 0)
                 this._mediatorList.splice(index, 1);
         };
+        Core = Core_1 = __decorate([
+            Injectable
+        ], Core);
         return Core;
+        var Core_1;
     }());
     exports.Core = Core;
     /** 导出Core实例 */
-    exports.default = new Core();
+    exports.default = global.Inject.getInject(Core);
 });
 define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -654,7 +657,7 @@ define("engine/popup/PopupMessage", ["require", "exports"], function (require, e
     }());
     exports.default = PopupMessage;
 });
-define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/popup/NonePopupPolicy", "engine/popup/PopupMessage"], function (require, exports, Core_1, NonePopupPolicy_1, PopupMessage_1) {
+define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/popup/NonePopupPolicy", "engine/popup/PopupMessage"], function (require, exports, Core_2, NonePopupPolicy_1, PopupMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -698,13 +701,13 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
                 if (policy == null)
                     policy = NonePopupPolicy_1.default;
                 // 派发消息
-                Core_1.default.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
+                Core_2.default.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
                 // 调用回调
                 popup.onBeforeOpen(isModel, from);
                 // 调用策略接口
                 policy.open(popup, function () {
                     // 派发消息
-                    Core_1.default.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
+                    Core_2.default.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
                     // 调用回调
                     popup.onAfterOpen(isModel, from);
                 }, from);
@@ -726,13 +729,13 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
                 if (policy == null)
                     policy = NonePopupPolicy_1.default;
                 // 派发消息
-                Core_1.default.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
+                Core_2.default.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
                 // 调用回调
                 popup.onBeforeClose(to);
                 // 调用策略接口
                 policy.close(popup, function () {
                     // 派发消息
-                    Core_1.default.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
+                    Core_2.default.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
                     // 调用回调
                     popup.onAfterClose(to);
                 }, to);
