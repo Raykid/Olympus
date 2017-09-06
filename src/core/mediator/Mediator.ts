@@ -14,7 +14,7 @@ export default class Mediator implements IMediator
     {
         if(skin) this.setSkin(skin);
     }
-
+    
     private _isDestroyed:boolean = false;
     /**
      * 获取中介者是否已被销毁

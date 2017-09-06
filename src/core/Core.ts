@@ -1,4 +1,5 @@
-/// <reference path="./declarations/Inject.ts"/>
+/// <reference path="./global/Patch.ts"/>
+/// <reference path="./global/Decorator.ts"/>
 
 import core from "./Core";
 import IConstructor from "./interfaces/IConstructor"
@@ -8,7 +9,6 @@ import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
 import IMediator from "./mediator/IMediator"
 import Mediator from "./mediator/Mediator"
-import IView from "./view/IView"
 
 /**
  * @author Raykid
@@ -19,45 +19,6 @@ import IView from "./view/IView"
  * Core模组是Olympus框架的核心模组，负责实现框架内消息转发、对象注入等核心功能
  * Core模组是一切其他模组实现的基础和围绕的核心
 */
-
-// 修复Array.findIndex会被遍历到的问题
-if(Array.prototype.hasOwnProperty("findIndex"))
-{
-    var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(Array.prototype, "findIndex");
-    if(desc.enumerable)
-    {
-        desc.enumerable = false;
-        Object.defineProperty(Array.prototype, "findIndex", desc);
-    }
-}
-
-// 下面是为了装饰器功能做的
-window["Inject"] = function(cls:IConstructor):PropertyDecorator
-{
-    return function(prototype:any, propertyKey:string):PropertyDescriptor
-    {
-        return {
-            get: ()=>core.getInject(cls)
-        };
-    };
-};
-window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorator|void
-{
-    var params:IInjectableParams = cls as IInjectableParams;
-    if(params.type instanceof Function)
-    {
-        // 需要转换注册类型，需要返回一个ClassDecorator
-        return function(realCls:IConstructor):void
-        {
-            core.mapInject(realCls, params.type);
-        } as ClassDecorator;
-    }
-    else
-    {
-        // 不需要转换注册类型，直接注册
-        core.mapInject(cls as IConstructor);
-    }
-};
 
 /**
  * 上下文模块内部使用的记录转发数据的接口
@@ -210,13 +171,12 @@ export class Core
     
     /*********************** 下面是依赖注入系统 ***********************/
 
-    private _injectDict:{[key:string]:any} = {};
-
     private handleInjects(msg:IMessage):void
     {
-        for(var key in this._injectDict)
+        var dict:{[key:string]:any} = global.Inject.getInjectDict();
+        for(var key in dict)
         {
-            var inject:any = this._injectDict[key];
+            var inject:any = dict[key];
             // 执行语法糖
             this.handleMessageSugars(msg, inject);
         }
@@ -231,8 +191,7 @@ export class Core
      */
     public mapInject(target:IConstructor, type?:IConstructor):void
     {
-        var value:any = new target();
-        this.mapInjectValue(value, type);
+        global.Inject.mapInject(target, type);
     }
 
     /**
@@ -244,8 +203,7 @@ export class Core
      */
     public mapInjectValue(value:any, type?:IConstructor):void
     {
-        var key:string = (type || value.constructor).toString();
-        this._injectDict[key] = value;
+        global.Inject.mapInjectValue(value, type);
     }
 
     /**
@@ -256,8 +214,7 @@ export class Core
      */
     public unmapInject(target:IConstructor):void
     {
-        var key:string = target.toString();
-        delete this._injectDict[key];
+        global.Inject.unmapInject(target);
     }
 
     /**
@@ -269,7 +226,7 @@ export class Core
      */
     public getInject(type:IConstructor):any
     {
-        return this._injectDict[type.toString()];
+        return global.Inject.getInject(type);
     }
 
     /*********************** 下面是内核命令系统 ***********************/
@@ -373,6 +330,5 @@ export {
     ICommandConstructor,
     Command,
     IMediator,
-    Mediator,
-    IView
+    Mediator
 }

@@ -8,7 +8,10 @@
     "outFile": "../dist/Olympus.js"
   },
   "files": [
-    "Olympus.ts"
+    "core/Core.ts",
+    "engine/Engine.ts",
+    "env/Env.ts",
+    "view/View.ts"
   ],
   "exclude": [
     "node_modules"

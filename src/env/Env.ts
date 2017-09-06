@@ -12,10 +12,5 @@ import Hash from "./hash/Hash"
  * 
  * Env模块是Olympus框架用来集成与运行时环境相关的部分，如浏览器环境、开发环境、运行时参数等
 */
-// 注入
-core.mapInject(Explorer);
-core.mapInject(External);
-core.mapInject(Query);
-core.mapInject(Hash);
 // 导出
 export {Explorer, Query, External, Hash}

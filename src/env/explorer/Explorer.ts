@@ -8,6 +8,7 @@ import ExplorerType from "./ExplorerType"
  * 
  * Explorer类记录浏览器相关数据
 */
+@Injectable
 export default class Explorer
 {
     private _type:ExplorerType;

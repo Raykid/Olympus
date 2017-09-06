@@ -6,6 +6,7 @@
  * 
  * External类为window.external参数字典包装类
 */
+@Injectable
 export default class External
 {
     private _params:{[key:string]:any} = {};

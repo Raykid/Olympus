@@ -6,6 +6,7 @@
  * 
  * Hash类是地址路由（网页哈希）管理器，规定哈希格式为：#[模块名]?[参数名]=[参数值]&[参数名]=[参数值]&...
 */
+@Injectable
 export default class Hash
 {
     private _hash:string;

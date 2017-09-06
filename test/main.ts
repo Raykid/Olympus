@@ -1,6 +1,9 @@
 /// <reference path="../dist/Olympus.d.ts"/>
 
-import * as Olympus from "Olympus"
+import core, {Core, IMessage} from "core/Core"
+import View from "view/View"
+import {Explorer, Query, External, Hash} from "env/Env"
+import {PopupManager} from "engine/Engine"
 
 /**
  * @author Raykid
@@ -10,21 +13,21 @@ import * as Olympus from "Olympus"
  * 
  * 测试项目
 */
-Olympus.listen("fuck", handler, "this");
+core.listen("fuck", handler, "this");
 
-Olympus.dispatch("fuck");
+core.dispatch("fuck");
 
-function handler(msg:Olympus.IMessage):void
+function handler(msg:IMessage):void
 {
-    Olympus.unlisten("fuck", handler, this);
+    core.unlisten("fuck", handler, this);
 }
 
 
 @Injectable
 class Fuck
 {
-    @Inject(Olympus.Core)
-    public core:Olympus.Core;
+    @Inject(Core)
+    public core:Core;
 }
 
 class Fuck2
@@ -32,22 +35,29 @@ class Fuck2
     @Inject(Fuck)
     public fuck:Fuck;
 
-    @Inject(Olympus.Core)
-    public core:Olympus.Core;
+    @Inject(Core)
+    public core:Core;
 
-    @Inject(Olympus.Explorer)
-    public explorer:Olympus.Explorer;
+    @Inject(View)
+    public view:View
 
-    @Inject(Olympus.Query)
-    public query:Olympus.Query;
+    @Inject(Explorer)
+    public explorer:Explorer;
 
-    @Inject(Olympus.External)
-    public external:Olympus.External;
+    @Inject(Query)
+    public query:Query;
 
-    @Inject(Olympus.Hash)
-    public hash:Olympus.Hash;
+    @Inject(External)
+    public external:External;
+
+    @Inject(Hash)
+    public hash:Hash;
+
+    @Inject(PopupManager)
+    public popupManager:PopupManager;
 }
 
 var fuck2:Fuck2 = new Fuck2();
 window["fuck2"] = fuck2;
+window["Fuck2"] = Fuck2;
 console.log(fuck2);
