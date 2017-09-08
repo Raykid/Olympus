@@ -1080,12 +1080,12 @@ define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessa
             this._viewDict = {};
         }
         /**
-         * 添加一个表现层桥实例到框架中
+         * 注册一个表现层桥实例到框架中
          *
          * @param {IBridge} view
          * @memberof View
          */
-        View.prototype.addBridge = function (view) {
+        View.prototype.registerBridge = function (view) {
             var _this = this;
             var type = view.getType();
             if (!this._viewDict[type]) {

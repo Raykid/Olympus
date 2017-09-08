@@ -801,12 +801,12 @@ declare module "view/View" {
     export default class View {
         private _viewDict;
         /**
-         * 添加一个表现层桥实例到框架中
+         * 注册一个表现层桥实例到框架中
          *
          * @param {IBridge} view
          * @memberof View
          */
-        addBridge(view: IBridge): void;
+        registerBridge(view: IBridge): void;
         private testAllInit();
     }
 }
