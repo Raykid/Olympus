@@ -1,4 +1,5 @@
 import System from "./system/System"
+import Mediator from "./component/Mediator"
 import PopupManager from "./popup/PopupManager"
 import Explorer from "./env/Explorer"
 import External from "./env/External"

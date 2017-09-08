@@ -496,6 +496,139 @@ define("core/interfaces/IDisposable", ["require", "exports"], function (require,
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("view/mediator/IMediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/component/Mediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-04
+     * @modify date 2017-09-04
+     *
+     * 组件界面中介者基类
+    */
+    var Mediator = (function () {
+        function Mediator(bridge, skin) {
+            this._isDestroyed = false;
+            this._listeners = [];
+            this._bridge = bridge;
+            if (skin)
+                this.setSkin(skin);
+        }
+        /**
+         * 获取表现层桥
+         *
+         * @returns {IBridge} 表现层桥
+         * @memberof Mediator
+         */
+        Mediator.prototype.getBridge = function () {
+            return this._bridge;
+        };
+        /**
+         * 获取中介者是否已被销毁
+         *
+         * @returns {boolean} 是否已被销毁
+         * @memberof Mediator
+         */
+        Mediator.prototype.isDisposed = function () {
+            return this._isDestroyed;
+        };
+        /**
+         * 获取皮肤
+         *
+         * @returns {*} 皮肤引用
+         * @memberof Mediator
+         */
+        Mediator.prototype.getSkin = function () {
+            return this._skin;
+        };
+        /**
+         * 设置皮肤
+         *
+         * @param {*} value 皮肤引用
+         * @memberof Mediator
+         */
+        Mediator.prototype.setSkin = function (value) {
+            this._skin = value;
+        };
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.mapListener = function (target, type, handler, thisArg) {
+            for (var i = 0, len = this._listeners.length; i < len; i++) {
+                var data = this._listeners[i];
+                if (data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg) {
+                    // 已经存在一样的监听，不再监听
+                    return;
+                }
+            }
+            // 记录监听
+            this._listeners.push({ target: target, type: type, handler: handler, thisArg: thisArg });
+            // 调用桥接口
+            this._bridge.mapListener(target, type, handler, thisArg);
+        };
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapListener = function (target, type, handler, thisArg) {
+            for (var i = 0, len = this._listeners.length; i < len; i++) {
+                var data = this._listeners[i];
+                if (data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg) {
+                    // 调用桥接口
+                    this._bridge.unmapListener(target, type, handler, thisArg);
+                    // 移除记录
+                    this._listeners.splice(i, 1);
+                    break;
+                }
+            }
+        };
+        /**
+         * 注销所有注册在当前中介者上的事件监听
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapAllListeners = function () {
+            for (var i = 0, len = this._listeners.length; i < len; i++) {
+                var data = this._listeners[i];
+                // 调用桥接口
+                this._bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
+                // 移除记录
+                this._listeners.splice(i, 1);
+            }
+        };
+        /**
+         * 销毁中介者
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.dispose = function () {
+            // 注销事件监听
+            this.unmapAllListeners();
+            // 移除皮肤
+            this._skin = null;
+            // 设置已被销毁
+            this._isDestroyed = true;
+        };
+        return Mediator;
+    }());
+    exports.default = Mediator;
+});
 define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

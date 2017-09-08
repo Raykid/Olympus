@@ -1,5 +1,5 @@
-import IMediator from "./IMediator"
-import IBridge from "../bridge/IBridge"
+import IMediator from "../../view/mediator/IMediator"
+import IBridge from "../../view/bridge/IBridge"
 
 /**
  * @author Raykid
@@ -7,9 +7,9 @@ import IBridge from "../bridge/IBridge"
  * @create date 2017-09-04
  * @modify date 2017-09-04
  * 
- * 界面中介者基类，不能直接继承使用该基类，而需要继承不同表现层提供的中介者类
+ * 组件界面中介者基类
 */
-export default class Mediator implements IMediator
+export default abstract class Mediator implements IMediator
 {
     public constructor(bridge:IBridge, skin?:any)
     {

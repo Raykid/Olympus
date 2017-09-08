@@ -1,4 +1,4 @@
-import Mediator from "../../view/mediator/Mediator"
+import Mediator from "../component/Mediator"
 import IBridge from "../../view/bridge/IBridge"
 import IPopup from "./IPopup"
 import IPopupPolicy from "./IPopupPolicy"
@@ -9,9 +9,9 @@ import IPopupPolicy from "./IPopupPolicy"
  * @create date 2017-09-06
  * @modify date 2017-09-06
  * 
- * 实现了IPopup接口的弹窗中介者基类，也可以不继承该基类而自行实现IPopup接口以替代该基类
+ * 实现了IPopup接口的弹窗中介者基类
 */
-export default class PopupMediator extends Mediator implements IPopup
+export default abstract class PopupMediator extends Mediator implements IPopup
 {
     public constructor(bridge:IBridge, skin?:any, policy?:IPopupPolicy)
     {
@@ -34,24 +34,24 @@ export default class PopupMediator extends Mediator implements IPopup
     /** 在弹出前调用的方法 */
     public onBeforeOpen():void
     {
-        // 留待子类完善
+        // 子类可以重写该方法
     }
 
     /** 在弹出后调用的方法 */
     public onAfterOpen():void
     {
-        // 留待子类完善
+        // 子类可以重写该方法
     }
 
     /** 在关闭前调用的方法 */
     public onBeforeClose():void
     {
-        // 留待子类完善
+        // 子类可以重写该方法
     }
 
     /** 在关闭后调用的方法 */
     public onAfterClose():void
     {
-        // 留待子类完善
+        // 子类可以重写该方法
     }
 }
