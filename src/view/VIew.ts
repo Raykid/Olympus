@@ -22,12 +22,12 @@ export default class View
     private _viewDict:{[type:string]:IBridgeData} = {};
 
     /**
-     * 添加一个表现层桥实例到框架中
+     * 注册一个表现层桥实例到框架中
      * 
      * @param {IBridge} view 
      * @memberof View
      */
-    public addBridge(view:IBridge):void
+    public registerBridge(view:IBridge):void
     {
         var type:string = view.getType();
         if(!this._viewDict[type])

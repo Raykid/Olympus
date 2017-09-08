@@ -19,7 +19,7 @@ export default class Mediator implements IMediator
 
     private _bridge:IBridge;
     /**
-     * 获取中介者桥
+     * 获取表现层桥
      * 
      * @returns {IBridge} 表现层桥
      * @memberof Mediator
