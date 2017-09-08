@@ -1,5 +1,3 @@
-import ExplorerType from "./ExplorerType"
-
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -8,6 +6,23 @@ import ExplorerType from "./ExplorerType"
  * 
  * Explorer类记录浏览器相关数据
 */
+
+/**
+ * 浏览器类型枚举
+ * 
+ * @enum {number}
+ */
+export enum ExplorerType
+{
+    IE,
+    EDGE,
+    OPERA,
+    FIREFOX,
+    SAFARI,
+    CHROME,
+    OTHERS
+}
+
 @Injectable
 export default class Explorer
 {
@@ -16,7 +31,7 @@ export default class Explorer
      * 获取浏览器类型枚举值
      * 
      * @returns {ExplorerType} 浏览器类型枚举值
-     * @memberof Env
+     * @memberof Explorer
      */
     public getType():ExplorerType
     {
@@ -28,7 +43,7 @@ export default class Explorer
      * 获取浏览器类型字符串
      * 
      * @returns {string} 浏览器类型字符串
-     * @memberof Env
+     * @memberof Explorer
      */
     public getTypeStr():string
     {

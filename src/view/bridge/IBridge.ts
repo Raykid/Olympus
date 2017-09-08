@@ -1,39 +1,31 @@
-import IDisposable from "../interfaces/IDisposable"
-
 /**
  * @author Raykid
  * @email initial_r@qq.com
- * @create date 2017-09-04
- * @modify date 2017-09-04
+ * @create date 2017-08-31
+ * @modify date 2017-08-31
  * 
- * 界面中介者接口
+ * 这是表现层桥接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
 */
-export default interface IMediator extends IDisposable
+export default interface IBridge
 {
     /**
-     * 获取中介者是否已被销毁
-     * 
-     * @returns {boolean} 是否已被销毁
-     * @memberof IMediator
+     * 获取表现层类型名称
+     * @return {string} 一个字符串，代表表现层类型名称
+     * @memberof IBridge
      */
-    isDisposed():boolean;
-    
+    getType():string;
     /**
-     * 获取皮肤
-     * 
-     * @returns {*} 皮肤引用
-     * @memberof IMediator
+     * 获取表现层HTML包装器，可以对其样式进行自定义调整
+     * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
+     * @memberof IBridge
      */
-    getSkin():any;
-
+    getHTMLWrapper():HTMLElement;
     /**
-     * 设置皮肤
-     * 
-     * @param {*} value 皮肤引用
-     * @memberof IMediator
+     * 初始化表现层
+     * @param {()=>void} complete 初始化完毕后的回调
+     * @memberof IBridge
      */
-    setSkin(value:any):void;
-    
+    initView(complete:()=>void):void;
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
@@ -41,7 +33,7 @@ export default interface IMediator extends IDisposable
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof IMediator
+     * @memberof IBridge
      */
     mapListener(target:any, type:string, handler:Function, thisArg?:any):void;
     
@@ -52,14 +44,7 @@ export default interface IMediator extends IDisposable
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof IMediator
+     * @memberof IBridge
      */
     unmapListener(target:any, type:string, handler:Function, thisArg?:any):void;
-    
-    /**
-     * 注销所有注册在当前中介者上的事件监听
-     * 
-     * @memberof IMediator
-     */
-    unmapAllListeners():void;
 }

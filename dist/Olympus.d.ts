@@ -144,7 +144,7 @@ declare module "core/command/Command" {
      *
      * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
     */
-    export default class Command {
+    export default abstract class Command {
         /**
          * 触发该Command运行的Message实例
          *
@@ -153,7 +153,13 @@ declare module "core/command/Command" {
          */
         msg: IMessage;
         constructor(msg: IMessage);
-        exec(): void;
+        /**
+         * 子类必须实现该方法
+         *
+         * @abstract
+         * @memberof Command
+         */
+        abstract exec(): void;
     }
 }
 declare module "core/command/ICommandConstructor" {
@@ -171,84 +177,10 @@ declare module "core/command/ICommandConstructor" {
         new (msg: IMessage): Command;
     }
 }
-declare module "core/interfaces/IDisposable" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 可回收接口
-    */
-    export default interface IDisposable {
-        dispose(): void;
-    }
-}
-declare module "core/mediator/IMediator" {
-    import IDisposable from "core/interfaces/IDisposable";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-04
-     * @modify date 2017-09-04
-     *
-     * 界面中介者接口
-    */
-    export default interface IMediator extends IDisposable {
-        /**
-         * 获取中介者是否已被销毁
-         *
-         * @returns {boolean} 是否已被销毁
-         * @memberof IMediator
-         */
-        isDisposed(): boolean;
-        /**
-         * 获取皮肤
-         *
-         * @returns {*} 皮肤引用
-         * @memberof IMediator
-         */
-        getSkin(): any;
-        /**
-         * 设置皮肤
-         *
-         * @param {*} value 皮肤引用
-         * @memberof IMediator
-         */
-        setSkin(value: any): void;
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IMediator
-         */
-        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IMediator
-         */
-        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销所有注册在当前中介者上的事件监听
-         *
-         * @memberof IMediator
-         */
-        unmapAllListeners(): void;
-    }
-}
 declare module "core/Core" {
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
-    import IMediator from "core/mediator/IMediator";
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -356,17 +288,17 @@ declare module "core/Core" {
         /**
          * 注册界面中介者
          *
-         * @param {IMediator} mediator 要注册的界面中介者实例
+         * @param {any} mediator 要注册的界面中介者实例
          * @memberof Core
          */
-        mapMediator(mediator: IMediator): void;
+        mapMediator(mediator: any): void;
         /**
          * 注销界面中介者
          *
-         * @param {IMediator} mediator 要注销的界面中介者实例
+         * @param {any} mediator 要注销的界面中介者实例
          * @memberof Core
          */
-        unmapMediator(mediator: IMediator): void;
+        unmapMediator(mediator: any): void;
     }
     /** 再额外导出一个core单例 */
     export const core: Core;
@@ -390,6 +322,86 @@ declare module "engine/system/System" {
          */
         getTimer(): number;
         constructor();
+    }
+}
+declare module "view/bridge/IBridge" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-08-31
+     * @modify date 2017-08-31
+     *
+     * 这是表现层桥接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
+    */
+    export default interface IBridge {
+        /**
+         * 获取表现层类型名称
+         * @return {string} 一个字符串，代表表现层类型名称
+         * @memberof IBridge
+         */
+        getType(): string;
+        /**
+         * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
+         * @memberof IBridge
+         */
+        getHTMLWrapper(): HTMLElement;
+        /**
+         * 初始化表现层
+         * @param {()=>void} complete 初始化完毕后的回调
+         * @memberof IBridge
+         */
+        initView(complete: () => void): void;
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IBridge
+         */
+        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IBridge
+         */
+        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+    }
+}
+declare module "view/bridge/IHasBridge" {
+    import IBridge from "view/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 标识拥有表现层桥的接口
+    */
+    export default interface IHasMediatorBridge {
+        /**
+         * 获取表现层桥
+         */
+        getBridge(): IBridge;
+    }
+}
+declare module "core/interfaces/IDisposable" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 可回收接口
+    */
+    export default interface IDisposable {
+        dispose(): void;
     }
 }
 declare module "engine/popup/IPopupPolicy" {
@@ -426,6 +438,7 @@ declare module "engine/popup/IPopupPolicy" {
     }
 }
 declare module "engine/popup/IPopup" {
+    import IHasBridge from "view/bridge/IHasBridge";
     import IDisposable from "core/interfaces/IDisposable";
     import IPopupPolicy from "engine/popup/IPopupPolicy";
     /**
@@ -436,7 +449,7 @@ declare module "engine/popup/IPopup" {
      *
      * 弹窗中介者接口
     */
-    export default interface IPopup extends IDisposable {
+    export default interface IPopup extends IHasBridge, IDisposable {
         /** 获取弹窗的实体显示对象 */
         getSkin(): any;
         /** 获取弹出策略 */
@@ -579,30 +592,7 @@ declare module "engine/popup/PopupManager" {
         }): IPopup;
     }
 }
-declare module "engine/Engine" {
-}
-declare module "env/explorer/ExplorerType" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * 浏览器类型枚举
-    */
-    enum ExplorerType {
-        IE = 0,
-        EDGE = 1,
-        OPERA = 2,
-        FIREFOX = 3,
-        SAFARI = 4,
-        CHROME = 5,
-        OTHERS = 6,
-    }
-    export default ExplorerType;
-}
-declare module "env/explorer/Explorer" {
-    import ExplorerType from "env/explorer/ExplorerType";
+declare module "engine/env/Explorer" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -611,13 +601,27 @@ declare module "env/explorer/Explorer" {
      *
      * Explorer类记录浏览器相关数据
     */
+    /**
+     * 浏览器类型枚举
+     *
+     * @enum {number}
+     */
+    export enum ExplorerType {
+        IE = 0,
+        EDGE = 1,
+        OPERA = 2,
+        FIREFOX = 3,
+        SAFARI = 4,
+        CHROME = 5,
+        OTHERS = 6,
+    }
     export default class Explorer {
         private _type;
         /**
          * 获取浏览器类型枚举值
          *
          * @returns {ExplorerType} 浏览器类型枚举值
-         * @memberof Env
+         * @memberof Explorer
          */
         getType(): ExplorerType;
         private _typeStr;
@@ -625,7 +629,7 @@ declare module "env/explorer/Explorer" {
          * 获取浏览器类型字符串
          *
          * @returns {string} 浏览器类型字符串
-         * @memberof Env
+         * @memberof Explorer
          */
         getTypeStr(): string;
         private _version;
@@ -647,7 +651,7 @@ declare module "env/explorer/Explorer" {
         constructor();
     }
 }
-declare module "env/external/External" {
+declare module "engine/env/External" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -669,29 +673,7 @@ declare module "env/external/External" {
         getParam(key: string): any;
     }
 }
-declare module "env/query/Query" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * Query类记录通过GET参数传递给框架的参数字典
-    */
-    export default class Query {
-        private _params;
-        constructor();
-        /**
-         * 获取GET参数
-         *
-         * @param {string} key 参数key
-         * @returns {string} 参数值
-         * @memberof Query
-         */
-        getParam(key: string): string;
-    }
-}
-declare module "env/hash/Hash" {
+declare module "engine/env/Hash" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -754,36 +736,31 @@ declare module "env/hash/Hash" {
         getParam(key: string): string;
     }
 }
-declare module "env/Env" {
-}
-declare module "view/IFrameworkView" {
+declare module "engine/env/Query" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-08-31
-     * @modify date 2017-08-31
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
      *
-     * 这是表现层接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
+     * Query类记录通过GET参数传递给框架的参数字典
     */
-    export default interface IFrameworkView {
+    export default class Query {
+        private _params;
+        constructor();
         /**
-         * 获取表现层类型名称
-         * @return {string} 一个字符串，代表表现层类型名称
+         * 获取GET参数
+         *
+         * @param {string} key 参数key
+         * @returns {string} 参数值
+         * @memberof Query
          */
-        getType(): string;
-        /**
-         * 获取表现层HTML包装器，可以对其样式进行自定义调整
-         * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
-         */
-        getHTMLWrapper(): HTMLElement;
-        /**
-         * 初始化表现层
-         * @param {()=>void} complete 初始化完毕后的回调
-         */
-        initView(complete: () => void): void;
+        getParam(key: string): string;
     }
 }
-declare module "view/ViewMessage" {
+declare module "engine/Engine" {
+}
+declare module "view/messages/ViewMessage" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -820,16 +797,16 @@ declare module "view/ViewMessage" {
     }
 }
 declare module "view/View" {
-    import IFrameworkView from "view/IFrameworkView";
+    import IBridge from "view/bridge/IBridge";
     export default class View {
         private _viewDict;
         /**
-         * 添加一个表现层实例到框架中
+         * 添加一个表现层桥实例到框架中
          *
-         * @param {IFrameworkView} view
+         * @param {IBridge} view
          * @memberof View
          */
-        addView(view: IFrameworkView): void;
+        addBridge(view: IBridge): void;
         private testAllInit();
     }
 }

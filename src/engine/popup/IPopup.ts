@@ -1,3 +1,4 @@
+import IHasBridge from "../../view/bridge/IHasBridge"
 import IDisposable from "../../core/interfaces/IDisposable"
 import IPopupPolicy from "./IPopupPolicy"
 
@@ -9,7 +10,7 @@ import IPopupPolicy from "./IPopupPolicy"
  * 
  * 弹窗中介者接口
 */
-export default interface IPopup extends IDisposable
+export default interface IPopup extends IHasBridge, IDisposable
 {
     /** 获取弹窗的实体显示对象 */
     getSkin():any;

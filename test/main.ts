@@ -3,10 +3,10 @@
 import Core, {core} from "core/Core"
 import IMessage from "core/message/IMessage"
 import View from "view/View"
-import Explorer from "env/explorer/Explorer"
-import Query from "env/query/Query"
-import External from "env/external/External"
-import Hash from "env/hash/Hash"
+import Explorer from "engine/env/Explorer"
+import Query from "engine/env/Query"
+import External from "engine/env/External"
+import Hash from "engine/env/Hash"
 import PopupManager from "engine/popup/PopupManager"
 import System from "engine/system/System"
 
@@ -26,7 +26,6 @@ function handler(msg:IMessage):void
 {
     core.unlisten("fuck", handler, this);
 }
-
 
 @Injectable
 class Fuck

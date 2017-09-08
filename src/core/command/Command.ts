@@ -8,7 +8,7 @@ import IMessage from "../message/IMessage"
  * 
  * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
 */
-export default class Command
+export default abstract class Command
 {
     /**
      * 触发该Command运行的Message实例
@@ -23,8 +23,11 @@ export default class Command
         this.msg = msg;
     }
 
-    public exec():void
-    {
-        // 留待子类完善
-    }
+    /**
+     * 子类必须实现该方法
+     * 
+     * @abstract
+     * @memberof Command
+     */
+    public abstract exec():void;
 }

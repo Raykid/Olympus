@@ -1,4 +1,5 @@
 import IMediator from "./IMediator"
+import IBridge from "../bridge/IBridge"
 
 /**
  * @author Raykid
@@ -10,9 +11,22 @@ import IMediator from "./IMediator"
 */
 export default class Mediator implements IMediator
 {
-    public constructor(skin?:any)
+    public constructor(bridge:IBridge, skin?:any)
     {
+        this._bridge = bridge;
         if(skin) this.setSkin(skin);
+    }
+
+    private _bridge:IBridge;
+    /**
+     * 获取中介者桥
+     * 
+     * @returns {IBridge} 表现层桥
+     * @memberof Mediator
+     */
+    public getBridge():IBridge
+    {
+        return this._bridge;
     }
     
     private _isDestroyed:boolean = false;
@@ -73,13 +87,8 @@ export default class Mediator implements IMediator
         }
         // 记录监听
         this._listeners.push({target: target, type: type, handler: handler, thisArg: thisArg});
-        // 调用自主实现部分接口
-        this.doMalListener(target, type, handler, thisArg);
-    }
-
-    protected doMalListener(target:any, type:string, handler:Function, thisArg?:any):void
-    {
-        // 留待子类实现
+        // 调用桥接口
+        this._bridge.mapListener(target, type, handler, thisArg);
     }
     
     /**
@@ -98,18 +107,13 @@ export default class Mediator implements IMediator
             var data:ListenerData = this._listeners[i];
             if(data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg)
             {
-                // 调用自主实现部分接口
-                this.doUnmalListener(target, type, handler, thisArg);
+                // 调用桥接口
+                this._bridge.unmapListener(target, type, handler, thisArg);
                 // 移除记录
                 this._listeners.splice(i, 1);
                 break;
             }
         }
-    }
-    
-    protected doUnmalListener(target:any, type:string, handler:Function, thisArg?:any):void
-    {
-        // 留待子类实现
     }
 
     /**
@@ -122,8 +126,8 @@ export default class Mediator implements IMediator
         for(var i:number = 0, len:number = this._listeners.length; i < len; i++)
         {
             var data:ListenerData = this._listeners[i];
-            // 调用自主实现部分接口
-            this.doUnmalListener(data.target, data.type, data.handler, data.thisArg);
+            // 调用桥接口
+            this._bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
             // 移除记录
             this._listeners.splice(i, 1);
         }

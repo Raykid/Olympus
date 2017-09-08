@@ -6,7 +6,6 @@ import IMessage from "./message/IMessage"
 import Message from "./message/Message"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
-import IMediator from "./mediator/IMediator"
 
 /**
  * @author Raykid
@@ -280,13 +279,13 @@ export default class Core
     
     /*********************** 下面是界面中介者系统 ***********************/
 
-    private _mediatorList:IMediator[] = [];
+    private _mediatorList:any[] = [];
 
     private handleMediators(msg:IMessage):void
     {
         for(var i:number = 0, len:number = this._mediatorList.length; i < len; i++)
         {
-            var mediator:IMediator = this._mediatorList[i];
+            var mediator:any = this._mediatorList[i];
             // 执行语法糖
             this.handleMessageSugars(msg, mediator);
         }
@@ -295,10 +294,10 @@ export default class Core
     /**
      * 注册界面中介者
      * 
-     * @param {IMediator} mediator 要注册的界面中介者实例
+     * @param {any} mediator 要注册的界面中介者实例
      * @memberof Core
      */
-    public mapMediator(mediator:IMediator):void
+    public mapMediator(mediator:any):void
     {
         if(this._mediatorList.indexOf(mediator) < 0)
             this._mediatorList.push(mediator);
@@ -307,10 +306,10 @@ export default class Core
     /**
      * 注销界面中介者
      * 
-     * @param {IMediator} mediator 要注销的界面中介者实例
+     * @param {any} mediator 要注销的界面中介者实例
      * @memberof Core
      */
-    public unmapMediator(mediator:IMediator):void
+    public unmapMediator(mediator:any):void
     {
         var index:number = this._mediatorList.indexOf(mediator);
         if(index >= 0) this._mediatorList.splice(index, 1);

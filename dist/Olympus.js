@@ -179,22 +179,11 @@ define("core/command/Command", ["require", "exports"], function (require, export
         function Command(msg) {
             this.msg = msg;
         }
-        Command.prototype.exec = function () {
-            // 留待子类完善
-        };
         return Command;
     }());
     exports.default = Command;
 });
 define("core/command/ICommandConstructor", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("core/mediator/IMediator", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -417,7 +406,7 @@ define("core/Core", ["require", "exports", "core/message/Message"], function (re
         /**
          * 注册界面中介者
          *
-         * @param {IMediator} mediator 要注册的界面中介者实例
+         * @param {any} mediator 要注册的界面中介者实例
          * @memberof Core
          */
         Core.prototype.mapMediator = function (mediator) {
@@ -427,7 +416,7 @@ define("core/Core", ["require", "exports", "core/message/Message"], function (re
         /**
          * 注销界面中介者
          *
-         * @param {IMediator} mediator 要注销的界面中介者实例
+         * @param {any} mediator 要注销的界面中介者实例
          * @memberof Core
          */
         Core.prototype.unmapMediator = function (mediator) {
@@ -494,6 +483,18 @@ define("engine/system/System", ["require", "exports"], function (require, export
         return System;
     }());
     exports.default = System;
+});
+define("view/bridge/IBridge", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("view/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -671,30 +672,22 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
     }());
     exports.default = PopupManager;
 });
-define("engine/Engine", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 /**
  * @author Raykid
  * @email initial_r@qq.com
- * @create date 2017-09-06
- * @modify date 2017-09-06
+ * @create date 2017-09-05
+ * @modify date 2017-09-05
  *
- * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
- * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
-*/ 
-define("env/explorer/ExplorerType", ["require", "exports"], function (require, exports) {
+ * Explorer类记录浏览器相关数据
+*/
+define("engine/env/Explorer", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
      * 浏览器类型枚举
-    */
+     *
+     * @enum {number}
+     */
     var ExplorerType;
     (function (ExplorerType) {
         ExplorerType[ExplorerType["IE"] = 0] = "IE";
@@ -704,21 +697,7 @@ define("env/explorer/ExplorerType", ["require", "exports"], function (require, e
         ExplorerType[ExplorerType["SAFARI"] = 4] = "SAFARI";
         ExplorerType[ExplorerType["CHROME"] = 5] = "CHROME";
         ExplorerType[ExplorerType["OTHERS"] = 6] = "OTHERS";
-    })(ExplorerType || (ExplorerType = {}));
-    /** 默认导出 */
-    exports.default = ExplorerType;
-});
-define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerType"], function (require, exports, ExplorerType_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * Explorer类记录浏览器相关数据
-    */
+    })(ExplorerType = exports.ExplorerType || (exports.ExplorerType = {}));
     var Explorer = (function () {
         function Explorer() {
             //取得浏览器的userAgent字符串
@@ -728,7 +707,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
             var result;
             if (window["ActiveXObject"] != null) {
                 // IE浏览器
-                this._type = ExplorerType_1.default.IE;
+                this._type = ExplorerType.IE;
                 // 获取IE版本号
                 regExp = new RegExp("MSIE ([^ ;\\)]+);");
                 result = regExp.exec(userAgent);
@@ -745,7 +724,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
             }
             else if (userAgent.indexOf("Edge") > -1) {
                 // Edge浏览器
-                this._type = ExplorerType_1.default.EDGE;
+                this._type = ExplorerType.EDGE;
                 // 获取Edge版本号
                 regExp = new RegExp("Edge/([^ ;\\)]+)");
                 result = regExp.exec(userAgent);
@@ -753,7 +732,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
             }
             else if (userAgent.indexOf("Firefox") > -1) {
                 // Firefox浏览器
-                this._type = ExplorerType_1.default.FIREFOX;
+                this._type = ExplorerType.FIREFOX;
                 // 获取Firefox版本号
                 regExp = new RegExp("Firefox/([^ ;\\)]+)");
                 result = regExp.exec(userAgent);
@@ -761,7 +740,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
             }
             else if (userAgent.indexOf("Opera") > -1) {
                 // Opera浏览器
-                this._type = ExplorerType_1.default.OPERA;
+                this._type = ExplorerType.OPERA;
                 // 获取Opera版本号
                 regExp = new RegExp("OPR/([^ ;\\)]+)");
                 result = regExp.exec(userAgent);
@@ -769,7 +748,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
             }
             else if (userAgent.indexOf("Chrome") > -1) {
                 // Chrome浏览器
-                this._type = ExplorerType_1.default.CHROME;
+                this._type = ExplorerType.CHROME;
                 // 获取Crhome版本号
                 regExp = new RegExp("Chrome/([^ ;\\)]+)");
                 result = regExp.exec(userAgent);
@@ -777,7 +756,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
             }
             else if (userAgent.indexOf("Safari") > -1) {
                 // Safari浏览器
-                this._type = ExplorerType_1.default.SAFARI;
+                this._type = ExplorerType.SAFARI;
                 // 获取Safari版本号
                 regExp = new RegExp("Safari/([^ ;\\)]+)");
                 result = regExp.exec(userAgent);
@@ -785,12 +764,12 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
             }
             else {
                 // 其他浏览器
-                this._type = ExplorerType_1.default.OTHERS;
+                this._type = ExplorerType.OTHERS;
                 // 随意设置一个版本号
                 this._version = "0.0";
             }
             // 赋值类型字符串
-            this._typeStr = ExplorerType_1.default[this._type];
+            this._typeStr = ExplorerType[this._type];
             // 赋值大版本号
             this._bigVersion = this._version.split(".")[0];
         }
@@ -798,7 +777,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
          * 获取浏览器类型枚举值
          *
          * @returns {ExplorerType} 浏览器类型枚举值
-         * @memberof Env
+         * @memberof Explorer
          */
         Explorer.prototype.getType = function () {
             return this._type;
@@ -807,7 +786,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
          * 获取浏览器类型字符串
          *
          * @returns {string} 浏览器类型字符串
-         * @memberof Env
+         * @memberof Explorer
          */
         Explorer.prototype.getTypeStr = function () {
             return this._typeStr;
@@ -837,7 +816,7 @@ define("env/explorer/Explorer", ["require", "exports", "env/explorer/ExplorerTyp
     }());
     exports.default = Explorer;
 });
-define("env/external/External", ["require", "exports"], function (require, exports) {
+define("engine/env/External", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -879,55 +858,7 @@ define("env/external/External", ["require", "exports"], function (require, expor
     }());
     exports.default = External;
 });
-define("env/query/Query", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * Query类记录通过GET参数传递给框架的参数字典
-    */
-    var Query = (function () {
-        function Query() {
-            this._params = {};
-            var loc = window.location.href;
-            var query = loc.substring(loc.search(/\?/) + 1);
-            var vars = query.split('&');
-            for (var i = 0, len = vars.length; i < len; i++) {
-                var pair = vars[i].split('=', 2);
-                if (pair.length != 2 || !pair[0])
-                    continue;
-                var name = pair[0];
-                var value = pair[1];
-                name = decodeURIComponent(name);
-                value = decodeURIComponent(value);
-                // decode twice for ios
-                name = decodeURIComponent(name);
-                value = decodeURIComponent(value);
-                this._params[name] = value;
-            }
-        }
-        /**
-         * 获取GET参数
-         *
-         * @param {string} key 参数key
-         * @returns {string} 参数值
-         * @memberof Query
-         */
-        Query.prototype.getParam = function (key) {
-            return this._params[key];
-        };
-        Query = __decorate([
-            Injectable
-        ], Query);
-        return Query;
-    }());
-    exports.default = Query;
-});
-define("env/hash/Hash", ["require", "exports"], function (require, exports) {
+define("engine/env/Hash", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1038,24 +969,68 @@ define("env/hash/Hash", ["require", "exports"], function (require, exports) {
     }());
     exports.default = Hash;
 });
-define("env/Env", ["require", "exports"], function (require, exports) {
+define("engine/env/Query", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Query类记录通过GET参数传递给框架的参数字典
+    */
+    var Query = (function () {
+        function Query() {
+            this._params = {};
+            var loc = window.location.href;
+            var query = loc.substring(loc.search(/\?/) + 1);
+            var vars = query.split('&');
+            for (var i = 0, len = vars.length; i < len; i++) {
+                var pair = vars[i].split('=', 2);
+                if (pair.length != 2 || !pair[0])
+                    continue;
+                var name = pair[0];
+                var value = pair[1];
+                name = decodeURIComponent(name);
+                value = decodeURIComponent(value);
+                // decode twice for ios
+                name = decodeURIComponent(name);
+                value = decodeURIComponent(value);
+                this._params[name] = value;
+            }
+        }
+        /**
+         * 获取GET参数
+         *
+         * @param {string} key 参数key
+         * @returns {string} 参数值
+         * @memberof Query
+         */
+        Query.prototype.getParam = function (key) {
+            return this._params[key];
+        };
+        Query = __decorate([
+            Injectable
+        ], Query);
+        return Query;
+    }());
+    exports.default = Query;
+});
+define("engine/Engine", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 /**
  * @author Raykid
  * @email initial_r@qq.com
- * @create date 2017-09-05
- * @modify date 2017-09-05
+ * @create date 2017-09-06
+ * @modify date 2017-09-06
  *
- * Env模组是Olympus框架用来集成与运行时环境相关的部分，如浏览器环境、开发环境、运行时参数等
- * 这个模组没有什么逻辑，都是保存了各种静态数据，因此仅仅把各个部分集中起来方便编译
+ * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
+ * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
 */ 
-define("view/IFrameworkView", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("view/ViewMessage", ["require", "exports"], function (require, exports) {
+define("view/messages/ViewMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1097,7 +1072,7 @@ define("view/ViewMessage", ["require", "exports"], function (require, exports) {
     }());
     exports.default = ViewMessage;
 });
-define("view/View", ["require", "exports", "core/Core", "view/ViewMessage"], function (require, exports, Core_3, ViewMessage_1) {
+define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessage"], function (require, exports, Core_3, ViewMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var View = (function () {
@@ -1105,12 +1080,12 @@ define("view/View", ["require", "exports", "core/Core", "view/ViewMessage"], fun
             this._viewDict = {};
         }
         /**
-         * 添加一个表现层实例到框架中
+         * 添加一个表现层桥实例到框架中
          *
-         * @param {IFrameworkView} view
+         * @param {IBridge} view
          * @memberof View
          */
-        View.prototype.addView = function (view) {
+        View.prototype.addBridge = function (view) {
             var _this = this;
             var type = view.getType();
             if (!this._viewDict[type]) {

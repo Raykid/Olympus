@@ -1,5 +1,9 @@
 import System from "./system/System"
 import PopupManager from "./popup/PopupManager"
+import Explorer from "./env/Explorer"
+import External from "./env/External"
+import Hash from "./env/Hash"
+import Query from "./env/Query"
 
 /**
  * @author Raykid

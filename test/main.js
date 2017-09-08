@@ -5,7 +5,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path="../dist/Olympus.d.ts"/>
-define("main", ["require", "exports", "core/Core", "view/View", "env/explorer/Explorer", "env/query/Query", "env/external/External", "env/hash/Hash", "engine/popup/PopupManager", "engine/system/System"], function (require, exports, Core_1, View_1, Explorer_1, Query_1, External_1, Hash_1, PopupManager_1, System_1) {
+define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Explorer", "engine/env/Query", "engine/env/External", "engine/env/Hash", "engine/popup/PopupManager", "engine/system/System"], function (require, exports, Core_1, View_1, Explorer_1, Query_1, External_1, Hash_1, PopupManager_1, System_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

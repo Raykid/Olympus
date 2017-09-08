@@ -1,4 +1,5 @@
-import Mediator from "../../core/mediator/Mediator"
+import Mediator from "../../view/mediator/Mediator"
+import IBridge from "../../view/bridge/IBridge"
 import IPopup from "./IPopup"
 import IPopupPolicy from "./IPopupPolicy"
 
@@ -8,13 +9,13 @@ import IPopupPolicy from "./IPopupPolicy"
  * @create date 2017-09-06
  * @modify date 2017-09-06
  * 
- * 实现了IPopupMediator接口的弹窗中介者基类，也可以不继承该基类而自行实现IPopupMediator接口以替代该基类
+ * 实现了IPopup接口的弹窗中介者基类，也可以不继承该基类而自行实现IPopup接口以替代该基类
 */
 export default class PopupMediator extends Mediator implements IPopup
 {
-    public constructor(skin?:any, policy?:IPopupPolicy)
+    public constructor(bridge:IBridge, skin?:any, policy?:IPopupPolicy)
     {
-        super(skin);
+        super(bridge, skin);
         this.setPolicy(policy);
     }
 

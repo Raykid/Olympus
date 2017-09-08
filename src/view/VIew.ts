@@ -1,6 +1,6 @@
 import {core} from "../core/Core"
-import IFrameworkView from "./IFrameworkView"
-import ViewMessage from "./ViewMessage"
+import IBridge from "./bridge/IBridge"
+import ViewMessage from "./messages/ViewMessage"
 
 /**
  * @author Raykid
@@ -10,29 +10,29 @@ import ViewMessage from "./ViewMessage"
  * 
  * View是表现层模组，用来管理所有表现层对象
 */
-interface IFrameworkViewData
+interface IBridgeData
 {
-    view:IFrameworkView;
+    view:IBridge;
     inited:boolean;
 }
 
 @Injectable
 export default class View
 {
-    private _viewDict:{[type:string]:IFrameworkViewData} = {};
+    private _viewDict:{[type:string]:IBridgeData} = {};
 
     /**
-     * 添加一个表现层实例到框架中
+     * 添加一个表现层桥实例到框架中
      * 
-     * @param {IFrameworkView} view 
+     * @param {IBridge} view 
      * @memberof View
      */
-    public addView(view:IFrameworkView):void
+    public addBridge(view:IBridge):void
     {
         var type:string = view.getType();
         if(!this._viewDict[type])
         {
-            var data:IFrameworkViewData = {view: view, inited: false};
+            var data:IBridgeData = {view: view, inited: false};
             this._viewDict[type] = data;
             // 派发消息
             core.dispatch(ViewMessage.VIEW_BEFORE_INIT, view);
