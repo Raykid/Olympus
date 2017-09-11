@@ -117,6 +117,12 @@ declare module "core/message/Message" {
     */
     export default class Message implements IMessage {
         private _type;
+        /**
+         * 获取消息类型字符串
+         *
+         * @returns {string} 消息类型字符串
+         * @memberof Message
+         */
         getType(): string;
         /**
          * 消息参数列表

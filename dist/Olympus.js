@@ -167,6 +167,12 @@ define("core/message/Message", ["require", "exports"], function (require, export
             this._type = type;
             this.params = params;
         }
+        /**
+         * 获取消息类型字符串
+         *
+         * @returns {string} 消息类型字符串
+         * @memberof Message
+         */
         Message.prototype.getType = function () {
             return this._type;
         };

@@ -11,6 +11,12 @@ import IMessage from "./IMessage"
 export default class Message implements IMessage
 {
     private _type:string;
+    /**
+     * 获取消息类型字符串
+     * 
+     * @returns {string} 消息类型字符串
+     * @memberof Message
+     */
     public getType():string
     {
         return this._type;
