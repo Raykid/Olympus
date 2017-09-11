@@ -20,23 +20,23 @@ export default interface IScene extends IHasBridge
      * @param fromScene 从哪个场景切入
      * @param data 切场景时可能的参数
      */
-    onBeforeIn(fromScene:IScene, data?:any):void;
+    onBeforeIn?(fromScene:IScene, data?:any):void;
     /**
      * 切入场景开始后调用
      * @param fromScene 从哪个场景切入
      * @param data 切场景时可能的参数
      */
-    onAfterIn(fromScene:IScene, data?:any):void;
+    onAfterIn?(fromScene:IScene, data?:any):void;
     /**
      * 切出场景开始前调用
      * @param toScene 要切入到哪个场景
      * @param data 切场景时可能的参数
      */
-    onBeforeOut(toScene:IScene, data?:any):void;
+    onBeforeOut?(toScene:IScene, data?:any):void;
     /**
      * 切出场景开始后调用
      * @param toScene 要切入到哪个场景
      * @param data 切场景时可能的参数
      */
-    onAfterOut(toScene:IScene, data?:any):void;
+    onAfterOut?(toScene:IScene, data?:any):void;
 }

@@ -49,13 +49,13 @@ export default class PopupManager
             // 派发消息
             core.dispatch(PopupMessage.POPUP_BEFORE_OPEN, popup, isModel, from);
             // 调用回调
-            popup.onBeforeOpen(isModel, from);
+            popup.onBeforeOpen && popup.onBeforeOpen(isModel, from);
             // 调用策略接口
             policy.open(popup, ()=>{
                 // 派发消息
                 core.dispatch(PopupMessage.POPUP_AFTER_OPEN, popup, isModel, from);
                 // 调用回调
-                popup.onAfterOpen(isModel, from);
+                popup.onAfterOpen && popup.onAfterOpen(isModel, from);
             }, from);
         }
         return popup;
@@ -79,13 +79,13 @@ export default class PopupManager
             // 派发消息
             core.dispatch(PopupMessage.POPUP_BEFORE_CLOSE, popup, to);
             // 调用回调
-            popup.onBeforeClose(to);
+            popup.onBeforeClose && popup.onBeforeClose(to);
             // 调用策略接口
             policy.close(popup, ()=>{
                 // 派发消息
                 core.dispatch(PopupMessage.POPUP_AFTER_CLOSE, popup, to);
                 // 调用回调
-                popup.onAfterClose(to);
+                popup.onAfterClose && popup.onAfterClose(to);
             }, to);
         }
         return popup;

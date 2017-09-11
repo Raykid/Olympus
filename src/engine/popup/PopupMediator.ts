@@ -40,44 +40,4 @@ export default abstract class PopupMediator extends Mediator implements IPopup
     {
         this._policy = policy;
     }
-
-    /**
-     * 在弹出前调用的方法
-     * 
-     * @memberof PopupMediator
-     */
-    public onBeforeOpen():void
-    {
-        // 子类可以重写该方法
-    }
-
-    /**
-     * 在弹出后调用的方法
-     * 
-     * @memberof PopupMediator
-     */
-    public onAfterOpen():void
-    {
-        // 子类可以重写该方法
-    }
-
-    /**
-     * 在关闭前调用的方法
-     * 
-     * @memberof PopupMediator
-     */
-    public onBeforeClose():void
-    {
-        // 子类可以重写该方法
-    }
-
-    /**
-     * 在关闭后调用的方法
-     * 
-     * @memberof PopupMediator
-     */
-    public onAfterClose():void
-    {
-        // 子类可以重写该方法
-    }
 }

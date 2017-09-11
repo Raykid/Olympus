@@ -37,14 +37,19 @@ export default class View
             // 派发消息
             core.dispatch(ViewMessage.VIEW_BEFORE_INIT, view);
             // 初始化该表现层实例
-            view.initView(()=>{
-                // 派发消息
-                core.dispatch(ViewMessage.VIEW_AFTER_INIT, view);
-                // 设置初始化完毕属性
-                data.inited = true;
-                // 测试是否全部初始化完毕
-                this.testAllInit();
-            });
+            var self:View = this;
+            if(view.initView) view.initView(afterInitView);
+            else afterInitView();
+        }
+
+        function afterInitView():void
+        {
+            // 派发消息
+            core.dispatch(ViewMessage.VIEW_AFTER_INIT, view);
+            // 设置初始化完毕属性
+            data.inited = true;
+            // 测试是否全部初始化完毕
+            self.testAllInit();
         }
     }
 

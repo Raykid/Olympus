@@ -769,13 +769,13 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
                 // 派发消息
                 Core_2.core.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
                 // 调用回调
-                popup.onBeforeOpen(isModel, from);
+                popup.onBeforeOpen && popup.onBeforeOpen(isModel, from);
                 // 调用策略接口
                 policy.open(popup, function () {
                     // 派发消息
                     Core_2.core.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
                     // 调用回调
-                    popup.onAfterOpen(isModel, from);
+                    popup.onAfterOpen && popup.onAfterOpen(isModel, from);
                 }, from);
             }
             return popup;
@@ -797,13 +797,13 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
                 // 派发消息
                 Core_2.core.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
                 // 调用回调
-                popup.onBeforeClose(to);
+                popup.onBeforeClose && popup.onBeforeClose(to);
                 // 调用策略接口
                 policy.close(popup, function () {
                     // 派发消息
                     Core_2.core.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
                     // 调用回调
-                    popup.onAfterClose(to);
+                    popup.onAfterClose && popup.onAfterClose(to);
                 }, to);
             }
             return popup;
@@ -850,38 +850,6 @@ define("engine/popup/PopupMediator", ["require", "exports", "engine/component/Me
          */
         PopupMediator.prototype.setPolicy = function (policy) {
             this._policy = policy;
-        };
-        /**
-         * 在弹出前调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        PopupMediator.prototype.onBeforeOpen = function () {
-            // 子类可以重写该方法
-        };
-        /**
-         * 在弹出后调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        PopupMediator.prototype.onAfterOpen = function () {
-            // 子类可以重写该方法
-        };
-        /**
-         * 在关闭前调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        PopupMediator.prototype.onBeforeClose = function () {
-            // 子类可以重写该方法
-        };
-        /**
-         * 在关闭后调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        PopupMediator.prototype.onAfterClose = function () {
-            // 子类可以重写该方法
         };
         return PopupMediator;
     }(Mediator_1.default));
@@ -1177,14 +1145,14 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
             // 调用准备接口
             prepareFunc.call(policy, from, to);
             // 前置处理
-            from && from.onBeforeOut(to, data);
-            to && to.onBeforeIn(from, data);
+            from && from.onBeforeOut && from.onBeforeOut(to, data);
+            to && to.onBeforeIn && to.onBeforeIn(from, data);
             // 调用切换接口
             doFunc.call(policy, from, to, function () {
                 complete();
                 // 后置处理
-                from && from.onAfterOut(to, data);
-                to && to.onAfterIn(from, data);
+                from && from.onAfterOut && from.onAfterOut(to, data);
+                to && to.onAfterIn && to.onAfterIn(from, data);
                 // 派发事件
                 Core_3.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
                 // 完成步骤
@@ -1233,46 +1201,6 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/component/Me
          */
         SceneMediator.prototype.setPolicy = function (policy) {
             this._policy = policy;
-        };
-        /**
-         *
-         * 切入场景开始前调用
-         * @param {IScene} fromScene 从哪个场景切入
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.onBeforeIn = function (fromScene, data) {
-            // 子类可以重写该方法
-        };
-        /**
-         * 切入场景开始后调用
-         *
-         * @param {IScene} fromScene 从哪个场景切入
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.onAfterIn = function (fromScene, data) {
-            // 子类可以重写该方法
-        };
-        /**
-         * 切出场景开始前调用
-         *
-         * @param {IScene} toScene 要切入到哪个场景
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.onBeforeOut = function (toScene, data) {
-            // 子类可以重写该方法
-        };
-        /**
-         * 切出场景开始后调用
-         *
-         * @param {IScene} toScene 要切入到哪个场景
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.onAfterOut = function (toScene, data) {
-            // 子类可以重写该方法
         };
         return SceneMediator;
     }(Mediator_2.default));
@@ -1692,7 +1620,6 @@ define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessa
          * @memberof View
          */
         View.prototype.registerBridge = function (view) {
-            var _this = this;
             var type = view.getType();
             if (!this._viewDict[type]) {
                 var data = { view: view, inited: false };
@@ -1700,14 +1627,19 @@ define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessa
                 // 派发消息
                 Core_4.core.dispatch(ViewMessage_1.default.VIEW_BEFORE_INIT, view);
                 // 初始化该表现层实例
-                view.initView(function () {
-                    // 派发消息
-                    Core_4.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
-                    // 设置初始化完毕属性
-                    data.inited = true;
-                    // 测试是否全部初始化完毕
-                    _this.testAllInit();
-                });
+                var self = this;
+                if (view.initView)
+                    view.initView(afterInitView);
+                else
+                    afterInitView();
+            }
+            function afterInitView() {
+                // 派发消息
+                Core_4.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
+                // 设置初始化完毕属性
+                data.inited = true;
+                // 测试是否全部初始化完毕
+                self.testAllInit();
             }
         };
         View.prototype.testAllInit = function () {

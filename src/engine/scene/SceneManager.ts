@@ -188,14 +188,14 @@ export default class SceneManager
         // 调用准备接口
         prepareFunc.call(policy, from, to);
         // 前置处理
-        from && from.onBeforeOut(to, data);
-        to && to.onBeforeIn(from, data);
+        from && from.onBeforeOut && from.onBeforeOut(to, data);
+        to && to.onBeforeIn && to.onBeforeIn(from, data);
         // 调用切换接口
         doFunc.call(policy, from, to, ()=>{
             complete();
             // 后置处理
-            from && from.onAfterOut(to, data);
-            to && to.onAfterIn(from, data);
+            from && from.onAfterOut && from.onAfterOut(to, data);
+            to && to.onAfterIn && to.onAfterIn(from, data);
             // 派发事件
             core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, from, to);
             // 完成步骤

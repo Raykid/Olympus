@@ -21,12 +21,6 @@ export default interface IBridge
      */
     getHTMLWrapper():HTMLElement;
     /**
-     * 初始化表现层
-     * @param {()=>void} complete 初始化完毕后的回调
-     * @memberof IBridge
-     */
-    initView(complete:()=>void):void;
-    /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
      * @param {*} target 事件目标对象
@@ -36,7 +30,6 @@ export default interface IBridge
      * @memberof IBridge
      */
     mapListener(target:any, type:string, handler:Function, thisArg?:any):void;
-    
     /**
      * 注销监听事件
      * 
@@ -47,4 +40,10 @@ export default interface IBridge
      * @memberof IBridge
      */
     unmapListener(target:any, type:string, handler:Function, thisArg?:any):void;
+    /**
+     * 初始化表现层，可以没有该方法，没有该方法则表示该表现层无需初始化
+     * @param {()=>void} complete 初始化完毕后的回调
+     * @memberof IBridge
+     */
+    initView?(complete:()=>void):void;
 }

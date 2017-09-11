@@ -347,12 +347,6 @@ declare module "view/bridge/IBridge" {
          */
         getHTMLWrapper(): HTMLElement;
         /**
-         * 初始化表现层
-         * @param {()=>void} complete 初始化完毕后的回调
-         * @memberof IBridge
-         */
-        initView(complete: () => void): void;
-        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
          * @param {*} target 事件目标对象
@@ -372,6 +366,12 @@ declare module "view/bridge/IBridge" {
          * @memberof IBridge
          */
         unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 初始化表现层，可以没有该方法，没有该方法则表示该表现层无需初始化
+         * @param {()=>void} complete 初始化完毕后的回调
+         * @memberof IBridge
+         */
+        initView?(complete: () => void): void;
     }
 }
 declare module "view/bridge/IHasBridge" {
@@ -594,22 +594,22 @@ declare module "engine/popup/IPopup" {
         /** 设置切换策略 */
         setPolicy(policy: IPopupPolicy): void;
         /** 在弹出前调用的方法 */
-        onBeforeOpen(isModel?: boolean, from?: {
+        onBeforeOpen?(isModel?: boolean, from?: {
             x: number;
             y: number;
         }): void;
         /** 在弹出后调用的方法 */
-        onAfterOpen(isModel?: boolean, from?: {
+        onAfterOpen?(isModel?: boolean, from?: {
             x: number;
             y: number;
         }): void;
         /** 在关闭前调用的方法 */
-        onBeforeClose(to?: {
+        onBeforeClose?(to?: {
             x: number;
             y: number;
         }): void;
         /** 在关闭后调用的方法 */
-        onAfterClose(to?: {
+        onAfterClose?(to?: {
             x: number;
             y: number;
         }): void;
@@ -761,30 +761,6 @@ declare module "engine/popup/PopupMediator" {
          * @memberof PopupMediator
          */
         setPolicy(policy: IPopupPolicy): void;
-        /**
-         * 在弹出前调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        onBeforeOpen(): void;
-        /**
-         * 在弹出后调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        onAfterOpen(): void;
-        /**
-         * 在关闭前调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        onBeforeClose(): void;
-        /**
-         * 在关闭后调用的方法
-         *
-         * @memberof PopupMediator
-         */
-        onAfterClose(): void;
     }
 }
 declare module "engine/scene/IScenePolicy" {
@@ -860,25 +836,25 @@ declare module "engine/scene/IScene" {
          * @param fromScene 从哪个场景切入
          * @param data 切场景时可能的参数
          */
-        onBeforeIn(fromScene: IScene, data?: any): void;
+        onBeforeIn?(fromScene: IScene, data?: any): void;
         /**
          * 切入场景开始后调用
          * @param fromScene 从哪个场景切入
          * @param data 切场景时可能的参数
          */
-        onAfterIn(fromScene: IScene, data?: any): void;
+        onAfterIn?(fromScene: IScene, data?: any): void;
         /**
          * 切出场景开始前调用
          * @param toScene 要切入到哪个场景
          * @param data 切场景时可能的参数
          */
-        onBeforeOut(toScene: IScene, data?: any): void;
+        onBeforeOut?(toScene: IScene, data?: any): void;
         /**
          * 切出场景开始后调用
          * @param toScene 要切入到哪个场景
          * @param data 切场景时可能的参数
          */
-        onAfterOut(toScene: IScene, data?: any): void;
+        onAfterOut?(toScene: IScene, data?: any): void;
     }
 }
 declare module "engine/scene/NoneScenePolicy" {
@@ -1042,38 +1018,6 @@ declare module "engine/scene/SceneMediator" {
          * @memberof SceneMediator
          */
         setPolicy(policy: IScenePolicy): void;
-        /**
-         *
-         * 切入场景开始前调用
-         * @param {IScene} fromScene 从哪个场景切入
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        onBeforeIn(fromScene: IScene, data?: any): void;
-        /**
-         * 切入场景开始后调用
-         *
-         * @param {IScene} fromScene 从哪个场景切入
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        onAfterIn(fromScene: IScene, data?: any): void;
-        /**
-         * 切出场景开始前调用
-         *
-         * @param {IScene} toScene 要切入到哪个场景
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        onBeforeOut(toScene: IScene, data?: any): void;
-        /**
-         * 切出场景开始后调用
-         *
-         * @param {IScene} toScene 要切入到哪个场景
-         * @param {*} [data] 切场景时可能的参数
-         * @memberof SceneMediator
-         */
-        onAfterOut(toScene: IScene, data?: any): void;
     }
 }
 declare module "engine/env/Explorer" {

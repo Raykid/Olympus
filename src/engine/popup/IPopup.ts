@@ -16,11 +16,11 @@ export default interface IPopup extends IHasBridge
     /** 设置切换策略 */
     setPolicy(policy:IPopupPolicy):void;
     /** 在弹出前调用的方法 */
-    onBeforeOpen(isModel?:boolean, from?:{x:number, y:number}):void;
+    onBeforeOpen?(isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在弹出后调用的方法 */
-    onAfterOpen(isModel?:boolean, from?:{x:number, y:number}):void;
+    onAfterOpen?(isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在关闭前调用的方法 */
-    onBeforeClose(to?:{x:number, y:number}):void;
+    onBeforeClose?(to?:{x:number, y:number}):void;
     /** 在关闭后调用的方法 */
-    onAfterClose(to?:{x:number, y:number}):void;
+    onAfterClose?(to?:{x:number, y:number}):void;
 }
