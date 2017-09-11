@@ -578,6 +578,7 @@ declare module "engine/popup/IPopupPolicy" {
     }
 }
 declare module "engine/popup/IPopup" {
+    import IHasBridge from "view/bridge/IHasBridge";
     import IPopupPolicy from "engine/popup/IPopupPolicy";
     /**
      * @author Raykid
@@ -585,11 +586,13 @@ declare module "engine/popup/IPopup" {
      * @create date 2017-09-06
      * @modify date 2017-09-06
      *
-     * 弹窗中介者接口
+     * 弹窗接口
     */
-    export default interface IPopup {
+    export default interface IPopup extends IHasBridge {
         /** 获取弹出策略 */
         getPolicy(): IPopupPolicy;
+        /** 设置切换策略 */
+        setPolicy(policy: IPopupPolicy): void;
         /** 在弹出前调用的方法 */
         onBeforeOpen(isModel?: boolean, from?: {
             x: number;
@@ -726,6 +729,351 @@ declare module "engine/popup/PopupManager" {
             x: number;
             y: number;
         }): IPopup;
+    }
+}
+declare module "engine/popup/PopupMediator" {
+    import Mediator from "engine/component/Mediator";
+    import IBridge from "view/bridge/IBridge";
+    import IPopup from "engine/popup/IPopup";
+    import IPopupPolicy from "engine/popup/IPopupPolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 实现了IPopup接口的弹窗中介者基类
+    */
+    export default abstract class PopupMediator extends Mediator implements IPopup {
+        constructor(bridge: IBridge, skin?: any, policy?: IPopupPolicy);
+        private _policy;
+        /**
+         * 获取弹出策略
+         *
+         * @returns {IPopupPolicy} 弹出策略
+         * @memberof PopupMediator
+         */
+        getPolicy(): IPopupPolicy;
+        /**
+         * 设置弹出策略
+         *
+         * @param {IPopupPolicy} policy 设置弹出策略
+         * @memberof PopupMediator
+         */
+        setPolicy(policy: IPopupPolicy): void;
+        /**
+         * 在弹出前调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        onBeforeOpen(): void;
+        /**
+         * 在弹出后调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        onAfterOpen(): void;
+        /**
+         * 在关闭前调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        onBeforeClose(): void;
+        /**
+         * 在关闭后调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        onAfterClose(): void;
+    }
+}
+declare module "engine/scene/IScenePolicy" {
+    import IScene from "engine/scene/IScene";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景动画策略，负责将场景动画与场景实体解耦
+    */
+    export default interface IScenePolicy {
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        prepareSwitch(from: IScene, to: IScene): void;
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        switch(from: IScene, to: IScene, callback: () => void): void;
+        /**
+         * 准备Push场景时调度，如果没有定义该方法则套用PrepareSwitch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        preparePush?(from: IScene, to: IScene): void;
+        /**
+         * Push场景时调度，如果没有定义该方法则套用switch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        push?(from: IScene, to: IScene, callback: () => void): void;
+        /**
+         * 准备Pop场景时调度，如果没有定义该方法则套用PrepareSwitch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        preparePop?(from: IScene, to: IScene): void;
+        /**
+         * Pop场景时调度，如果没有定义该方法则套用switch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        pop?(from: IScene, to: IScene, callback: () => void): void;
+    }
+}
+declare module "engine/scene/IScene" {
+    import IHasBridge from "view/bridge/IHasBridge";
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景接口
+    */
+    export default interface IScene extends IHasBridge {
+        /** 获取切换策略 */
+        getPolicy(): IScenePolicy;
+        /** 设置切换策略 */
+        setPolicy(policy: IScenePolicy): void;
+        /**
+         * 切入场景开始前调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        onBeforeIn(fromScene: IScene, data?: any): void;
+        /**
+         * 切入场景开始后调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        onAfterIn(fromScene: IScene, data?: any): void;
+        /**
+         * 切出场景开始前调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        onBeforeOut(toScene: IScene, data?: any): void;
+        /**
+         * 切出场景开始后调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        onAfterOut(toScene: IScene, data?: any): void;
+    }
+}
+declare module "engine/scene/NoneScenePolicy" {
+    import IScene from "engine/scene/IScene";
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 无任何动画的场景策略，可应用于任何显示层实现
+    */
+    export class NoneScenePolicy implements IScenePolicy {
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        prepareSwitch(from: IScene, to: IScene): void;
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        switch(from: IScene, to: IScene, callback: () => void): void;
+    }
+    const _default: NoneScenePolicy;
+    export default _default;
+}
+declare module "engine/scene/SceneMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景相关的消息
+    */
+    export default class SceneMessage {
+        /**
+         * 切换场景前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        static SCENE_BEFORE_CHANGE: string;
+        /**
+         * 切换场景后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        static SCENE_AFTER_CHANGE: string;
+    }
+}
+declare module "utils/SyncUtil" {
+    /**
+     * 判断是否正在进行操作
+     *
+     * @export
+     * @param {Function} fn 要执行的方法
+     * @returns {boolean} 队列是否正在操作
+     */
+    export function isOperating(fn: Function): boolean;
+    /**
+     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
+     *
+     * @export
+     * @param name 一个队列的名字
+     * @param {Function} fn 要执行的方法
+     * @param {*} [thisArg] 方法this对象
+     * @param {...any[]} [args] 方法参数
+     */
+    export function wait(name: string, fn: Function, thisArg?: any, ...args: any[]): void;
+    /**
+     * 完成一步操作并唤醒后续操作
+     *
+     * @export
+     * @param {string} name 队列名字
+     * @returns {void}
+     */
+    export function notify(name: string): void;
+}
+declare module "engine/scene/SceneManager" {
+    import IScene from "engine/scene/IScene";
+    export default class SceneManager {
+        private _sceneStack;
+        /**
+         * 获取当前场景
+         *
+         * @returns {IScene} 当前场景
+         * @memberof SceneManager
+         */
+        getCurScene(): IScene;
+        /**
+         * 获取活动场景个数
+         *
+         * @returns {number} 活动场景个数
+         * @memberof SceneManager
+         */
+        getActiveCount(): number;
+        /**
+         * 切换场景，替换当前场景，当前场景会被销毁
+         *
+         * @param {IScene} scene 要切换到的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @memberof SceneManager
+         */
+        switchScene(scene: IScene, data?: any): void;
+        /**
+         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
+         *
+         * @param {IScene} scene 要推入的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @memberof SceneManager
+         */
+        pushScene(scene: IScene, data?: any): void;
+        /**
+         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
+         *
+         * @param {IScene} scene 要切换出的场景，仅做验证用，如果当前场景不是传入的场景则不会进行切换弹出操作
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @memberof SceneManager
+         */
+        popScene(scene: IScene, data?: any): void;
+        private doPopScene(scene, data);
+        private doChangeScene(from, to, data, policy, type, complete);
+    }
+}
+declare module "engine/scene/SceneMediator" {
+    import Mediator from "engine/component/Mediator";
+    import IBridge from "view/bridge/IBridge";
+    import IScene from "engine/scene/IScene";
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 实现了IScene接口的场景中介者基类
+    */
+    export default abstract class SceneMediator extends Mediator implements IScene {
+        constructor(bridge: IBridge, skin?: any, policy?: IScenePolicy);
+        private _policy;
+        /**
+         * 获取弹出策略
+         *
+         * @returns {IScenePolicy} 弹出策略
+         * @memberof SceneMediator
+         */
+        getPolicy(): IScenePolicy;
+        /**
+         * 设置弹出策略
+         *
+         * @param {IScenePolicy} policy 弹出策略
+         * @memberof SceneMediator
+         */
+        setPolicy(policy: IScenePolicy): void;
+        /**
+         *
+         * 切入场景开始前调用
+         * @param {IScene} fromScene 从哪个场景切入
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        onBeforeIn(fromScene: IScene, data?: any): void;
+        /**
+         * 切入场景开始后调用
+         *
+         * @param {IScene} fromScene 从哪个场景切入
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        onAfterIn(fromScene: IScene, data?: any): void;
+        /**
+         * 切出场景开始前调用
+         *
+         * @param {IScene} toScene 要切入到哪个场景
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        onBeforeOut(toScene: IScene, data?: any): void;
+        /**
+         * 切出场景开始后调用
+         *
+         * @param {IScene} toScene 要切入到哪个场景
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        onAfterOut(toScene: IScene, data?: any): void;
     }
 }
 declare module "engine/env/Explorer" {

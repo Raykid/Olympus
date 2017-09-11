@@ -4,6 +4,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -805,6 +815,469 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
     }());
     exports.default = PopupManager;
 });
+define("engine/popup/PopupMediator", ["require", "exports", "engine/component/Mediator"], function (require, exports, Mediator_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 实现了IPopup接口的弹窗中介者基类
+    */
+    var PopupMediator = (function (_super) {
+        __extends(PopupMediator, _super);
+        function PopupMediator(bridge, skin, policy) {
+            var _this = _super.call(this, bridge, skin) || this;
+            _this.setPolicy(policy);
+            return _this;
+        }
+        /**
+         * 获取弹出策略
+         *
+         * @returns {IPopupPolicy} 弹出策略
+         * @memberof PopupMediator
+         */
+        PopupMediator.prototype.getPolicy = function () {
+            return this._policy;
+        };
+        /**
+         * 设置弹出策略
+         *
+         * @param {IPopupPolicy} policy 设置弹出策略
+         * @memberof PopupMediator
+         */
+        PopupMediator.prototype.setPolicy = function (policy) {
+            this._policy = policy;
+        };
+        /**
+         * 在弹出前调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        PopupMediator.prototype.onBeforeOpen = function () {
+            // 子类可以重写该方法
+        };
+        /**
+         * 在弹出后调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        PopupMediator.prototype.onAfterOpen = function () {
+            // 子类可以重写该方法
+        };
+        /**
+         * 在关闭前调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        PopupMediator.prototype.onBeforeClose = function () {
+            // 子类可以重写该方法
+        };
+        /**
+         * 在关闭后调用的方法
+         *
+         * @memberof PopupMediator
+         */
+        PopupMediator.prototype.onAfterClose = function () {
+            // 子类可以重写该方法
+        };
+        return PopupMediator;
+    }(Mediator_1.default));
+    exports.default = PopupMediator;
+});
+define("engine/scene/IScenePolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/scene/IScene", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/scene/NoneScenePolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 无任何动画的场景策略，可应用于任何显示层实现
+    */
+    var NoneScenePolicy = (function () {
+        function NoneScenePolicy() {
+        }
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        NoneScenePolicy.prototype.prepareSwitch = function (from, to) {
+            // 这个策略里啥也不用准备
+        };
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        NoneScenePolicy.prototype.switch = function (from, to, callback) {
+            // 直接延迟到下一帧回调（不能同步回调，否则可能会出问题）
+            setTimeout(callback, 0);
+        };
+        return NoneScenePolicy;
+    }());
+    exports.NoneScenePolicy = NoneScenePolicy;
+    /** 默认导出实例 */
+    exports.default = new NoneScenePolicy();
+});
+define("engine/scene/SceneMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景相关的消息
+    */
+    var SceneMessage = (function () {
+        function SceneMessage() {
+        }
+        /**
+         * 切换场景前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        SceneMessage.SCENE_BEFORE_CHANGE = "sceneBeforeChange";
+        /**
+         * 切换场景后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        SceneMessage.SCENE_AFTER_CHANGE = "sceneBeforeChange";
+        return SceneMessage;
+    }());
+    exports.default = SceneMessage;
+});
+define("utils/SyncUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 同步工具集，用于对多个
+    */
+    var _cache = {};
+    /**
+     * 判断是否正在进行操作
+     *
+     * @export
+     * @param {Function} fn 要执行的方法
+     * @returns {boolean} 队列是否正在操作
+     */
+    function isOperating(fn) {
+        var ctx = _cache[fn.toString()];
+        return (ctx != null && ctx.operating);
+    }
+    exports.isOperating = isOperating;
+    /**
+     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
+     *
+     * @export
+     * @param name 一个队列的名字
+     * @param {Function} fn 要执行的方法
+     * @param {*} [thisArg] 方法this对象
+     * @param {...any[]} [args] 方法参数
+     */
+    function wait(name, fn, thisArg) {
+        var args = [];
+        for (var _i = 3; _i < arguments.length; _i++) {
+            args[_i - 3] = arguments[_i];
+        }
+        var ctx = _cache[name];
+        if (ctx == null) {
+            _cache[name] = ctx = { operating: false, datas: [] };
+        }
+        if (ctx.operating) {
+            // 队列正在执行，推入缓存
+            ctx.datas.push({ fn: fn, thisArg: thisArg, args: args });
+        }
+        else {
+            // 队列没有在执行，直接执行
+            ctx.operating = true;
+            fn.apply(thisArg, args);
+        }
+    }
+    exports.wait = wait;
+    /**
+     * 完成一步操作并唤醒后续操作
+     *
+     * @export
+     * @param {string} name 队列名字
+     * @returns {void}
+     */
+    function notify(name) {
+        var ctx = _cache[name];
+        if (ctx == null || ctx.datas.length <= 0) {
+            // 队列执行完了，直接结束
+            ctx.operating = false;
+            return;
+        }
+        var data = ctx.datas.shift();
+        data.fn.apply(data.thisArg, data.args);
+    }
+    exports.notify = notify;
+});
+define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_3, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 弹窗管理器，包含切换场景、push场景、pop场景功能
+    */
+    var SYNC_NAME = "SceneManager_sync";
+    var ChangeType;
+    (function (ChangeType) {
+        ChangeType[ChangeType["Switch"] = 0] = "Switch";
+        ChangeType[ChangeType["Push"] = 1] = "Push";
+        ChangeType[ChangeType["Pop"] = 2] = "Pop";
+    })(ChangeType || (ChangeType = {}));
+    var SceneManager = (function () {
+        function SceneManager() {
+            this._sceneStack = [];
+        }
+        /**
+         * 获取当前场景
+         *
+         * @returns {IScene} 当前场景
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.getCurScene = function () {
+            return this._sceneStack[this._sceneStack.length - 1];
+        };
+        /**
+         * 获取活动场景个数
+         *
+         * @returns {number} 活动场景个数
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.getActiveCount = function () {
+            return this._sceneStack.length;
+        };
+        /**
+         * 切换场景，替换当前场景，当前场景会被销毁
+         *
+         * @param {IScene} scene 要切换到的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.switchScene = function (scene, data) {
+            var _this = this;
+            // 非空判断
+            if (scene == null)
+                return;
+            // 如果切入的是第一个场景，则改用pushScene操作
+            if (this.getActiveCount() == 0) {
+                this.pushScene(scene, data);
+                return;
+            }
+            // 同步执行
+            SyncUtil_1.wait(SYNC_NAME, this.doChangeScene, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Switch, function () { return _this._sceneStack[length - 1] = scene; });
+        };
+        /**
+         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
+         *
+         * @param {IScene} scene 要推入的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.pushScene = function (scene, data) {
+            var _this = this;
+            // 非空判断
+            if (scene == null)
+                return;
+            // 同步执行
+            SyncUtil_1.wait(SYNC_NAME, this.doChangeScene, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Push, function () { return _this._sceneStack.push(scene); });
+        };
+        /**
+         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
+         *
+         * @param {IScene} scene 要切换出的场景，仅做验证用，如果当前场景不是传入的场景则不会进行切换弹出操作
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.popScene = function (scene, data) {
+            // 非空判断
+            if (scene == null)
+                return;
+            // 同步执行
+            SyncUtil_1.wait(SYNC_NAME, this.doPopScene, this, scene, data);
+        };
+        SceneManager.prototype.doPopScene = function (scene, data) {
+            var _this = this;
+            // 如果是最后一个场景则什么都不做
+            var length = this.getActiveCount();
+            if (length <= 1) {
+                console.log("已经是最后一个场景，无法执行popScene操作");
+                // 完成步骤
+                SyncUtil_1.notify(SYNC_NAME);
+                return;
+            }
+            // 验证是否是当前场景，不是则直接移除，不使用Policy
+            var to = this._sceneStack[this._sceneStack.length - 2];
+            var policy = scene.getPolicy();
+            var index = this._sceneStack.indexOf(scene);
+            if (index != length - 1) {
+                to = null;
+                policy = NoneScenePolicy_1.default;
+            }
+            // 执行切换
+            this.doChangeScene(scene, to, data, policy, ChangeType.Pop, function () { return _this._sceneStack.splice(index, 1); });
+        };
+        SceneManager.prototype.doChangeScene = function (from, to, data, policy, type, complete) {
+            if (policy == null)
+                policy = NoneScenePolicy_1.default;
+            // 如果要交替的两个场景不是同一个类型的场景，则暂不提供切换策略的支持，直接套用NoneScenePolicy
+            if (from == null || to.getBridge().getType() != from.getBridge().getType())
+                policy = NoneScenePolicy_1.default;
+            // 派发事件
+            Core_3.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
+            // 获取接口引用
+            var prepareFunc;
+            var doFunc;
+            switch (type) {
+                case ChangeType.Switch:
+                    prepareFunc = policy.prepareSwitch;
+                    doFunc = policy.switch;
+                    break;
+                case ChangeType.Push:
+                    prepareFunc = policy.preparePush || policy.prepareSwitch;
+                    doFunc = policy.push || policy.switch;
+                    break;
+                case ChangeType.Pop:
+                    prepareFunc = policy.preparePop || policy.prepareSwitch;
+                    doFunc = policy.pop || policy.switch;
+                    break;
+            }
+            // 调用准备接口
+            prepareFunc.call(policy, from, to);
+            // 前置处理
+            from && from.onBeforeOut(to, data);
+            to && to.onBeforeIn(from, data);
+            // 调用切换接口
+            doFunc.call(policy, from, to, function () {
+                complete();
+                // 后置处理
+                from && from.onAfterOut(to, data);
+                to && to.onAfterIn(from, data);
+                // 派发事件
+                Core_3.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
+                // 完成步骤
+                SyncUtil_1.notify(SYNC_NAME);
+            });
+        };
+        SceneManager = __decorate([
+            Injectable
+        ], SceneManager);
+        return SceneManager;
+    }());
+    exports.default = SceneManager;
+});
+define("engine/scene/SceneMediator", ["require", "exports", "engine/component/Mediator"], function (require, exports, Mediator_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 实现了IScene接口的场景中介者基类
+    */
+    var SceneMediator = (function (_super) {
+        __extends(SceneMediator, _super);
+        function SceneMediator(bridge, skin, policy) {
+            var _this = _super.call(this, bridge, skin) || this;
+            _this.setPolicy(policy);
+            return _this;
+        }
+        /**
+         * 获取弹出策略
+         *
+         * @returns {IScenePolicy} 弹出策略
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.getPolicy = function () {
+            return this._policy;
+        };
+        /**
+         * 设置弹出策略
+         *
+         * @param {IScenePolicy} policy 弹出策略
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.setPolicy = function (policy) {
+            this._policy = policy;
+        };
+        /**
+         *
+         * 切入场景开始前调用
+         * @param {IScene} fromScene 从哪个场景切入
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.onBeforeIn = function (fromScene, data) {
+            // 子类可以重写该方法
+        };
+        /**
+         * 切入场景开始后调用
+         *
+         * @param {IScene} fromScene 从哪个场景切入
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.onAfterIn = function (fromScene, data) {
+            // 子类可以重写该方法
+        };
+        /**
+         * 切出场景开始前调用
+         *
+         * @param {IScene} toScene 要切入到哪个场景
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.onBeforeOut = function (toScene, data) {
+            // 子类可以重写该方法
+        };
+        /**
+         * 切出场景开始后调用
+         *
+         * @param {IScene} toScene 要切入到哪个场景
+         * @param {*} [data] 切场景时可能的参数
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.onAfterOut = function (toScene, data) {
+            // 子类可以重写该方法
+        };
+        return SceneMediator;
+    }(Mediator_2.default));
+    exports.default = SceneMediator;
+});
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -1205,7 +1678,7 @@ define("view/messages/ViewMessage", ["require", "exports"], function (require, e
     }());
     exports.default = ViewMessage;
 });
-define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessage"], function (require, exports, Core_3, ViewMessage_1) {
+define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessage"], function (require, exports, Core_4, ViewMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var View = (function () {
@@ -1225,11 +1698,11 @@ define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessa
                 var data = { view: view, inited: false };
                 this._viewDict[type] = data;
                 // 派发消息
-                Core_3.core.dispatch(ViewMessage_1.default.VIEW_BEFORE_INIT, view);
+                Core_4.core.dispatch(ViewMessage_1.default.VIEW_BEFORE_INIT, view);
                 // 初始化该表现层实例
                 view.initView(function () {
                     // 派发消息
-                    Core_3.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
+                    Core_4.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
                     // 设置初始化完毕属性
                     data.inited = true;
                     // 测试是否全部初始化完毕

@@ -8,6 +8,7 @@ import Query from "engine/env/Query"
 import External from "engine/env/External"
 import Hash from "engine/env/Hash"
 import PopupManager from "engine/popup/PopupManager"
+import SceneManager from "engine/scene/SceneManager"
 import System from "engine/system/System"
 
 /**
@@ -56,9 +57,12 @@ class Fuck2
 
     @Inject(Hash)
     public hash:Hash;
-
+    
     @Inject(PopupManager)
     public popupManager:PopupManager;
+    
+    @Inject(SceneManager)
+    public sceneManager:SceneManager;
 
     @Inject(System)
     public system:System;

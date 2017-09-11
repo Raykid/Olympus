@@ -5,7 +5,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path="../dist/Olympus.d.ts"/>
-define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Explorer", "engine/env/Query", "engine/env/External", "engine/env/Hash", "engine/popup/PopupManager", "engine/system/System"], function (require, exports, Core_1, View_1, Explorer_1, Query_1, External_1, Hash_1, PopupManager_1, System_1) {
+define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Explorer", "engine/env/Query", "engine/env/External", "engine/env/Hash", "engine/popup/PopupManager", "engine/scene/SceneManager", "engine/system/System"], function (require, exports, Core_1, View_1, Explorer_1, Query_1, External_1, Hash_1, PopupManager_1, SceneManager_1, System_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -59,6 +59,9 @@ define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Expl
         __decorate([
             Inject(PopupManager_1.default)
         ], Fuck2.prototype, "popupManager", void 0);
+        __decorate([
+            Inject(SceneManager_1.default)
+        ], Fuck2.prototype, "sceneManager", void 0);
         __decorate([
             Inject(System_1.default)
         ], Fuck2.prototype, "system", void 0);
