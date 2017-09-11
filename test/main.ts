@@ -72,20 +72,3 @@ var fuck2:Fuck2 = new Fuck2();
 window["fuck2"] = fuck2;
 window["Fuck2"] = Fuck2;
 console.log(fuck2);
-
-
-
-
-abstract class Test1
-{
-    protected test?():void;
-}
-
-
-class Test2 extends Test1
-{
-    protected test():void
-    {
-        super.test();
-    }
-}
