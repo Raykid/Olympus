@@ -457,6 +457,8 @@ define("engine/system/System", ["require", "exports"], function (require, export
     */
     var System = (function () {
         function System() {
+            // 这里尝试一下TS的Tuple类型——Raykid
+            this._nextFrameList = [];
             this._timer = 0;
             var self = this;
             try {
@@ -469,11 +471,15 @@ define("engine/system/System", ["require", "exports"], function (require, export
                     var curTime = Date.now();
                     // 赋值timer
                     self._timer = curTime - startTime;
+                    // 调用tick方法
+                    self.tick();
                 }, 1000 / 60);
             }
             function onRequestAnimationFrame(timer) {
                 // 赋值timer，这个方法里无法获取this，因此需要通过注入的静态属性取到自身实例
                 self._timer = timer;
+                // 调用tick方法
+                self.tick();
                 // 计划下一次执行
                 requestAnimationFrame(onRequestAnimationFrame);
             }
@@ -486,6 +492,28 @@ define("engine/system/System", ["require", "exports"], function (require, export
          */
         System.prototype.getTimer = function () {
             return this._timer;
+        };
+        System.prototype.tick = function () {
+            // 调用下一帧回调
+            for (var i = 0, len = this._nextFrameList.length; i < len; i++) {
+                var data = this._nextFrameList.shift();
+                data[0].apply(data[1], data[2]);
+            }
+        };
+        /**
+         * 在下一帧执行某个方法
+         *
+         * @param {Function} handler 希望在下一帧执行的某个方法
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 方法参数列表
+         * @memberof System
+         */
+        System.prototype.nextFrame = function (handler, thisArg) {
+            var args = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                args[_i - 2] = arguments[_i];
+            }
+            this._nextFrameList.push([handler, thisArg, args]);
         };
         System = __decorate([
             Injectable

@@ -313,6 +313,7 @@ declare module "engine/system/System" {
      * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
     */
     export default class System {
+        private _nextFrameList;
         private _timer;
         /**
          * 获取从程序运行到当前所经过的毫秒数
@@ -322,6 +323,16 @@ declare module "engine/system/System" {
          */
         getTimer(): number;
         constructor();
+        private tick();
+        /**
+         * 在下一帧执行某个方法
+         *
+         * @param {Function} handler 希望在下一帧执行的某个方法
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 方法参数列表
+         * @memberof System
+         */
+        nextFrame(handler: Function, thisArg?: any, ...args: any[]): void;
     }
 }
 declare module "view/bridge/IBridge" {
