@@ -8,6 +8,8 @@ import Explorer from "./env/Explorer"
 import External from "./env/External"
 import Hash from "./env/Hash"
 import Query from "./env/Query"
+import NetManager from "./net/NetManager"
+import HTTPRequestPolicy from "./net/policies/HTTPRequestPolicy"
 
 /**
  * @author Raykid

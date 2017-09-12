@@ -1,10 +1,9 @@
 import {core} from "../../core/Core"
 import Command from "../../core/command/Command"
-import RequestMessage, {IRequestParams, commonData} from "./RequestMessage"
+import RequestData, {IRequestParams, commonData} from "./RequestData"
 import {extendObject} from "../../utils/ObjectUtil"
-import {wrapHost, validateProtocol} from "../../utils/URLUtil"
 import NetMessage from "./NetMessage"
-import ResponseMessage from "./ResponseMessage"
+import ResponseData from "./ResponseData"
 
 /**
  * @author Raykid
@@ -19,23 +18,17 @@ export default abstract class RequestCommand extends Command
     /**
      * 请求消息对象
      * 
-     * @type {RequestMessage}
+     * @type {RequestData}
      * @memberof RequestCommand
      */
-    public msg:RequestMessage;
+    public msg:RequestData;
 
     public exec():void
     {
-        // 按照框架规则处理一下数据
-        var params:IRequestParams = this.msg.__params;
-        // 取到url
-        var url:string = wrapHost(params.policy.path, params.policy.host, true);
-        // 合法化一下protocol
-        url = validateProtocol(url);
         // 指定消息参数连接上公共参数作为参数
-        extendObject(params.data, commonData);
+        extendObject(this.msg.__params.data, commonData);
         // 发送消息
-        params.policy.sendRequest(url, params.data);
+        this.msg.__policy.sendRequest(this.msg);
         // 派发系统消息
         core.dispatch(NetMessage.NET_REQUEST, this.msg);
     }

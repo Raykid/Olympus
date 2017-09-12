@@ -44,3 +44,5 @@ export default class Query
         return this._params[key];
     }
 }
+/** 再额外导出一个单例 */
+export const query:Query = global.Inject.getInject(Query)

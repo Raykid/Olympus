@@ -447,7 +447,7 @@ define("core/Core", ["require", "exports", "core/message/Message"], function (re
         var Core_1;
     }());
     exports.default = Core;
-    /** 再额外导出一个core单例 */
+    /** 再额外导出一个单例 */
     exports.core = global.Inject.getInject(Core);
 });
 define("engine/system/System", ["require", "exports"], function (require, exports) {
@@ -512,14 +512,88 @@ define("engine/system/System", ["require", "exports"], function (require, export
          * @param {Function} handler 希望在下一帧执行的某个方法
          * @param {*} [thisArg] this指向
          * @param {...any[]} args 方法参数列表
+         * @returns {ICancelable} 可取消的句柄
          * @memberof System
          */
         System.prototype.nextFrame = function (handler, thisArg) {
+            var _this = this;
             var args = [];
             for (var _i = 2; _i < arguments.length; _i++) {
                 args[_i - 2] = arguments[_i];
             }
-            this._nextFrameList.push([handler, thisArg, args]);
+            var data = [handler, thisArg, args];
+            this._nextFrameList.push(data);
+            return {
+                cancel: function () {
+                    var index = _this._nextFrameList.indexOf(data);
+                    if (index >= 0)
+                        _this._nextFrameList.splice(index, 1);
+                }
+            };
+        };
+        /**
+         * 设置延迟回调
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        System.prototype.setTimeout = function (duration, handler, thisArg) {
+            var args = [];
+            for (var _i = 3; _i < arguments.length; _i++) {
+                args[_i - 3] = arguments[_i];
+            }
+            var startTimer = this._timer;
+            // 启动计时器
+            var nextFrame = this.nextFrame(tick, this);
+            function tick() {
+                var delta = this._timer - startTimer;
+                if (delta >= duration) {
+                    nextFrame = null;
+                    handler.apply(thisArg, args);
+                }
+                else {
+                    nextFrame = this.nextFrame(tick, this);
+                }
+            }
+            return {
+                cancel: function () {
+                    nextFrame && nextFrame.cancel();
+                    nextFrame = null;
+                }
+            };
+        };
+        /**
+         * 设置延时间隔
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        System.prototype.setInterval = function (duration, handler, thisArg) {
+            var args = [];
+            for (var _i = 3; _i < arguments.length; _i++) {
+                args[_i - 3] = arguments[_i];
+            }
+            var timeout = this.setTimeout(duration, onTimeout, this);
+            function onTimeout() {
+                // 触发回调
+                handler.apply(thisArg, args);
+                // 继续下一次
+                timeout = this.setTimeout(duration, onTimeout, this);
+            }
+            return {
+                cancel: function () {
+                    timeout && timeout.cancel();
+                    timeout = null;
+                }
+            };
         };
         System = __decorate([
             Injectable
@@ -527,6 +601,8 @@ define("engine/system/System", ["require", "exports"], function (require, export
         return System;
     }());
     exports.default = System;
+    /** 再额外导出一个单例 */
+    exports.system = global.Inject.getInject(System);
 });
 define("view/bridge/IBridge", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -848,6 +924,8 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
         return PopupManager;
     }());
     exports.default = PopupManager;
+    /** 再额外导出一个单例 */
+    exports.popupManager = global.Inject.getInject(PopupManager);
 });
 define("engine/popup/PopupMediator", ["require", "exports", "engine/component/Mediator"], function (require, exports, Mediator_1) {
     "use strict";
@@ -1199,6 +1277,8 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
         return SceneManager;
     }());
     exports.default = SceneManager;
+    /** 再额外导出一个单例 */
+    exports.sceneManager = global.Inject.getInject(SceneManager);
 });
 define("engine/scene/SceneMediator", ["require", "exports", "engine/component/Mediator"], function (require, exports, Mediator_2) {
     "use strict";
@@ -1383,6 +1463,8 @@ define("engine/env/Explorer", ["require", "exports"], function (require, exports
         return Explorer;
     }());
     exports.default = Explorer;
+    /** 再额外导出一个单例 */
+    exports.explorer = global.Inject.getInject(Explorer);
 });
 define("engine/env/External", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -1425,6 +1507,8 @@ define("engine/env/External", ["require", "exports"], function (require, exports
         return External;
     }());
     exports.default = External;
+    /** 再额外导出一个单例 */
+    exports.external = global.Inject.getInject(External);
 });
 define("engine/env/Hash", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -1536,6 +1620,8 @@ define("engine/env/Hash", ["require", "exports"], function (require, exports) {
         return Hash;
     }());
     exports.default = Hash;
+    /** 再额外导出一个单例 */
+    exports.hash = global.Inject.getInject(Hash);
 });
 define("engine/env/Query", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -1584,6 +1670,664 @@ define("engine/env/Query", ["require", "exports"], function (require, exports) {
         return Query;
     }());
     exports.default = Query;
+    /** 再额外导出一个单例 */
+    exports.query = global.Inject.getInject(Query);
+});
+define("engine/net/IRequestPolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/net/RequestData", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var RequestData = (function () {
+        function RequestData() {
+            /**
+             * 用户参数，可以保存任意参数到Message中，该参数中的数据不会被发送
+             *
+             * @type {*}
+             * @memberof RequestData
+             */
+            this.__userData = {};
+        }
+        /**
+         * 获取请求消息类型字符串
+         *
+         * @returns {string} 请求消息类型字符串
+         * @memberof RequestData
+         */
+        RequestData.prototype.getType = function () {
+            return this.__params.type;
+        };
+        return RequestData;
+    }());
+    exports.default = RequestData;
+    /** 导出公共消息参数对象 */
+    exports.commonData = {};
+});
+define("engine/net/DataType", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 请求或返回数据结构体
+    */
+    var DataType = (function () {
+        function DataType() {
+        }
+        /**
+         * 解析后端返回的JSON对象，生成结构体
+         *
+         * @param {any} data 后端返回的JSON对象
+         * @returns {DataType} 结构体对象
+         * @memberof DataType
+         */
+        DataType.prototype.parse = function (data) {
+            this.__rawData = data;
+            this.doParse(data);
+            return this;
+        };
+        return DataType;
+    }());
+    exports.default = DataType;
+});
+define("engine/net/ResponseData", ["require", "exports", "engine/net/DataType"], function (require, exports, DataType_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ResponseData = (function (_super) {
+        __extends(ResponseData, _super);
+        function ResponseData() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return ResponseData;
+    }(DataType_1.default));
+    exports.default = ResponseData;
+});
+define("engine/net/NetMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯相关的消息
+    */
+    var NetMessage = (function () {
+        function NetMessage() {
+        }
+        /**
+         * 发送网络请求消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        NetMessage.NET_REQUEST = "netRequest";
+        /**
+         * 接受网络返回消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        NetMessage.NET_RESPONSE = "netResponse";
+        /**
+         * 网络请求错误消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        NetMessage.NET_ERROR = "netError";
+        /**
+         * 解析之前的请求消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        NetMessage.NET_PRE_RESPONSE = "netPreResponse";
+        return NetMessage;
+    }());
+    exports.default = NetMessage;
+});
+define("engine/net/NetManager", ["require", "exports", "core/Core", "engine/net/NetMessage"], function (require, exports, Core_4, NetMessage_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-12
+     * @modify date 2017-09-12
+     *
+     * 网络管理器
+    */
+    var NetManager = (function () {
+        function NetManager() {
+            this._responseDict = {};
+        }
+        /**
+         * 注册一个返回结构体
+         *
+         * @param {string} type 返回类型
+         * @param {{new():ResponseData}} cls 返回结构体构造器
+         * @memberof NetManager
+         */
+        NetManager.prototype.registerResponse = function (type, cls) {
+            this._responseDict[type] = cls;
+        };
+        NetManager.prototype.netPreResponse_handler = function (msg) {
+            var result, request;
+            _a = msg.params, result = _a[0], request = _a[1];
+            // 解析结果
+            var cls = this._responseDict[request.getType()];
+            if (!cls)
+                throw new Error("无法找到返回结构体，请先注册");
+            var response = new cls();
+            response.parse(result);
+            // 派发事件
+            Core_4.core.dispatch(NetMessage_1.default.NET_ERROR, response, request);
+            var _a;
+        };
+        NetManager.prototype.netPreError_handler = function (msg) {
+            var err, request;
+            _a = msg.params, err = _a[0], request = _a[1];
+            // 派发事件
+            Core_4.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
+            var _a;
+        };
+        NetManager = __decorate([
+            Injectable
+        ], NetManager);
+        return NetManager;
+    }());
+    exports.default = NetManager;
+    /** 再额外导出一个单例 */
+    exports.netManager = global.Inject.getInject(NetManager);
+});
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-11
+ * @modify date 2017-09-11
+ *
+ * 对象工具集
+*/
+define("utils/ObjectUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * populate properties
+     * @param target        目标obj
+     * @param sources       来源obj
+     */
+    function extendObject(target) {
+        var sources = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            sources[_i - 1] = arguments[_i];
+        }
+        sources.forEach(function (source) {
+            if (!source)
+                return;
+            for (var propName in source) {
+                if (source.hasOwnProperty(propName)) {
+                    target[propName] = source[propName];
+                }
+            }
+        });
+        return target;
+    }
+    exports.extendObject = extendObject;
+    /**
+     * 复制对象
+     * @param target 要复制的对象
+     * @param deep 是否深表复制，默认浅表复制
+     * @returns {any} 复制后的对象
+     */
+    function cloneObject(target, deep) {
+        if (deep === void 0) { deep = false; }
+        if (target == null)
+            return null;
+        var newObject = {};
+        for (var key in target) {
+            var value = target[key];
+            if (deep && typeof value == "object") {
+                // 如果是深表复制，则需要递归复制子对象
+                value = cloneObject(value, true);
+            }
+            newObject[key] = value;
+        }
+        return newObject;
+    }
+    exports.cloneObject = cloneObject;
+    /**
+     * 生成一个随机ID
+     */
+    function getGUID() {
+        var s = [];
+        var hexDigits = "0123456789abcdef";
+        for (var i = 0; i < 36; i++) {
+            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+        }
+        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+        s[19] = hexDigits.substr((parseInt(s[19]) & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        s[8] = s[13] = s[18] = s[23] = "-";
+        return s.join("");
+    }
+    exports.getGUID = getGUID;
+    var _getAutoIncIdMap = {};
+    /**
+     * 生成自增id（从0开始）
+     * @param type
+     */
+    function getAutoIncId(type) {
+        var index = _getAutoIncIdMap[type] || 0;
+        _getAutoIncIdMap[type] = index++;
+        return type + "-" + index;
+    }
+    exports.getAutoIncId = getAutoIncId;
+    /**
+     * 判断对象是否为null或者空对象
+     * @param obj 要判断的对象
+     * @returns {boolean} 是否为null或者空对象
+     */
+    function isEmpty(obj) {
+        var result = true;
+        for (var key in obj) {
+            result = false;
+            break;
+        }
+        return result;
+    }
+    exports.isEmpty = isEmpty;
+    /**
+     * 移除data中包含的空引用或未定义
+     * @param data 要被移除空引用或未定义的对象
+     */
+    function trimData(data) {
+        for (var key in data) {
+            if (data[key] == null) {
+                delete data[key];
+            }
+        }
+        return data;
+    }
+    exports.trimData = trimData;
+});
+define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * 规整url
+     * @param url
+     */
+    function trimURL(url) {
+        // 去除多余的"/"
+        url = url.replace(/([^:/])(\/)+/g, "$1/");
+        if (url.charAt(0) == "/")
+            url = url.substr(1);
+        // 处理"/xx/../"
+        var reg = /\/[^\/\.]+?\/\.\.\//;
+        while (reg.test(url)) {
+            url = url.replace(reg, "/");
+        }
+        return url;
+    }
+    exports.trimURL = trimURL;
+    /**
+     * 检查URL是否是绝对路径（具有协议头）
+     * @param url 要判断的URL
+     * @returns {any} 是否是绝对路径
+     */
+    function isAbsolutePath(url) {
+        if (url == null)
+            return false;
+        return (url.indexOf("://") >= 0);
+    }
+    exports.isAbsolutePath = isAbsolutePath;
+    /**
+     * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
+     * @param url 要统一protocol的url
+     */
+    function validateProtocol(url) {
+        if (url == null)
+            return null;
+        var index = url.indexOf("://");
+        if (index < 0)
+            return url;
+        var protocol = url.substring(0, index);
+        // 调整http和https
+        if (protocol == "http" || protocol == "https") {
+            return window.location.protocol + url.substr(index + 1);
+        }
+        // 调整ws和wss
+        if (protocol == "ws" || protocol == "wss") {
+            if (window.location.protocol == "https:")
+                protocol = "wss";
+            else
+                protocol = "ws";
+            return protocol + url.substr(index);
+        }
+        // 不需要调整
+        return url;
+    }
+    exports.validateProtocol = validateProtocol;
+    /**
+     * 替换url中的host
+     * @param url       url
+     * @param host      要替换的host
+     * @param forced    是否强制替换（默认false）
+     */
+    function wrapHost(url, host, forced) {
+        if (forced === void 0) { forced = false; }
+        host = host || "/";
+        var re = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
+        var arr = url.match(re);
+        if (arr && arr.length > 0) {
+            if (forced) {
+                url = url.substr(arr[0].length);
+                url = host + "/" + url;
+            }
+        }
+        else {
+            url = host + "/" + url;
+        }
+        // 最后规整一下url
+        url = trimURL(url);
+        return url;
+    }
+    exports.wrapHost = wrapHost;
+    /**
+     * 将相对于当前页面的相对路径包装成绝对路径
+     * @param relativePath 相对于当前页面的相对路径
+     * @param host 传递该参数会用该host替换当前host
+     */
+    function wrapAbsolutePath(relativePath, host) {
+        // 获取当前页面的url
+        var curPath = getPath(window.location.href);
+        var url = trimURL(curPath + "/" + relativePath);
+        if (host != null) {
+            url = wrapHost(url, host, true);
+        }
+        return url;
+    }
+    exports.wrapAbsolutePath = wrapAbsolutePath;
+    /**
+     * 获取URL的host+pathname部分，即问号(?)以前的部分
+     *
+     */
+    function getHostAndPathname(url) {
+        if (url == null)
+            throw new Error("url不能为空");
+        // 去掉get参数和hash
+        url = url.split("#")[0].split("?")[0];
+        // 去掉多余的/
+        url = trimURL(url);
+        return url;
+    }
+    exports.getHostAndPathname = getHostAndPathname;
+    /**
+     * 获取URL路径（文件名前的部分）
+     * @param url 要分析的URL
+     */
+    function getPath(url) {
+        // 首先去掉多余的/
+        url = getHostAndPathname(url);
+        // 然后获取到路径
+        var urlArr = url.split("/");
+        urlArr.pop();
+        return urlArr.join("/") + "/";
+    }
+    exports.getPath = getPath;
+    /**
+     * 获取URL的文件名
+     * @param url 要分析的URL
+     */
+    function getName(url) {
+        // 先去掉get参数和hash
+        url = url.split("#")[0].split("?")[0];
+        // 然后获取到文件名
+        var urlArr = url.split("/");
+        var fileName = urlArr[urlArr.length - 1];
+        return fileName;
+    }
+    exports.getName = getName;
+    /**
+     * 解析URL
+     * @param url 要被解析的URL字符串
+     * @returns {any} 解析后的URLLocation结构体
+     */
+    function parseUrl(url) {
+        var regExp = /(([^:]+:)\/\/(([^:\/\?#]+)(:(\d+))?))(\/[^?#]*)?(\?[^#]*)?(#.*)?/;
+        var match = regExp.exec(url);
+        if (match) {
+            return {
+                href: match[0] || "",
+                origin: match[1] || "",
+                protocol: match[2] || "",
+                host: match[3] || "",
+                hostname: match[4] || "",
+                port: match[6] || "",
+                pathname: match[7] || "",
+                search: match[8] || "",
+                hash: (match[9] == "#" ? "" : match[9]) || ""
+            };
+        }
+        else {
+            throw new Error("传入parseUrl方法的参数不是一个完整的URL：" + url);
+        }
+    }
+    exports.parseUrl = parseUrl;
+    /**
+     * 解析url查询参数
+     * @TODO 添加对jquery编码方式的支持
+     * @param url url
+     */
+    function getQueryParams(url) {
+        var index = url.indexOf("#");
+        if (index >= 0) {
+            url = url.substring(0, index);
+        }
+        index = url.indexOf("?");
+        if (index < 0)
+            return {};
+        var queryString = url.substring(index + 1);
+        var params = {};
+        var kvs = queryString.split("&");
+        kvs.forEach(function (kv) {
+            var pair = kv.split("=", 2);
+            if (pair.length !== 2 || !pair[0]) {
+                console.log("[URLUtil] invalid query params: " + kv);
+                return;
+            }
+            var name = decodeURIComponent(pair[0]);
+            var value = decodeURIComponent(pair[1]);
+            params[name] = value;
+        });
+        return params;
+    }
+    exports.getQueryParams = getQueryParams;
+    /**
+     * 将参数连接到指定URL后面
+     * @param url url
+     * @param params 一个map，包含要连接的参数
+     * @return string 连接后的URL地址
+     */
+    function joinQueryParams(url, params) {
+        if (url == null)
+            throw new Error("url不能为空");
+        var oriParams = getQueryParams(url);
+        var targetParams = ObjectUtil_1.extendObject(oriParams, params);
+        var hash = parseUrl(url).hash;
+        url = getHostAndPathname(url);
+        var isFirst = true;
+        for (var key in targetParams) {
+            if (isFirst) {
+                url += "?" + encodeURIComponent(key) + "=" + encodeURIComponent(targetParams[key]);
+                isFirst = false;
+            }
+            else {
+                url += "&" + encodeURIComponent(key) + "=" + encodeURIComponent(targetParams[key]);
+            }
+        }
+        // 加上hash
+        url += hash;
+        return url;
+    }
+    exports.joinQueryParams = joinQueryParams;
+    /**
+     * 将参数链接到URL的hash后面
+     * @param url 如果传入的url没有注明hash模块，则不会进行操作
+     * @param params 一个map，包含要连接的参数
+     */
+    function joinHashParams(url, params) {
+        if (url == null)
+            throw new Error("url不能为空");
+        var hash = parseUrl(url).hash;
+        if (hash == null || hash == "")
+            return url;
+        for (var key in params) {
+            var value = params[key];
+            if (value && typeof value != "string")
+                value = value.toString();
+            hash += ((hash.indexOf("?") < 0 ? "?" : "&") + encodeURIComponent(key) + "=" + encodeURIComponent(value));
+        }
+        return (url.split("#")[0] + hash);
+    }
+    exports.joinHashParams = joinHashParams;
+    /**
+     * 添加-r_XXX形式版本号
+     * @param url url
+     * @param version 版本号，以数字和小写字母组成
+     * @returns {string} 加版本号后的url，如果没有查到版本号则返回原始url
+     */
+    function join_r_Version(url, version) {
+        if (version == null)
+            return url;
+        // 去掉version中的非法字符
+        version = version.replace(/[^0-9a-z]+/ig, "");
+        // 插入版本号
+        var reg = /([a-zA-Z]+:\/+[^\/\?#]+\/[^\?#]+)\.([^\?]+)(\?.+)?/;
+        var result = reg.exec(url);
+        if (result != null) {
+            url = result[1] + "-r_" + version + "." + result[2] + (result[3] || "");
+        }
+        return url;
+    }
+    exports.join_r_Version = join_r_Version;
+    /**
+     * 移除-r_XXX形式版本号
+     * @param url url
+     * @returns {string} 移除版本号后的url
+     */
+    function remove_r_Version(url) {
+        // 去掉-r_XXX版本号，如果有
+        url = url.replace(/\-r_[a-z0-9]+\./ig, ".");
+        return url;
+    }
+    exports.remove_r_Version = remove_r_Version;
+});
+define("engine/net/HTTPMethod", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "core/Core", "utils/URLUtil", "engine/system/System", "engine/net/NetMessage"], function (require, exports, Core_5, URLUtil_1, System_1, NetMessage_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var HTTPRequestPolicy = (function () {
+        function HTTPRequestPolicy() {
+        }
+        /**
+         * 发送请求逻辑
+         *
+         * @param {IHTTPRequestParams} params HTTP请求数据
+         * @memberof HTTPRequestPolicy
+         */
+        HTTPRequestPolicy.prototype.sendRequest = function (request) {
+            var params = request.__params;
+            var retryTimes = params.retryTimes || 2;
+            var timeout = params.timeout || 10000;
+            var method = params.method || "GET";
+            var cancelable;
+            // 取到url
+            var url = URLUtil_1.wrapHost(params.path, params.host, true);
+            // 合法化一下protocol
+            url = URLUtil_1.validateProtocol(url);
+            // 生成并初始化xhr
+            var xhr = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+            xhr.onreadystatechange = onReadyStateChange;
+            xhr.setRequestHeader("withCredentials", "true");
+            // 发送
+            send();
+            function send() {
+                // 根据发送方式组织数据格式
+                switch (method) {
+                    case "POST":
+                        // POST目前规定为JSON格式发送
+                        xhr.open(method, url, true);
+                        xhr.setRequestHeader("Content-Type", "application/json");
+                        xhr.send(JSON.stringify(params.data));
+                        break;
+                    case "GET":
+                        // 将数据添加到url上
+                        url = URLUtil_1.joinQueryParams(url, params.data);
+                        xhr.open(method, url, true);
+                        xhr.send(null);
+                        break;
+                    default:
+                        throw new Error("暂不支持的HTTP Method：" + method);
+                }
+            }
+            function onReadyStateChange() {
+                switch (xhr.readyState) {
+                    case 2:// 已经发送，开始计时
+                        cancelable = System_1.system.setTimeout(timeout, abortAndRetry);
+                        break;
+                    case 4:// 接收完毕
+                        // 停止计时
+                        cancelable && cancelable.cancel();
+                        try {
+                            if (xhr.status == 200) {
+                                // 成功消息，这里要发PRE消息，因为数据还要经过解析过程，解析过程在别的地方
+                                var result = JSON.parse(xhr.responseText);
+                                Core_5.core.dispatch(NetMessage_2.default.NET_PRE_RESPONSE, result, request);
+                            }
+                            else if (retryTimes > 0) {
+                                // 没有超过重试上限则重试
+                                abortAndRetry();
+                            }
+                            else {
+                                // 出错消息
+                                var err = new Error(xhr.status + " " + xhr.statusText);
+                                Core_5.core.dispatch(NetMessage_2.default.NET_ERROR, err, request);
+                            }
+                        }
+                        catch (err) {
+                            console.error(err.message);
+                        }
+                        break;
+                }
+            }
+            function abortAndRetry() {
+                // 重试次数递减
+                retryTimes--;
+                // 中止xhr
+                xhr.abort();
+                // 重新发送
+                send();
+            }
+        };
+        return HTTPRequestPolicy;
+    }());
+    exports.default = HTTPRequestPolicy;
+    /** 再额外导出一个实例 */
+    exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
 define("engine/Engine", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -1640,7 +2384,7 @@ define("view/messages/ViewMessage", ["require", "exports"], function (require, e
     }());
     exports.default = ViewMessage;
 });
-define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessage"], function (require, exports, Core_4, ViewMessage_1) {
+define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessage"], function (require, exports, Core_6, ViewMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var View = (function () {
@@ -1659,7 +2403,7 @@ define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessa
                 var data = { view: view, inited: false };
                 this._viewDict[type] = data;
                 // 派发消息
-                Core_4.core.dispatch(ViewMessage_1.default.VIEW_BEFORE_INIT, view);
+                Core_6.core.dispatch(ViewMessage_1.default.VIEW_BEFORE_INIT, view);
                 // 初始化该表现层实例
                 var self = this;
                 if (view.initView)
@@ -1669,7 +2413,7 @@ define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessa
             }
             function afterInitView() {
                 // 派发消息
-                Core_4.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
+                Core_6.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
                 // 设置初始化完毕属性
                 data.inited = true;
                 // 测试是否全部初始化完毕
@@ -1684,5 +2428,7 @@ define("view/View", ["require", "exports", "core/Core", "view/messages/ViewMessa
         return View;
     }());
     exports.default = View;
+    /** 再额外导出一个单例 */
+    exports.view = global.Inject.getInject(View);
 });
 //# sourceMappingURL=Olympus.js.map

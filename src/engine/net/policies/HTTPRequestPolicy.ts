@@ -1,5 +1,10 @@
+import {core} from "../../../core/Core"
+import {wrapHost, validateProtocol, joinQueryParams} from "../../../utils/URLUtil"
+import {system, ICancelable} from "../../system/System"
 import IRequestPolicy from "../IRequestPolicy"
-import RequestMessage from "../RequestMessage"
+import RequestData, {IRequestParams} from "../RequestData"
+import HTTPMethod from "../HTTPMethod"
+import NetMessage from "../NetMessage"
 
 /**
  * @author Raykid
@@ -9,7 +14,8 @@ import RequestMessage from "../RequestMessage"
  * 
  * HTTP请求策略
 */
-export default class HTTPRequestPolicy implements IRequestPolicy
+
+export interface IHTTPRequestParams extends IRequestParams
 {
     /**
      * 消息域名
@@ -17,48 +23,134 @@ export default class HTTPRequestPolicy implements IRequestPolicy
      * @type {string}
      * @memberof HTTPRequestPolicy
      */
-    public host:string;
+    host:string;
     /**
      * 消息地址
      * 
      * @type {string}
      * @memberof HTTPRequestPolicy
      */
-    public path:string;
+    path:string;
     /**
-     * 协议类型
-     * 
-     * @type {string}
-     * @memberof HTTPRequestPolicy
-     */
-    public protocol:string = "http"
-    /**
-     * HTTP请求方法
+     * HTTP方法类型，默认是GET
      * 
      * @type {HTTPMethod}
      * @memberof HTTPRequestPolicy
      */
-    public method:HTTPMethod;
+    method?:HTTPMethod;
+    /**
+     * 失败重试次数，默认重试2次
+     * 
+     * @type {number}
+     * @memberof HTTPRequestPolicy
+     */
+    retryTimes?:number;
+    /**
+     * 超时时间，毫秒，默认10000，即10秒
+     * 
+     * @type {number}
+     * @memberof HTTPRequestPolicy
+     */
+    timeout?:number;
+}
 
-    public constructor(host:string, path:string, method:HTTPMethod)
-    {
-        this.host = host;
-        this.path = path;
-        this.method = method;
-    }
-
+export default class HTTPRequestPolicy implements IRequestPolicy
+{
     /**
      * 发送请求逻辑
      * 
-     * @param {string} url 目标url
-     * @param {*} data 消息数据
+     * @param {IHTTPRequestParams} params HTTP请求数据
      * @memberof HTTPRequestPolicy
      */
-    public sendRequest(url:string, data?:any):void
+    public sendRequest(request:RequestData):void
     {
-        // TODO Raykid 等待完成
+        var params:IRequestParams = request.__params;
+        var retryTimes:number = params.retryTimes || 2;
+        var timeout:number = params.timeout || 10000;
+        var method:HTTPMethod = params.method || "GET";
+        var cancelable:ICancelable;
+        // 取到url
+        var url:string = wrapHost(params.path, params.host, true);
+        // 合法化一下protocol
+        url = validateProtocol(url);
+        // 生成并初始化xhr
+        var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+        xhr.onreadystatechange = onReadyStateChange;
+        xhr.setRequestHeader("withCredentials", "true");
+        // 发送
+        send();
+
+        function send():void
+        {
+            // 根据发送方式组织数据格式
+            switch(method)
+            {
+                case "POST":
+                    // POST目前规定为JSON格式发送
+                    xhr.open(method, url, true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.send(JSON.stringify(params.data));
+                    break;
+                case "GET":
+                    // 将数据添加到url上
+                    url = joinQueryParams(url, params.data);
+                    xhr.open(method, url, true);
+                    xhr.send(null);
+                    break;
+                default:
+                    throw new Error("暂不支持的HTTP Method：" + method);
+            }
+        }
+
+        function onReadyStateChange():void
+        {
+            switch(xhr.readyState)
+            {
+                case 2:// 已经发送，开始计时
+                    cancelable = system.setTimeout(timeout, abortAndRetry);
+                    break;
+                case 4:// 接收完毕
+                    // 停止计时
+                    cancelable && cancelable.cancel();
+                    try
+                    {
+                        if(xhr.status == 200)
+                        {
+                            // 成功消息，这里要发PRE消息，因为数据还要经过解析过程，解析过程在别的地方
+                            var result:any = JSON.parse(xhr.responseText);
+                            core.dispatch(NetMessage.NET_PRE_RESPONSE, result, request);
+                        }
+                        else if(retryTimes > 0)
+                        {
+                            // 没有超过重试上限则重试
+                            abortAndRetry();
+                        }
+                        else
+                        {
+                            // 出错消息
+                            var err:Error = new Error(xhr.status + " " + xhr.statusText);
+                            core.dispatch(NetMessage.NET_ERROR, err, request);
+                        }
+                    }
+                    catch(err)
+                    {
+                        console.error(err.message);
+                    }
+                    break;
+            }
+        }
+
+        function abortAndRetry():void
+        {
+            // 重试次数递减
+            retryTimes --;
+            // 中止xhr
+            xhr.abort();
+            // 重新发送
+            send();
+        }
     }
 }
 
-/** 导出HTTP方法枚举 */
-export type HTTPMethod = "GET"|"HEAD"|"POST"|"PUT"|"DELETE"|"CONNECT"|"OPTIONS"|"TRACE"|"PATCH"|"MOVE"|"COPY"|"LINK"|"UNLINK"|"WRAPPED"|"Extension-mothed";
+/** 再额外导出一个实例 */
+export const httpRequestPolicy:HTTPRequestPolicy = new HTTPRequestPolicy();

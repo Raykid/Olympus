@@ -315,5 +315,5 @@ export default class Core
         if(index >= 0) this._mediatorList.splice(index, 1);
     }
 }
-/** 再额外导出一个core单例 */
+/** 再额外导出一个单例 */
 export const core:Core = global.Inject.getInject(Core)

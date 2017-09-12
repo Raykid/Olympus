@@ -1,5 +1,5 @@
 import IDisposable from "../../core/interfaces/IDisposable"
-import RequestMessage from "../net/RequestMessage"
+import RequestData from "../net/RequestData"
 
 /**
  * @author Raykid
@@ -16,7 +16,7 @@ export default interface IModule extends IDisposable
     /** 列出模块儿所需JS资源URL */
     listJsFiles():string[];
     /** 列出模块儿初始化请求 */
-    listInitRequests():RequestMessage[];
+    listInitRequests():RequestData[];
     /** 获取模块儿名称 */
     getName():string;
     /** 打开模块儿时调用 */

@@ -58,3 +58,5 @@ export default class View
 
     }
 }
+/** 再额外导出一个单例 */
+export const view:View = global.Inject.getInject(View)

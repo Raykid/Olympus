@@ -72,10 +72,96 @@ export default class System
      * @param {Function} handler 希望在下一帧执行的某个方法
      * @param {*} [thisArg] this指向
      * @param {...any[]} args 方法参数列表
+     * @returns {ICancelable} 可取消的句柄
      * @memberof System
      */
-    public nextFrame(handler:Function, thisArg?:any, ...args:any[]):void
+    public nextFrame(handler:Function, thisArg?:any, ...args:any[]):ICancelable
     {
-        this._nextFrameList.push([handler, thisArg, args]);
+        var data:[Function, any, any[]] = [handler, thisArg, args];
+        this._nextFrameList.push(data);
+        return {
+            cancel: ()=>{
+                var index:number = this._nextFrameList.indexOf(data);
+                if(index >= 0) this._nextFrameList.splice(index, 1);
+            }
+        };
+    }
+
+    /**
+     * 设置延迟回调
+     * 
+     * @param {number} duration 延迟毫秒值
+     * @param {Function} handler 回调函数
+     * @param {*} [thisArg] this指向
+     * @param {...any[]} args 要传递的参数
+     * @returns {ICancelable} 可取消的句柄
+     * @memberof System
+     */
+    public setTimeout(duration:number, handler:Function, thisArg?:any, ...args:any[]):ICancelable
+    {
+        var startTimer:number = this._timer;
+        // 启动计时器
+        var nextFrame:ICancelable = this.nextFrame(tick, this);
+        
+        function tick():void
+        {
+            var delta:number = this._timer - startTimer;
+            if(delta >= duration)
+            {
+                nextFrame = null;
+                handler.apply(thisArg, args);
+            }
+            else
+            {
+                nextFrame = this.nextFrame(tick, this);
+            }
+        }
+
+        return {
+            cancel():void
+            {
+                nextFrame && nextFrame.cancel();
+                nextFrame = null;
+            }
+        };
+    }
+
+    /**
+     * 设置延时间隔
+     * 
+     * @param {number} duration 延迟毫秒值
+     * @param {Function} handler 回调函数
+     * @param {*} [thisArg] this指向
+     * @param {...any[]} args 要传递的参数
+     * @returns {ICancelable} 可取消的句柄
+     * @memberof System
+     */
+    public setInterval(duration:number, handler:Function, thisArg?:any, ...args:any[]):ICancelable
+    {
+        var timeout:ICancelable = this.setTimeout(duration, onTimeout, this);
+
+        function onTimeout():void
+        {
+            // 触发回调
+            handler.apply(thisArg, args);
+            // 继续下一次
+            timeout = this.setTimeout(duration, onTimeout, this);
+        }
+
+        return {
+            cancel():void
+            {
+                timeout && timeout.cancel();
+                timeout = null;
+            }
+        };
     }
 }
+
+export interface ICancelable
+{
+    cancel():void;
+}
+
+/** 再额外导出一个单例 */
+export const system:System = global.Inject.getInject(System)

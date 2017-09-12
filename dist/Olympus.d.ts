@@ -306,7 +306,7 @@ declare module "core/Core" {
          */
         unmapMediator(mediator: any): void;
     }
-    /** 再额外导出一个core单例 */
+    /** 再额外导出一个单例 */
     export const core: Core;
 }
 declare module "engine/system/System" {
@@ -336,10 +336,38 @@ declare module "engine/system/System" {
          * @param {Function} handler 希望在下一帧执行的某个方法
          * @param {*} [thisArg] this指向
          * @param {...any[]} args 方法参数列表
+         * @returns {ICancelable} 可取消的句柄
          * @memberof System
          */
-        nextFrame(handler: Function, thisArg?: any, ...args: any[]): void;
+        nextFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+        /**
+         * 设置延迟回调
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        setTimeout(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+        /**
+         * 设置延时间隔
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        setInterval(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
     }
+    export interface ICancelable {
+        cancel(): void;
+    }
+    /** 再额外导出一个单例 */
+    export const system: System;
 }
 declare module "view/bridge/IBridge" {
     /**
@@ -747,6 +775,8 @@ declare module "engine/popup/PopupManager" {
             y: number;
         }): IPopup;
     }
+    /** 再额外导出一个单例 */
+    export const popupManager: PopupManager;
 }
 declare module "engine/popup/PopupMediator" {
     import Mediator from "engine/component/Mediator";
@@ -1004,6 +1034,8 @@ declare module "engine/scene/SceneManager" {
         private doPopScene(scene, data);
         private doChangeScene(from, to, data, policy, type, complete);
     }
+    /** 再额外导出一个单例 */
+    export const sceneManager: SceneManager;
 }
 declare module "engine/scene/SceneMediator" {
     import Mediator from "engine/component/Mediator";
@@ -1095,6 +1127,8 @@ declare module "engine/env/Explorer" {
         getBigVersion(): string;
         constructor();
     }
+    /** 再额外导出一个单例 */
+    export const explorer: Explorer;
 }
 declare module "engine/env/External" {
     /**
@@ -1117,6 +1151,8 @@ declare module "engine/env/External" {
          */
         getParam(key: string): any;
     }
+    /** 再额外导出一个单例 */
+    export const external: External;
 }
 declare module "engine/env/Hash" {
     /**
@@ -1180,6 +1216,8 @@ declare module "engine/env/Hash" {
          */
         getParam(key: string): string;
     }
+    /** 再额外导出一个单例 */
+    export const hash: Hash;
 }
 declare module "engine/env/Query" {
     /**
@@ -1202,6 +1240,454 @@ declare module "engine/env/Query" {
          */
         getParam(key: string): string;
     }
+    /** 再额外导出一个单例 */
+    export const query: Query;
+}
+declare module "engine/net/IRequestPolicy" {
+    import RequestData from "engine/net/RequestData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 请求策略，根据使用的策略不同，请求的行为也会有所不同，例如使用HTTP或者Socket
+    */
+    export default interface IRequestPolicy {
+        /**
+         * 发送请求逻辑
+         *
+         * @param {RequestData} request 请求
+         * @memberof IRequestPolicy
+         */
+        sendRequest(request: RequestData): void;
+    }
+}
+declare module "engine/net/RequestData" {
+    import IMessage from "core/message/IMessage";
+    import IRequestPolicy from "engine/net/IRequestPolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯发送消息基类
+    */
+    export interface IRequestParams {
+        /**
+         * 消息名
+         *
+         * @type {string}
+         * @memberof IRequestParams
+         */
+        type: string;
+        /**
+         * 消息数据
+         *
+         * @type {*}
+         * @memberof IRequestParams
+         */
+        data: any;
+        /**
+         * 协议类型
+         *
+         * @type {string}
+         * @memberof IRequestParams
+         */
+        protocol: string;
+        /**
+         * 其他可能需要的参数
+         *
+         * @type {*}
+         * @memberof IRequestParams
+         */
+        [key: string]: any;
+    }
+    export default abstract class RequestData implements IMessage {
+        /**
+         * 用户参数，可以保存任意参数到Message中，该参数中的数据不会被发送
+         *
+         * @type {*}
+         * @memberof RequestData
+         */
+        __userData: any;
+        /**
+         * 请求参数，可以运行时修改
+         *
+         * @type {IRequestParams}
+         * @memberof RequestData
+         */
+        abstract __params: IRequestParams;
+        /**
+         * 消息发送接收策略
+         *
+         * @type {IRequestPolicy}
+         * @memberof RequestData
+         */
+        abstract __policy: IRequestPolicy;
+        /**
+         * 获取请求消息类型字符串
+         *
+         * @returns {string} 请求消息类型字符串
+         * @memberof RequestData
+         */
+        getType(): string;
+    }
+    /** 导出公共消息参数对象 */
+    export var commonData: any;
+}
+declare module "engine/net/DataType" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 请求或返回数据结构体
+    */
+    export default abstract class DataType {
+        private __rawData;
+        /**
+         * 解析后端返回的JSON对象，生成结构体
+         *
+         * @param {any} data 后端返回的JSON对象
+         * @returns {DataType} 结构体对象
+         * @memberof DataType
+         */
+        parse(data: any): DataType;
+        /**
+         * 解析逻辑，需要子类实现
+         *
+         * @protected
+         * @abstract
+         * @param {*} data JSON对象
+         * @memberof DataType
+         */
+        protected abstract doParse(data: any): void;
+        /**
+         * 打包数据成为一个Object，需要子类实现
+         *
+         * @returns {*} 打包后的数据
+         * @memberof DataType
+         */
+        abstract pack(): any;
+    }
+}
+declare module "engine/net/ResponseData" {
+    import MessageType from "engine/net/DataType";
+    import RequestData from "engine/net/RequestData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯返回消息基类
+    */
+    export interface IResponseParams {
+        type: string;
+        protocol: string;
+        method: null | "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH" | "MOVE" | "COPY" | "LINK" | "UNLINK" | "WRAPPED" | "Extension-mothed";
+        data: any;
+        request?: RequestData;
+        error?: Error;
+    }
+    export default abstract class ResponseData extends MessageType {
+        /**
+         * 返回参数
+         *
+         * @abstract
+         * @type {IResponseParams}
+         * @memberof ResponseType
+         */
+        abstract __params: IResponseParams;
+    }
+}
+declare module "engine/net/NetMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯相关的消息
+    */
+    export default class NetMessage {
+        /**
+         * 发送网络请求消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_REQUEST: string;
+        /**
+         * 接受网络返回消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_RESPONSE: string;
+        /**
+         * 网络请求错误消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_ERROR: string;
+        /**
+         * 解析之前的请求消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_PRE_RESPONSE: string;
+    }
+}
+declare module "engine/net/NetManager" {
+    import ResponseData from "engine/net/ResponseData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-12
+     * @modify date 2017-09-12
+     *
+     * 网络管理器
+    */
+    export default class NetManager {
+        private _responseDict;
+        /**
+         * 注册一个返回结构体
+         *
+         * @param {string} type 返回类型
+         * @param {{new():ResponseData}} cls 返回结构体构造器
+         * @memberof NetManager
+         */
+        registerResponse(type: string, cls: {
+            new (): ResponseData;
+        }): void;
+        private netPreResponse_handler(msg);
+        private netPreError_handler(msg);
+    }
+    /** 再额外导出一个单例 */
+    export const netManager: NetManager;
+}
+declare module "utils/ObjectUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 对象工具集
+    */
+    /**
+     * populate properties
+     * @param target        目标obj
+     * @param sources       来源obj
+     */
+    export function extendObject(target: any, ...sources: any[]): any;
+    /**
+     * 复制对象
+     * @param target 要复制的对象
+     * @param deep 是否深表复制，默认浅表复制
+     * @returns {any} 复制后的对象
+     */
+    export function cloneObject(target: any, deep?: boolean): any;
+    /**
+     * 生成一个随机ID
+     */
+    export function getGUID(): string;
+    /**
+     * 生成自增id（从0开始）
+     * @param type
+     */
+    export function getAutoIncId(type: string): string;
+    /**
+     * 判断对象是否为null或者空对象
+     * @param obj 要判断的对象
+     * @returns {boolean} 是否为null或者空对象
+     */
+    export function isEmpty(obj: any): boolean;
+    /**
+     * 移除data中包含的空引用或未定义
+     * @param data 要被移除空引用或未定义的对象
+     */
+    export function trimData(data: any): any;
+}
+declare module "utils/URLUtil" {
+    /**
+     * 规整url
+     * @param url
+     */
+    export function trimURL(url: string): string;
+    /**
+     * 检查URL是否是绝对路径（具有协议头）
+     * @param url 要判断的URL
+     * @returns {any} 是否是绝对路径
+     */
+    export function isAbsolutePath(url: string): boolean;
+    /**
+     * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
+     * @param url 要统一protocol的url
+     */
+    export function validateProtocol(url: string): string;
+    /**
+     * 替换url中的host
+     * @param url       url
+     * @param host      要替换的host
+     * @param forced    是否强制替换（默认false）
+     */
+    export function wrapHost(url: string, host: string, forced?: boolean): string;
+    /**
+     * 将相对于当前页面的相对路径包装成绝对路径
+     * @param relativePath 相对于当前页面的相对路径
+     * @param host 传递该参数会用该host替换当前host
+     */
+    export function wrapAbsolutePath(relativePath: string, host?: string): string;
+    /**
+     * 获取URL的host+pathname部分，即问号(?)以前的部分
+     *
+     */
+    export function getHostAndPathname(url: string): string;
+    /**
+     * 获取URL路径（文件名前的部分）
+     * @param url 要分析的URL
+     */
+    export function getPath(url: string): string;
+    /**
+     * 获取URL的文件名
+     * @param url 要分析的URL
+     */
+    export function getName(url: string): string;
+    /**
+     * 解析URL
+     * @param url 要被解析的URL字符串
+     * @returns {any} 解析后的URLLocation结构体
+     */
+    export function parseUrl(url: string): URLLocation;
+    /**
+     * 解析url查询参数
+     * @TODO 添加对jquery编码方式的支持
+     * @param url url
+     */
+    export function getQueryParams(url: string): {
+        [key: string]: string;
+    };
+    /**
+     * 将参数连接到指定URL后面
+     * @param url url
+     * @param params 一个map，包含要连接的参数
+     * @return string 连接后的URL地址
+     */
+    export function joinQueryParams(url: string, params: Object): string;
+    /**
+     * 将参数链接到URL的hash后面
+     * @param url 如果传入的url没有注明hash模块，则不会进行操作
+     * @param params 一个map，包含要连接的参数
+     */
+    export function joinHashParams(url: string, params: Object): string;
+    /**
+     * 添加-r_XXX形式版本号
+     * @param url url
+     * @param version 版本号，以数字和小写字母组成
+     * @returns {string} 加版本号后的url，如果没有查到版本号则返回原始url
+     */
+    export function join_r_Version(url: string, version: string): string;
+    /**
+     * 移除-r_XXX形式版本号
+     * @param url url
+     * @returns {string} 移除版本号后的url
+     */
+    export function remove_r_Version(url: string): string;
+    export interface URLLocation {
+        href: string;
+        origin: string;
+        protocol: string;
+        host: string;
+        hostname: string;
+        port: string;
+        pathname: string;
+        search: string;
+        hash: string;
+    }
+}
+declare module "engine/net/HTTPMethod" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-12
+     * @modify date 2017-09-12
+     *
+     * 定义HTTP发送接收方式目前支持的method值的枚举
+    */
+    type HTTPMethod = "GET" | "POST";
+    export default HTTPMethod;
+}
+declare module "engine/net/policies/HTTPRequestPolicy" {
+    import IRequestPolicy from "engine/net/IRequestPolicy";
+    import RequestData, { IRequestParams } from "engine/net/RequestData";
+    import HTTPMethod from "engine/net/HTTPMethod";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * HTTP请求策略
+    */
+    export interface IHTTPRequestParams extends IRequestParams {
+        /**
+         * 消息域名
+         *
+         * @type {string}
+         * @memberof HTTPRequestPolicy
+         */
+        host: string;
+        /**
+         * 消息地址
+         *
+         * @type {string}
+         * @memberof HTTPRequestPolicy
+         */
+        path: string;
+        /**
+         * HTTP方法类型，默认是GET
+         *
+         * @type {HTTPMethod}
+         * @memberof HTTPRequestPolicy
+         */
+        method?: HTTPMethod;
+        /**
+         * 失败重试次数，默认重试2次
+         *
+         * @type {number}
+         * @memberof HTTPRequestPolicy
+         */
+        retryTimes?: number;
+        /**
+         * 超时时间，毫秒，默认10000，即10秒
+         *
+         * @type {number}
+         * @memberof HTTPRequestPolicy
+         */
+        timeout?: number;
+    }
+    export default class HTTPRequestPolicy implements IRequestPolicy {
+        /**
+         * 发送请求逻辑
+         *
+         * @param {IHTTPRequestParams} params HTTP请求数据
+         * @memberof HTTPRequestPolicy
+         */
+        sendRequest(request: RequestData): void;
+    }
+    /** 再额外导出一个实例 */
+    export const httpRequestPolicy: HTTPRequestPolicy;
 }
 declare module "engine/Engine" {
 }
@@ -1254,4 +1740,6 @@ declare module "view/View" {
         registerBridge(view: IBridge): void;
         private testAllInit();
     }
+    /** 再额外导出一个单例 */
+    export const view: View;
 }

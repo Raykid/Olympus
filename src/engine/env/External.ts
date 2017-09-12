@@ -40,3 +40,5 @@ export default class External
         return this._params[key];
     }
 }
+/** 再额外导出一个单例 */
+export const external:External = global.Inject.getInject(External)

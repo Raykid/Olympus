@@ -1,4 +1,4 @@
-import RequestMessage from "./RequestMessage"
+import RequestData from "./RequestData"
 
 /**
  * @author Raykid
@@ -11,32 +11,10 @@ import RequestMessage from "./RequestMessage"
 export default interface IRequestPolicy
 {
     /**
-     * 消息域名
-     * 
-     * @type {string}
-     * @memberof IRequestPolicy
-     */
-    readonly host:string;
-    /**
-     * 消息地址
-     * 
-     * @type {string}
-     * @memberof IRequestPolicy
-     */
-    readonly path:string;
-    /**
-     * 协议类型
-     * 
-     * @type {string}
-     * @memberof IRequestPolicy
-     */
-    readonly protocol:string;
-    /**
      * 发送请求逻辑
      * 
-     * @param {string} url 目标url
-     * @param {*} data 消息数据
+     * @param {RequestData} request 请求
      * @memberof IRequestPolicy
      */
-    sendRequest(url:string, data?:any):void;
+    sendRequest(request:RequestData):void;
 }

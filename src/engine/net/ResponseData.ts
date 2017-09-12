@@ -1,6 +1,5 @@
-import MessageType from "./MessageType"
-import RequestMessage from "./RequestMessage"
-import IMessage from "../../core/message/IMessage"
+import MessageType from "./DataType"
+import RequestData from "./RequestData"
 
 /**
  * @author Raykid
@@ -17,11 +16,11 @@ export interface IResponseParams
     protocol:string;
     method:null|"GET"|"HEAD"|"POST"|"PUT"|"DELETE"|"CONNECT"|"OPTIONS"|"TRACE"|"PATCH"|"MOVE"|"COPY"|"LINK"|"UNLINK"|"WRAPPED"|"Extension-mothed";
     data:any;
-    request?:RequestMessage;// 如果消息可以配对则有这个对象
+    request?:RequestData;// 如果消息可以配对则有这个对象
     error?:Error;// 如果请求出错了则有这个对象
 }
 
-export default abstract class ResponseMessage extends MessageType implements IMessage
+export default abstract class ResponseData extends MessageType
 {
     /**
      * 返回参数
@@ -31,15 +30,4 @@ export default abstract class ResponseMessage extends MessageType implements IMe
      * @memberof ResponseType
      */
     public abstract __params:IResponseParams;
-
-    /**
-     * 获取返回消息类型字符串
-     * 
-     * @returns {string} 
-     * @memberof ResponseMessage
-     */
-    public getType():string
-    {
-        return this.__params.type;
-    }
 }

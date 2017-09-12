@@ -120,3 +120,5 @@ export default class Hash
         return this._params[key];
     }
 }
+/** 再额外导出一个单例 */
+export const hash:Hash = global.Inject.getInject(Hash)

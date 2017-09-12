@@ -159,3 +159,5 @@ export default class Explorer
         this._bigVersion = this._version.split(".")[0];
     }
 }
+/** 再额外导出一个单例 */
+export const explorer:Explorer = global.Inject.getInject(Explorer)

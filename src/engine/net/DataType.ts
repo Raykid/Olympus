@@ -6,7 +6,7 @@
  * 
  * 请求或返回数据结构体
 */
-export default abstract class MessageType
+export default abstract class DataType
 {
     private __rawData:any;
 
@@ -14,10 +14,10 @@ export default abstract class MessageType
      * 解析后端返回的JSON对象，生成结构体
      * 
      * @param {any} data 后端返回的JSON对象
-     * @returns {MessageType} 结构体对象
-     * @memberof MessageType
+     * @returns {DataType} 结构体对象
+     * @memberof DataType
      */
-    public parse(data:any):MessageType
+    public parse(data:any):DataType
     {
         this.__rawData = data;
         this.doParse(data);
@@ -30,7 +30,7 @@ export default abstract class MessageType
      * @protected
      * @abstract
      * @param {*} data JSON对象
-     * @memberof MessageType
+     * @memberof DataType
      */
     protected abstract doParse(data:any):void;
     
@@ -38,7 +38,7 @@ export default abstract class MessageType
      * 打包数据成为一个Object，需要子类实现
      * 
      * @returns {*} 打包后的数据
-     * @memberof MessageType
+     * @memberof DataType
      */
     public abstract pack():any;
 }
