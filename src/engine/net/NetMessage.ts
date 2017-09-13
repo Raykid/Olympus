@@ -32,12 +32,4 @@ export default class NetMessage
      * @memberof NetMessage
      */
     public static NET_ERROR:string = "netError";
-    /**
-     * 解析之前的请求消息
-     * 
-     * @static
-     * @type {string}
-     * @memberof NetMessage
-     */
-    public static NET_PRE_RESPONSE:string = "netPreResponse";
 }

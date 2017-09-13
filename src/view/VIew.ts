@@ -1,6 +1,6 @@
 import {core} from "../core/Core"
 import IBridge from "./bridge/IBridge"
-import ViewMessage from "./messages/ViewMessage"
+import ViewMessage from "./message/ViewMessage"
 
 /**
  * @author Raykid

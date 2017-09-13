@@ -4,6 +4,7 @@
 import IConstructor from "./interfaces/IConstructor"
 import IMessage from "./message/IMessage"
 import Message from "./message/Message"
+import CoreMessage from "./message/CoreMessage"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
 
@@ -80,6 +81,18 @@ export default class Core
         }
     }
 
+    private doDispatch(msg:IMessage):void
+    {
+        // 触发依赖注入对象操作
+        this.handleInjects(msg);
+        // 触发中介者相关操作
+        this.handleMediators(msg);
+        // 触发命令
+        this.handleCommands(msg);
+        // 触发用listen形式监听的消息
+        this.handleMessages(msg);
+    }
+
     /**
      * 派发内核消息
      * 
@@ -98,21 +111,17 @@ export default class Core
     /** dispatch方法实现 */
     public dispatch(typeOrMsg:string|IMessage, ...params:any[]):void
     {
-        // 统一事件对象
+        // 统一消息对象
         var msg:IMessage = typeOrMsg as IMessage;
         if(typeof typeOrMsg == "string")
         {
             msg = new Message(typeOrMsg);
             (msg as Message).params = params;
         }
-        // 触发依赖注入对象操作
-        this.handleInjects(msg);
-        // 触发中介者相关操作
-        this.handleMediators(msg);
-        // 触发命令
-        this.handleCommands(msg);
-        // 触发用listen形式监听的消息
-        this.handleMessages(msg);
+        // 派发消息
+        this.doDispatch(msg);
+        // 额外派发一个通用事件
+        this.doDispatch(new CoreMessage(CoreMessage.MESSAGE_DISPATCHED, msg));
     }
 
     /**

@@ -1,10 +1,8 @@
-import {core} from "../../../core/Core"
 import {wrapHost, validateProtocol, joinQueryParams} from "../../../utils/URLUtil"
-import {system, ICancelable} from "../../system/System"
 import IRequestPolicy from "../IRequestPolicy"
 import RequestData, {IRequestParams} from "../RequestData"
 import HTTPMethod from "../HTTPMethod"
-import NetMessage from "../NetMessage"
+import {__onResponse, __onError} from "../NetManager"
 
 /**
  * @author Raykid
@@ -68,7 +66,7 @@ export default class HTTPRequestPolicy implements IRequestPolicy
         var retryTimes:number = params.retryTimes || 2;
         var timeout:number = params.timeout || 10000;
         var method:HTTPMethod = params.method || "GET";
-        var cancelable:ICancelable;
+        var timeoutId:number = 0;
         // 取到url
         var url:string = wrapHost(params.path, params.host, true);
         // 合法化一下protocol
@@ -107,18 +105,19 @@ export default class HTTPRequestPolicy implements IRequestPolicy
             switch(xhr.readyState)
             {
                 case 2:// 已经发送，开始计时
-                    cancelable = system.setTimeout(timeout, abortAndRetry);
+                    timeoutId = setTimeout(abortAndRetry, timeout);
                     break;
                 case 4:// 接收完毕
                     // 停止计时
-                    cancelable && cancelable.cancel();
+                    timeoutId && clearTimeout(timeoutId);
+                    timeoutId = 0;
                     try
                     {
                         if(xhr.status == 200)
                         {
-                            // 成功消息，这里要发PRE消息，因为数据还要经过解析过程，解析过程在别的地方
+                            // 成功回调
                             var result:any = JSON.parse(xhr.responseText);
-                            core.dispatch(NetMessage.NET_PRE_RESPONSE, result, request);
+                            __onResponse(result, request);
                         }
                         else if(retryTimes > 0)
                         {
@@ -127,9 +126,9 @@ export default class HTTPRequestPolicy implements IRequestPolicy
                         }
                         else
                         {
-                            // 出错消息
+                            // 出错回调
                             var err:Error = new Error(xhr.status + " " + xhr.statusText);
-                            core.dispatch(NetMessage.NET_ERROR, err, request);
+                            __onError(err, request);
                         }
                     }
                     catch(err)

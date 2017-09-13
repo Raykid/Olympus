@@ -31,3 +31,9 @@ export default abstract class ResponseData extends MessageType
      */
     public abstract __params:IResponseParams;
 }
+
+export interface ResponseDataConstructor
+{
+    new():ResponseData;
+    getType():string;
+}
