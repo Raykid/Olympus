@@ -204,4 +204,4 @@ export default class SceneManager
     }
 }
 /** 再额外导出一个单例 */
-export const sceneManager:SceneManager = global.Inject.getInject(SceneManager)
+export const sceneManager:SceneManager = core.getInject(SceneManager)

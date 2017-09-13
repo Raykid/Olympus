@@ -1,3 +1,5 @@
+import {core} from "../../core/Core"
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -164,4 +166,4 @@ export interface ICancelable
 }
 
 /** 再额外导出一个单例 */
-export const system:System = global.Inject.getInject(System)
+export const system:System = core.getInject(System)

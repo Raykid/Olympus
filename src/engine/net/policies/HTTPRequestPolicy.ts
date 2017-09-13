@@ -2,7 +2,7 @@ import {wrapHost, validateProtocol, joinQueryParams} from "../../../utils/URLUti
 import IRequestPolicy from "../IRequestPolicy"
 import RequestData, {IRequestParams} from "../RequestData"
 import HTTPMethod from "../HTTPMethod"
-import {__onResponse, __onError} from "../NetManager"
+import {netManager} from "../NetManager"
 
 /**
  * @author Raykid
@@ -117,7 +117,7 @@ export default class HTTPRequestPolicy implements IRequestPolicy
                         {
                             // 成功回调
                             var result:any = JSON.parse(xhr.responseText);
-                            __onResponse(result, request);
+                            netManager.__onResponse(result, request);
                         }
                         else if(retryTimes > 0)
                         {
@@ -128,7 +128,7 @@ export default class HTTPRequestPolicy implements IRequestPolicy
                         {
                             // 出错回调
                             var err:Error = new Error(xhr.status + " " + xhr.statusText);
-                            __onError(err, request);
+                            netManager.__onError(err, request);
                         }
                     }
                     catch(err)

@@ -1,3 +1,5 @@
+import {core} from "../../core/Core"
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -45,4 +47,4 @@ export default class Query
     }
 }
 /** 再额外导出一个单例 */
-export const query:Query = global.Inject.getInject(Query)
+export const query:Query = core.getInject(Query)

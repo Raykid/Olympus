@@ -32,7 +32,7 @@ export default abstract class ResponseData extends MessageType
     public abstract __params:IResponseParams;
 }
 
-export interface ResponseDataConstructor
+export interface IResponseDataConstructor
 {
     new():ResponseData;
     getType():string;

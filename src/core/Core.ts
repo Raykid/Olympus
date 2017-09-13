@@ -1,7 +1,6 @@
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
 
-import IConstructor from "./interfaces/IConstructor"
 import IMessage from "./message/IMessage"
 import Message from "./message/Message"
 import CoreMessage from "./message/CoreMessage"
@@ -29,13 +28,22 @@ interface IMessageData
     thisArg:any;
 }
 
+export interface IConstructor extends Function
+{
+    new (...args:any[]):any;
+}
+
+export interface IInjectableParams
+{
+    type:IConstructor;
+}
+
 /**
  * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
  * 
  * @export
  * @class Core
  */
-@Injectable
 export default class Core
 {
     private static _instance:Core;
@@ -46,17 +54,8 @@ export default class Core
         if(Core._instance) throw new Error("已生成过Core实例，不允许多次生成");
         // 赋值单例
         Core._instance = this;
-    }
-    
-    /*********************** 内核消息语法糖处理逻辑 ***********************/
-
-    private _messageHandlerDict:{[msg:string]:{target:any, name:string}} = {};
-
-    private handleMessageSugars(msg:IMessage, target:any):void
-    {
-        // 调用以Message类型为前缀，以_handler为后缀的方法
-        var name:string = msg.getType() + "_handler";
-        if(target[name] instanceof Function) target[name](msg);
+        // 注入自身
+        this.mapInjectValue(this);
     }
 
     /*********************** 下面是内核消息系统 ***********************/
@@ -83,10 +82,6 @@ export default class Core
 
     private doDispatch(msg:IMessage):void
     {
-        // 触发依赖注入对象操作
-        this.handleInjects(msg);
-        // 触发中介者相关操作
-        this.handleMediators(msg);
         // 触发命令
         this.handleCommands(msg);
         // 触发用listen形式监听的消息
@@ -175,18 +170,7 @@ export default class Core
     }
     
     /*********************** 下面是依赖注入系统 ***********************/
-
-    private handleInjects(msg:IMessage):void
-    {
-        var dict:{[key:string]:any} = global.Inject.getInjectDict();
-        for(var key in dict)
-        {
-            var inject:any = dict[key];
-            // 执行语法糖
-            this.handleMessageSugars(msg, inject);
-        }
-    }
-
+    private _injectDict:{[key:string]:any} = {};
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      * 
@@ -196,7 +180,8 @@ export default class Core
      */
     public mapInject(target:IConstructor, type?:IConstructor):void
     {
-        global.Inject.mapInject(target, type);
+        var value:any = new target();
+        this.mapInjectValue(value, type);
     }
 
     /**
@@ -208,7 +193,8 @@ export default class Core
      */
     public mapInjectValue(value:any, type?:IConstructor):void
     {
-        global.Inject.mapInjectValue(value, type);
+        var key:string = (type || value.constructor).toString();
+        this._injectDict[key] = value;
     }
 
     /**
@@ -219,7 +205,8 @@ export default class Core
      */
     public unmapInject(target:IConstructor):void
     {
-        global.Inject.unmapInject(target);
+        var key:string = target.toString();
+        delete this._injectDict[key];
     }
 
     /**
@@ -231,7 +218,7 @@ export default class Core
      */
     public getInject(type:IConstructor):any
     {
-        return global.Inject.getInject(type);
+        return this._injectDict[type.toString()];
     }
 
     /*********************** 下面是内核命令系统 ***********************/
@@ -290,14 +277,15 @@ export default class Core
 
     private _mediatorList:any[] = [];
 
-    private handleMediators(msg:IMessage):void
+    /**
+     * 获取中介者数组
+     * 
+     * @returns {any[]} 中介者数组
+     * @memberof Core
+     */
+    public getMediators():any[]
     {
-        for(var i:number = 0, len:number = this._mediatorList.length; i < len; i++)
-        {
-            var mediator:any = this._mediatorList[i];
-            // 执行语法糖
-            this.handleMessageSugars(msg, mediator);
-        }
+        return this._mediatorList;
     }
 
     /**
@@ -325,4 +313,45 @@ export default class Core
     }
 }
 /** 再额外导出一个单例 */
-export const core:Core = global.Inject.getInject(Core)
+export const core:Core = new Core();
+
+/*********************** 下面是装饰器方法实现 ***********************/
+
+/** Inject */
+window["Inject"] = function(cls:IConstructor):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):PropertyDescriptor
+    {
+        return {
+            get: ()=>core.getInject(cls)
+        };
+    };
+};
+
+/** Injectable */
+window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorator|void
+{
+    var params:IInjectableParams = cls as IInjectableParams;
+    if(params.type instanceof Function)
+    {
+        // 需要转换注册类型，需要返回一个ClassDecorator
+        return function(realCls:IConstructor):void
+        {
+            core.mapInject(realCls, params.type);
+        } as ClassDecorator;
+    }
+    else
+    {
+        // 不需要转换注册类型，直接注册
+        core.mapInject(cls as IConstructor);
+    }
+};
+
+/** Handler */
+window["Handler"] = function(type:string):MethodDecorator
+{
+    return function(target:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    {
+        core.listen(type, target[propertyKey], target);
+    };
+};

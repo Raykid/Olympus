@@ -1,3 +1,5 @@
+import {core} from "../../core/Core"
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -160,4 +162,4 @@ export default class Explorer
     }
 }
 /** 再额外导出一个单例 */
-export const explorer:Explorer = global.Inject.getInject(Explorer)
+export const explorer:Explorer = core.getInject(Explorer)

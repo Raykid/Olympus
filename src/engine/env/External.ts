@@ -1,3 +1,5 @@
+import {core} from "../../core/Core"
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -41,4 +43,4 @@ export default class External
     }
 }
 /** 再额外导出一个单例 */
-export const external:External = global.Inject.getInject(External)
+export const external:External = core.getInject(External)

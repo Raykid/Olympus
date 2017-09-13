@@ -92,4 +92,4 @@ export default class PopupManager
     }
 }
 /** 再额外导出一个单例 */
-export const popupManager:PopupManager = global.Inject.getInject(PopupManager)
+export const popupManager:PopupManager = core.getInject(PopupManager)

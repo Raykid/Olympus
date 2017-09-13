@@ -1,91 +1,44 @@
 /**
  * @author Raykid
  * @email initial_r@qq.com
- * @create date 2017-09-01
- * @modify date 2017-09-01
- *
- * 这个ts文件是为了让编译器认识装饰器注入功能而造的
-*/
-declare namespace global {
-    interface IConstructor extends Function {
-        new (...args: any[]): any;
-    }
-    interface IInjectableParams {
-        type: IConstructor;
-    }
-    class Inject {
-        private static _injectDict;
-        /**
-         * 获取注入字典
-         *
-         * @static
-         * @returns {{[key:string]:any}}
-         * @memberof Inject
-         */
-        static getInjectDict(): {
-            [key: string]: any;
-        };
-        /**
-         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
-         *
-         * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-         * @static
-         * @memberof Inject
-         */
-        static mapInject(target: IConstructor, type?: IConstructor): void;
-        /**
-         * 注入一个对象实例
-         *
-         * @param {*} value 要注入的对象实例
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
-         * @static
-         * @memberof Inject
-         */
-        static mapInjectValue(value: any, type?: IConstructor): void;
-        /**
-         * 移除类型注入
-         *
-         * @param {IConstructor} target 要移除注入的类型
-         * @static
-         * @memberof Inject
-         */
-        static unmapInject(target: IConstructor): void;
-        /**
-         * 获取注入的对象实例
-         *
-         * @param {(IConstructor)} type 注入对象的类型
-         * @returns {*} 注入的对象实例
-         * @static
-         * @memberof Inject
-         */
-        static getInject(type: IConstructor): any;
-    }
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
  * @create date 2017-09-06
  * @modify date 2017-09-06
  *
  * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
 */
-declare function Inject(cls: global.IConstructor): PropertyDecorator;
-declare function Injectable(cls: global.IConstructor): void;
-declare function Injectable(cls: global.IInjectableParams): ClassDecorator;
-declare module "core/interfaces/IConstructor" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 任意构造器接口
-    */
-    export default interface IConstructor extends Function {
-        new (...args: any[]): any;
-    }
+interface IConstructor extends Function {
+    new (...args: any[]): any;
 }
+interface IInjectableParams {
+    type: IConstructor;
+}
+/**
+ * 注入一个类型的实例
+ *
+ * @param {IConstructor} cls 类型构造器
+ * @returns {PropertyDecorator}
+ */
+declare function Inject(cls: IConstructor): PropertyDecorator;
+/**
+ * 生成一个类型的实例并注册到框架注入器中，默认注册到自身类型构造器上
+ *
+ * @param {IConstructor} cls 类型构造器
+ */
+declare function Injectable(cls: IConstructor): void;
+/**
+ * 生成一个类型的实例并注册到框架注入器中，注册到指定的类型构造器上
+ *
+ * @param {IInjectableParams} params 指定要注册到到的类型构造器
+ * @returns {ClassDecorator}
+ */
+declare function Injectable(params: IInjectableParams): ClassDecorator;
+/**
+ * 消息处理函数的装饰器方法
+ *
+ * @param {string} type 监听的消息类型
+ * @returns {MethodDecorator}
+ */
+declare function Handler(type: string): MethodDecorator;
 declare module "core/message/IMessage" {
     /**
      * @author Raykid
@@ -140,6 +93,44 @@ declare module "core/message/Message" {
         constructor(type: string, ...params: any[]);
     }
 }
+declare module "core/message/CoreMessage" {
+    import IMessage from "core/message/IMessage";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-13
+     * @modify date 2017-09-13
+     *
+     * 核心事件类型
+    */
+    export default class CoreMessage implements IMessage {
+        /**
+         * 任何消息派发到框架后都会派发这个消息
+         *
+         * @static
+         * @type {string}
+         * @memberof CoreMessage
+         */
+        static MESSAGE_DISPATCHED: string;
+        private _type;
+        /**
+         * 获取事件类型
+         *
+         * @returns {string}
+         * @memberof CoreMessage
+         */
+        getType(): string;
+        private _message;
+        /**
+         * 获取发送到框架内核的消息体
+         *
+         * @returns {IMessage}
+         * @memberof CoreMessage
+         */
+        getMessage(): IMessage;
+        constructor(type: string, message: IMessage);
+    }
+}
 declare module "core/command/Command" {
     import IMessage from "core/message/IMessage";
     /**
@@ -184,9 +175,14 @@ declare module "core/command/ICommandConstructor" {
     }
 }
 declare module "core/Core" {
-    import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
+    export interface IConstructor extends Function {
+        new (...args: any[]): any;
+    }
+    export interface IInjectableParams {
+        type: IConstructor;
+    }
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -196,12 +192,10 @@ declare module "core/Core" {
     export default class Core {
         private static _instance;
         constructor();
-        /*********************** 内核消息语法糖处理逻辑 ***********************/
-        private _messageHandlerDict;
-        private handleMessageSugars(msg, target);
         /*********************** 下面是内核消息系统 ***********************/
         private _listenerDict;
         private handleMessages(msg);
+        private doDispatch(msg);
         /**
          * 派发内核消息
          *
@@ -236,7 +230,7 @@ declare module "core/Core" {
          */
         unlisten(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
         /*********************** 下面是依赖注入系统 ***********************/
-        private handleInjects(msg);
+        private _injectDict;
         /**
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
@@ -290,7 +284,13 @@ declare module "core/Core" {
         unmapCommand(type: string, cmd: ICommandConstructor): void;
         /*********************** 下面是界面中介者系统 ***********************/
         private _mediatorList;
-        private handleMediators(msg);
+        /**
+         * 获取中介者数组
+         *
+         * @returns {any[]} 中介者数组
+         * @memberof Core
+         */
+        getMediators(): any[];
         /**
          * 注册界面中介者
          *
@@ -587,6 +587,19 @@ declare module "engine/component/Mediator" {
          * @memberof Mediator
          */
         dispose(): void;
+    }
+}
+declare module "core/interfaces/IConstructor" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 任意构造器接口
+    */
+    export default interface IConstructor extends Function {
+        new (...args: any[]): any;
     }
 }
 declare module "engine/popup/IPopupPolicy" {
@@ -1243,6 +1256,67 @@ declare module "engine/env/Query" {
     /** 再额外导出一个单例 */
     export const query: Query;
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-13
+ * @modify date 2017-09-13
+ *
+ * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+/**
+ * 通讯消息返回处理函数的装饰器方法
+ *
+ * @param {(IConstructor|string)} clsOrType 消息返回体构造器或类型字符串
+ * @returns {MethodDecorator}
+ */
+declare function Result(clsOrType: IConstructor | string): MethodDecorator;
+declare module "utils/ObjectUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 对象工具集
+    */
+    /**
+     * populate properties
+     * @param target        目标obj
+     * @param sources       来源obj
+     */
+    export function extendObject(target: any, ...sources: any[]): any;
+    /**
+     * 复制对象
+     * @param target 要复制的对象
+     * @param deep 是否深表复制，默认浅表复制
+     * @returns {any} 复制后的对象
+     */
+    export function cloneObject(target: any, deep?: boolean): any;
+    /**
+     * 生成一个随机ID
+     */
+    export function getGUID(): string;
+    /**
+     * 生成自增id（从0开始）
+     * @param type
+     */
+    export function getAutoIncId(type: string): string;
+    /**
+     * 判断对象是否为null或者空对象
+     * @param obj 要判断的对象
+     * @returns {boolean} 是否为null或者空对象
+     */
+    export function isEmpty(obj: any): boolean;
+    /**
+     * 移除data中包含的空引用或未定义
+     * @param data 要被移除空引用或未定义的对象
+     */
+    export function trimData(data: any): any;
+}
 declare module "engine/net/IRequestPolicy" {
     import RequestData from "engine/net/RequestData";
     /**
@@ -1403,6 +1477,10 @@ declare module "engine/net/ResponseData" {
          */
         abstract __params: IResponseParams;
     }
+    export interface IResponseDataConstructor {
+        new (): ResponseData;
+        getType(): string;
+    }
 }
 declare module "engine/net/NetMessage" {
     /**
@@ -1438,18 +1516,11 @@ declare module "engine/net/NetMessage" {
          * @memberof NetMessage
          */
         static NET_ERROR: string;
-        /**
-         * 解析之前的请求消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        static NET_PRE_RESPONSE: string;
     }
 }
 declare module "engine/net/NetManager" {
-    import ResponseData from "engine/net/ResponseData";
+    import RequestData from "engine/net/RequestData";
+    import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1458,66 +1529,47 @@ declare module "engine/net/NetManager" {
      *
      * 网络管理器
     */
+    export interface ResponseHandler {
+        (response: ResponseData, request?: RequestData): void;
+    }
     export default class NetManager {
         private _responseDict;
         /**
          * 注册一个返回结构体
          *
          * @param {string} type 返回类型
-         * @param {{new():ResponseData}} cls 返回结构体构造器
+         * @param {IResponseDataConstructor} cls 返回结构体构造器
          * @memberof NetManager
          */
-        registerResponse(type: string, cls: {
-            new (): ResponseData;
-        }): void;
-        private netPreResponse_handler(msg);
-        private netPreError_handler(msg);
+        registerResponse(cls: IResponseDataConstructor): void;
+        private _responseListeners;
+        /**
+         * 添加一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        listenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        /**
+         * 移除一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要移除监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        unlistenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        /** 这里导出不希望用户使用的方法，供框架内使用 */
+        __onResponse(type: string, result: any, request?: RequestData): void | never;
+        __onError(err: Error, request?: RequestData): void;
+        private onMsgDispatched(msg);
     }
     /** 再额外导出一个单例 */
     export const netManager: NetManager;
-}
-declare module "utils/ObjectUtil" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 对象工具集
-    */
-    /**
-     * populate properties
-     * @param target        目标obj
-     * @param sources       来源obj
-     */
-    export function extendObject(target: any, ...sources: any[]): any;
-    /**
-     * 复制对象
-     * @param target 要复制的对象
-     * @param deep 是否深表复制，默认浅表复制
-     * @returns {any} 复制后的对象
-     */
-    export function cloneObject(target: any, deep?: boolean): any;
-    /**
-     * 生成一个随机ID
-     */
-    export function getGUID(): string;
-    /**
-     * 生成自增id（从0开始）
-     * @param type
-     */
-    export function getAutoIncId(type: string): string;
-    /**
-     * 判断对象是否为null或者空对象
-     * @param obj 要判断的对象
-     * @returns {boolean} 是否为null或者空对象
-     */
-    export function isEmpty(obj: any): boolean;
-    /**
-     * 移除data中包含的空引用或未定义
-     * @param data 要被移除空引用或未定义的对象
-     */
-    export function trimData(data: any): any;
 }
 declare module "utils/URLUtil" {
     /**
@@ -1691,7 +1743,7 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
 }
 declare module "engine/Engine" {
 }
-declare module "view/messages/ViewMessage" {
+declare module "view/message/ViewMessage" {
     /**
      * @author Raykid
      * @email initial_r@qq.com

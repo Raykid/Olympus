@@ -1,3 +1,5 @@
+import {core} from "../../core/Core"
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -121,4 +123,4 @@ export default class Hash
     }
 }
 /** 再额外导出一个单例 */
-export const hash:Hash = global.Inject.getInject(Hash)
+export const hash:Hash = core.getInject(Hash)
