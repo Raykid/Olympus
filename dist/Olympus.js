@@ -38,6 +38,14 @@ if (Array.prototype.hasOwnProperty("findIndex")) {
  *
  * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
 */
+define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("core/message/IMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -150,9 +158,200 @@ define("core/command/ICommandConstructor", ["require", "exports"], function (req
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-11
+ * @modify date 2017-09-11
+ *
+ * 对象工具集
+*/
+define("utils/ObjectUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * populate properties
+     * @param target        目标obj
+     * @param sources       来源obj
+     */
+    function extendObject(target) {
+        var sources = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            sources[_i - 1] = arguments[_i];
+        }
+        sources.forEach(function (source) {
+            if (!source)
+                return;
+            for (var propName in source) {
+                if (source.hasOwnProperty(propName)) {
+                    target[propName] = source[propName];
+                }
+            }
+        });
+        return target;
+    }
+    exports.extendObject = extendObject;
+    /**
+     * 复制对象
+     * @param target 要复制的对象
+     * @param deep 是否深表复制，默认浅表复制
+     * @returns {any} 复制后的对象
+     */
+    function cloneObject(target, deep) {
+        if (deep === void 0) { deep = false; }
+        if (target == null)
+            return null;
+        var newObject = {};
+        for (var key in target) {
+            var value = target[key];
+            if (deep && typeof value == "object") {
+                // 如果是深表复制，则需要递归复制子对象
+                value = cloneObject(value, true);
+            }
+            newObject[key] = value;
+        }
+        return newObject;
+    }
+    exports.cloneObject = cloneObject;
+    /**
+     * 生成一个随机ID
+     */
+    function getGUID() {
+        var s = [];
+        var hexDigits = "0123456789abcdef";
+        for (var i = 0; i < 36; i++) {
+            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+        }
+        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+        s[19] = hexDigits.substr((parseInt(s[19]) & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        s[8] = s[13] = s[18] = s[23] = "-";
+        return s.join("");
+    }
+    exports.getGUID = getGUID;
+    var _getAutoIncIdMap = {};
+    /**
+     * 生成自增id（从0开始）
+     * @param type
+     */
+    function getAutoIncId(type) {
+        var index = _getAutoIncIdMap[type] || 0;
+        _getAutoIncIdMap[type] = index++;
+        return type + "-" + index;
+    }
+    exports.getAutoIncId = getAutoIncId;
+    /**
+     * 判断对象是否为null或者空对象
+     * @param obj 要判断的对象
+     * @returns {boolean} 是否为null或者空对象
+     */
+    function isEmpty(obj) {
+        var result = true;
+        for (var key in obj) {
+            result = false;
+            break;
+        }
+        return result;
+    }
+    exports.isEmpty = isEmpty;
+    /**
+     * 移除data中包含的空引用或未定义
+     * @param data 要被移除空引用或未定义的对象
+     */
+    function trimData(data) {
+        for (var key in data) {
+            if (data[key] == null) {
+                delete data[key];
+            }
+        }
+        return data;
+    }
+    exports.trimData = trimData;
+    /**
+     * 让child类继承自parent类
+     * @param child 子类
+     * @param parent 父类
+     */
+    exports.extendsClass = (function () {
+        var extendStatics = Object["setPrototypeOf"] ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b)
+                if (b.hasOwnProperty(p))
+                    d[p] = b[p]; };
+        return function (d, b) {
+            extendStatics(d, b);
+            function __() { this.constructor = d; }
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        };
+    })();
+});
+define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-13
+     * @modify date 2017-09-13
+     *
+     * 装饰器工具集
+    */
+    var instanceDict = {};
+    function onInstance(cls, instance) {
+        var key = cls.toString();
+        var funcs = instanceDict[key];
+        if (funcs)
+            for (var _i = 0, funcs_1 = funcs; _i < funcs_1.length; _i++) {
+                var func = funcs_1[_i];
+                func(instance);
+            }
+    }
+    /**
+     * 监听实例化
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    function listenInstance(cls, handler) {
+        var key = cls.toString();
+        var list = instanceDict[key];
+        if (!list)
+            instanceDict[key] = list = [];
+        if (list.indexOf(handler) < 0)
+            list.push(handler);
+    }
+    exports.listenInstance = listenInstance;
+    /**
+     * 在某个类型实例化时插入一个操作，该方法通常要配合类装饰器使用
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @returns {*} 新构造函数
+     */
+    function delegateInstance(cls) {
+        // 创建一个新的构造函数
+        var func;
+        eval('func = function ' + cls["name"] + '(){onConstruct.call(this)}');
+        // 动态设置继承
+        ObjectUtil_1.extendsClass(func, cls);
+        // 设置toString方法
+        func.toString = function () { return cls.toString(); };
+        // 返回新的构造函数
+        return func;
+        function onConstruct() {
+            // 恢复__proto__
+            this["__proto__"] = cls.prototype;
+            // 调用父类构造函数
+            cls.apply(this, arguments);
+            // 调用实例化嵌入方法
+            onInstance(cls, this);
+        }
+    }
+    exports.delegateInstance = delegateInstance;
+});
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
-define("core/Core", ["require", "exports", "core/message/Message", "core/message/CoreMessage"], function (require, exports, Message_1, CoreMessage_1) {
+define("core/Core", ["require", "exports", "core/message/Message", "core/message/CoreMessage", "utils/DecorateUtil"], function (require, exports, Message_1, CoreMessage_1, DecorateUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -351,18 +550,9 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
             commands.splice(index, 1);
         };
         /**
-         * 获取中介者数组
-         *
-         * @returns {any[]} 中介者数组
-         * @memberof Core
-         */
-        Core.prototype.getMediators = function () {
-            return this._mediatorList;
-        };
-        /**
          * 注册界面中介者
          *
-         * @param {any} mediator 要注册的界面中介者实例
+         * @param {IDisposable} mediator 要注册的界面中介者实例
          * @memberof Core
          */
         Core.prototype.mapMediator = function (mediator) {
@@ -372,7 +562,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
         /**
          * 注销界面中介者
          *
-         * @param {any} mediator 要注销的界面中介者实例
+         * @param {IDisposable} mediator 要注销的界面中介者实例
          * @memberof Core
          */
         Core.prototype.unmapMediator = function (mediator) {
@@ -386,16 +576,8 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
     /** 再额外导出一个单例 */
     exports.core = new Core();
     /*********************** 下面是装饰器方法实现 ***********************/
-    /** Inject */
-    window["Inject"] = function (cls) {
-        return function (prototype, propertyKey) {
-            return {
-                get: function () { return exports.core.getInject(cls); }
-            };
-        };
-    };
-    /** Injectable */
-    window["Injectable"] = function (cls) {
+    /** Injectable，仅生成类型实例并注入 */
+    window["Injectable"] = function Injectable(cls) {
         var params = cls;
         if (params.type instanceof Function) {
             // 需要转换注册类型，需要返回一个ClassDecorator
@@ -408,10 +590,40 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
             exports.core.mapInject(cls);
         }
     };
+    /** Model */
+    window["Model"] = function Model(cls) {
+        // Model先进行托管
+        var result = DecorateUtil_1.delegateInstance(cls);
+        // 然后要注入新生成的类
+        Injectable(result);
+        // 返回结果
+        return result;
+    };
+    /** Mediator */
+    window["Mediator"] = function Mediator(cls) {
+        // Mediator仅进行托管，不进行注入
+        return DecorateUtil_1.delegateInstance(cls);
+    };
+    /** Inject */
+    window["Inject"] = function Inject(cls) {
+        return function (prototype, propertyKey) {
+            // 监听实例化
+            DecorateUtil_1.listenInstance(prototype.constructor, function (instance) {
+                Object.defineProperty(instance, propertyKey, {
+                    configurable: true,
+                    enumerable: true,
+                    get: function () { return exports.core.getInject(cls); }
+                });
+            });
+        };
+    };
     /** Handler */
-    window["Handler"] = function (type) {
-        return function (target, propertyKey, descriptor) {
-            exports.core.listen(type, target[propertyKey], target);
+    window["Handler"] = function Handler(type) {
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            DecorateUtil_1.listenInstance(prototype.constructor, function (instance) {
+                exports.core.listen(type, instance[propertyKey], instance);
+            });
         };
     };
 });
@@ -577,10 +789,6 @@ define("view/bridge/IHasBridge", ["require", "exports"], function (require, expo
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("view/mediator/IMediator", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -713,10 +921,6 @@ define("engine/component/Mediator", ["require", "exports"], function (require, e
         return Mediator;
     }());
     exports.default = Mediator;
-});
-define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -1650,115 +1854,6 @@ define("engine/env/Query", ["require", "exports", "core/Core"], function (requir
  *
  * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
 */
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-11
- * @modify date 2017-09-11
- *
- * 对象工具集
-*/
-define("utils/ObjectUtil", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * populate properties
-     * @param target        目标obj
-     * @param sources       来源obj
-     */
-    function extendObject(target) {
-        var sources = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            sources[_i - 1] = arguments[_i];
-        }
-        sources.forEach(function (source) {
-            if (!source)
-                return;
-            for (var propName in source) {
-                if (source.hasOwnProperty(propName)) {
-                    target[propName] = source[propName];
-                }
-            }
-        });
-        return target;
-    }
-    exports.extendObject = extendObject;
-    /**
-     * 复制对象
-     * @param target 要复制的对象
-     * @param deep 是否深表复制，默认浅表复制
-     * @returns {any} 复制后的对象
-     */
-    function cloneObject(target, deep) {
-        if (deep === void 0) { deep = false; }
-        if (target == null)
-            return null;
-        var newObject = {};
-        for (var key in target) {
-            var value = target[key];
-            if (deep && typeof value == "object") {
-                // 如果是深表复制，则需要递归复制子对象
-                value = cloneObject(value, true);
-            }
-            newObject[key] = value;
-        }
-        return newObject;
-    }
-    exports.cloneObject = cloneObject;
-    /**
-     * 生成一个随机ID
-     */
-    function getGUID() {
-        var s = [];
-        var hexDigits = "0123456789abcdef";
-        for (var i = 0; i < 36; i++) {
-            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-        }
-        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-        s[19] = hexDigits.substr((parseInt(s[19]) & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
-        s[8] = s[13] = s[18] = s[23] = "-";
-        return s.join("");
-    }
-    exports.getGUID = getGUID;
-    var _getAutoIncIdMap = {};
-    /**
-     * 生成自增id（从0开始）
-     * @param type
-     */
-    function getAutoIncId(type) {
-        var index = _getAutoIncIdMap[type] || 0;
-        _getAutoIncIdMap[type] = index++;
-        return type + "-" + index;
-    }
-    exports.getAutoIncId = getAutoIncId;
-    /**
-     * 判断对象是否为null或者空对象
-     * @param obj 要判断的对象
-     * @returns {boolean} 是否为null或者空对象
-     */
-    function isEmpty(obj) {
-        var result = true;
-        for (var key in obj) {
-            result = false;
-            break;
-        }
-        return result;
-    }
-    exports.isEmpty = isEmpty;
-    /**
-     * 移除data中包含的空引用或未定义
-     * @param data 要被移除空引用或未定义的对象
-     */
-    function trimData(data) {
-        for (var key in data) {
-            if (data[key] == null) {
-                delete data[key];
-            }
-        }
-        return data;
-    }
-    exports.trimData = trimData;
-});
 define("engine/net/IRequestPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1876,14 +1971,27 @@ define("engine/net/NetMessage", ["require", "exports"], function (require, expor
     exports.default = NetMessage;
 });
 /// <reference path="../global/Decorator.ts"/>
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_8, CoreMessage_2, ObjectUtil_1, RequestData_1, NetMessage_1) {
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "utils/DecorateUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_8, CoreMessage_2, ObjectUtil_2, DecorateUtil_2, RequestData_1, NetMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NetManager = (function () {
         function NetManager() {
             this._responseDict = {};
             this._responseListeners = {};
+            Core_8.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
         }
+        NetManager.prototype.onMsgDispatched = function (msg) {
+            var netMsg = msg.getMessage();
+            // 如果消息是通讯消息则做处理
+            if (msg instanceof RequestData_1.default) {
+                // 指定消息参数连接上公共参数作为参数
+                ObjectUtil_2.extendObject(netMsg.__params.data, RequestData_1.commonData);
+                // 发送消息
+                netMsg.__policy.sendRequest(netMsg);
+                // 派发系统消息
+                Core_8.core.dispatch(NetMessage_1.default.NET_REQUEST, netMsg);
+            }
+        };
         /**
          * 注册一个返回结构体
          *
@@ -1968,21 +2076,6 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
             // 派发事件
             Core_8.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
         };
-        NetManager.prototype.onMsgDispatched = function (msg) {
-            var netMsg = msg.getMessage();
-            // 如果消息是通讯消息则做处理
-            if (msg instanceof RequestData_1.default) {
-                // 指定消息参数连接上公共参数作为参数
-                ObjectUtil_1.extendObject(netMsg.__params.data, RequestData_1.commonData);
-                // 发送消息
-                netMsg.__policy.sendRequest(netMsg);
-                // 派发系统消息
-                Core_8.core.dispatch(NetMessage_1.default.NET_REQUEST, netMsg);
-            }
-        };
-        __decorate([
-            Handler(CoreMessage_2.default.MESSAGE_DISPATCHED)
-        ], NetManager.prototype, "onMsgDispatched", null);
         NetManager = __decorate([
             Injectable
         ], NetManager);
@@ -1994,12 +2087,15 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
     /*********************** 下面是装饰器方法实现 ***********************/
     /** Result */
     window["Result"] = function (clsOrType) {
-        return function (target, propertyKey, descriptor) {
-            exports.netManager.listenResponse(clsOrType, target[propertyKey], target);
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            DecorateUtil_2.listenInstance(prototype.constructor, function (instance) {
+                exports.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+            });
         };
     };
 });
-define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_2) {
+define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2202,7 +2298,7 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
         if (url == null)
             throw new Error("url不能为空");
         var oriParams = getQueryParams(url);
-        var targetParams = ObjectUtil_2.extendObject(oriParams, params);
+        var targetParams = ObjectUtil_3.extendObject(oriParams, params);
         var hash = parseUrl(url).hash;
         url = getHostAndPathname(url);
         var isFirst = true;

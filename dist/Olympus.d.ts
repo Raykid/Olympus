@@ -39,6 +39,46 @@ declare function Injectable(params: IInjectableParams): ClassDecorator;
  * @returns {MethodDecorator}
  */
 declare function Handler(type: string): MethodDecorator;
+/**
+ * 标识当前类型是个Model
+ *
+ * @param {IConstructor} cls
+ * @returns {*}
+ */
+declare function Model(cls: IConstructor): any;
+/**
+ * 标识当前类型是个Mediator
+ *
+ * @param {IConstructor} cls
+ * @returns {*}
+ */
+declare function Mediator(cls: IConstructor): any;
+declare module "core/interfaces/IDisposable" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 可回收接口
+    */
+    export default interface IDisposable {
+        dispose(): void;
+    }
+}
+declare module "core/interfaces/IConstructor" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 任意构造器接口
+    */
+    export default interface IConstructor extends Function {
+        new (...args: any[]): any;
+    }
+}
 declare module "core/message/IMessage" {
     /**
      * @author Raykid
@@ -174,12 +214,79 @@ declare module "core/command/ICommandConstructor" {
         new (msg: IMessage): Command;
     }
 }
+declare module "utils/ObjectUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 对象工具集
+    */
+    /**
+     * populate properties
+     * @param target        目标obj
+     * @param sources       来源obj
+     */
+    export function extendObject(target: any, ...sources: any[]): any;
+    /**
+     * 复制对象
+     * @param target 要复制的对象
+     * @param deep 是否深表复制，默认浅表复制
+     * @returns {any} 复制后的对象
+     */
+    export function cloneObject(target: any, deep?: boolean): any;
+    /**
+     * 生成一个随机ID
+     */
+    export function getGUID(): string;
+    /**
+     * 生成自增id（从0开始）
+     * @param type
+     */
+    export function getAutoIncId(type: string): string;
+    /**
+     * 判断对象是否为null或者空对象
+     * @param obj 要判断的对象
+     * @returns {boolean} 是否为null或者空对象
+     */
+    export function isEmpty(obj: any): boolean;
+    /**
+     * 移除data中包含的空引用或未定义
+     * @param data 要被移除空引用或未定义的对象
+     */
+    export function trimData(data: any): any;
+    /**
+     * 让child类继承自parent类
+     * @param child 子类
+     * @param parent 父类
+     */
+    export var extendsClass: (child: any, parent: any) => void;
+}
+declare module "utils/DecorateUtil" {
+    import IConstructor from "core/interfaces/IConstructor";
+    /**
+     * 监听实例化
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenInstance(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 在某个类型实例化时插入一个操作，该方法通常要配合类装饰器使用
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @returns {*} 新构造函数
+     */
+    export function delegateInstance(cls: IConstructor): any;
+}
 declare module "core/Core" {
+    import IDisposable from "core/interfaces/IDisposable";
+    import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
-    export interface IConstructor extends Function {
-        new (...args: any[]): any;
-    }
     export interface IInjectableParams {
         type: IConstructor;
     }
@@ -285,26 +392,19 @@ declare module "core/Core" {
         /*********************** 下面是界面中介者系统 ***********************/
         private _mediatorList;
         /**
-         * 获取中介者数组
-         *
-         * @returns {any[]} 中介者数组
-         * @memberof Core
-         */
-        getMediators(): any[];
-        /**
          * 注册界面中介者
          *
-         * @param {any} mediator 要注册的界面中介者实例
+         * @param {IDisposable} mediator 要注册的界面中介者实例
          * @memberof Core
          */
-        mapMediator(mediator: any): void;
+        mapMediator(mediator: IDisposable): void;
         /**
          * 注销界面中介者
          *
-         * @param {any} mediator 要注销的界面中介者实例
+         * @param {IDisposable} mediator 要注销的界面中介者实例
          * @memberof Core
          */
-        unmapMediator(mediator: any): void;
+        unmapMediator(mediator: IDisposable): void;
     }
     /** 再额外导出一个单例 */
     export const core: Core;
@@ -434,19 +534,6 @@ declare module "view/bridge/IHasBridge" {
          * 获取表现层桥
          */
         getBridge(): IBridge;
-    }
-}
-declare module "core/interfaces/IDisposable" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 可回收接口
-    */
-    export default interface IDisposable {
-        dispose(): void;
     }
 }
 declare module "view/mediator/IMediator" {
@@ -587,19 +674,6 @@ declare module "engine/component/Mediator" {
          * @memberof Mediator
          */
         dispose(): void;
-    }
-}
-declare module "core/interfaces/IConstructor" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 任意构造器接口
-    */
-    export default interface IConstructor extends Function {
-        new (...args: any[]): any;
     }
 }
 declare module "engine/popup/IPopupPolicy" {
@@ -1274,49 +1348,6 @@ interface IConstructor extends Function {
  * @returns {MethodDecorator}
  */
 declare function Result(clsOrType: IConstructor | string): MethodDecorator;
-declare module "utils/ObjectUtil" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 对象工具集
-    */
-    /**
-     * populate properties
-     * @param target        目标obj
-     * @param sources       来源obj
-     */
-    export function extendObject(target: any, ...sources: any[]): any;
-    /**
-     * 复制对象
-     * @param target 要复制的对象
-     * @param deep 是否深表复制，默认浅表复制
-     * @returns {any} 复制后的对象
-     */
-    export function cloneObject(target: any, deep?: boolean): any;
-    /**
-     * 生成一个随机ID
-     */
-    export function getGUID(): string;
-    /**
-     * 生成自增id（从0开始）
-     * @param type
-     */
-    export function getAutoIncId(type: string): string;
-    /**
-     * 判断对象是否为null或者空对象
-     * @param obj 要判断的对象
-     * @returns {boolean} 是否为null或者空对象
-     */
-    export function isEmpty(obj: any): boolean;
-    /**
-     * 移除data中包含的空引用或未定义
-     * @param data 要被移除空引用或未定义的对象
-     */
-    export function trimData(data: any): any;
-}
 declare module "engine/net/IRequestPolicy" {
     import RequestData from "engine/net/RequestData";
     /**
@@ -1533,6 +1564,8 @@ declare module "engine/net/NetManager" {
         (response: ResponseData, request?: RequestData): void;
     }
     export default class NetManager {
+        constructor();
+        private onMsgDispatched(msg);
         private _responseDict;
         /**
          * 注册一个返回结构体
@@ -1566,7 +1599,6 @@ declare module "engine/net/NetManager" {
         /** 这里导出不希望用户使用的方法，供框架内使用 */
         __onResponse(type: string, result: any, request?: RequestData): void | never;
         __onError(err: Error, request?: RequestData): void;
-        private onMsgDispatched(msg);
     }
     /** 再额外导出一个单例 */
     export const netManager: NetManager;

@@ -4,6 +4,7 @@ import {core} from "../../core/Core"
 import Message from "../../core/message/Message"
 import CoreMessage from "../../core/message/CoreMessage"
 import {extendObject} from "../../utils/ObjectUtil"
+import {listenInstance} from "../../utils/DecorateUtil"
 import RequestData, {commonData} from "./RequestData"
 import ResponseData, {IResponseDataConstructor} from "./ResponseData"
 import NetMessage from "./NetMessage"
@@ -25,6 +26,26 @@ export interface ResponseHandler
 @Injectable
 export default class NetManager
 {
+    public constructor()
+    {
+        core.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
+    }
+    
+    private onMsgDispatched(msg:CoreMessage):void
+    {
+        var netMsg:RequestData = msg.getMessage() as RequestData;
+        // 如果消息是通讯消息则做处理
+        if(msg instanceof RequestData)
+        {
+            // 指定消息参数连接上公共参数作为参数
+            extendObject(netMsg.__params.data, commonData);
+            // 发送消息
+            netMsg.__policy.sendRequest(netMsg);
+            // 派发系统消息
+            core.dispatch(NetMessage.NET_REQUEST, netMsg);
+        }
+    }
+
     private _responseDict:{[type:string]:IResponseDataConstructor} = {};
     /**
      * 注册一个返回结构体
@@ -122,22 +143,6 @@ export default class NetManager
         // 派发事件
         core.dispatch(NetMessage.NET_ERROR, err, request);
     }
-
-    @Handler(CoreMessage.MESSAGE_DISPATCHED)
-    private onMsgDispatched(msg:CoreMessage):void
-    {
-        var netMsg:RequestData = msg.getMessage() as RequestData;
-        // 如果消息是通讯消息则做处理
-        if(msg instanceof RequestData)
-        {
-            // 指定消息参数连接上公共参数作为参数
-            extendObject(netMsg.__params.data, commonData);
-            // 发送消息
-            netMsg.__policy.sendRequest(netMsg);
-            // 派发系统消息
-            core.dispatch(NetMessage.NET_REQUEST, netMsg);
-        }
-    }
 }
 /** 再额外导出一个单例 */
 export const netManager:NetManager = core.getInject(NetManager)
@@ -147,8 +152,12 @@ export const netManager:NetManager = core.getInject(NetManager)
 /** Result */
 window["Result"] = function(clsOrType:IResponseDataConstructor|string):MethodDecorator
 {
-    return function(target:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
     {
-        netManager.listenResponse(clsOrType, target[propertyKey], target);
+        // 监听实例化
+        listenInstance(prototype.constructor, function(instance:any):void
+        {
+            netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+        });
     };
 };

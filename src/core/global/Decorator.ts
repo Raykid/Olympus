@@ -46,3 +46,19 @@ declare function Injectable(params:IInjectableParams):ClassDecorator;
  * @returns {MethodDecorator} 
  */
 declare function Handler(type:string):MethodDecorator;
+
+/**
+ * 标识当前类型是个Model
+ * 
+ * @param {IConstructor} cls 
+ * @returns {*} 
+ */
+declare function Model(cls:IConstructor):any;
+
+/**
+ * 标识当前类型是个Mediator
+ * 
+ * @param {IConstructor} cls 
+ * @returns {*} 
+ */
+declare function Mediator(cls:IConstructor):any;

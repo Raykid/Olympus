@@ -28,13 +28,19 @@ define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Expl
             Inject(Core_1.default)
         ], Fuck.prototype, "core", void 0);
         Fuck = __decorate([
-            Injectable
+            Model
         ], Fuck);
         return Fuck;
     }());
     var Fuck2 = (function () {
         function Fuck2() {
         }
+        Fuck2.prototype.shit = function () {
+            console.log(this.fuck);
+        };
+        Fuck2.prototype.testHandler = function () {
+            console.log("测试Handler注入成功！");
+        };
         __decorate([
             Inject(Fuck)
         ], Fuck2.prototype, "fuck", void 0);
@@ -68,11 +74,19 @@ define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Expl
         __decorate([
             Inject(System_1.default)
         ], Fuck2.prototype, "system", void 0);
+        __decorate([
+            Handler("fuck")
+        ], Fuck2.prototype, "testHandler", null);
+        Fuck2 = __decorate([
+            Mediator
+        ], Fuck2);
         return Fuck2;
     }());
     var fuck2 = new Fuck2();
+    fuck2.shit();
+    console.log(fuck2);
     window["fuck2"] = fuck2;
     window["Fuck2"] = Fuck2;
-    console.log(fuck2);
+    Core_1.core.dispatch("fuck");
 });
 //# sourceMappingURL=main.js.map

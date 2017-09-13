@@ -29,13 +29,14 @@ function handler(msg:IMessage):void
     core.unlisten("fuck", handler, this);
 }
 
-@Injectable
+@Model
 class Fuck
 {
     @Inject(Core)
     public core:Core;
 }
 
+@Mediator
 class Fuck2
 {
     @Inject(Fuck)
@@ -70,9 +71,24 @@ class Fuck2
 
     @Inject(System)
     public system:System;
+
+    public shit():void
+    {
+        console.log(this.fuck);
+    }
+
+    @Handler("fuck")
+    private testHandler():void
+    {
+        console.log("测试Handler注入成功！");
+    }
 }
 
 var fuck2:Fuck2 = new Fuck2();
+fuck2.shit();
+console.log(fuck2);
+
 window["fuck2"] = fuck2;
 window["Fuck2"] = Fuck2;
-console.log(fuck2);
+
+core.dispatch("fuck");

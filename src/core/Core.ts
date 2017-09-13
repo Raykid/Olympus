@@ -1,11 +1,14 @@
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
 
+import IDisposable from "./interfaces/IDisposable"
+import IConstructor from "./interfaces/IConstructor"
 import IMessage from "./message/IMessage"
 import Message from "./message/Message"
 import CoreMessage from "./message/CoreMessage"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
+import {listenInstance, delegateInstance} from "../utils/DecorateUtil"
 
 /**
  * @author Raykid
@@ -26,11 +29,6 @@ interface IMessageData
 {
     handler:(msg:IMessage)=>void;
     thisArg:any;
-}
-
-export interface IConstructor extends Function
-{
-    new (...args:any[]):any;
 }
 
 export interface IInjectableParams
@@ -275,26 +273,15 @@ export default class Core
     
     /*********************** 下面是界面中介者系统 ***********************/
 
-    private _mediatorList:any[] = [];
-
-    /**
-     * 获取中介者数组
-     * 
-     * @returns {any[]} 中介者数组
-     * @memberof Core
-     */
-    public getMediators():any[]
-    {
-        return this._mediatorList;
-    }
+    private _mediatorList:IDisposable[] = [];
 
     /**
      * 注册界面中介者
      * 
-     * @param {any} mediator 要注册的界面中介者实例
+     * @param {IDisposable} mediator 要注册的界面中介者实例
      * @memberof Core
      */
-    public mapMediator(mediator:any):void
+    public mapMediator(mediator:IDisposable):void
     {
         if(this._mediatorList.indexOf(mediator) < 0)
             this._mediatorList.push(mediator);
@@ -303,10 +290,10 @@ export default class Core
     /**
      * 注销界面中介者
      * 
-     * @param {any} mediator 要注销的界面中介者实例
+     * @param {IDisposable} mediator 要注销的界面中介者实例
      * @memberof Core
      */
-    public unmapMediator(mediator:any):void
+    public unmapMediator(mediator:IDisposable):void
     {
         var index:number = this._mediatorList.indexOf(mediator);
         if(index >= 0) this._mediatorList.splice(index, 1);
@@ -317,19 +304,8 @@ export const core:Core = new Core();
 
 /*********************** 下面是装饰器方法实现 ***********************/
 
-/** Inject */
-window["Inject"] = function(cls:IConstructor):PropertyDecorator
-{
-    return function(prototype:any, propertyKey:string):PropertyDescriptor
-    {
-        return {
-            get: ()=>core.getInject(cls)
-        };
-    };
-};
-
-/** Injectable */
-window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorator|void
+/** Injectable，仅生成类型实例并注入 */
+window["Injectable"] = function Injectable(cls:IInjectableParams|IConstructor):ClassDecorator|void
 {
     var params:IInjectableParams = cls as IInjectableParams;
     if(params.type instanceof Function)
@@ -347,11 +323,50 @@ window["Injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorat
     }
 };
 
-/** Handler */
-window["Handler"] = function(type:string):MethodDecorator
+/** Model */
+window["Model"] = function Model(cls:IConstructor):Function
 {
-    return function(target:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    // Model先进行托管
+    var result:any = delegateInstance(cls);
+    // 然后要注入新生成的类
+    Injectable(result);
+    // 返回结果
+    return result;
+}
+
+/** Mediator */
+window["Mediator"] = function Mediator(cls:IConstructor):Function
+{
+    // Mediator仅进行托管，不进行注入
+    return delegateInstance(cls);
+}
+
+/** Inject */
+window["Inject"] = function Inject(cls:IConstructor):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
     {
-        core.listen(type, target[propertyKey], target);
+        // 监听实例化
+        listenInstance(prototype.constructor, function(instance:any):void
+        {
+            Object.defineProperty(instance, propertyKey, {
+                configurable: true,
+                enumerable: true,
+                get: ()=>core.getInject(cls)
+            });
+        });
+    };
+};
+
+/** Handler */
+window["Handler"] = function Handler(type:string):MethodDecorator
+{
+    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    {
+        // 监听实例化
+        listenInstance(prototype.constructor, function(instance:any):void
+        {
+            core.listen(type, instance[propertyKey], instance);
+        });
     };
 };
