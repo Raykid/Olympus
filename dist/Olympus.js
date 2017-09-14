@@ -296,8 +296,9 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
      * 装饰器工具集
     */
     var instanceDict = {};
-    function handleInstance(instance, cls) {
-        var key = (cls || instance.constructor).toString();
+    function handleInstance(instance) {
+        var cls = instance.constructor;
+        var key = cls && cls.toString();
         var funcs = instanceDict[key];
         if (funcs)
             for (var _i = 0, funcs_1 = funcs; _i < funcs_1.length; _i++) {
@@ -318,7 +319,9 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
         eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
         // 动态设置继承
         ObjectUtil_1.extendsClass(func, cls);
-        // 设置toString方法
+        // 为新的构造函数打一个标签，用以记录原始的构造函数
+        func["__ori_constructor__"] = cls;
+        // 为了伪装得更像，将toString也替换掉
         func.toString = function () { return cls.toString(); };
         // 返回新的构造函数
         return func;
@@ -328,7 +331,7 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
             // 调用父类构造函数构造实例
             cls.apply(instance, arguments);
             // 调用回调
-            handleInstance(instance, cls);
+            handleInstance(instance);
         }
     }
     exports.wrapConstruct = wrapConstruct;
@@ -498,6 +501,8 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
          * @memberof Core
          */
         Core.prototype.getInject = function (type) {
+            // 需要用原始的构造函数取
+            type = type["__ori_constructor__"] || type;
             return this._injectDict[type.toString()];
         };
         Core.prototype.handleCommands = function (msg) {
@@ -572,7 +577,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
         // Model先进行托管
         var result = DecorateUtil_1.wrapConstruct(cls);
         // 然后要注入新生成的类
-        Injectable(result);
+        exports.core.mapInject(result);
         // 返回结果
         return result;
     };

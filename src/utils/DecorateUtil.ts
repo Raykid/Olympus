@@ -12,9 +12,10 @@ import {extendsClass} from "../utils/ObjectUtil"
 
 var instanceDict:{[key:string]:((instance?:any)=>void)[]} = {};
 
-function handleInstance(instance:any, cls:IConstructor):void
+function handleInstance(instance:any):void
 {
-    var key:string = (cls || instance.constructor).toString();
+    var cls:IConstructor = instance.constructor;
+    var key:string = cls && cls.toString();
     var funcs:((instance?:any)=>void)[] = instanceDict[key];
     if(funcs) for(var func of funcs) func(instance);
 }
@@ -33,7 +34,9 @@ export function wrapConstruct(cls:IConstructor):IConstructor
     eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
     // 动态设置继承
     extendsClass(func, cls);
-    // 设置toString方法
+    // 为新的构造函数打一个标签，用以记录原始的构造函数
+    func["__ori_constructor__"] = cls;
+    // 为了伪装得更像，将toString也替换掉
     func.toString = ()=>cls.toString();
     // 返回新的构造函数
     return func;
@@ -45,7 +48,7 @@ export function wrapConstruct(cls:IConstructor):IConstructor
         // 调用父类构造函数构造实例
         cls.apply(instance, arguments);
         // 调用回调
-        handleInstance(instance, cls);
+        handleInstance(instance);
     }
 }
 

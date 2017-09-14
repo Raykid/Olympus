@@ -216,6 +216,8 @@ export default class Core
      */
     public getInject(type:IConstructor):any
     {
+        // 需要用原始的构造函数取
+        type = type["__ori_constructor__"] || type;
         return this._injectDict[type.toString()];
     }
 
@@ -301,7 +303,7 @@ window["Model"] = function Model(cls:IConstructor):Function
     // Model先进行托管
     var result:any = wrapConstruct(cls);
     // 然后要注入新生成的类
-    Injectable(result);
+    core.mapInject(result);
     // 返回结果
     return result;
 }
