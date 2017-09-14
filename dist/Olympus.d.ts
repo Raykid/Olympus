@@ -13,18 +13,25 @@ interface IInjectableParams {
     type: IConstructor;
 }
 /**
- * 注入一个类型的实例
- *
- * @param {IConstructor} cls 类型构造器
- * @returns {PropertyDecorator}
- */
-declare function Inject(cls: IConstructor): PropertyDecorator;
-/**
  * 生成一个类型的实例并注册到框架注入器中，默认注册到自身类型构造器上
  *
- * @param {IConstructor} cls 类型构造器
+ * @param {IConstructor} cls 要注入的类
  */
 declare function Injectable(cls: IConstructor): void;
+/**
+ * 标识当前类型是个Model，Model具有装饰器注入功能，且自身也会被注入(Injectable功能)
+ *
+ * @param {IConstructor} cls 要注入的Model类
+ * @returns {*}
+ */
+declare function Model(cls: IConstructor): IConstructor;
+/**
+ * 标识当前类型是个Mediator，Mediator具有装饰器注入功能，但自身不会被注入
+ *
+ * @param {IConstructor} cls 要注入的Mediator类
+ * @returns {*}
+ */
+declare function Mediator(cls: IConstructor): IConstructor;
 /**
  * 生成一个类型的实例并注册到框架注入器中，注册到指定的类型构造器上
  *
@@ -33,26 +40,19 @@ declare function Injectable(cls: IConstructor): void;
  */
 declare function Injectable(params: IInjectableParams): ClassDecorator;
 /**
+ * 注入一个类型的实例
+ *
+ * @param {IConstructor} cls 类型构造器
+ * @returns {PropertyDecorator}
+ */
+declare function Inject(cls: IConstructor): PropertyDecorator;
+/**
  * 消息处理函数的装饰器方法
  *
  * @param {string} type 监听的消息类型
  * @returns {MethodDecorator}
  */
 declare function Handler(type: string): MethodDecorator;
-/**
- * 标识当前类型是个Model
- *
- * @param {IConstructor} cls
- * @returns {*}
- */
-declare function Model(cls: IConstructor): any;
-/**
- * 标识当前类型是个Mediator
- *
- * @param {IConstructor} cls
- * @returns {*}
- */
-declare function Mediator(cls: IConstructor): any;
 declare module "core/interfaces/IDisposable" {
     /**
      * @author Raykid

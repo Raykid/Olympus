@@ -298,10 +298,10 @@ window["Injectable"] = function Injectable(cls:IInjectableParams|IConstructor):C
 };
 
 /** Model */
-window["Model"] = function Model(cls:IConstructor):Function
+window["Model"] = function Model(cls:IConstructor):IConstructor
 {
     // Model先进行托管
-    var result:any = wrapConstruct(cls);
+    var result:IConstructor = wrapConstruct(cls);
     // 然后要注入新生成的类
     core.mapInject(result);
     // 返回结果
@@ -309,7 +309,7 @@ window["Model"] = function Model(cls:IConstructor):Function
 }
 
 /** Mediator */
-window["Mediator"] = function Mediator(cls:IConstructor):Function
+window["Mediator"] = function Mediator(cls:IConstructor):IConstructor
 {
     return wrapConstruct(cls);
 }
