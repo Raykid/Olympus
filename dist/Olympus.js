@@ -284,7 +284,7 @@ define("utils/ObjectUtil", ["require", "exports"], function (require, exports) {
         };
     })();
 });
-define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_1) {
+define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -342,7 +342,7 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
      * @param {IConstructor} cls 要监听实例化的类
      * @param {(instance?:any)=>void} handler 处理函数
      */
-    function listenInstance(cls, handler) {
+    function listenConstruct(cls, handler) {
         var key = cls.toString();
         var list = instanceDict[key];
         if (!list)
@@ -350,11 +350,11 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
         if (list.indexOf(handler) < 0)
             list.push(handler);
     }
-    exports.listenInstance = listenInstance;
+    exports.listenConstruct = listenConstruct;
 });
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
-define("core/Core", ["require", "exports", "core/message/Message", "core/message/CoreMessage", "utils/DecorateUtil"], function (require, exports, Message_1, CoreMessage_1, DecorateUtil_1) {
+define("core/Core", ["require", "exports", "core/message/Message", "core/message/CoreMessage", "utils/ConstructUtil"], function (require, exports, Message_1, CoreMessage_1, ConstructUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -575,7 +575,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
     /** Model */
     window["Model"] = function Model(cls) {
         // Model先进行托管
-        var result = DecorateUtil_1.wrapConstruct(cls);
+        var result = ConstructUtil_1.wrapConstruct(cls);
         // 然后要注入新生成的类
         exports.core.mapInject(result);
         // 返回结果
@@ -583,13 +583,13 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
     };
     /** Mediator */
     window["Mediator"] = function Mediator(cls) {
-        return DecorateUtil_1.wrapConstruct(cls);
+        return ConstructUtil_1.wrapConstruct(cls);
     };
     /** Inject */
     window["Inject"] = function Inject(cls) {
         return function (prototype, propertyKey) {
             // 监听实例化
-            DecorateUtil_1.listenInstance(prototype.constructor, function (instance) {
+            ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
                 Object.defineProperty(instance, propertyKey, {
                     configurable: true,
                     enumerable: true,
@@ -602,7 +602,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
     window["Handler"] = function Handler(type) {
         return function (prototype, propertyKey, descriptor) {
             // 监听实例化
-            DecorateUtil_1.listenInstance(prototype.constructor, function (instance) {
+            ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
                 exports.core.listen(type, instance[propertyKey], instance);
             });
         };
@@ -1952,7 +1952,7 @@ define("engine/net/NetMessage", ["require", "exports"], function (require, expor
     exports.default = NetMessage;
 });
 /// <reference path="../global/Decorator.ts"/>
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "utils/DecorateUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_8, CoreMessage_2, ObjectUtil_2, DecorateUtil_2, RequestData_1, NetMessage_1) {
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "utils/ConstructUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_8, CoreMessage_2, ObjectUtil_2, ConstructUtil_2, RequestData_1, NetMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NetManager = (function () {
@@ -2070,7 +2070,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
     window["Result"] = function (clsOrType) {
         return function (prototype, propertyKey, descriptor) {
             // 监听实例化
-            DecorateUtil_2.listenInstance(prototype.constructor, function (instance) {
+            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
                 exports.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
             });
         };

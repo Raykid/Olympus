@@ -59,7 +59,7 @@ export function wrapConstruct(cls:IConstructor):IConstructor
  * @param {IConstructor} cls 要监听实例化的类
  * @param {(instance?:any)=>void} handler 处理函数
  */
-export function listenInstance(cls:IConstructor, handler:(instance?:any)=>void):void
+export function listenConstruct(cls:IConstructor, handler:(instance?:any)=>void):void
 {
     var key:string = cls.toString();
     var list:((instance?:any)=>void)[] = instanceDict[key];

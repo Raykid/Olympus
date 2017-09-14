@@ -263,7 +263,7 @@ declare module "utils/ObjectUtil" {
      */
     export var extendsClass: (child: any, parent: any) => void;
 }
-declare module "utils/DecorateUtil" {
+declare module "utils/ConstructUtil" {
     import IConstructor from "core/interfaces/IConstructor";
     /**
      * 包装一个类型，监听类型的实例化操作
@@ -280,7 +280,7 @@ declare module "utils/DecorateUtil" {
      * @param {IConstructor} cls 要监听实例化的类
      * @param {(instance?:any)=>void} handler 处理函数
      */
-    export function listenInstance(cls: IConstructor, handler: (instance?: any) => void): void;
+    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
 }
 declare module "core/Core" {
     import IConstructor from "core/interfaces/IConstructor";

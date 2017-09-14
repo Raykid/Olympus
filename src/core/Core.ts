@@ -8,7 +8,7 @@ import Message from "./message/Message"
 import CoreMessage from "./message/CoreMessage"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
-import {listenInstance, wrapConstruct} from "../utils/DecorateUtil"
+import {listenConstruct, wrapConstruct} from "../utils/ConstructUtil"
 
 /**
  * @author Raykid
@@ -320,7 +320,7 @@ window["Inject"] = function Inject(cls:IConstructor):PropertyDecorator
     return function(prototype:any, propertyKey:string):void
     {
         // 监听实例化
-        listenInstance(prototype.constructor, function(instance:any):void
+        listenConstruct(prototype.constructor, function(instance:any):void
         {
             Object.defineProperty(instance, propertyKey, {
                 configurable: true,
@@ -337,7 +337,7 @@ window["Handler"] = function Handler(type:string):MethodDecorator
     return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
     {
         // 监听实例化
-        listenInstance(prototype.constructor, function(instance:any):void
+        listenConstruct(prototype.constructor, function(instance:any):void
         {
             core.listen(type, instance[propertyKey], instance);
         });
