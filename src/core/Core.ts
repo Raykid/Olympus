@@ -8,7 +8,7 @@ import Message from "./message/Message"
 import CoreMessage from "./message/CoreMessage"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
-import {listenInstance, delegateInstance} from "../utils/DecorateUtil"
+import {listenInstance, wrapConstruct} from "../utils/DecorateUtil"
 
 /**
  * @author Raykid
@@ -270,34 +270,6 @@ export default class Core
         if(index < 0) return;
         commands.splice(index, 1);
     }
-    
-    /*********************** 下面是界面中介者系统 ***********************/
-
-    private _mediatorList:IDisposable[] = [];
-
-    /**
-     * 注册界面中介者
-     * 
-     * @param {IDisposable} mediator 要注册的界面中介者实例
-     * @memberof Core
-     */
-    public mapMediator(mediator:IDisposable):void
-    {
-        if(this._mediatorList.indexOf(mediator) < 0)
-            this._mediatorList.push(mediator);
-    }
-
-    /**
-     * 注销界面中介者
-     * 
-     * @param {IDisposable} mediator 要注销的界面中介者实例
-     * @memberof Core
-     */
-    public unmapMediator(mediator:IDisposable):void
-    {
-        var index:number = this._mediatorList.indexOf(mediator);
-        if(index >= 0) this._mediatorList.splice(index, 1);
-    }
 }
 /** 再额外导出一个单例 */
 export const core:Core = new Core();
@@ -327,7 +299,7 @@ window["Injectable"] = function Injectable(cls:IInjectableParams|IConstructor):C
 window["Model"] = function Model(cls:IConstructor):Function
 {
     // Model先进行托管
-    var result:any = delegateInstance(cls);
+    var result:any = wrapConstruct(cls);
     // 然后要注入新生成的类
     Injectable(result);
     // 返回结果
@@ -337,8 +309,7 @@ window["Model"] = function Model(cls:IConstructor):Function
 /** Mediator */
 window["Mediator"] = function Mediator(cls:IConstructor):Function
 {
-    // Mediator仅进行托管，不进行注入
-    return delegateInstance(cls);
+    return wrapConstruct(cls);
 }
 
 /** Inject */

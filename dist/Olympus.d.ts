@@ -266,24 +266,23 @@ declare module "utils/ObjectUtil" {
 declare module "utils/DecorateUtil" {
     import IConstructor from "core/interfaces/IConstructor";
     /**
-     * 监听实例化
+     * 包装一个类型，监听类型的实例化操作
+     *
+     * @export
+     * @param {IConstructor} cls 要监听构造的类型构造器
+     * @returns {IConstructor} 新的构造函数
+     */
+    export function wrapConstruct(cls: IConstructor): IConstructor;
+    /**
+     * 监听类型的实例化
      *
      * @export
      * @param {IConstructor} cls 要监听实例化的类
      * @param {(instance?:any)=>void} handler 处理函数
      */
     export function listenInstance(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 在某个类型实例化时插入一个操作，该方法通常要配合类装饰器使用
-     *
-     * @export
-     * @param {IConstructor} cls 要监听实例化的类
-     * @returns {*} 新构造函数
-     */
-    export function delegateInstance(cls: IConstructor): any;
 }
 declare module "core/Core" {
-    import IDisposable from "core/interfaces/IDisposable";
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
@@ -389,22 +388,6 @@ declare module "core/Core" {
          * @memberof Core
          */
         unmapCommand(type: string, cmd: ICommandConstructor): void;
-        /*********************** 下面是界面中介者系统 ***********************/
-        private _mediatorList;
-        /**
-         * 注册界面中介者
-         *
-         * @param {IDisposable} mediator 要注册的界面中介者实例
-         * @memberof Core
-         */
-        mapMediator(mediator: IDisposable): void;
-        /**
-         * 注销界面中介者
-         *
-         * @param {IDisposable} mediator 要注销的界面中介者实例
-         * @memberof Core
-         */
-        unmapMediator(mediator: IDisposable): void;
     }
     /** 再额外导出一个单例 */
     export const core: Core;

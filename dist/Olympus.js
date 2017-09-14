@@ -296,8 +296,8 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
      * 装饰器工具集
     */
     var instanceDict = {};
-    function onInstance(cls, instance) {
-        var key = cls.toString();
+    function handleInstance(instance, cls) {
+        var key = (cls || instance.constructor).toString();
         var funcs = instanceDict[key];
         if (funcs)
             for (var _i = 0, funcs_1 = funcs; _i < funcs_1.length; _i++) {
@@ -306,7 +306,34 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
             }
     }
     /**
-     * 监听实例化
+     * 包装一个类型，监听类型的实例化操作
+     *
+     * @export
+     * @param {IConstructor} cls 要监听构造的类型构造器
+     * @returns {IConstructor} 新的构造函数
+     */
+    function wrapConstruct(cls) {
+        // 创建一个新的构造函数
+        var func;
+        eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
+        // 动态设置继承
+        ObjectUtil_1.extendsClass(func, cls);
+        // 设置toString方法
+        func.toString = function () { return cls.toString(); };
+        // 返回新的构造函数
+        return func;
+        function onConstruct(instance) {
+            // 恢复__proto__
+            instance["__proto__"] = cls.prototype;
+            // 调用父类构造函数构造实例
+            cls.apply(instance, arguments);
+            // 调用回调
+            handleInstance(instance, cls);
+        }
+    }
+    exports.wrapConstruct = wrapConstruct;
+    /**
+     * 监听类型的实例化
      *
      * @export
      * @param {IConstructor} cls 要监听实例化的类
@@ -321,33 +348,6 @@ define("utils/DecorateUtil", ["require", "exports", "utils/ObjectUtil"], functio
             list.push(handler);
     }
     exports.listenInstance = listenInstance;
-    /**
-     * 在某个类型实例化时插入一个操作，该方法通常要配合类装饰器使用
-     *
-     * @export
-     * @param {IConstructor} cls 要监听实例化的类
-     * @returns {*} 新构造函数
-     */
-    function delegateInstance(cls) {
-        // 创建一个新的构造函数
-        var func;
-        eval('func = function ' + cls["name"] + '(){onConstruct.call(this)}');
-        // 动态设置继承
-        ObjectUtil_1.extendsClass(func, cls);
-        // 设置toString方法
-        func.toString = function () { return cls.toString(); };
-        // 返回新的构造函数
-        return func;
-        function onConstruct() {
-            // 恢复__proto__
-            this["__proto__"] = cls.prototype;
-            // 调用父类构造函数
-            cls.apply(this, arguments);
-            // 调用实例化嵌入方法
-            onInstance(cls, this);
-        }
-    }
-    exports.delegateInstance = delegateInstance;
 });
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
@@ -368,8 +368,6 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
             this._injectDict = {};
             /*********************** 下面是内核命令系统 ***********************/
             this._commandDict = {};
-            /*********************** 下面是界面中介者系统 ***********************/
-            this._mediatorList = [];
             // 进行单例判断
             if (Core._instance)
                 throw new Error("已生成过Core实例，不允许多次生成");
@@ -549,27 +547,6 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
                 return;
             commands.splice(index, 1);
         };
-        /**
-         * 注册界面中介者
-         *
-         * @param {IDisposable} mediator 要注册的界面中介者实例
-         * @memberof Core
-         */
-        Core.prototype.mapMediator = function (mediator) {
-            if (this._mediatorList.indexOf(mediator) < 0)
-                this._mediatorList.push(mediator);
-        };
-        /**
-         * 注销界面中介者
-         *
-         * @param {IDisposable} mediator 要注销的界面中介者实例
-         * @memberof Core
-         */
-        Core.prototype.unmapMediator = function (mediator) {
-            var index = this._mediatorList.indexOf(mediator);
-            if (index >= 0)
-                this._mediatorList.splice(index, 1);
-        };
         return Core;
     }());
     exports.default = Core;
@@ -593,7 +570,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
     /** Model */
     window["Model"] = function Model(cls) {
         // Model先进行托管
-        var result = DecorateUtil_1.delegateInstance(cls);
+        var result = DecorateUtil_1.wrapConstruct(cls);
         // 然后要注入新生成的类
         Injectable(result);
         // 返回结果
@@ -601,8 +578,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
     };
     /** Mediator */
     window["Mediator"] = function Mediator(cls) {
-        // Mediator仅进行托管，不进行注入
-        return DecorateUtil_1.delegateInstance(cls);
+        return DecorateUtil_1.wrapConstruct(cls);
     };
     /** Inject */
     window["Inject"] = function Inject(cls) {
