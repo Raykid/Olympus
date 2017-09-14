@@ -41,6 +41,9 @@ define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Expl
         Fuck2.prototype.testHandler = function () {
             console.log("测试Handler注入成功！");
         };
+        Fuck2.prototype.dispose = function () {
+            console.log("disposed");
+        };
         __decorate([
             Inject(Fuck)
         ], Fuck2.prototype, "fuck", void 0);
@@ -88,5 +91,8 @@ define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Expl
     window["fuck2"] = fuck2;
     window["Fuck2"] = Fuck2;
     Core_1.core.dispatch("fuck");
+    setTimeout(function () {
+        fuck2.dispose();
+    }, 1000);
 });
 //# sourceMappingURL=main.js.map

@@ -82,6 +82,11 @@ class Fuck2
     {
         console.log("测试Handler注入成功！");
     }
+
+    public dispose():void
+    {
+        console.log("disposed");
+    }
 }
 
 var fuck2:Fuck2 = new Fuck2();
@@ -92,3 +97,8 @@ window["fuck2"] = fuck2;
 window["Fuck2"] = Fuck2;
 
 core.dispatch("fuck");
+
+
+setTimeout(function() {
+    fuck2.dispose();
+}, 1000);

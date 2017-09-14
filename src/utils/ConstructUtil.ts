@@ -66,3 +66,55 @@ export function listenConstruct(cls:IConstructor, handler:(instance?:any)=>void)
     if(!list) instanceDict[key] = list = [];
     if(list.indexOf(handler) < 0) list.push(handler);
 }
+
+/**
+ * 移除实例化监听
+ * 
+ * @export
+ * @param {IConstructor} cls 要移除监听实例化的类
+ * @param {(instance?:any)=>void} handler 处理函数
+ */
+export function unlistenConstruct(cls:IConstructor, handler:(instance?:any)=>void):void
+{
+    var key:string = cls.toString();
+    var list:((instance?:any)=>void)[] = instanceDict[key];
+    if(list)
+    {
+        var index:number = list.indexOf(handler);
+        if(index >= 0) list.splice(index, 1);
+    }
+}
+
+/**
+ * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+ * 
+ * @export
+ * @param {IConstructor} cls 要监听销毁的类
+ * @param {(instance?:any)=>void} handler 处理函数
+ */
+export function listenDispose(cls:IConstructor, handler:(instance?:any)=>void):void
+{
+    // 判断类型是否具有dispose方法
+    if(cls.prototype.dispose == null)
+    {
+        console.warn("类型[" + cls["name"] + "]不具有dispose方法，无法监听销毁");
+        return;
+    }
+    // 首先要监听实例化
+    listenConstruct(cls, onConstruct);
+
+    function onConstruct(instance:any):void
+    {
+        // 移除实例化监听
+        unlistenConstruct(cls, onConstruct);
+        // 替换实例的dispose方法
+        var dispose:Function = instance.dispose;
+        instance.dispose = function():any
+        {
+            // 调用回调
+            handler(this);
+            // 调用原始dispose方法执行销毁
+            return dispose.apply(this, arguments);
+        };
+    }
+}

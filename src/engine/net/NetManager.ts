@@ -4,7 +4,7 @@ import {core} from "../../core/Core"
 import Message from "../../core/message/Message"
 import CoreMessage from "../../core/message/CoreMessage"
 import {extendObject} from "../../utils/ObjectUtil"
-import {listenConstruct} from "../../utils/ConstructUtil"
+import {listenConstruct, listenDispose} from "../../utils/ConstructUtil"
 import RequestData, {commonData} from "./RequestData"
 import ResponseData, {IResponseDataConstructor} from "./ResponseData"
 import NetMessage from "./NetMessage"
@@ -158,6 +158,11 @@ window["Result"] = function(clsOrType:IResponseDataConstructor|string):MethodDec
         listenConstruct(prototype.constructor, function(instance:any):void
         {
             netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+        });
+        // 监听销毁
+        listenDispose(prototype.constructor, function(instance:any):void
+        {
+            netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
         });
     };
 };

@@ -8,7 +8,7 @@ import Message from "./message/Message"
 import CoreMessage from "./message/CoreMessage"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
-import {listenConstruct, wrapConstruct} from "../utils/ConstructUtil"
+import {listenConstruct, listenDispose, wrapConstruct} from "../utils/ConstructUtil"
 
 /**
  * @author Raykid
@@ -340,6 +340,11 @@ window["Handler"] = function Handler(type:string):MethodDecorator
         listenConstruct(prototype.constructor, function(instance:any):void
         {
             core.listen(type, instance[propertyKey], instance);
+        });
+        // 监听销毁
+        listenDispose(prototype.constructor, function(instance:any):void
+        {
+            core.unlisten(type, instance[propertyKey], instance);
         });
     };
 };

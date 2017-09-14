@@ -351,6 +351,52 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
             list.push(handler);
     }
     exports.listenConstruct = listenConstruct;
+    /**
+     * 移除实例化监听
+     *
+     * @export
+     * @param {IConstructor} cls 要移除监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    function unlistenConstruct(cls, handler) {
+        var key = cls.toString();
+        var list = instanceDict[key];
+        if (list) {
+            var index = list.indexOf(handler);
+            if (index >= 0)
+                list.splice(index, 1);
+        }
+    }
+    exports.unlistenConstruct = unlistenConstruct;
+    /**
+     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+     *
+     * @export
+     * @param {IConstructor} cls 要监听销毁的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    function listenDispose(cls, handler) {
+        // 判断类型是否具有dispose方法
+        if (cls.prototype.dispose == null) {
+            console.warn("类型[" + cls["name"] + "]不具有dispose方法，无法监听销毁");
+            return;
+        }
+        // 首先要监听实例化
+        listenConstruct(cls, onConstruct);
+        function onConstruct(instance) {
+            // 移除实例化监听
+            unlistenConstruct(cls, onConstruct);
+            // 替换实例的dispose方法
+            var dispose = instance.dispose;
+            instance.dispose = function () {
+                // 调用回调
+                handler(this);
+                // 调用原始dispose方法执行销毁
+                return dispose.apply(this, arguments);
+            };
+        }
+    }
+    exports.listenDispose = listenDispose;
 });
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
@@ -604,6 +650,10 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
             // 监听实例化
             ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
                 exports.core.listen(type, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_1.listenDispose(prototype.constructor, function (instance) {
+                exports.core.unlisten(type, instance[propertyKey], instance);
             });
         };
     };
@@ -2072,6 +2122,10 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
             // 监听实例化
             ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
                 exports.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+                exports.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
             });
         };
     };

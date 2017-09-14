@@ -281,6 +281,22 @@ declare module "utils/ConstructUtil" {
      * @param {(instance?:any)=>void} handler 处理函数
      */
     export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 移除实例化监听
+     *
+     * @export
+     * @param {IConstructor} cls 要移除监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+     *
+     * @export
+     * @param {IConstructor} cls 要监听销毁的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
 }
 declare module "core/Core" {
     import IConstructor from "core/interfaces/IConstructor";
