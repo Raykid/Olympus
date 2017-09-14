@@ -1,3 +1,4 @@
+import {core} from "../Core"
 import IMessage from "../message/IMessage"
 
 /**
@@ -21,6 +22,26 @@ export default abstract class Command
     public constructor(msg:IMessage)
     {
         this.msg = msg;
+    }
+    
+    /**
+     * 派发内核消息
+     * 
+     * @param {IMessage} msg 内核消息实例
+     * @memberof Core
+     */
+    public dispatch(msg:IMessage):void;
+    /**
+     * 派发内核消息，消息会转变为Message类型对象
+     * 
+     * @param {string} type 消息类型
+     * @param {...any[]} params 消息参数列表
+     * @memberof Core
+     */
+    public dispatch(type:string, ...params:any[]):void;
+    public dispatch(typeOrMsg:any, ...params:any[]):void
+    {
+        core.dispatch(typeOrMsg, ...params);
     }
 
     /**

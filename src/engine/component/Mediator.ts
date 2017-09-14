@@ -1,3 +1,6 @@
+import {core} from "../../core/Core"
+import IDispatcher from "../../core/interfaces/IDispatcher"
+import IMessage from "../../core/message/IMessage"
 import IMediator from "../../view/mediator/IMediator"
 import IBridge from "../../view/bridge/IBridge"
 
@@ -9,7 +12,7 @@ import IBridge from "../../view/bridge/IBridge"
  * 
  * 组件界面中介者基类
 */
-export default abstract class Mediator implements IMediator
+export default abstract class Mediator implements IMediator, IDispatcher
 {
     public constructor(bridge:IBridge, skin?:any)
     {
@@ -131,6 +134,26 @@ export default abstract class Mediator implements IMediator
             // 移除记录
             this._listeners.splice(i, 1);
         }
+    }
+
+    /**
+     * 派发内核消息
+     * 
+     * @param {IMessage} msg 内核消息实例
+     * @memberof Core
+     */
+    public dispatch(msg:IMessage):void;
+    /**
+     * 派发内核消息，消息会转变为Message类型对象
+     * 
+     * @param {string} type 消息类型
+     * @param {...any[]} params 消息参数列表
+     * @memberof Core
+     */
+    public dispatch(type:string, ...params:any[]):void;
+    public dispatch(typeOrMsg:any, ...params:any[]):void
+    {
+        core.dispatch(typeOrMsg, ...params);
     }
 
     /**

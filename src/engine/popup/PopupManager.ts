@@ -35,12 +35,13 @@ export default class PopupManager
      * 打开一个弹窗
      * 
      * @param {IPopup} popup 要打开的弹窗
+     * @param {*} [data] 数据
      * @param {boolean} [isModel=true] 是否模态弹出
      * @param {{x:number, y:number}} [from] 弹出起点位置
      * @returns {IPopup} 返回弹窗对象
      * @memberof PopupManager
      */
-    public open(popup:IPopup, isModel:boolean=true, from?:{x:number, y:number}):IPopup
+    public open(popup:IPopup, data?:any, isModel:boolean=true, from?:{x:number, y:number}):IPopup
     {
         if(this._popups.indexOf(popup) < 0)
         {
@@ -49,13 +50,13 @@ export default class PopupManager
             // 派发消息
             core.dispatch(PopupMessage.POPUP_BEFORE_OPEN, popup, isModel, from);
             // 调用回调
-            popup.onBeforeOpen && popup.onBeforeOpen(isModel, from);
+            popup.onBeforeOpen && popup.onBeforeOpen(data, isModel, from);
             // 调用策略接口
             policy.open(popup, ()=>{
                 // 派发消息
                 core.dispatch(PopupMessage.POPUP_AFTER_OPEN, popup, isModel, from);
                 // 调用回调
-                popup.onAfterOpen && popup.onAfterOpen(isModel, from);
+                popup.onAfterOpen && popup.onAfterOpen(data, isModel, from);
             }, from);
         }
         return popup;
@@ -65,11 +66,12 @@ export default class PopupManager
      * 关闭一个弹窗
      * 
      * @param {IPopup} popup 要关闭的弹窗
+     * @param {*} [data] 数据
      * @param {{x:number, y:number}} [to] 关闭终点位置
      * @returns {IPopup} 返回弹窗对象
      * @memberof PopupManager
      */
-    public close(popup:IPopup, to?:{x:number, y:number}):IPopup
+    public close(popup:IPopup, data?:any, to?:{x:number, y:number}):IPopup
     {
         var index:number = this._popups.indexOf(popup);
         if(index >= 0)
@@ -79,13 +81,13 @@ export default class PopupManager
             // 派发消息
             core.dispatch(PopupMessage.POPUP_BEFORE_CLOSE, popup, to);
             // 调用回调
-            popup.onBeforeClose && popup.onBeforeClose(to);
+            popup.onBeforeClose && popup.onBeforeClose(data, to);
             // 调用策略接口
             policy.close(popup, ()=>{
                 // 派发消息
                 core.dispatch(PopupMessage.POPUP_AFTER_CLOSE, popup, to);
                 // 调用回调
-                popup.onAfterClose && popup.onAfterClose(to);
+                popup.onAfterClose && popup.onAfterClose(data, to);
             }, to);
         }
         return popup;

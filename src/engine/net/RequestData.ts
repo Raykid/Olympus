@@ -1,5 +1,6 @@
 import IMessage from "../../core/message/IMessage"
 import IRequestPolicy from "./IRequestPolicy"
+import {IResponseDataConstructor} from "./ResponseData"
 
 /**
  * @author Raykid
@@ -33,6 +34,13 @@ export interface IRequestParams
      * @memberof IRequestParams
      */
     protocol:string;
+    /**
+     * 返回类型，如果消息没有返回类型或不确定是否有返回类型，则此处可以不定义（如Socket消息）
+     * 
+     * @type {IResponseDataConstructor}
+     * @memberof IRequestParams
+     */
+    response?:IResponseDataConstructor;
     /**
      * 其他可能需要的参数
      * 

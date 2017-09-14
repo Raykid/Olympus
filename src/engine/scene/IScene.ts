@@ -15,6 +15,12 @@ export default interface IScene extends IHasBridge
     getPolicy():IScenePolicy;
     /** 设置切换策略 */
     setPolicy(policy:IScenePolicy):void;
+    /** 切入当前场景（相当于调用SceneManager.switch方法） */
+    switch(data?:any):IScene;
+    /** 推入当前场景（相当于调用SceneManager.push方法） */
+    push(data?:any):IScene;
+    /** 弹出当前场景（相当于调用SceneManager.pop方法） */
+    pop(data?:any):IScene;
     /**
      * 切入场景开始前调用
      * @param fromScene 从哪个场景切入

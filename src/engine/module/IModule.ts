@@ -11,20 +11,20 @@ import RequestData from "../net/RequestData"
 */
 export default interface IModule extends IDisposable
 {
-    /** 列出模块儿所需CSS资源URL */
+    /** 列出模块所需CSS资源URL */
     listStyleFiles():string[];
-    /** 列出模块儿所需JS资源URL */
+    /** 列出模块所需JS资源URL */
     listJsFiles():string[];
-    /** 列出模块儿初始化请求 */
+    /** 列出模块初始化请求 */
     listInitRequests():RequestData[];
-    /** 获取模块儿名称 */
+    /** 获取模块名称 */
     getName():string;
-    /** 打开模块儿时调用 */
-    open(data?:any):void;
-    /** 关闭模块儿时调用 */
-    close(data?:any):void;
-    /** 模块儿切换到前台时调用（open之后或者其他模块儿被关闭时） */
+    /** 打开模块时调用 */
+    onOpen(data?:any):void;
+    /** 关闭模块时调用 */
+    onClose(data?:any):void;
+    /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
     onActivate(from:IModule, data?:any):void;
-    /** 模块儿掐环岛后台是调用（close之后或者其他模块儿打开时 */
+    /** 模块切换到后台是调用（close之后或者其他模块打开时） */
     onDeactivate(to:IModule, data?:any):void;
 }

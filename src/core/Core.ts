@@ -9,6 +9,7 @@ import CoreMessage from "./message/CoreMessage"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
 import {listenConstruct, listenDispose, wrapConstruct} from "../utils/ConstructUtil"
+import IDispatcher from "./interfaces/IDispatcher"
 
 /**
  * @author Raykid
@@ -42,7 +43,7 @@ export interface IInjectableParams
  * @export
  * @class Core
  */
-export default class Core
+export default class Core implements IDispatcher
 {
     private static _instance:Core;
     

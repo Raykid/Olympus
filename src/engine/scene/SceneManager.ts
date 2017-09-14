@@ -56,22 +56,20 @@ export default class SceneManager
      * 
      * @param {IScene} scene 要切换到的场景
      * @param {*} [data] 要携带给下一个场景的数据
+     * @returns {IScene} 场景本体
      * @memberof SceneManager
      */
-    public switchScene(scene:IScene, data?:any):void
+    public switch(scene:IScene, data?:any):IScene
     {
         // 非空判断
         if(scene == null) return;
         // 如果切入的是第一个场景，则改用pushScene操作
         if(this.getActiveCount() == 0)
-        {
-            this.pushScene(scene, data);
-            return;
-        }
+            return this.push(scene, data);
         // 同步执行
         wait(
             SYNC_NAME,
-            this.doChangeScene,
+            this.doChange,
             this,
             this.getCurScene(),
             scene,
@@ -80,6 +78,7 @@ export default class SceneManager
             ChangeType.Switch,
             ()=>this._sceneStack[length - 1] = scene
         );
+        return scene;
     }
 
     /**
@@ -87,16 +86,17 @@ export default class SceneManager
      * 
      * @param {IScene} scene 要推入的场景
      * @param {*} [data] 要携带给下一个场景的数据
+     * @returns {IScene} 场景本体
      * @memberof SceneManager
      */
-    public pushScene(scene:IScene, data?:any):void
+    public push(scene:IScene, data?:any):IScene
     {
         // 非空判断
-        if(scene == null) return;
+        if(scene == null) return scene;
         // 同步执行
         wait(
             SYNC_NAME,
-            this.doChangeScene,
+            this.doChange,
             this,
             this.getCurScene(),
             scene,
@@ -105,6 +105,7 @@ export default class SceneManager
             ChangeType.Push,
             ()=>this._sceneStack.push(scene)
         );
+        return scene;
     }
 
     /**
@@ -112,23 +113,25 @@ export default class SceneManager
      * 
      * @param {IScene} scene 要切换出的场景，仅做验证用，如果当前场景不是传入的场景则不会进行切换弹出操作
      * @param {*} [data] 要携带给下一个场景的数据
+     * @returns {IScene} 场景本体
      * @memberof SceneManager
      */
-    public popScene(scene:IScene, data?:any):void
+    public pop(scene:IScene, data?:any):IScene
     {
         // 非空判断
-        if(scene == null) return;
+        if(scene == null) return scene;
         // 同步执行
         wait(
             SYNC_NAME,
-            this.doPopScene,
+            this.doPop,
             this,
             scene,
             data
         );
+        return scene;
     }
 
-    private doPopScene(scene:IScene, data:any):void
+    private doPop(scene:IScene, data:any):void
     {
         // 如果是最后一个场景则什么都不做
         var length:number = this.getActiveCount();
@@ -149,7 +152,7 @@ export default class SceneManager
             policy = none;
         }
         // 执行切换
-        this.doChangeScene(
+        this.doChange(
             scene,
             to,
             data,
@@ -159,7 +162,7 @@ export default class SceneManager
         );
     }
     
-    private doChangeScene(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, complete:()=>void):void
+    private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, complete:()=>void):void
     {
         if(policy == null) policy = none;
         // 如果要交替的两个场景不是同一个类型的场景，则暂不提供切换策略的支持，直接套用NoneScenePolicy

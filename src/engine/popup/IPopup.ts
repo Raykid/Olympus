@@ -15,12 +15,16 @@ export default interface IPopup extends IHasBridge
     getPolicy():IPopupPolicy;
     /** 设置切换策略 */
     setPolicy(policy:IPopupPolicy):void;
+    /** 弹出当前弹窗（等同于调用PopupManager.open方法） */
+    open(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPopup;
+    /** 关闭当前弹窗（等同于调用PopupManager.close方法） */
+    close(data?:any, to?:{x:number, y:number}):IPopup;
     /** 在弹出前调用的方法 */
-    onBeforeOpen?(isModel?:boolean, from?:{x:number, y:number}):void;
+    onBeforeOpen?(data?:any, isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在弹出后调用的方法 */
-    onAfterOpen?(isModel?:boolean, from?:{x:number, y:number}):void;
+    onAfterOpen?(data?:any, isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在关闭前调用的方法 */
-    onBeforeClose?(to?:{x:number, y:number}):void;
+    onBeforeClose?(data?:any, to?:{x:number, y:number}):void;
     /** 在关闭后调用的方法 */
-    onAfterClose?(to?:{x:number, y:number}):void;
+    onAfterClose?(data?:any, to?:{x:number, y:number}):void;
 }
