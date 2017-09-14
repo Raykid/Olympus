@@ -376,25 +376,19 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
      * @param {(instance?:any)=>void} handler 处理函数
      */
     function listenDispose(cls, handler) {
+        var dispose = cls.prototype.dispose;
         // 判断类型是否具有dispose方法
-        if (cls.prototype.dispose == null) {
+        if (dispose == null) {
             console.warn("类型[" + cls["name"] + "]不具有dispose方法，无法监听销毁");
             return;
         }
-        // 首先要监听实例化
-        listenConstruct(cls, onConstruct);
-        function onConstruct(instance) {
-            // 移除实例化监听
-            unlistenConstruct(cls, onConstruct);
-            // 替换实例的dispose方法
-            var dispose = instance.dispose;
-            instance.dispose = function () {
-                // 调用回调
-                handler(this);
-                // 调用原始dispose方法执行销毁
-                return dispose.apply(this, arguments);
-            };
-        }
+        // 替换dispose方法
+        cls.prototype.dispose = function () {
+            // 调用回调
+            handler(this);
+            // 调用原始dispose方法执行销毁
+            return dispose.apply(this, arguments);
+        };
     }
     exports.listenDispose = listenDispose;
 });

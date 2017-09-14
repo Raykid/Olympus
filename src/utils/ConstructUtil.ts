@@ -94,27 +94,19 @@ export function unlistenConstruct(cls:IConstructor, handler:(instance?:any)=>voi
  */
 export function listenDispose(cls:IConstructor, handler:(instance?:any)=>void):void
 {
+    var dispose:Function = cls.prototype.dispose;
     // 判断类型是否具有dispose方法
-    if(cls.prototype.dispose == null)
+    if(dispose == null)
     {
         console.warn("类型[" + cls["name"] + "]不具有dispose方法，无法监听销毁");
         return;
     }
-    // 首先要监听实例化
-    listenConstruct(cls, onConstruct);
-
-    function onConstruct(instance:any):void
+    // 替换dispose方法
+    cls.prototype.dispose = function():any
     {
-        // 移除实例化监听
-        unlistenConstruct(cls, onConstruct);
-        // 替换实例的dispose方法
-        var dispose:Function = instance.dispose;
-        instance.dispose = function():any
-        {
-            // 调用回调
-            handler(this);
-            // 调用原始dispose方法执行销毁
-            return dispose.apply(this, arguments);
-        };
-    }
+        // 调用回调
+        handler(this);
+        // 调用原始dispose方法执行销毁
+        return dispose.apply(this, arguments);
+    };
 }
