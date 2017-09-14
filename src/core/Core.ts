@@ -311,6 +311,9 @@ window["Model"] = function Model(cls:IConstructor):IConstructor
 /** Mediator */
 window["Mediator"] = function Mediator(cls:IConstructor):IConstructor
 {
+    // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+    if(!cls.prototype.dispose)
+        console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
     return wrapConstruct(cls);
 }
 

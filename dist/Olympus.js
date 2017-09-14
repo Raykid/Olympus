@@ -378,17 +378,15 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
     function listenDispose(cls, handler) {
         var dispose = cls.prototype.dispose;
         // 判断类型是否具有dispose方法
-        if (dispose == null) {
-            console.warn("类型[" + cls["name"] + "]不具有dispose方法，无法监听销毁");
-            return;
+        if (dispose) {
+            // 替换dispose方法
+            cls.prototype.dispose = function () {
+                // 调用回调
+                handler(this);
+                // 调用原始dispose方法执行销毁
+                return dispose.apply(this, arguments);
+            };
         }
-        // 替换dispose方法
-        cls.prototype.dispose = function () {
-            // 调用回调
-            handler(this);
-            // 调用原始dispose方法执行销毁
-            return dispose.apply(this, arguments);
-        };
     }
     exports.listenDispose = listenDispose;
 });
@@ -623,6 +621,9 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
     };
     /** Mediator */
     window["Mediator"] = function Mediator(cls) {
+        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
         return ConstructUtil_1.wrapConstruct(cls);
     };
     /** Inject */

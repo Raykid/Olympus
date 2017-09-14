@@ -96,17 +96,15 @@ export function listenDispose(cls:IConstructor, handler:(instance?:any)=>void):v
 {
     var dispose:Function = cls.prototype.dispose;
     // 判断类型是否具有dispose方法
-    if(dispose == null)
+    if(dispose)
     {
-        console.warn("类型[" + cls["name"] + "]不具有dispose方法，无法监听销毁");
-        return;
+        // 替换dispose方法
+        cls.prototype.dispose = function():any
+        {
+            // 调用回调
+            handler(this);
+            // 调用原始dispose方法执行销毁
+            return dispose.apply(this, arguments);
+        };
     }
-    // 替换dispose方法
-    cls.prototype.dispose = function():any
-    {
-        // 调用回调
-        handler(this);
-        // 调用原始dispose方法执行销毁
-        return dispose.apply(this, arguments);
-    };
 }
