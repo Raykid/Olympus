@@ -41,9 +41,9 @@ export default interface IBridge
      */
     unmapListener(target:any, type:string, handler:Function, thisArg?:any):void;
     /**
-     * 初始化表现层，可以没有该方法，没有该方法则表示该表现层无需初始化
+     * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调
      * @memberof IBridge
      */
-    initView?(complete:()=>void):void;
+    init?(complete:()=>void):void;
 }

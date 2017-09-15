@@ -3022,7 +3022,7 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
          * @type {string}
          * @memberof ViewMessage
          */
-        ViewMessage.VIEW_BEFORE_INIT = "viewBeforeInit";
+        ViewMessage.BRIDGE_BEFORE_INIT = "bridgeBeforeInit";
         /**
          * 初始化表现层实例后的消息
          *
@@ -3030,7 +3030,7 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
          * @type {string}
          * @memberof ViewMessage
          */
-        ViewMessage.VIEW_AFTER_INIT = "viewAfterInit";
+        ViewMessage.BRIDGE_AFTER_INIT = "bridgeAfterInit";
         /**
          * 所有表现层实例都初始化完毕的消息
          *
@@ -3038,7 +3038,7 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
          * @type {string}
          * @memberof ViewMessage
          */
-        ViewMessage.VIEW_ALL_INIT = "viewAllInit";
+        ViewMessage.BRIDGE_ALL_INIT = "bridgeAllInit";
         return ViewMessage;
     }());
     exports.default = ViewMessage;
@@ -3046,40 +3046,78 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
 define("view/View", ["require", "exports", "core/Core", "view/message/ViewMessage"], function (require, exports, Core_14, ViewMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * View是表现层模组，用来管理所有表现层对象
+    */
     var View = (function () {
         function View() {
-            this._viewDict = {};
+            this._bridgeDict = {};
         }
+        /**
+         * 获取表现层桥实例
+         *
+         * @param {string} type 表现层类型
+         * @returns {IBridge} 表现层桥实例
+         * @memberof View
+         */
+        View.prototype.getBridge = function (type) {
+            var data = this._bridgeDict[type];
+            return (data && data[0]);
+        };
         /**
          * 注册一个表现层桥实例到框架中
          *
-         * @param {IBridge} view
+         * @param {...IBridge[]} bridges 要注册的所有表现层桥
          * @memberof View
          */
-        View.prototype.registerBridge = function (view) {
-            var type = view.getType();
-            if (!this._viewDict[type]) {
-                var data = { view: view, inited: false };
-                this._viewDict[type] = data;
-                // 派发消息
-                Core_14.core.dispatch(ViewMessage_1.default.VIEW_BEFORE_INIT, view);
-                // 初始化该表现层实例
-                var self = this;
-                if (view.initView)
-                    view.initView(afterInitView);
-                else
-                    afterInitView();
+        View.prototype.registerBridge = function () {
+            var bridges = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                bridges[_i] = arguments[_i];
             }
-            function afterInitView() {
+            if (bridges.length > 0) {
+                var self = this;
+                for (var _a = 0, bridges_1 = bridges; _a < bridges_1.length; _a++) {
+                    var bridge = bridges_1[_a];
+                    var type = bridge.getType();
+                    if (!this._bridgeDict[type]) {
+                        var data = [bridge, false];
+                        this._bridgeDict[type] = data;
+                        // 派发消息
+                        Core_14.core.dispatch(ViewMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
+                        // 初始化该表现层实例
+                        if (bridge.init)
+                            bridge.init(afterInitBridge);
+                        else
+                            afterInitBridge();
+                    }
+                }
+            }
+            else {
+                this.testAllInit();
+            }
+            function afterInitBridge() {
                 // 派发消息
-                Core_14.core.dispatch(ViewMessage_1.default.VIEW_AFTER_INIT, view);
+                Core_14.core.dispatch(ViewMessage_1.default.BRIDGE_AFTER_INIT, bridge);
                 // 设置初始化完毕属性
-                data.inited = true;
+                data[1] = true;
                 // 测试是否全部初始化完毕
                 self.testAllInit();
             }
         };
         View.prototype.testAllInit = function () {
+            var allInited = true;
+            for (var key in this._bridgeDict) {
+                var data = this._bridgeDict[key];
+                allInited = allInited && data[1];
+            }
+            if (allInited)
+                Core_14.core.dispatch(ViewMessage_1.default.BRIDGE_ALL_INIT);
         };
         View = __decorate([
             Injectable

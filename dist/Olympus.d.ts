@@ -628,11 +628,11 @@ declare module "view/bridge/IBridge" {
          */
         unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
         /**
-         * 初始化表现层，可以没有该方法，没有该方法则表示该表现层无需初始化
+         * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
          * @param {()=>void} complete 初始化完毕后的回调
          * @memberof IBridge
          */
-        initView?(complete: () => void): void;
+        init?(complete: () => void): void;
     }
 }
 declare module "view/bridge/IHasBridge" {
@@ -2231,7 +2231,7 @@ declare module "view/message/ViewMessage" {
          * @type {string}
          * @memberof ViewMessage
          */
-        static VIEW_BEFORE_INIT: string;
+        static BRIDGE_BEFORE_INIT: string;
         /**
          * 初始化表现层实例后的消息
          *
@@ -2239,7 +2239,7 @@ declare module "view/message/ViewMessage" {
          * @type {string}
          * @memberof ViewMessage
          */
-        static VIEW_AFTER_INIT: string;
+        static BRIDGE_AFTER_INIT: string;
         /**
          * 所有表现层实例都初始化完毕的消息
          *
@@ -2247,20 +2247,36 @@ declare module "view/message/ViewMessage" {
          * @type {string}
          * @memberof ViewMessage
          */
-        static VIEW_ALL_INIT: string;
+        static BRIDGE_ALL_INIT: string;
     }
 }
 declare module "view/View" {
     import IBridge from "view/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * View是表现层模组，用来管理所有表现层对象
+    */
     export default class View {
-        private _viewDict;
+        private _bridgeDict;
+        /**
+         * 获取表现层桥实例
+         *
+         * @param {string} type 表现层类型
+         * @returns {IBridge} 表现层桥实例
+         * @memberof View
+         */
+        getBridge(type: string): IBridge;
         /**
          * 注册一个表现层桥实例到框架中
          *
-         * @param {IBridge} view
+         * @param {...IBridge[]} bridges 要注册的所有表现层桥
          * @memberof View
          */
-        registerBridge(view: IBridge): void;
+        registerBridge(...bridges: IBridge[]): void;
         private testAllInit();
     }
     /** 再额外导出一个单例 */

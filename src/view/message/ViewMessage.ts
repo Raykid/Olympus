@@ -15,7 +15,7 @@ export default class ViewMessage
      * @type {string}
      * @memberof ViewMessage
      */
-    public static VIEW_BEFORE_INIT:string = "viewBeforeInit";
+    public static BRIDGE_BEFORE_INIT:string = "bridgeBeforeInit";
     /**
      * 初始化表现层实例后的消息
      * 
@@ -23,7 +23,7 @@ export default class ViewMessage
      * @type {string}
      * @memberof ViewMessage
      */
-    public static VIEW_AFTER_INIT:string = "viewAfterInit";
+    public static BRIDGE_AFTER_INIT:string = "bridgeAfterInit";
     /**
      * 所有表现层实例都初始化完毕的消息
      * 
@@ -31,5 +31,5 @@ export default class ViewMessage
      * @type {string}
      * @memberof ViewMessage
      */
-    public static VIEW_ALL_INIT:string = "viewAllInit";
+    public static BRIDGE_ALL_INIT:string = "bridgeAllInit";
 }
