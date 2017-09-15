@@ -1,3 +1,5 @@
+/// <reference path="./global/Decorator.ts"/>
+
 import System from "./system/System"
 import Model from "./model/Model"
 import Mediator from "./component/Mediator"

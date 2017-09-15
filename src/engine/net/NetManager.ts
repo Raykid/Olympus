@@ -1,5 +1,3 @@
-/// <reference path="../global/Decorator.ts"/>
-
 import {core} from "../../core/Core"
 import Message from "../../core/message/Message"
 import CoreMessage from "../../core/message/CoreMessage"
