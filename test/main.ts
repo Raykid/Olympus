@@ -7,7 +7,7 @@ import Explorer from "engine/env/Explorer"
 import Query from "engine/env/Query"
 import External from "engine/env/External"
 import Hash from "engine/env/Hash"
-import PopupManager from "engine/popup/PopupManager"
+import PanelManager from "engine/panel/PanelManager"
 import SceneManager from "engine/scene/SceneManager"
 import NetManager from "engine/net/NetManager"
 import System from "engine/system/System"
@@ -60,8 +60,8 @@ class Fuck2
     @Inject(Hash)
     public hash:Hash;
     
-    @Inject(PopupManager)
-    public popupManager:PopupManager;
+    @Inject(PanelManager)
+    public panelManager:PanelManager;
     
     @Inject(SceneManager)
     public sceneManager:SceneManager;

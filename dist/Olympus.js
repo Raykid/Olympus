@@ -991,15 +991,15 @@ define("engine/component/Mediator", ["require", "exports", "core/Core"], functio
     }());
     exports.default = Mediator;
 });
-define("engine/popup/IPopupPolicy", ["require", "exports"], function (require, exports) {
+define("engine/panel/IPanelPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/popup/IPopup", ["require", "exports"], function (require, exports) {
+define("engine/panel/IPanel", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/popup/NonePopupPolicy", ["require", "exports"], function (require, exports) {
+define("engine/panel/NonePanelPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1010,22 +1010,22 @@ define("engine/popup/NonePopupPolicy", ["require", "exports"], function (require
      *
      * 无任何动画的弹出策略，可应用于任何显示层实现
     */
-    var NonePopupPolicy = (function () {
-        function NonePopupPolicy() {
+    var NonePanelPolicy = (function () {
+        function NonePanelPolicy() {
         }
-        NonePopupPolicy.prototype.open = function (popup, callback, from) {
+        NonePanelPolicy.prototype.pop = function (panel, callback, from) {
             setTimeout(callback, 0);
         };
-        NonePopupPolicy.prototype.close = function (popup, callback, from) {
+        NonePanelPolicy.prototype.drop = function (panel, callback, from) {
             setTimeout(callback, 0);
         };
-        return NonePopupPolicy;
+        return NonePanelPolicy;
     }());
-    exports.NonePopupPolicy = NonePopupPolicy;
+    exports.NonePanelPolicy = NonePanelPolicy;
     /** 默认导出实例 */
-    exports.default = new NonePopupPolicy();
+    exports.default = new NonePanelPolicy();
 });
-define("engine/popup/PopupMessage", ["require", "exports"], function (require, exports) {
+define("engine/panel/PanelMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1036,46 +1036,46 @@ define("engine/popup/PopupMessage", ["require", "exports"], function (require, e
      *
      * 弹窗相关的消息
     */
-    var PopupMessage = (function () {
-        function PopupMessage() {
+    var PanelMessage = (function () {
+        function PanelMessage() {
         }
         /**
          * 打开弹窗前的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        PopupMessage.POPUP_BEFORE_OPEN = "popupBeforeOpen";
+        PanelMessage.PANEL_BEFORE_POP = "panelBeforePop";
         /**
          * 打开弹窗后的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        PopupMessage.POPUP_AFTER_OPEN = "popupAfterOpen";
+        PanelMessage.PANEL_AFTER_POP = "panelAfterPop";
         /**
          * 关闭弹窗前的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        PopupMessage.POPUP_BEFORE_CLOSE = "popupBeforeClose";
+        PanelMessage.PANEL_BEFORE_DROP = "panelBeforeDrop";
         /**
          * 关闭弹窗后的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        PopupMessage.POPUP_AFTER_CLOSE = "popupAfterClose";
-        return PopupMessage;
+        PanelMessage.PANEL_AFTER_DROP = "panelAfterDrop";
+        return PanelMessage;
     }());
-    exports.default = PopupMessage;
+    exports.default = PanelMessage;
 });
-define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/popup/NonePopupPolicy", "engine/popup/PopupMessage"], function (require, exports, Core_5, NonePopupPolicy_1, PopupMessage_1) {
+define("engine/panel/PanelManager", ["require", "exports", "core/Core", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage"], function (require, exports, Core_5, NonePanelPolicy_1, PanelMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1086,92 +1086,92 @@ define("engine/popup/PopupManager", ["require", "exports", "core/Core", "engine/
      *
      * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
     */
-    var PopupManager = (function () {
-        function PopupManager() {
-            this._popups = [];
+    var PanelManager = (function () {
+        function PanelManager() {
+            this._panels = [];
         }
         /**
          * 获取当前显示的弹窗数组（副本）
          *
          * @param {IConstructor} [cls] 弹窗类型，如果传递该参数则只返回该类型的已打开弹窗，否则将返回所有已打开的弹窗
-         * @returns {IPopup[]} 已打开弹窗数组
-         * @memberof PopupManager
+         * @returns {IPanel[]} 已打开弹窗数组
+         * @memberof PanelManager
          */
-        PopupManager.prototype.getOpened = function (cls) {
+        PanelManager.prototype.getOpened = function (cls) {
             if (!cls)
-                return this._popups.concat();
+                return this._panels.concat();
             else
-                return this._popups.filter(function (popup) { return popup.constructor == cls; });
+                return this._panels.filter(function (panel) { return panel.constructor == cls; });
         };
         /**
          * 打开一个弹窗
          *
-         * @param {IPopup} popup 要打开的弹窗
+         * @param {IPanel} panel 要打开的弹窗
          * @param {*} [data] 数据
          * @param {boolean} [isModel=true] 是否模态弹出
          * @param {{x:number, y:number}} [from] 弹出起点位置
-         * @returns {IPopup} 返回弹窗对象
-         * @memberof PopupManager
+         * @returns {IPanel} 返回弹窗对象
+         * @memberof PanelManager
          */
-        PopupManager.prototype.open = function (popup, data, isModel, from) {
+        PanelManager.prototype.open = function (panel, data, isModel, from) {
             if (isModel === void 0) { isModel = true; }
-            if (this._popups.indexOf(popup) < 0) {
-                var policy = popup.getPolicy();
+            if (this._panels.indexOf(panel) < 0) {
+                var policy = panel.getPolicy();
                 if (policy == null)
-                    policy = NonePopupPolicy_1.default;
+                    policy = NonePanelPolicy_1.default;
                 // 派发消息
-                Core_5.core.dispatch(PopupMessage_1.default.POPUP_BEFORE_OPEN, popup, isModel, from);
+                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
                 // 调用回调
-                popup.onBeforeOpen && popup.onBeforeOpen(data, isModel, from);
+                panel.onBeforePop && panel.onBeforePop(data, isModel, from);
                 // 调用策略接口
-                policy.open(popup, function () {
+                policy.pop(panel, function () {
                     // 派发消息
-                    Core_5.core.dispatch(PopupMessage_1.default.POPUP_AFTER_OPEN, popup, isModel, from);
+                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
                     // 调用回调
-                    popup.onAfterOpen && popup.onAfterOpen(data, isModel, from);
+                    panel.onAfterPop && panel.onAfterPop(data, isModel, from);
                 }, from);
             }
-            return popup;
+            return panel;
         };
         /**
          * 关闭一个弹窗
          *
-         * @param {IPopup} popup 要关闭的弹窗
+         * @param {IPanel} panel 要关闭的弹窗
          * @param {*} [data] 数据
          * @param {{x:number, y:number}} [to] 关闭终点位置
-         * @returns {IPopup} 返回弹窗对象
-         * @memberof PopupManager
+         * @returns {IPanel} 返回弹窗对象
+         * @memberof PanelManager
          */
-        PopupManager.prototype.close = function (popup, data, to) {
-            var index = this._popups.indexOf(popup);
+        PanelManager.prototype.close = function (panel, data, to) {
+            var index = this._panels.indexOf(panel);
             if (index >= 0) {
-                var policy = popup.getPolicy();
+                var policy = panel.getPolicy();
                 if (policy == null)
-                    policy = NonePopupPolicy_1.default;
+                    policy = NonePanelPolicy_1.default;
                 // 派发消息
-                Core_5.core.dispatch(PopupMessage_1.default.POPUP_BEFORE_CLOSE, popup, to);
+                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
                 // 调用回调
-                popup.onBeforeClose && popup.onBeforeClose(data, to);
+                panel.onBeforeDrop && panel.onBeforeDrop(data, to);
                 // 调用策略接口
-                policy.close(popup, function () {
+                policy.drop(panel, function () {
                     // 派发消息
-                    Core_5.core.dispatch(PopupMessage_1.default.POPUP_AFTER_CLOSE, popup, to);
+                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
                     // 调用回调
-                    popup.onAfterClose && popup.onAfterClose(data, to);
+                    panel.onAfterDrop && panel.onAfterDrop(data, to);
                 }, to);
             }
-            return popup;
+            return panel;
         };
-        PopupManager = __decorate([
+        PanelManager = __decorate([
             Injectable
-        ], PopupManager);
-        return PopupManager;
+        ], PanelManager);
+        return PanelManager;
     }());
-    exports.default = PopupManager;
+    exports.default = PanelManager;
     /** 再额外导出一个单例 */
-    exports.popupManager = Core_5.core.getInject(PopupManager);
+    exports.panelManager = Core_5.core.getInject(PanelManager);
 });
-define("engine/popup/PopupMediator", ["require", "exports", "engine/component/Mediator", "engine/popup/PopupManager"], function (require, exports, Mediator_1, PopupManager_1) {
+define("engine/panel/PanelMediator", ["require", "exports", "engine/component/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1180,11 +1180,11 @@ define("engine/popup/PopupMediator", ["require", "exports", "engine/component/Me
      * @create date 2017-09-06
      * @modify date 2017-09-06
      *
-     * 实现了IPopup接口的弹窗中介者基类
+     * 实现了IPanel接口的弹窗中介者基类
     */
-    var PopupMediator = (function (_super) {
-        __extends(PopupMediator, _super);
-        function PopupMediator(bridge, skin, policy) {
+    var PanelMediator = (function (_super) {
+        __extends(PanelMediator, _super);
+        function PanelMediator(bridge, skin, policy) {
             var _this = _super.call(this, bridge, skin) || this;
             _this.setPolicy(policy);
             return _this;
@@ -1192,47 +1192,47 @@ define("engine/popup/PopupMediator", ["require", "exports", "engine/component/Me
         /**
          * 获取弹出策略
          *
-         * @returns {IPopupPolicy} 弹出策略
-         * @memberof PopupMediator
+         * @returns {IPanelPolicy} 弹出策略
+         * @memberof PanelMediator
          */
-        PopupMediator.prototype.getPolicy = function () {
+        PanelMediator.prototype.getPolicy = function () {
             return this._policy;
         };
         /**
          * 设置弹出策略
          *
-         * @param {IPopupPolicy} policy 设置弹出策略
-         * @memberof PopupMediator
+         * @param {IPanelPolicy} policy 设置弹出策略
+         * @memberof PanelMediator
          */
-        PopupMediator.prototype.setPolicy = function (policy) {
+        PanelMediator.prototype.setPolicy = function (policy) {
             this._policy = policy;
         };
         /**
-         * 弹出当前弹窗（等同于调用PopupManager.open方法）
+         * 弹出当前弹窗（等同于调用PanelManager.open方法）
          *
          * @param {*} [data] 数据
          * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
          * @param {{x:number, y:number}} [from] 弹出点坐标
-         * @returns {IPopup} 弹窗本体
-         * @memberof PopupMediator
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
          */
-        PopupMediator.prototype.open = function (data, isModel, from) {
-            return PopupManager_1.popupManager.open(this, data, isModel, from);
+        PanelMediator.prototype.pop = function (data, isModel, from) {
+            return PanelManager_1.panelManager.open(this, data, isModel, from);
         };
         /**
-         * 关闭当前弹窗（等同于调用PopupManager.close方法）
+         * 关闭当前弹窗（等同于调用PanelManager.close方法）
          *
          * @param {*} [data] 数据
          * @param {{x:number, y:number}} [to] 关闭点坐标
-         * @returns {IPopup} 弹窗本体
-         * @memberof PopupMediator
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
          */
-        PopupMediator.prototype.close = function (data, to) {
-            return PopupManager_1.popupManager.close(this, data, to);
+        PanelMediator.prototype.drop = function (data, to) {
+            return PanelManager_1.panelManager.close(this, data, to);
         };
-        return PopupMediator;
+        return PanelMediator;
     }(Mediator_1.default));
-    exports.default = PopupMediator;
+    exports.default = PanelMediator;
 });
 define("engine/scene/IScenePolicy", ["require", "exports"], function (require, exports) {
     "use strict";

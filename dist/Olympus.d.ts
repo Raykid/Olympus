@@ -765,8 +765,8 @@ declare module "engine/component/Mediator" {
         dispose(): void;
     }
 }
-declare module "engine/popup/IPopupPolicy" {
-    import IPopup from "engine/popup/IPopup";
+declare module "engine/panel/IPanelPolicy" {
+    import IPanel from "engine/panel/IPanel";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -775,32 +775,32 @@ declare module "engine/popup/IPopupPolicy" {
      *
      * 弹窗动画策略，负责将弹窗动画与弹窗实体解耦
     */
-    export default interface IPopupPolicy {
+    export default interface IPanelPolicy {
         /**
          * 显示时调用
-         * @param popup 弹出框对象
+         * @param panel 弹出框对象
          * @param callback 完成回调，必须调用
          * @param from 动画起始点
          */
-        open(popup: IPopup, callback: () => void, from?: {
+        pop(panel: IPanel, callback: () => void, from?: {
             x: number;
             y: number;
         }): void;
         /**
          * 关闭时调用
-         * @param popup 弹出框对象
+         * @param panel 弹出框对象
          * @param callback 完成回调，必须调用
          * @param to 动画完结点
          */
-        close(popup: IPopup, callback: () => void, to?: {
+        drop(panel: IPanel, callback: () => void, to?: {
             x: number;
             y: number;
         }): void;
     }
 }
-declare module "engine/popup/IPopup" {
+declare module "engine/panel/IPanel" {
     import IHasBridge from "view/bridge/IHasBridge";
-    import IPopupPolicy from "engine/popup/IPopupPolicy";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -809,46 +809,46 @@ declare module "engine/popup/IPopup" {
      *
      * 弹窗接口
     */
-    export default interface IPopup extends IHasBridge {
+    export default interface IPanel extends IHasBridge {
         /** 获取弹出策略 */
-        getPolicy(): IPopupPolicy;
+        getPolicy(): IPanelPolicy;
         /** 设置切换策略 */
-        setPolicy(policy: IPopupPolicy): void;
-        /** 弹出当前弹窗（等同于调用PopupManager.open方法） */
-        open(data?: any, isModel?: boolean, from?: {
+        setPolicy(policy: IPanelPolicy): void;
+        /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
+        pop(data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
-        }): IPopup;
-        /** 关闭当前弹窗（等同于调用PopupManager.close方法） */
-        close(data?: any, to?: {
+        }): IPanel;
+        /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
+        drop(data?: any, to?: {
             x: number;
             y: number;
-        }): IPopup;
+        }): IPanel;
         /** 在弹出前调用的方法 */
-        onBeforeOpen?(data?: any, isModel?: boolean, from?: {
+        onBeforePop?(data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
         }): void;
         /** 在弹出后调用的方法 */
-        onAfterOpen?(data?: any, isModel?: boolean, from?: {
+        onAfterPop?(data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
         }): void;
         /** 在关闭前调用的方法 */
-        onBeforeClose?(data?: any, to?: {
+        onBeforeDrop?(data?: any, to?: {
             x: number;
             y: number;
         }): void;
         /** 在关闭后调用的方法 */
-        onAfterClose?(data?: any, to?: {
+        onAfterDrop?(data?: any, to?: {
             x: number;
             y: number;
         }): void;
     }
 }
-declare module "engine/popup/NonePopupPolicy" {
-    import IPopup from "engine/popup/IPopup";
-    import IPopupPolicy from "engine/popup/IPopupPolicy";
+declare module "engine/panel/NonePanelPolicy" {
+    import IPanel from "engine/panel/IPanel";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -857,20 +857,20 @@ declare module "engine/popup/NonePopupPolicy" {
      *
      * 无任何动画的弹出策略，可应用于任何显示层实现
     */
-    export class NonePopupPolicy implements IPopupPolicy {
-        open(popup: IPopup, callback: () => void, from?: {
+    export class NonePanelPolicy implements IPanelPolicy {
+        pop(panel: IPanel, callback: () => void, from?: {
             x: number;
             y: number;
         }): void;
-        close(popup: IPopup, callback: () => void, from?: {
+        drop(panel: IPanel, callback: () => void, from?: {
             x: number;
             y: number;
         }): void;
     }
-    const _default: NonePopupPolicy;
+    const _default: NonePanelPolicy;
     export default _default;
 }
-declare module "engine/popup/PopupMessage" {
+declare module "engine/panel/PanelMessage" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -879,44 +879,44 @@ declare module "engine/popup/PopupMessage" {
      *
      * 弹窗相关的消息
     */
-    export default class PopupMessage {
+    export default class PanelMessage {
         /**
          * 打开弹窗前的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        static POPUP_BEFORE_OPEN: string;
+        static PANEL_BEFORE_POP: string;
         /**
          * 打开弹窗后的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        static POPUP_AFTER_OPEN: string;
+        static PANEL_AFTER_POP: string;
         /**
          * 关闭弹窗前的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        static POPUP_BEFORE_CLOSE: string;
+        static PANEL_BEFORE_DROP: string;
         /**
          * 关闭弹窗后的消息
          *
          * @static
          * @type {string}
-         * @memberof PopupMessage
+         * @memberof PanelMessage
          */
-        static POPUP_AFTER_CLOSE: string;
+        static PANEL_AFTER_DROP: string;
     }
 }
-declare module "engine/popup/PopupManager" {
+declare module "engine/panel/PanelManager" {
     import IConstructor from "core/interfaces/IConstructor";
-    import IPopup from "engine/popup/IPopup";
+    import IPanel from "engine/panel/IPanel";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -925,102 +925,102 @@ declare module "engine/popup/PopupManager" {
      *
      * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
     */
-    export default class PopupManager {
-        private _popups;
+    export default class PanelManager {
+        private _panels;
         /**
          * 获取当前显示的弹窗数组（副本）
          *
          * @param {IConstructor} [cls] 弹窗类型，如果传递该参数则只返回该类型的已打开弹窗，否则将返回所有已打开的弹窗
-         * @returns {IPopup[]} 已打开弹窗数组
-         * @memberof PopupManager
+         * @returns {IPanel[]} 已打开弹窗数组
+         * @memberof PanelManager
          */
-        getOpened(cls?: IConstructor): IPopup[];
+        getOpened(cls?: IConstructor): IPanel[];
         /**
          * 打开一个弹窗
          *
-         * @param {IPopup} popup 要打开的弹窗
+         * @param {IPanel} panel 要打开的弹窗
          * @param {*} [data] 数据
          * @param {boolean} [isModel=true] 是否模态弹出
          * @param {{x:number, y:number}} [from] 弹出起点位置
-         * @returns {IPopup} 返回弹窗对象
-         * @memberof PopupManager
+         * @returns {IPanel} 返回弹窗对象
+         * @memberof PanelManager
          */
-        open(popup: IPopup, data?: any, isModel?: boolean, from?: {
+        open(panel: IPanel, data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
-        }): IPopup;
+        }): IPanel;
         /**
          * 关闭一个弹窗
          *
-         * @param {IPopup} popup 要关闭的弹窗
+         * @param {IPanel} panel 要关闭的弹窗
          * @param {*} [data] 数据
          * @param {{x:number, y:number}} [to] 关闭终点位置
-         * @returns {IPopup} 返回弹窗对象
-         * @memberof PopupManager
+         * @returns {IPanel} 返回弹窗对象
+         * @memberof PanelManager
          */
-        close(popup: IPopup, data?: any, to?: {
+        close(panel: IPanel, data?: any, to?: {
             x: number;
             y: number;
-        }): IPopup;
+        }): IPanel;
     }
     /** 再额外导出一个单例 */
-    export const popupManager: PopupManager;
+    export const panelManager: PanelManager;
 }
-declare module "engine/popup/PopupMediator" {
+declare module "engine/panel/PanelMediator" {
     import Mediator from "engine/component/Mediator";
     import IBridge from "view/bridge/IBridge";
-    import IPopup from "engine/popup/IPopup";
-    import IPopupPolicy from "engine/popup/IPopupPolicy";
+    import IPanel from "engine/panel/IPanel";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-09-06
      * @modify date 2017-09-06
      *
-     * 实现了IPopup接口的弹窗中介者基类
+     * 实现了IPanel接口的弹窗中介者基类
     */
-    export default abstract class PopupMediator extends Mediator implements IPopup {
-        constructor(bridge: IBridge, skin?: any, policy?: IPopupPolicy);
+    export default abstract class PanelMediator extends Mediator implements IPanel {
+        constructor(bridge: IBridge, skin?: any, policy?: IPanelPolicy);
         private _policy;
         /**
          * 获取弹出策略
          *
-         * @returns {IPopupPolicy} 弹出策略
-         * @memberof PopupMediator
+         * @returns {IPanelPolicy} 弹出策略
+         * @memberof PanelMediator
          */
-        getPolicy(): IPopupPolicy;
+        getPolicy(): IPanelPolicy;
         /**
          * 设置弹出策略
          *
-         * @param {IPopupPolicy} policy 设置弹出策略
-         * @memberof PopupMediator
+         * @param {IPanelPolicy} policy 设置弹出策略
+         * @memberof PanelMediator
          */
-        setPolicy(policy: IPopupPolicy): void;
+        setPolicy(policy: IPanelPolicy): void;
         /**
-         * 弹出当前弹窗（等同于调用PopupManager.open方法）
+         * 弹出当前弹窗（等同于调用PanelManager.open方法）
          *
          * @param {*} [data] 数据
          * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
          * @param {{x:number, y:number}} [from] 弹出点坐标
-         * @returns {IPopup} 弹窗本体
-         * @memberof PopupMediator
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
          */
-        open(data?: any, isModel?: boolean, from?: {
+        pop(data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
-        }): IPopup;
+        }): IPanel;
         /**
-         * 关闭当前弹窗（等同于调用PopupManager.close方法）
+         * 关闭当前弹窗（等同于调用PanelManager.close方法）
          *
          * @param {*} [data] 数据
          * @param {{x:number, y:number}} [to] 关闭点坐标
-         * @returns {IPopup} 弹窗本体
-         * @memberof PopupMediator
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
          */
-        close(data?: any, to?: {
+        drop(data?: any, to?: {
             x: number;
             y: number;
-        }): IPopup;
+        }): IPanel;
     }
 }
 declare module "engine/scene/IScenePolicy" {
