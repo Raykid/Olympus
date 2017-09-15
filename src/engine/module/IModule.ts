@@ -1,5 +1,6 @@
 import IDisposable from "../../core/interfaces/IDisposable"
 import RequestData from "../net/RequestData"
+import ResponseData from "../net/ResponseData"
 import IModuleConstructor from "./IModuleConstructor"
 
 /**
@@ -22,6 +23,8 @@ export default interface IModule extends IDisposable
     getName():string;
     /** 打开模块时调用 */
     onOpen(data?:any):void;
+    /** 当获取到所有消息返回后调用 */
+    onGetResponses(responses:ResponseData[]):void;
     /** 关闭模块时调用 */
     onClose(data?:any):void;
     /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */

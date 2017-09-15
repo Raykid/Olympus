@@ -1,5 +1,6 @@
 import IConstructor from "../core/interfaces/IConstructor"
 import {extendsClass} from "../utils/ObjectUtil"
+import Dictionary from "../utils/Dictionary"
 
 /**
  * @author Raykid
@@ -10,13 +11,12 @@ import {extendsClass} from "../utils/ObjectUtil"
  * 装饰器工具集
 */
 
-var instanceDict:{[key:string]:((instance?:any)=>void)[]} = {};
+var instanceDict:Dictionary<IConstructor, ((instance?:any)=>void)[]> = new Dictionary();
 
 function handleInstance(instance:any):void
 {
     var cls:IConstructor = instance.constructor;
-    var key:string = cls && cls.toString();
-    var funcs:((instance?:any)=>void)[] = instanceDict[key];
+    var funcs:((instance?:any)=>void)[] = instanceDict.get(cls);
     if(funcs) for(var func of funcs) func(instance);
 }
 
@@ -36,8 +36,6 @@ export function wrapConstruct(cls:IConstructor):IConstructor
     extendsClass(func, cls);
     // 为新的构造函数打一个标签，用以记录原始的构造函数
     func["__ori_constructor__"] = cls;
-    // 为了伪装得更像，将toString也替换掉
-    func.toString = ()=>cls.toString();
     // 返回新的构造函数
     return func;
 
@@ -61,9 +59,8 @@ export function wrapConstruct(cls:IConstructor):IConstructor
  */
 export function listenConstruct(cls:IConstructor, handler:(instance?:any)=>void):void
 {
-    var key:string = cls.toString();
-    var list:((instance?:any)=>void)[] = instanceDict[key];
-    if(!list) instanceDict[key] = list = [];
+    var list:((instance?:any)=>void)[] = instanceDict.get(cls);
+    if(!list) instanceDict.set(cls, list = []);
     if(list.indexOf(handler) < 0) list.push(handler);
 }
 
@@ -76,8 +73,7 @@ export function listenConstruct(cls:IConstructor, handler:(instance?:any)=>void)
  */
 export function unlistenConstruct(cls:IConstructor, handler:(instance?:any)=>void):void
 {
-    var key:string = cls.toString();
-    var list:((instance?:any)=>void)[] = instanceDict[key];
+    var list:((instance?:any)=>void)[] = instanceDict.get(cls);
     if(list)
     {
         var index:number = list.indexOf(handler);

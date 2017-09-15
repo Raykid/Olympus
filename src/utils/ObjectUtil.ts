@@ -128,3 +128,26 @@ export var extendsClass:(child:any, parent:any)=>void = (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
+var hash:number = 0;
+var hashTypes:string[] = ["object", "function"];
+/**
+ * 获取一个对象的对象哈希字符串
+ * 
+ * @export
+ * @param {*} target 任意对象，可以是基础类型或null
+ * @returns {string} 哈希值
+ */
+export function getObjectHash(target:any):string
+{
+    if(target == null) return "__object_hash_0__";
+    var key:string = "__object_hash__";
+    var value:string = target[key];
+    // 如果已经有哈希值则直接返回
+    if(value) return value;
+    // 如果是基础类型则直接返回对应字符串
+    var type:string = typeof target;
+    if(hashTypes.indexOf(type) < 0) return type + ":" + target;
+    // 如果是复杂类型则返回计算的哈希值并打上标签
+    return (target[key] = "__object_hash_" + (++hash) + "__");
+}

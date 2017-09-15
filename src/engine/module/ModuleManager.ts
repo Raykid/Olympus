@@ -1,4 +1,10 @@
+/// <reference path="./Decorator.ts"/>
+
 import {core} from "../../core/Core"
+import {wrapConstruct} from "../../utils/ConstructUtil"
+import RequestData from "../net/RequestData"
+import ResponseData from "../net/ResponseData"
+import {netManager} from "../net/NetManager"
 import IModule from "./IModule"
 import IModuleConstructor from "./IModuleConstructor"
 
@@ -103,16 +109,23 @@ export default class ModuleManager
         {
             // 尚未打开过，正常开启模块
             var target:IModule = new cls();
-            var from:[IModuleConstructor, IModule] = this.getCurrent();
-            var fromModule:IModule = from && from[1];
             // 调用onOpen接口
             target.onOpen(data);
-            // 调用onDeactivate接口
-            fromModule && fromModule.onDeactivate(cls, data);
-            // 插入模块
-            this._moduleStack.unshift([cls, target]);
-            // 调用onActivate接口
-            target.onActivate(from && from[0], data);
+            // 发送所有模块消息
+            var requests:RequestData[] = target.listInitRequests();
+            netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
+            {
+                var from:[IModuleConstructor, IModule] = this.getCurrent();
+                var fromModule:IModule = from && from[1];
+                // 调用onGetResponses接口
+                target.onGetResponses(responses);
+                // 调用onDeactivate接口
+                fromModule && fromModule.onDeactivate(cls, data);
+                // 插入模块
+                this._moduleStack.unshift([cls, target]);
+                // 调用onActivate接口
+                target.onActivate(from && from[0], data);
+            }, this);
         }
     }
 
@@ -157,3 +170,15 @@ export default class ModuleManager
 }
 /** 再额外导出一个单例 */
 export const moduleManager:ModuleManager = core.getInject(ModuleManager)
+
+
+/*********************** 下面是装饰器方法实现 ***********************/
+
+/** Module */
+window["Module"] = function Module(cls:IConstructor):IConstructor
+{
+    // 判断一下Module是否有dispose方法，没有的话弹一个警告
+    if(!cls.prototype.dispose)
+        console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
+    return wrapConstruct(cls);
+}

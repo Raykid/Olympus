@@ -9,6 +9,7 @@ import External from "engine/env/External"
 import Hash from "engine/env/Hash"
 import PanelManager from "engine/panel/PanelManager"
 import SceneManager from "engine/scene/SceneManager"
+import ModuleManager from "engine/module/ModuleManager"
 import NetManager from "engine/net/NetManager"
 import System from "engine/system/System"
 
@@ -65,6 +66,9 @@ class Fuck2
     
     @Inject(SceneManager)
     public sceneManager:SceneManager;
+    
+    @Inject(ModuleManager)
+    public moduleManager:ModuleManager;
 
     @Inject(NetManager)
     public netManager:NetManager;

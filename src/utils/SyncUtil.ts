@@ -12,12 +12,12 @@ var _cache:{[name:string]:SyncContext} = {};
  * 判断是否正在进行操作
  * 
  * @export
- * @param {Function} fn 要执行的方法
+ * @param {string} name 队列名
  * @returns {boolean} 队列是否正在操作
  */
-export function isOperating(fn:Function):boolean
+export function isOperating(name:string):boolean
 {
-    var ctx:SyncContext = _cache[fn.toString()];
+    var ctx:SyncContext = _cache[name];
     return (ctx != null && ctx.operating);
 }
 

@@ -1,3 +1,5 @@
+/// <reference path="./Decorator.ts"/>
+
 import {core} from "../../core/Core"
 import Message from "../../core/message/Message"
 import CoreMessage from "../../core/message/CoreMessage"
@@ -103,6 +105,62 @@ export default class NetManager
                     listeners.splice(i, 1);
                     break;
                 }
+            }
+        }
+    }
+
+    /**
+     * 发送多条请求，并且等待返回结果（如果有的话），调用回调
+     * 
+     * @param {RequestData[]} requests 要发送的请求列表
+     * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
+     * @param {*} [thisArg] this指向
+     * @memberof NetManager
+     */
+    public sendMultiRequests(requests:RequestData[], handler?:(responses?:ResponseData[])=>void, thisArg?:any):void
+    {
+        var responses:(IResponseDataConstructor|ResponseData)[] = [];
+        var leftResCount:number = 0;
+        for(var request of requests)
+        {
+            var response:IResponseDataConstructor = request.__params.response;
+            if(response)
+            {
+                // 监听一次性返回
+                this.listenResponse(response, onResponse, this, true);
+                // 记录返回监听
+                responses.push(response);
+                // 记录数量
+                leftResCount ++;
+            }
+            // 发送请求
+            core.dispatch(request);
+        }
+        // 测试回调
+        testCallback();
+
+        function onResponse(response:ResponseData):void
+        {
+            for(var key in responses)
+            {
+                var temp:IResponseDataConstructor = <IResponseDataConstructor>responses[key];
+                if(temp == response.constructor)
+                {
+                    responses[key] = response;
+                    leftResCount --;
+                    // 测试回调
+                    testCallback();
+                    break;
+                }
+            }
+        }
+
+        function testCallback():void
+        {
+            // 判断是否全部替换完毕
+            if(leftResCount <= 0)
+            {
+                handler && handler.call(thisArg, responses);
             }
         }
     }

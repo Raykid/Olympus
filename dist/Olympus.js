@@ -38,130 +38,7 @@ if (Array.prototype.hasOwnProperty("findIndex")) {
  *
  * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
 */
-define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("core/message/IMessage", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("core/message/Message", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 框架内核消息基类
-    */
-    var Message = (function () {
-        /**
-         * Creates an instance of Message.
-         * @param {string} type 消息类型
-         * @param {...any[]} params 可能的消息参数列表
-         * @memberof Message
-         */
-        function Message(type) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            this._type = type;
-            this.params = params;
-        }
-        /**
-         * 获取消息类型字符串
-         *
-         * @returns {string} 消息类型字符串
-         * @memberof Message
-         */
-        Message.prototype.getType = function () {
-            return this._type;
-        };
-        return Message;
-    }());
-    exports.default = Message;
-});
-define("core/message/CoreMessage", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-13
-     * @modify date 2017-09-13
-     *
-     * 核心事件类型
-    */
-    var CoreMessage = (function () {
-        function CoreMessage(type, message) {
-            this._type = type;
-            this._message = message;
-        }
-        /**
-         * 获取事件类型
-         *
-         * @returns {string}
-         * @memberof CoreMessage
-         */
-        CoreMessage.prototype.getType = function () {
-            return this._type;
-        };
-        /**
-         * 获取发送到框架内核的消息体
-         *
-         * @returns {IMessage}
-         * @memberof CoreMessage
-         */
-        CoreMessage.prototype.getMessage = function () {
-            return this._message;
-        };
-        /**
-         * 任何消息派发到框架后都会派发这个消息
-         *
-         * @static
-         * @type {string}
-         * @memberof CoreMessage
-         */
-        CoreMessage.MESSAGE_DISPATCHED = "messageDispatched";
-        return CoreMessage;
-    }());
-    exports.default = CoreMessage;
-});
-define("core/command/Command", ["require", "exports", "core/Core"], function (require, exports, Core_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
-    */
-    var Command = (function () {
-        function Command(msg) {
-            this.msg = msg;
-        }
-        Command.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            Core_1.core.dispatch.apply(Core_1.core, [typeOrMsg].concat(params));
-        };
-        return Command;
-    }());
-    exports.default = Command;
-});
-define("core/command/ICommandConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -290,8 +167,81 @@ define("utils/ObjectUtil", ["require", "exports"], function (require, exports) {
             d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
         };
     })();
+    var hash = 0;
+    var hashTypes = ["object", "function"];
+    /**
+     * 获取一个对象的对象哈希字符串
+     *
+     * @export
+     * @param {*} target 任意对象，可以是基础类型或null
+     * @returns {string} 哈希值
+     */
+    function getObjectHash(target) {
+        if (target == null)
+            return "__object_hash_0__";
+        var key = "__object_hash__";
+        var value = target[key];
+        // 如果已经有哈希值则直接返回
+        if (value)
+            return value;
+        // 如果是基础类型则直接返回对应字符串
+        var type = typeof target;
+        if (hashTypes.indexOf(type) < 0)
+            return type + ":" + target;
+        // 如果是复杂类型则返回计算的哈希值并打上标签
+        return (target[key] = "__object_hash_" + (++hash) + "__");
+    }
+    exports.getObjectHash = getObjectHash;
 });
-define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_1) {
+define("utils/Dictionary", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-15
+     * @modify date 2017-09-15
+     *
+     * 字典，支持key为任意类型的对象
+    */
+    var Dictionary = (function () {
+        function Dictionary() {
+            this._entity = {};
+        }
+        /**
+         * 设置一个键值对
+         *
+         * @param {K} key 键
+         * @param {V} value 值
+         * @memberof Dictionary
+         */
+        Dictionary.prototype.set = function (key, value) {
+            this._entity[ObjectUtil_1.getObjectHash(key)] = value;
+        };
+        /**
+         * 获取一个值
+         *
+         * @param {K} key 键
+         * @returns {V} 值
+         * @memberof Dictionary
+         */
+        Dictionary.prototype.get = function (key) {
+            return this._entity[ObjectUtil_1.getObjectHash(key)];
+        };
+        /**
+         * 删除一个键值对
+         *
+         * @param {K} key 键
+         * @memberof Dictionary
+         */
+        Dictionary.prototype.delete = function (key) {
+            delete this._entity[ObjectUtil_1.getObjectHash(key)];
+        };
+        return Dictionary;
+    }());
+    exports.default = Dictionary;
+});
+define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -302,11 +252,10 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
      *
      * 装饰器工具集
     */
-    var instanceDict = {};
+    var instanceDict = new Dictionary_1.default();
     function handleInstance(instance) {
         var cls = instance.constructor;
-        var key = cls && cls.toString();
-        var funcs = instanceDict[key];
+        var funcs = instanceDict.get(cls);
         if (funcs)
             for (var _i = 0, funcs_1 = funcs; _i < funcs_1.length; _i++) {
                 var func = funcs_1[_i];
@@ -325,11 +274,9 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
         var func;
         eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
         // 动态设置继承
-        ObjectUtil_1.extendsClass(func, cls);
+        ObjectUtil_2.extendsClass(func, cls);
         // 为新的构造函数打一个标签，用以记录原始的构造函数
         func["__ori_constructor__"] = cls;
-        // 为了伪装得更像，将toString也替换掉
-        func.toString = function () { return cls.toString(); };
         // 返回新的构造函数
         return func;
         function onConstruct(instance) {
@@ -350,10 +297,9 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
      * @param {(instance?:any)=>void} handler 处理函数
      */
     function listenConstruct(cls, handler) {
-        var key = cls.toString();
-        var list = instanceDict[key];
+        var list = instanceDict.get(cls);
         if (!list)
-            instanceDict[key] = list = [];
+            instanceDict.set(cls, list = []);
         if (list.indexOf(handler) < 0)
             list.push(handler);
     }
@@ -366,8 +312,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
      * @param {(instance?:any)=>void} handler 处理函数
      */
     function unlistenConstruct(cls, handler) {
-        var key = cls.toString();
-        var list = instanceDict[key];
+        var list = instanceDict.get(cls);
         if (list) {
             var index = list.indexOf(handler);
             if (index >= 0)
@@ -397,13 +342,136 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil"], functi
     }
     exports.listenDispose = listenDispose;
 });
+define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/message/IMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/message/Message", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 框架内核消息基类
+    */
+    var Message = (function () {
+        /**
+         * Creates an instance of Message.
+         * @param {string} type 消息类型
+         * @param {...any[]} params 可能的消息参数列表
+         * @memberof Message
+         */
+        function Message(type) {
+            var params = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                params[_i - 1] = arguments[_i];
+            }
+            this._type = type;
+            this.params = params;
+        }
+        /**
+         * 获取消息类型字符串
+         *
+         * @returns {string} 消息类型字符串
+         * @memberof Message
+         */
+        Message.prototype.getType = function () {
+            return this._type;
+        };
+        return Message;
+    }());
+    exports.default = Message;
+});
+define("core/message/CoreMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-13
+     * @modify date 2017-09-13
+     *
+     * 核心事件类型
+    */
+    var CoreMessage = (function () {
+        function CoreMessage(type, message) {
+            this._type = type;
+            this._message = message;
+        }
+        /**
+         * 获取事件类型
+         *
+         * @returns {string}
+         * @memberof CoreMessage
+         */
+        CoreMessage.prototype.getType = function () {
+            return this._type;
+        };
+        /**
+         * 获取发送到框架内核的消息体
+         *
+         * @returns {IMessage}
+         * @memberof CoreMessage
+         */
+        CoreMessage.prototype.getMessage = function () {
+            return this._message;
+        };
+        /**
+         * 任何消息派发到框架后都会派发这个消息
+         *
+         * @static
+         * @type {string}
+         * @memberof CoreMessage
+         */
+        CoreMessage.MESSAGE_DISPATCHED = "messageDispatched";
+        return CoreMessage;
+    }());
+    exports.default = CoreMessage;
+});
+define("core/command/Command", ["require", "exports", "core/Core"], function (require, exports, Core_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
+    */
+    var Command = (function () {
+        function Command(msg) {
+            this.msg = msg;
+        }
+        Command.prototype.dispatch = function (typeOrMsg) {
+            var params = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                params[_i - 1] = arguments[_i];
+            }
+            Core_1.core.dispatch.apply(Core_1.core, [typeOrMsg].concat(params));
+        };
+        return Command;
+    }());
+    exports.default = Command;
+});
+define("core/command/ICommandConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("core/interfaces/IDispatcher", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
-define("core/Core", ["require", "exports", "core/message/Message", "core/message/CoreMessage", "utils/ConstructUtil"], function (require, exports, Message_1, CoreMessage_1, ConstructUtil_1) {
+define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Dictionary", "core/message/Message", "core/message/CoreMessage"], function (require, exports, ConstructUtil_1, Dictionary_2, Message_1, CoreMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -417,7 +485,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
             /*********************** 下面是内核消息系统 ***********************/
             this._listenerDict = {};
             /*********************** 下面是依赖注入系统 ***********************/
-            this._injectDict = {};
+            this._injectDict = new Dictionary_2.default();
             /*********************** 下面是内核命令系统 ***********************/
             this._commandDict = {};
             // 进行单例判断
@@ -529,8 +597,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
          * @memberof Core
          */
         Core.prototype.mapInjectValue = function (value, type) {
-            var key = (type || value.constructor).toString();
-            this._injectDict[key] = value;
+            this._injectDict.set(type || value.constructor, value);
         };
         /**
          * 移除类型注入
@@ -539,8 +606,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
          * @memberof Core
          */
         Core.prototype.unmapInject = function (target) {
-            var key = target.toString();
-            delete this._injectDict[key];
+            this._injectDict.delete(target);
         };
         /**
          * 获取注入的对象实例
@@ -552,7 +618,7 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
         Core.prototype.getInject = function (type) {
             // 需要用原始的构造函数取
             type = type["__ori_constructor__"] || type;
-            return this._injectDict[type.toString()];
+            return this._injectDict.get(type);
         };
         Core.prototype.handleCommands = function (msg) {
             var commands = this._commandDict[msg.getType()];
@@ -664,14 +730,6 @@ define("core/Core", ["require", "exports", "core/message/Message", "core/message
         };
     };
 });
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-13
- * @modify date 2017-09-13
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
 define("engine/system/System", ["require", "exports", "core/Core"], function (require, exports, Core_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1338,11 +1396,11 @@ define("utils/SyncUtil", ["require", "exports"], function (require, exports) {
      * 判断是否正在进行操作
      *
      * @export
-     * @param {Function} fn 要执行的方法
+     * @param {string} name 队列名
      * @returns {boolean} 队列是否正在操作
      */
-    function isOperating(fn) {
-        var ctx = _cache[fn.toString()];
+    function isOperating(name) {
+        var ctx = _cache[name];
         return (ctx != null && ctx.operating);
     }
     exports.isOperating = isOperating;
@@ -1629,6 +1687,14 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/component/Me
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-13
+ * @modify date 2017-09-13
+ *
+ * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
+*/
 define("engine/net/IRequestPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1703,6 +1769,231 @@ define("engine/net/RequestData", ["require", "exports"], function (require, expo
     /** 导出公共消息参数对象 */
     exports.commonData = {};
 });
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-13
+ * @modify date 2017-09-13
+ *
+ * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
+*/
+define("engine/net/NetMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯相关的消息
+    */
+    var NetMessage = (function () {
+        function NetMessage() {
+        }
+        /**
+         * 发送网络请求消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        NetMessage.NET_REQUEST = "netRequest";
+        /**
+         * 接受网络返回消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        NetMessage.NET_RESPONSE = "netResponse";
+        /**
+         * 网络请求错误消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        NetMessage.NET_ERROR = "netError";
+        return NetMessage;
+    }());
+    exports.default = NetMessage;
+});
+/// <reference path="./Decorator.ts"/>
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "utils/ConstructUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_7, CoreMessage_2, ObjectUtil_3, ConstructUtil_2, RequestData_1, NetMessage_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var NetManager = (function () {
+        function NetManager() {
+            this._responseDict = {};
+            this._responseListeners = {};
+            Core_7.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
+        }
+        NetManager.prototype.onMsgDispatched = function (msg) {
+            var netMsg = msg.getMessage();
+            // 如果消息是通讯消息则做处理
+            if (msg instanceof RequestData_1.default) {
+                // 指定消息参数连接上公共参数作为参数
+                ObjectUtil_3.extendObject(netMsg.__params.data, RequestData_1.commonData);
+                // 发送消息
+                netMsg.__policy.sendRequest(netMsg);
+                // 派发系统消息
+                Core_7.core.dispatch(NetMessage_1.default.NET_REQUEST, netMsg);
+            }
+        };
+        /**
+         * 注册一个返回结构体
+         *
+         * @param {string} type 返回类型
+         * @param {IResponseDataConstructor} cls 返回结构体构造器
+         * @memberof NetManager
+         */
+        NetManager.prototype.registerResponse = function (cls) {
+            this._responseDict[cls.getType()] = cls;
+        };
+        /**
+         * 添加一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        NetManager.prototype.listenResponse = function (clsOrType, handler, thisArg, once) {
+            if (once === void 0) { once = false; }
+            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
+            var listeners = this._responseListeners[type];
+            if (!listeners)
+                this._responseListeners[type] = listeners = [];
+            for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
+                var listener = listeners_1[_i];
+                if (handler == listener[0] && thisArg == listener[1] && once == listener[2])
+                    return;
+            }
+            listeners.push([handler, thisArg, once]);
+        };
+        /**
+         * 移除一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要移除监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        NetManager.prototype.unlistenResponse = function (clsOrType, handler, thisArg, once) {
+            if (once === void 0) { once = false; }
+            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
+            var listeners = this._responseListeners[type];
+            if (listeners) {
+                for (var i = 0, len = listeners.length; i < len; i++) {
+                    var listener = listeners[i];
+                    if (handler == listener[0] && thisArg == listener[1] && once == listener[2]) {
+                        listeners.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        };
+        /**
+         * 发送多条请求，并且等待返回结果（如果有的话），调用回调
+         *
+         * @param {RequestData[]} requests 要发送的请求列表
+         * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
+         * @param {*} [thisArg] this指向
+         * @memberof NetManager
+         */
+        NetManager.prototype.sendMultiRequests = function (requests, handler, thisArg) {
+            var responses = [];
+            var leftResCount = 0;
+            for (var _i = 0, requests_1 = requests; _i < requests_1.length; _i++) {
+                var request = requests_1[_i];
+                var response = request.__params.response;
+                if (response) {
+                    // 监听一次性返回
+                    this.listenResponse(response, onResponse, this, true);
+                    // 记录返回监听
+                    responses.push(response);
+                    // 记录数量
+                    leftResCount++;
+                }
+                // 发送请求
+                Core_7.core.dispatch(request);
+            }
+            // 测试回调
+            testCallback();
+            function onResponse(response) {
+                for (var key in responses) {
+                    var temp = responses[key];
+                    if (temp == response.constructor) {
+                        responses[key] = response;
+                        leftResCount--;
+                        // 测试回调
+                        testCallback();
+                        break;
+                    }
+                }
+            }
+            function testCallback() {
+                // 判断是否全部替换完毕
+                if (leftResCount <= 0) {
+                    handler && handler.call(thisArg, responses);
+                }
+            }
+        };
+        /** 这里导出不希望用户使用的方法，供框架内使用 */
+        NetManager.prototype.__onResponse = function (type, result, request) {
+            // 解析结果
+            var cls = this._responseDict[type];
+            if (cls) {
+                var response = new cls();
+                response.parse(result);
+                // 派发事件
+                Core_7.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
+                // 触发事件形式监听
+                var listeners = this._responseListeners[type];
+                if (listeners) {
+                    for (var _i = 0, listeners_2 = listeners; _i < listeners_2.length; _i++) {
+                        var listener = listeners_2[_i];
+                        listener[0].call(listener[1], response, request);
+                        // 如果是一次性监听则移除之
+                        if (listener[2])
+                            this.unlistenResponse(type, listener[0], listener[1], listener[2]);
+                    }
+                }
+            }
+            else {
+                console.warn("没有找到返回结构体定义：" + type);
+            }
+        };
+        NetManager.prototype.__onError = function (err, request) {
+            // 派发事件
+            Core_7.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
+        };
+        NetManager = __decorate([
+            Injectable
+        ], NetManager);
+        return NetManager;
+    }());
+    exports.default = NetManager;
+    /** 再额外导出一个单例 */
+    exports.netManager = Core_7.core.getInject(NetManager);
+    /*********************** 下面是装饰器方法实现 ***********************/
+    /** Result */
+    window["Result"] = function (clsOrType) {
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
+                exports.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+                exports.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
+            });
+        };
+    };
+});
 define("engine/module/IModuleConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1711,7 +2002,8 @@ define("engine/module/IModule", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core"], function (require, exports, Core_7) {
+/// <reference path="./Decorator.ts"/>
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager"], function (require, exports, Core_8, ConstructUtil_3, NetManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1800,16 +2092,22 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core"], funct
             else {
                 // 尚未打开过，正常开启模块
                 var target = new cls();
-                var from = this.getCurrent();
-                var fromModule = from && from[1];
                 // 调用onOpen接口
                 target.onOpen(data);
-                // 调用onDeactivate接口
-                fromModule && fromModule.onDeactivate(cls, data);
-                // 插入模块
-                this._moduleStack.unshift([cls, target]);
-                // 调用onActivate接口
-                target.onActivate(from && from[0], data);
+                // 发送所有模块消息
+                var requests = target.listInitRequests();
+                NetManager_1.netManager.sendMultiRequests(requests, function (responses) {
+                    var from = this.getCurrent();
+                    var fromModule = from && from[1];
+                    // 调用onGetResponses接口
+                    target.onGetResponses(responses);
+                    // 调用onDeactivate接口
+                    fromModule && fromModule.onDeactivate(cls, data);
+                    // 插入模块
+                    this._moduleStack.unshift([cls, target]);
+                    // 调用onActivate接口
+                    target.onActivate(from && from[0], data);
+                }, this);
             }
         };
         /**
@@ -1856,9 +2154,17 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core"], funct
     }());
     exports.default = ModuleManager;
     /** 再额外导出一个单例 */
-    exports.moduleManager = Core_7.core.getInject(ModuleManager);
+    exports.moduleManager = Core_8.core.getInject(ModuleManager);
+    /*********************** 下面是装饰器方法实现 ***********************/
+    /** Module */
+    window["Module"] = function Module(cls) {
+        // 判断一下Module是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
+        return ConstructUtil_3.wrapConstruct(cls);
+    };
 });
-define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_8) {
+define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1910,6 +2216,14 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
             return cls && cls.name;
         };
         /**
+         * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
+         *
+         * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）
+         * @memberof Module
+         */
+        Module.prototype.onGetResponses = function (responses) {
+        };
+        /**
          * 打开模块时调用，可以重写
          *
          * @param {*} [data] 传递给模块的数据
@@ -1948,7 +2262,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_8.core.dispatch.apply(Core_8.core, [typeOrMsg].concat(params));
+            Core_9.core.dispatch.apply(Core_9.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁模块，可以重写
@@ -1961,7 +2275,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
     }());
     exports.default = Module;
 });
-define("engine/env/Explorer", ["require", "exports", "core/Core"], function (require, exports, Core_9) {
+define("engine/env/Explorer", ["require", "exports", "core/Core"], function (require, exports, Core_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2105,9 +2419,9 @@ define("engine/env/Explorer", ["require", "exports", "core/Core"], function (req
     }());
     exports.default = Explorer;
     /** 再额外导出一个单例 */
-    exports.explorer = Core_9.core.getInject(Explorer);
+    exports.explorer = Core_10.core.getInject(Explorer);
 });
-define("engine/env/External", ["require", "exports", "core/Core"], function (require, exports, Core_10) {
+define("engine/env/External", ["require", "exports", "core/Core"], function (require, exports, Core_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2149,9 +2463,9 @@ define("engine/env/External", ["require", "exports", "core/Core"], function (req
     }());
     exports.default = External;
     /** 再额外导出一个单例 */
-    exports.external = Core_10.core.getInject(External);
+    exports.external = Core_11.core.getInject(External);
 });
-define("engine/env/Hash", ["require", "exports", "core/Core"], function (require, exports, Core_11) {
+define("engine/env/Hash", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2262,9 +2576,9 @@ define("engine/env/Hash", ["require", "exports", "core/Core"], function (require
     }());
     exports.default = Hash;
     /** 再额外导出一个单例 */
-    exports.hash = Core_11.core.getInject(Hash);
+    exports.hash = Core_12.core.getInject(Hash);
 });
-define("engine/env/Query", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
+define("engine/env/Query", ["require", "exports", "core/Core"], function (require, exports, Core_13) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2312,179 +2626,9 @@ define("engine/env/Query", ["require", "exports", "core/Core"], function (requir
     }());
     exports.default = Query;
     /** 再额外导出一个单例 */
-    exports.query = Core_12.core.getInject(Query);
+    exports.query = Core_13.core.getInject(Query);
 });
-define("engine/net/NetMessage", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 通讯相关的消息
-    */
-    var NetMessage = (function () {
-        function NetMessage() {
-        }
-        /**
-         * 发送网络请求消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        NetMessage.NET_REQUEST = "netRequest";
-        /**
-         * 接受网络返回消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        NetMessage.NET_RESPONSE = "netResponse";
-        /**
-         * 网络请求错误消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        NetMessage.NET_ERROR = "netError";
-        return NetMessage;
-    }());
-    exports.default = NetMessage;
-});
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "utils/ConstructUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_13, CoreMessage_2, ObjectUtil_2, ConstructUtil_2, RequestData_1, NetMessage_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var NetManager = (function () {
-        function NetManager() {
-            this._responseDict = {};
-            this._responseListeners = {};
-            Core_13.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
-        }
-        NetManager.prototype.onMsgDispatched = function (msg) {
-            var netMsg = msg.getMessage();
-            // 如果消息是通讯消息则做处理
-            if (msg instanceof RequestData_1.default) {
-                // 指定消息参数连接上公共参数作为参数
-                ObjectUtil_2.extendObject(netMsg.__params.data, RequestData_1.commonData);
-                // 发送消息
-                netMsg.__policy.sendRequest(netMsg);
-                // 派发系统消息
-                Core_13.core.dispatch(NetMessage_1.default.NET_REQUEST, netMsg);
-            }
-        };
-        /**
-         * 注册一个返回结构体
-         *
-         * @param {string} type 返回类型
-         * @param {IResponseDataConstructor} cls 返回结构体构造器
-         * @memberof NetManager
-         */
-        NetManager.prototype.registerResponse = function (cls) {
-            this._responseDict[cls.getType()] = cls;
-        };
-        /**
-         * 添加一个通讯返回监听
-         *
-         * @param {(IResponseDataConstructor|string)} clsOrType 要监听的返回结构构造器或者类型字符串
-         * @param {ResponseHandler} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {boolean} [once=false] 是否一次性监听
-         * @memberof NetManager
-         */
-        NetManager.prototype.listenResponse = function (clsOrType, handler, thisArg, once) {
-            if (once === void 0) { once = false; }
-            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
-            var listeners = this._responseListeners[type];
-            if (!listeners)
-                this._responseListeners[type] = listeners = [];
-            for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
-                var listener = listeners_1[_i];
-                if (handler == listener[0] && thisArg == listener[1] && once == listener[2])
-                    return;
-            }
-            listeners.push([handler, thisArg, once]);
-        };
-        /**
-         * 移除一个通讯返回监听
-         *
-         * @param {(IResponseDataConstructor|string)} clsOrType 要移除监听的返回结构构造器或者类型字符串
-         * @param {ResponseHandler} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {boolean} [once=false] 是否一次性监听
-         * @memberof NetManager
-         */
-        NetManager.prototype.unlistenResponse = function (clsOrType, handler, thisArg, once) {
-            if (once === void 0) { once = false; }
-            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
-            var listeners = this._responseListeners[type];
-            if (listeners) {
-                for (var i = 0, len = listeners.length; i < len; i++) {
-                    var listener = listeners[i];
-                    if (handler == listener[0] && thisArg == listener[1] && once == listener[2]) {
-                        listeners.splice(i, 1);
-                        break;
-                    }
-                }
-            }
-        };
-        /** 这里导出不希望用户使用的方法，供框架内使用 */
-        NetManager.prototype.__onResponse = function (type, result, request) {
-            // 解析结果
-            var cls = this._responseDict[type];
-            if (cls) {
-                var response = new cls();
-                response.parse(result);
-                // 派发事件
-                Core_13.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
-                // 触发事件形式监听
-                var listeners = this._responseListeners[type];
-                if (listeners) {
-                    for (var _i = 0, listeners_2 = listeners; _i < listeners_2.length; _i++) {
-                        var listener = listeners_2[_i];
-                        listener[0].call(listener[1], response, request);
-                        // 如果是一次性监听则移除之
-                        if (listener[2])
-                            this.unlistenResponse(type, listener[0], listener[1], listener[2]);
-                    }
-                }
-            }
-            else {
-                console.warn("没有找到返回结构体定义：" + type);
-            }
-        };
-        NetManager.prototype.__onError = function (err, request) {
-            // 派发事件
-            Core_13.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
-        };
-        NetManager = __decorate([
-            Injectable
-        ], NetManager);
-        return NetManager;
-    }());
-    exports.default = NetManager;
-    /** 再额外导出一个单例 */
-    exports.netManager = Core_13.core.getInject(NetManager);
-    /*********************** 下面是装饰器方法实现 ***********************/
-    /** Result */
-    window["Result"] = function (clsOrType) {
-        return function (prototype, propertyKey, descriptor) {
-            // 监听实例化
-            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
-                exports.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-                exports.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-            });
-        };
-    };
-});
-define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_3) {
+define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2687,7 +2831,7 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
         if (url == null)
             throw new Error("url不能为空");
         var oriParams = getQueryParams(url);
-        var targetParams = ObjectUtil_3.extendObject(oriParams, params);
+        var targetParams = ObjectUtil_4.extendObject(oriParams, params);
         var hash = parseUrl(url).hash;
         url = getHostAndPathname(url);
         var isFirst = true;
@@ -2761,7 +2905,7 @@ define("engine/net/HTTPMethod", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/URLUtil", "engine/net/NetManager"], function (require, exports, URLUtil_1, NetManager_1) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/URLUtil", "engine/net/NetManager"], function (require, exports, URLUtil_1, NetManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HTTPRequestPolicy = (function () {
@@ -2821,7 +2965,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
                             if (xhr.status == 200) {
                                 // 成功回调
                                 var result = JSON.parse(xhr.responseText);
-                                NetManager_1.netManager.__onResponse(result, request);
+                                NetManager_2.netManager.__onResponse(result, request);
                             }
                             else if (retryTimes > 0) {
                                 // 没有超过重试上限则重试
@@ -2830,7 +2974,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
                             else {
                                 // 出错回调
                                 var err = new Error(xhr.status + " " + xhr.statusText);
-                                NetManager_1.netManager.__onError(err, request);
+                                NetManager_2.netManager.__onError(err, request);
                             }
                         }
                         catch (err) {
@@ -2854,7 +2998,6 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
-/// <reference path="./global/Decorator.ts"/>
 define("engine/Engine", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

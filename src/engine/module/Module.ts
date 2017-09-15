@@ -2,6 +2,7 @@ import {core} from "../../core/Core"
 import IDispatcher from "../../core/interfaces/IDispatcher"
 import IMessage from "../../core/message/IMessage"
 import RequestData from "../net/RequestData"
+import ResponseData from "../net/ResponseData"
 import IModule from "./IModule"
 import IModuleConstructor from "./IModuleConstructor"
 
@@ -58,6 +59,16 @@ export default abstract class Module implements IModule, IDispatcher
     {
         var cls:any = this["constructor"];
         return cls && cls.name;
+    }
+
+    /**
+     * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
+     * 
+     * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）
+     * @memberof Module
+     */
+    public onGetResponses(responses:ResponseData[]):void
+    {
     }
 
     /**

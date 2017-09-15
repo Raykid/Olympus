@@ -1,6 +1,8 @@
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
 
+import {listenConstruct, listenDispose, wrapConstruct} from "../utils/ConstructUtil"
+import Dictionary from "../utils/Dictionary"
 import IDisposable from "./interfaces/IDisposable"
 import IConstructor from "./interfaces/IConstructor"
 import IMessage from "./message/IMessage"
@@ -8,7 +10,6 @@ import Message from "./message/Message"
 import CoreMessage from "./message/CoreMessage"
 import ICommandConstructor from "./command/ICommandConstructor"
 import Command from "./command/Command"
-import {listenConstruct, listenDispose, wrapConstruct} from "../utils/ConstructUtil"
 import IDispatcher from "./interfaces/IDispatcher"
 
 /**
@@ -169,7 +170,7 @@ export default class Core implements IDispatcher
     }
     
     /*********************** 下面是依赖注入系统 ***********************/
-    private _injectDict:{[key:string]:any} = {};
+    private _injectDict:Dictionary<IConstructor, any> = new Dictionary();
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      * 
@@ -192,8 +193,7 @@ export default class Core implements IDispatcher
      */
     public mapInjectValue(value:any, type?:IConstructor):void
     {
-        var key:string = (type || value.constructor).toString();
-        this._injectDict[key] = value;
+        this._injectDict.set(type || value.constructor, value);
     }
 
     /**
@@ -204,8 +204,7 @@ export default class Core implements IDispatcher
      */
     public unmapInject(target:IConstructor):void
     {
-        var key:string = target.toString();
-        delete this._injectDict[key];
+        this._injectDict.delete(target);
     }
 
     /**
@@ -219,7 +218,7 @@ export default class Core implements IDispatcher
     {
         // 需要用原始的构造函数取
         type = type["__ori_constructor__"] || type;
-        return this._injectDict[type.toString()];
+        return this._injectDict.get(type);
     }
 
     /*********************** 下面是内核命令系统 ***********************/

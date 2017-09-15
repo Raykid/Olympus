@@ -53,19 +53,6 @@ declare function Inject(cls: IConstructor): PropertyDecorator;
  * @returns {MethodDecorator}
  */
 declare function Handler(type: string): MethodDecorator;
-declare module "core/interfaces/IDisposable" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 可回收接口
-    */
-    export default interface IDisposable {
-        dispose(): void;
-    }
-}
 declare module "core/interfaces/IConstructor" {
     /**
      * @author Raykid
@@ -77,6 +64,147 @@ declare module "core/interfaces/IConstructor" {
     */
     export default interface IConstructor extends Function {
         new (...args: any[]): any;
+    }
+}
+declare module "utils/ObjectUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 对象工具集
+    */
+    /**
+     * populate properties
+     * @param target        目标obj
+     * @param sources       来源obj
+     */
+    export function extendObject(target: any, ...sources: any[]): any;
+    /**
+     * 复制对象
+     * @param target 要复制的对象
+     * @param deep 是否深表复制，默认浅表复制
+     * @returns {any} 复制后的对象
+     */
+    export function cloneObject(target: any, deep?: boolean): any;
+    /**
+     * 生成一个随机ID
+     */
+    export function getGUID(): string;
+    /**
+     * 生成自增id（从0开始）
+     * @param type
+     */
+    export function getAutoIncId(type: string): string;
+    /**
+     * 判断对象是否为null或者空对象
+     * @param obj 要判断的对象
+     * @returns {boolean} 是否为null或者空对象
+     */
+    export function isEmpty(obj: any): boolean;
+    /**
+     * 移除data中包含的空引用或未定义
+     * @param data 要被移除空引用或未定义的对象
+     */
+    export function trimData(data: any): any;
+    /**
+     * 让child类继承自parent类
+     * @param child 子类
+     * @param parent 父类
+     */
+    export var extendsClass: (child: any, parent: any) => void;
+    /**
+     * 获取一个对象的对象哈希字符串
+     *
+     * @export
+     * @param {*} target 任意对象，可以是基础类型或null
+     * @returns {string} 哈希值
+     */
+    export function getObjectHash(target: any): string;
+}
+declare module "utils/Dictionary" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-15
+     * @modify date 2017-09-15
+     *
+     * 字典，支持key为任意类型的对象
+    */
+    export default class Dictionary<K, V> {
+        private _entity;
+        /**
+         * 设置一个键值对
+         *
+         * @param {K} key 键
+         * @param {V} value 值
+         * @memberof Dictionary
+         */
+        set(key: K, value: V): void;
+        /**
+         * 获取一个值
+         *
+         * @param {K} key 键
+         * @returns {V} 值
+         * @memberof Dictionary
+         */
+        get(key: K): V;
+        /**
+         * 删除一个键值对
+         *
+         * @param {K} key 键
+         * @memberof Dictionary
+         */
+        delete(key: K): void;
+    }
+}
+declare module "utils/ConstructUtil" {
+    import IConstructor from "core/interfaces/IConstructor";
+    /**
+     * 包装一个类型，监听类型的实例化操作
+     *
+     * @export
+     * @param {IConstructor} cls 要监听构造的类型构造器
+     * @returns {IConstructor} 新的构造函数
+     */
+    export function wrapConstruct(cls: IConstructor): IConstructor;
+    /**
+     * 监听类型的实例化
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 移除实例化监听
+     *
+     * @export
+     * @param {IConstructor} cls 要移除监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+     *
+     * @export
+     * @param {IConstructor} cls 要监听销毁的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
+}
+declare module "core/interfaces/IDisposable" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 可回收接口
+    */
+    export default interface IDisposable {
+        dispose(): void;
     }
 }
 declare module "core/message/IMessage" {
@@ -229,90 +357,6 @@ declare module "core/command/ICommandConstructor" {
         new (msg: IMessage): Command;
     }
 }
-declare module "utils/ObjectUtil" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 对象工具集
-    */
-    /**
-     * populate properties
-     * @param target        目标obj
-     * @param sources       来源obj
-     */
-    export function extendObject(target: any, ...sources: any[]): any;
-    /**
-     * 复制对象
-     * @param target 要复制的对象
-     * @param deep 是否深表复制，默认浅表复制
-     * @returns {any} 复制后的对象
-     */
-    export function cloneObject(target: any, deep?: boolean): any;
-    /**
-     * 生成一个随机ID
-     */
-    export function getGUID(): string;
-    /**
-     * 生成自增id（从0开始）
-     * @param type
-     */
-    export function getAutoIncId(type: string): string;
-    /**
-     * 判断对象是否为null或者空对象
-     * @param obj 要判断的对象
-     * @returns {boolean} 是否为null或者空对象
-     */
-    export function isEmpty(obj: any): boolean;
-    /**
-     * 移除data中包含的空引用或未定义
-     * @param data 要被移除空引用或未定义的对象
-     */
-    export function trimData(data: any): any;
-    /**
-     * 让child类继承自parent类
-     * @param child 子类
-     * @param parent 父类
-     */
-    export var extendsClass: (child: any, parent: any) => void;
-}
-declare module "utils/ConstructUtil" {
-    import IConstructor from "core/interfaces/IConstructor";
-    /**
-     * 包装一个类型，监听类型的实例化操作
-     *
-     * @export
-     * @param {IConstructor} cls 要监听构造的类型构造器
-     * @returns {IConstructor} 新的构造函数
-     */
-    export function wrapConstruct(cls: IConstructor): IConstructor;
-    /**
-     * 监听类型的实例化
-     *
-     * @export
-     * @param {IConstructor} cls 要监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 移除实例化监听
-     *
-     * @export
-     * @param {IConstructor} cls 要移除监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
-     *
-     * @export
-     * @param {IConstructor} cls 要监听销毁的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
-}
 declare module "core/interfaces/IDispatcher" {
     import IMessage from "core/message/IMessage";
     /**
@@ -452,24 +496,6 @@ declare module "core/Core" {
     /** 再额外导出一个单例 */
     export const core: Core;
 }
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-13
- * @modify date 2017-09-13
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-/**
- * 通讯消息返回处理函数的装饰器方法
- *
- * @param {(IConstructor|string)} clsOrType 消息返回体构造器或类型字符串
- * @returns {MethodDecorator}
- */
-declare function Result(clsOrType: IConstructor | string): MethodDecorator;
 declare module "engine/system/System" {
     /**
      * @author Raykid
@@ -1203,10 +1229,10 @@ declare module "utils/SyncUtil" {
      * 判断是否正在进行操作
      *
      * @export
-     * @param {Function} fn 要执行的方法
+     * @param {string} name 队列名
      * @returns {boolean} 队列是否正在操作
      */
-    export function isOperating(fn: Function): boolean;
+    export function isOperating(name: string): boolean;
     /**
      * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
      *
@@ -1333,6 +1359,24 @@ declare module "engine/scene/SceneMediator" {
         pop(data?: any): IScene;
     }
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-13
+ * @modify date 2017-09-13
+ *
+ * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+/**
+ * 标识当前类型是个Module，Module与Mediator类似，具有装饰器注入功能，但自身不会被注入
+ *
+ * @param {IConstructor} cls 要注入的Module类
+ * @returns {*}
+ */
+declare function Module(cls: IConstructor): IConstructor;
 declare module "engine/net/IRequestPolicy" {
     import RequestData from "engine/net/RequestData";
     /**
@@ -1506,6 +1550,123 @@ declare module "engine/net/RequestData" {
     /** 导出公共消息参数对象 */
     export var commonData: any;
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-13
+ * @modify date 2017-09-13
+ *
+ * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+/**
+ * 通讯消息返回处理函数的装饰器方法
+ *
+ * @param {(IConstructor|string)} clsOrType 消息返回体构造器或类型字符串
+ * @returns {MethodDecorator}
+ */
+declare function Result(clsOrType: IConstructor | string): MethodDecorator;
+declare module "engine/net/NetMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯相关的消息
+    */
+    export default class NetMessage {
+        /**
+         * 发送网络请求消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_REQUEST: string;
+        /**
+         * 接受网络返回消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_RESPONSE: string;
+        /**
+         * 网络请求错误消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_ERROR: string;
+    }
+}
+declare module "engine/net/NetManager" {
+    import RequestData from "engine/net/RequestData";
+    import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-12
+     * @modify date 2017-09-12
+     *
+     * 网络管理器
+    */
+    export interface ResponseHandler {
+        (response: ResponseData, request?: RequestData): void;
+    }
+    export default class NetManager {
+        constructor();
+        private onMsgDispatched(msg);
+        private _responseDict;
+        /**
+         * 注册一个返回结构体
+         *
+         * @param {string} type 返回类型
+         * @param {IResponseDataConstructor} cls 返回结构体构造器
+         * @memberof NetManager
+         */
+        registerResponse(cls: IResponseDataConstructor): void;
+        private _responseListeners;
+        /**
+         * 添加一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        listenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        /**
+         * 移除一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要移除监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        unlistenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        /**
+         * 发送多条请求，并且等待返回结果（如果有的话），调用回调
+         *
+         * @param {RequestData[]} requests 要发送的请求列表
+         * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
+         * @param {*} [thisArg] this指向
+         * @memberof NetManager
+         */
+        sendMultiRequests(requests: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any): void;
+        /** 这里导出不希望用户使用的方法，供框架内使用 */
+        __onResponse(type: string, result: any, request?: RequestData): void | never;
+        __onError(err: Error, request?: RequestData): void;
+    }
+    /** 再额外导出一个单例 */
+    export const netManager: NetManager;
+}
 declare module "engine/module/IModuleConstructor" {
     import IModule from "engine/module/IModule";
     /**
@@ -1523,6 +1684,7 @@ declare module "engine/module/IModuleConstructor" {
 declare module "engine/module/IModule" {
     import IDisposable from "core/interfaces/IDisposable";
     import RequestData from "engine/net/RequestData";
+    import ResponseData from "engine/net/ResponseData";
     import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
@@ -1543,6 +1705,8 @@ declare module "engine/module/IModule" {
         getName(): string;
         /** 打开模块时调用 */
         onOpen(data?: any): void;
+        /** 当获取到所有消息返回后调用 */
+        onGetResponses(responses: ResponseData[]): void;
         /** 关闭模块时调用 */
         onClose(data?: any): void;
         /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
@@ -1613,6 +1777,7 @@ declare module "engine/module/Module" {
     import IDispatcher from "core/interfaces/IDispatcher";
     import IMessage from "core/message/IMessage";
     import RequestData from "engine/net/RequestData";
+    import ResponseData from "engine/net/ResponseData";
     import IModule from "engine/module/IModule";
     import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
@@ -1652,6 +1817,13 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         getName(): string;
+        /**
+         * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
+         *
+         * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）
+         * @memberof Module
+         */
+        onGetResponses(responses: ResponseData[]): void;
         /**
          * 打开模块时调用，可以重写
          *
@@ -1878,96 +2050,6 @@ declare module "engine/env/Query" {
     }
     /** 再额外导出一个单例 */
     export const query: Query;
-}
-declare module "engine/net/NetMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 通讯相关的消息
-    */
-    export default class NetMessage {
-        /**
-         * 发送网络请求消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        static NET_REQUEST: string;
-        /**
-         * 接受网络返回消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        static NET_RESPONSE: string;
-        /**
-         * 网络请求错误消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        static NET_ERROR: string;
-    }
-}
-declare module "engine/net/NetManager" {
-    import RequestData from "engine/net/RequestData";
-    import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-12
-     * @modify date 2017-09-12
-     *
-     * 网络管理器
-    */
-    export interface ResponseHandler {
-        (response: ResponseData, request?: RequestData): void;
-    }
-    export default class NetManager {
-        constructor();
-        private onMsgDispatched(msg);
-        private _responseDict;
-        /**
-         * 注册一个返回结构体
-         *
-         * @param {string} type 返回类型
-         * @param {IResponseDataConstructor} cls 返回结构体构造器
-         * @memberof NetManager
-         */
-        registerResponse(cls: IResponseDataConstructor): void;
-        private _responseListeners;
-        /**
-         * 添加一个通讯返回监听
-         *
-         * @param {(IResponseDataConstructor|string)} clsOrType 要监听的返回结构构造器或者类型字符串
-         * @param {ResponseHandler} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {boolean} [once=false] 是否一次性监听
-         * @memberof NetManager
-         */
-        listenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
-        /**
-         * 移除一个通讯返回监听
-         *
-         * @param {(IResponseDataConstructor|string)} clsOrType 要移除监听的返回结构构造器或者类型字符串
-         * @param {ResponseHandler} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {boolean} [once=false] 是否一次性监听
-         * @memberof NetManager
-         */
-        unlistenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
-        /** 这里导出不希望用户使用的方法，供框架内使用 */
-        __onResponse(type: string, result: any, request?: RequestData): void | never;
-        __onError(err: Error, request?: RequestData): void;
-    }
-    /** 再额外导出一个单例 */
-    export const netManager: NetManager;
 }
 declare module "utils/URLUtil" {
     /**
