@@ -1,5 +1,6 @@
 import IDisposable from "../../core/interfaces/IDisposable"
 import RequestData from "../net/RequestData"
+import IModuleConstructor from "./IModuleConstructor"
 
 /**
  * @author Raykid
@@ -24,7 +25,7 @@ export default interface IModule extends IDisposable
     /** 关闭模块时调用 */
     onClose(data?:any):void;
     /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
-    onActivate(from:IModule, data?:any):void;
+    onActivate(from:IModuleConstructor|undefined, data?:any):void;
     /** 模块切换到后台是调用（close之后或者其他模块打开时） */
-    onDeactivate(to:IModule, data?:any):void;
+    onDeactivate(to:IModuleConstructor|undefined, data?:any):void;
 }

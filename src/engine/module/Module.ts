@@ -1,9 +1,9 @@
 import {core} from "../../core/Core"
 import IDispatcher from "../../core/interfaces/IDispatcher"
 import IMessage from "../../core/message/IMessage"
-import IModule from "./IModule"
-import {moduleManager} from "./ModuleManager"
 import RequestData from "../net/RequestData"
+import IModule from "./IModule"
+import IModuleConstructor from "./IModuleConstructor"
 
 /**
  * @author Raykid
@@ -83,22 +83,22 @@ export default abstract class Module implements IModule, IDispatcher
     /**
      * 模块切换到前台时调用（open之后或者其他模块被关闭时），可以重写
      * 
-     * @param {IModule} from 从哪个模块切换过来
+     * @param {IModuleConstructor|undefined} from 从哪个模块切换过来
      * @param {*} [data] 传递给模块的数据
      * @memberof Module
      */
-    public onActivate(from:IModule, data?:any):void
+    public onActivate(from:IModuleConstructor|undefined, data?:any):void
     {
     }
 
     /**
      * 模块切换到后台是调用（close之后或者其他模块打开时），可以重写
      * 
-     * @param {IModule} to 要切换到哪个模块
+     * @param {IModuleConstructor|undefined} to 要切换到哪个模块
      * @param {*} [data] 传递给模块的数据
      * @memberof Module
      */
-    public onDeactivate(to:IModule, data?:any):void
+    public onDeactivate(to:IModuleConstructor|undefined, data?:any):void
     {
     }
     

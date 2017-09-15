@@ -452,6 +452,24 @@ declare module "core/Core" {
     /** 再额外导出一个单例 */
     export const core: Core;
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-13
+ * @modify date 2017-09-13
+ *
+ * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+/**
+ * 通讯消息返回处理函数的装饰器方法
+ *
+ * @param {(IConstructor|string)} clsOrType 消息返回体构造器或类型字符串
+ * @returns {MethodDecorator}
+ */
+declare function Result(clsOrType: IConstructor | string): MethodDecorator;
 declare module "engine/system/System" {
     /**
      * @author Raykid
@@ -1488,9 +1506,24 @@ declare module "engine/net/RequestData" {
     /** 导出公共消息参数对象 */
     export var commonData: any;
 }
+declare module "engine/module/IModuleConstructor" {
+    import IModule from "engine/module/IModule";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * 模块构造器接口
+    */
+    export default interface IModuleConstructor {
+        new (): IModule;
+    }
+}
 declare module "engine/module/IModule" {
     import IDisposable from "core/interfaces/IDisposable";
     import RequestData from "engine/net/RequestData";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1513,23 +1546,9 @@ declare module "engine/module/IModule" {
         /** 关闭模块时调用 */
         onClose(data?: any): void;
         /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
-        onActivate(from: IModule, data?: any): void;
+        onActivate(from: IModuleConstructor | undefined, data?: any): void;
         /** 模块切换到后台是调用（close之后或者其他模块打开时） */
-        onDeactivate(to: IModule, data?: any): void;
-    }
-}
-declare module "engine/module/IModuleConstructor" {
-    import IModule from "engine/module/IModule";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * 模块构造器接口
-    */
-    export default interface IModuleConstructor {
-        new (): IModule;
+        onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
     }
 }
 declare module "engine/module/ModuleManager" {
@@ -1538,30 +1557,54 @@ declare module "engine/module/ModuleManager" {
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-09-14
-     * @modify date 2017-09-14
+     * @modify date 2017-09-15
      *
      * 模块管理器，管理模块相关的所有操作。模块具有唯一性，同一时间不可以打开两个相同模块，如果打开则会退回到先前的模块处
     */
     export default class ModuleManager {
         private _moduleStack;
+        private getIndex(cls);
+        private getAfter(cls);
+        private getCurrent();
+        /**
+         * 获取模块是否开启中
+         *
+         * @param {IModuleConstructor} cls 要判断的模块类型
+         * @returns {boolean} 是否开启
+         * @memberof ModuleManager
+         */
+        isOpened(cls: IModuleConstructor): boolean;
+        /**
+         * 获取当前模块
+         *
+         * @returns {IModuleConstructor} 当前模块的类型
+         * @memberof ModuleManager
+         */
+        getCurModule(): IModuleConstructor | undefined;
+        /**
+         * 获取活动模块数量
+         *
+         * @returns {number} 活动模块数量
+         * @memberof ModuleManager
+         */
+        getActiveCount(): number;
         /**
          * 打开模块
          *
-         * @param {IModuleConstructor} moduleCls
-         * @param {*} [data]
-         * @param {boolean} [replace=false]
+         * @param {IModuleConstructor} cls 模块类型
+         * @param {*} [data] 参数
+         * @param {boolean} [replace=false] 是否替换当前模块
          * @memberof ModuleManager
          */
-        openModule(moduleCls: IModuleConstructor, data?: any, replace?: boolean): void;
+        open(cls: IModuleConstructor, data?: any, replace?: boolean): void;
         /**
+         * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
          *
-         *
-         * @param {IModuleConstructor} moduleCls
-         * @param {*} [data]
-         * @param {boolean} [replace=false]
+         * @param {IModuleConstructor} cls 模块类型
+         * @param {*} [data] 参数
          * @memberof ModuleManager
          */
-        closeModule(moduleCls: IModuleConstructor, data?: any, replace?: boolean): void;
+        close(cls: IModuleConstructor, data?: any): void;
     }
     /** 再额外导出一个单例 */
     export const moduleManager: ModuleManager;
@@ -1569,8 +1612,9 @@ declare module "engine/module/ModuleManager" {
 declare module "engine/module/Module" {
     import IDispatcher from "core/interfaces/IDispatcher";
     import IMessage from "core/message/IMessage";
-    import IModule from "engine/module/IModule";
     import RequestData from "engine/net/RequestData";
+    import IModule from "engine/module/IModule";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1625,19 +1669,19 @@ declare module "engine/module/Module" {
         /**
          * 模块切换到前台时调用（open之后或者其他模块被关闭时），可以重写
          *
-         * @param {IModule} from 从哪个模块切换过来
+         * @param {IModuleConstructor|undefined} from 从哪个模块切换过来
          * @param {*} [data] 传递给模块的数据
          * @memberof Module
          */
-        onActivate(from: IModule, data?: any): void;
+        onActivate(from: IModuleConstructor | undefined, data?: any): void;
         /**
          * 模块切换到后台是调用（close之后或者其他模块打开时），可以重写
          *
-         * @param {IModule} to 要切换到哪个模块
+         * @param {IModuleConstructor|undefined} to 要切换到哪个模块
          * @param {*} [data] 传递给模块的数据
          * @memberof Module
          */
-        onDeactivate(to: IModule, data?: any): void;
+        onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
         /**
          * 派发内核消息
          *
@@ -1835,24 +1879,6 @@ declare module "engine/env/Query" {
     /** 再额外导出一个单例 */
     export const query: Query;
 }
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-13
- * @modify date 2017-09-13
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-/**
- * 通讯消息返回处理函数的装饰器方法
- *
- * @param {(IConstructor|string)} clsOrType 消息返回体构造器或类型字符串
- * @returns {MethodDecorator}
- */
-declare function Result(clsOrType: IConstructor | string): MethodDecorator;
 declare module "engine/net/NetMessage" {
     /**
      * @author Raykid
