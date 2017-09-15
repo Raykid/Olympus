@@ -19,12 +19,10 @@ export default interface IModule extends IDisposable
     listJsFiles():string[];
     /** 列出模块初始化请求 */
     listInitRequests():RequestData[];
-    /** 获取模块名称 */
-    getName():string;
-    /** 打开模块时调用 */
-    onOpen(data?:any):void;
     /** 当获取到所有消息返回后调用 */
     onGetResponses(responses:ResponseData[]):void;
+    /** 打开模块时调用 */
+    onOpen(data?:any):void;
     /** 关闭模块时调用 */
     onClose(data?:any):void;
     /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */

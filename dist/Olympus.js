@@ -2206,16 +2206,6 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
             return null;
         };
         /**
-         * 获取模块名称，默认使用类名，可以重写
-         *
-         * @returns {string} 模块名称
-         * @memberof Module
-         */
-        Module.prototype.getName = function () {
-            var cls = this["constructor"];
-            return cls && cls.name;
-        };
-        /**
          * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
          *
          * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）

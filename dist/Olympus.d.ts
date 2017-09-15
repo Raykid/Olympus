@@ -1701,12 +1701,10 @@ declare module "engine/module/IModule" {
         listJsFiles(): string[];
         /** 列出模块初始化请求 */
         listInitRequests(): RequestData[];
-        /** 获取模块名称 */
-        getName(): string;
-        /** 打开模块时调用 */
-        onOpen(data?: any): void;
         /** 当获取到所有消息返回后调用 */
         onGetResponses(responses: ResponseData[]): void;
+        /** 打开模块时调用 */
+        onOpen(data?: any): void;
         /** 关闭模块时调用 */
         onClose(data?: any): void;
         /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
@@ -1810,13 +1808,6 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         listInitRequests(): RequestData[];
-        /**
-         * 获取模块名称，默认使用类名，可以重写
-         *
-         * @returns {string} 模块名称
-         * @memberof Module
-         */
-        getName(): string;
         /**
          * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
          *
