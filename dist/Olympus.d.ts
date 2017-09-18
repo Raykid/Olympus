@@ -713,7 +713,7 @@ declare module "view/mediator/IMediator" {
         unmapAllListeners(): void;
     }
 }
-declare module "engine/component/Mediator" {
+declare module "engine/mediator/Mediator" {
     import IDispatcher from "core/interfaces/IDispatcher";
     import IMessage from "core/message/IMessage";
     import IMediator from "view/mediator/IMediator";
@@ -1011,7 +1011,7 @@ declare module "engine/panel/PanelManager" {
     export const panelManager: PanelManager;
 }
 declare module "engine/panel/PanelMediator" {
-    import Mediator from "engine/component/Mediator";
+    import Mediator from "engine/mediator/Mediator";
     import IBridge from "view/bridge/IBridge";
     import IPanel from "engine/panel/IPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
@@ -1304,7 +1304,7 @@ declare module "engine/scene/SceneManager" {
     export const sceneManager: SceneManager;
 }
 declare module "engine/scene/SceneMediator" {
-    import Mediator from "engine/component/Mediator";
+    import Mediator from "engine/mediator/Mediator";
     import IBridge from "view/bridge/IBridge";
     import IScene from "engine/scene/IScene";
     import IScenePolicy from "engine/scene/IScenePolicy";

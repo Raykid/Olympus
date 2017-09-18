@@ -1,6 +1,6 @@
 import System from "./system/System"
 import Model from "./model/Model"
-import Mediator from "./component/Mediator"
+import Mediator from "./mediator/Mediator"
 import PanelManager from "./panel/PanelManager"
 import PanelMediator from "./panel/PanelMediator"
 import SceneManager from "./scene/SceneManager"

@@ -921,7 +921,7 @@ define("view/mediator/IMediator", ["require", "exports"], function (require, exp
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/component/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_4) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1237,7 +1237,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "engine/
     /** 再额外导出一个单例 */
     exports.panelManager = Core_5.core.getInject(PanelManager);
 });
-define("engine/panel/PanelMediator", ["require", "exports", "engine/component/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_1) {
+define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1617,7 +1617,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
     /** 再额外导出一个单例 */
     exports.sceneManager = Core_6.core.getInject(SceneManager);
 });
-define("engine/scene/SceneMediator", ["require", "exports", "engine/component/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_1) {
+define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

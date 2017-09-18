@@ -1,4 +1,4 @@
-import Mediator from "../component/Mediator"
+import Mediator from "../mediator/Mediator"
 import IBridge from "../../view/bridge/IBridge"
 import IPanel from "./IPanel"
 import IPanelPolicy from "./IPanelPolicy"
