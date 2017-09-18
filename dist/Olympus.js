@@ -3198,23 +3198,29 @@ define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function
      *
      * Olympus框架便捷启动模块
     */
-    /**
-     * 启动Olympus框架
-     *
-     * @export
-     * @param {IModuleConstructor} firstModule 应用程序的首个模块
-     * @param {...IBridge[]} bridges 所有可能用到的表现层桥
-     */
-    function startup(firstModule) {
-        var bridges = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            bridges[_i - 1] = arguments[_i];
+    var Olympus = /** @class */ (function () {
+        function Olympus() {
         }
-        // 注册首个模块
-        Engine_1.engine.registerFirstModule(firstModule);
-        // 注册并初始化表现层桥实例
-        View_1.view.registerBridge.apply(View_1.view, bridges);
-    }
-    exports.default = startup;
+        /**
+         * 启动Olympus框架
+         *
+         * @static
+         * @param {IModuleConstructor} firstModule 应用程序的首个模块
+         * @param {...IBridge[]} bridges 所有可能用到的表现层桥
+         * @memberof Olympus
+         */
+        Olympus.startup = function (firstModule) {
+            var bridges = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                bridges[_i - 1] = arguments[_i];
+            }
+            // 注册首个模块
+            Engine_1.engine.registerFirstModule(firstModule);
+            // 注册并初始化表现层桥实例
+            View_1.view.registerBridge.apply(View_1.view, bridges);
+        };
+        return Olympus;
+    }());
+    exports.default = Olympus;
 });
 //# sourceMappingURL=Olympus.js.map

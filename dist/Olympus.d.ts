@@ -2322,12 +2322,15 @@ declare module "Olympus" {
      *
      * Olympus框架便捷启动模块
     */
-    /**
-     * 启动Olympus框架
-     *
-     * @export
-     * @param {IModuleConstructor} firstModule 应用程序的首个模块
-     * @param {...IBridge[]} bridges 所有可能用到的表现层桥
-     */
-    export default function startup(firstModule: IModuleConstructor, ...bridges: IBridge[]): void;
+    export default class Olympus {
+        /**
+         * 启动Olympus框架
+         *
+         * @static
+         * @param {IModuleConstructor} firstModule 应用程序的首个模块
+         * @param {...IBridge[]} bridges 所有可能用到的表现层桥
+         * @memberof Olympus
+         */
+        static startup(firstModule: IModuleConstructor, ...bridges: IBridge[]): void;
+    }
 }

@@ -1,9 +1,9 @@
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
 
-import startup from "Olympus";
 import DOMBridge from "branches/dom/Bridge";
 import FirstModule from "./modules/FirstModule";
+import Olympus from "Olympus";
 
 
 /**
@@ -14,4 +14,4 @@ import FirstModule from "./modules/FirstModule";
  * 
  * 测试项目
 */
-startup(FirstModule, new DOMBridge("rootDOM"));
+Olympus.startup(FirstModule, new DOMBridge("rootDOM"));

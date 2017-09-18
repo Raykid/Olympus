@@ -84,7 +84,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
-define("main", ["require", "exports", "Olympus", "branches/dom/Bridge", "modules/FirstModule"], function (require, exports, Olympus_1, Bridge_1, FirstModule_1) {
+define("main", ["require", "exports", "branches/dom/Bridge", "modules/FirstModule", "Olympus"], function (require, exports, Bridge_1, FirstModule_1, Olympus_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -95,6 +95,6 @@ define("main", ["require", "exports", "Olympus", "branches/dom/Bridge", "modules
      *
      * 测试项目
     */
-    Olympus_1.default(FirstModule_1.default, new Bridge_1.default("rootDOM"));
+    Olympus_1.default.startup(FirstModule_1.default, new Bridge_1.default("rootDOM"));
 });
 //# sourceMappingURL=main.js.map
