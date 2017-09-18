@@ -2,6 +2,7 @@ import Module from "engine/module/Module";
 import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
+import ModuleMessage from "engine/module/ModuleMessage";
 
 /**
  * @author Raykid
@@ -34,5 +35,12 @@ export default class FirstModule extends Module
         setTimeout(()=>{
             this.moduleManager.open(SecondModule);
         }, 1000);
+    }
+
+    @handler(ModuleMessage.MODULE_CHANGE)
+    private onSwitchIn(from:any, to:any):void
+    {
+        if(to == FirstModule) console.log("change to first module!");
+        else if(to == SecondModule) console.log("change to second module!");
     }
 }

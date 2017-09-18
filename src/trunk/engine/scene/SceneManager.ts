@@ -172,8 +172,6 @@ export default class SceneManager
             to.getBridge().getHTMLWrapper().style.display = "";
             policy = none;
         }
-        // 派发事件
-        core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, from, to);
         // 获取接口引用
         var prepareFunc:(from:IScene, to:IScene)=>void;
         var doFunc:(from:IScene, to:IScene, callback:()=>void)=>void;
@@ -197,6 +195,8 @@ export default class SceneManager
         // 前置处理
         from && from.onBeforeOut && from.onBeforeOut(to, data);
         to && to.onBeforeIn && to.onBeforeIn(from, data);
+        // 派发事件
+        core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, from, to);
         // 调用切换接口
         doFunc.call(policy, from, to, ()=>{
             complete();

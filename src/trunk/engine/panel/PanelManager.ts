@@ -47,16 +47,16 @@ export default class PanelManager
         {
             var policy:IPanelPolicy = panel.getPolicy();
             if(policy == null) policy = none;
-            // 派发消息
-            core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModel, from);
             // 调用回调
             panel.onBeforePop && panel.onBeforePop(data, isModel, from);
+            // 派发消息
+            core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModel, from);
             // 调用策略接口
             policy.pop(panel, ()=>{
-                // 派发消息
-                core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModel, from);
                 // 调用回调
                 panel.onAfterPop && panel.onAfterPop(data, isModel, from);
+                // 派发消息
+                core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModel, from);
             }, from);
         }
         return panel;
@@ -78,16 +78,16 @@ export default class PanelManager
         {
             var policy:IPanelPolicy = panel.getPolicy();
             if(policy == null) policy = none;
-            // 派发消息
-            core.dispatch(PanelMessage.PANEL_BEFORE_DROP, panel, to);
             // 调用回调
             panel.onBeforeDrop && panel.onBeforeDrop(data, to);
+            // 派发消息
+            core.dispatch(PanelMessage.PANEL_BEFORE_DROP, panel, to);
             // 调用策略接口
             policy.drop(panel, ()=>{
-                // 派发消息
-                core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
                 // 调用回调
                 panel.onAfterDrop && panel.onAfterDrop(data, to);
+                // 派发消息
+                core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
             }, to);
         }
         return panel;

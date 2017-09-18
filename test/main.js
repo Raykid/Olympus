@@ -43,7 +43,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module"], f
     }(Module_1.default));
     exports.default = SecondModule;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -59,6 +59,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         function FirstModule() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        FirstModule_1 = FirstModule;
         FirstModule.prototype.onOpen = function (data) {
             console.log("first module open");
         };
@@ -72,19 +73,29 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 _this.moduleManager.open(SecondModule_1.default);
             }, 1000);
         };
+        FirstModule.prototype.onSwitchIn = function (from, to) {
+            if (to == FirstModule_1)
+                console.log("change to first module!");
+            else if (to == SecondModule_1.default)
+                console.log("change to second module!");
+        };
         __decorate([
             inject(ModuleManager_1.default)
         ], FirstModule.prototype, "moduleManager", void 0);
-        FirstModule = __decorate([
+        __decorate([
+            handler(ModuleMessage_1.default.MODULE_CHANGE)
+        ], FirstModule.prototype, "onSwitchIn", null);
+        FirstModule = FirstModule_1 = __decorate([
             module
         ], FirstModule);
         return FirstModule;
+        var FirstModule_1;
     }(Module_2.default));
     exports.default = FirstModule;
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
-define("main", ["require", "exports", "branches/dom/Bridge", "modules/FirstModule", "Olympus"], function (require, exports, Bridge_1, FirstModule_1, Olympus_1) {
+define("main", ["require", "exports", "branches/dom/Bridge", "modules/FirstModule", "Olympus"], function (require, exports, Bridge_1, FirstModule_2, Olympus_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -95,6 +106,6 @@ define("main", ["require", "exports", "branches/dom/Bridge", "modules/FirstModul
      *
      * 测试项目
     */
-    Olympus_1.default.startup(FirstModule_1.default, new Bridge_1.default("rootDOM"));
+    Olympus_1.default.startup(FirstModule_2.default, new Bridge_1.default("rootDOM"));
 });
 //# sourceMappingURL=main.js.map

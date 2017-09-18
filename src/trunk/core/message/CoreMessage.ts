@@ -1,5 +1,3 @@
-import IMessage from "./IMessage";
-
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -8,7 +6,7 @@ import IMessage from "./IMessage";
  * 
  * 核心事件类型
 */
-export default class CoreMessage implements IMessage
+export default class CoreMessage
 {
     /**
      * 任何消息派发到框架后都会派发这个消息
@@ -18,34 +16,4 @@ export default class CoreMessage implements IMessage
      * @memberof CoreMessage
      */
     public static MESSAGE_DISPATCHED:string = "messageDispatched";
-
-    private _type:string;
-    /**
-     * 获取事件类型
-     * 
-     * @returns {string} 
-     * @memberof CoreMessage
-     */
-    public getType():string
-    {
-        return this._type;
-    }
-
-    private _message:IMessage;
-    /**
-     * 获取发送到框架内核的消息体
-     * 
-     * @returns {IMessage} 
-     * @memberof CoreMessage
-     */
-    public getMessage():IMessage
-    {
-        return this._message;
-    }
-
-    public constructor(type:string, message:IMessage)
-    {
-        this._type = type;
-        this._message = message;
-    }
 }

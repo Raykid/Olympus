@@ -232,25 +232,48 @@ declare module "core/message/IMessage" {
         getType(): string;
     }
 }
+declare module "core/message/IMessageHandler" {
+    import IMessage from "core/message/IMessage";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 框架消息处理函数接口
+    */
+    export default interface IMessageHandler {
+        (msg: IMessage): void;
+        (...args: any[]): void;
+    }
+}
 declare module "core/message/Message" {
     import IMessage from "core/message/IMessage";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 消息基类
+    */
+    export default abstract class Message implements IMessage {
+        private _type;
+        getType(): string;
+        constructor(type: string);
+    }
+}
+declare module "core/message/CommonMessage" {
+    import Message from "core/message/Message";
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-09-01
      * @modify date 2017-09-01
      *
-     * 框架内核消息基类
+     * 框架内核通用消息
     */
-    export default class Message implements IMessage {
-        private _type;
-        /**
-         * 获取消息类型字符串
-         *
-         * @returns {string} 消息类型字符串
-         * @memberof Message
-         */
-        getType(): string;
+    export default class CommonMessage extends Message {
         /**
          * 消息参数列表
          *
@@ -268,7 +291,6 @@ declare module "core/message/Message" {
     }
 }
 declare module "core/message/CoreMessage" {
-    import IMessage from "core/message/IMessage";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -277,7 +299,7 @@ declare module "core/message/CoreMessage" {
      *
      * 核心事件类型
     */
-    export default class CoreMessage implements IMessage {
+    export default class CoreMessage {
         /**
          * 任何消息派发到框架后都会派发这个消息
          *
@@ -286,23 +308,6 @@ declare module "core/message/CoreMessage" {
          * @memberof CoreMessage
          */
         static MESSAGE_DISPATCHED: string;
-        private _type;
-        /**
-         * 获取事件类型
-         *
-         * @returns {string}
-         * @memberof CoreMessage
-         */
-        getType(): string;
-        private _message;
-        /**
-         * 获取发送到框架内核的消息体
-         *
-         * @returns {IMessage}
-         * @memberof CoreMessage
-         */
-        getMessage(): IMessage;
-        constructor(type: string, message: IMessage);
     }
 }
 declare module "core/command/Command" {
@@ -394,6 +399,7 @@ declare module "core/interfaces/IDispatcher" {
 declare module "core/Core" {
     import IConstructor from "core/interfaces/IConstructor";
     import IMessage from "core/message/IMessage";
+    import IMessageHandler from "core/message/IMessageHandler";
     import ICommandConstructor from "core/command/ICommandConstructor";
     import IDispatcher from "core/interfaces/IDispatcher";
     export interface IInjectableParams {
@@ -431,20 +437,20 @@ declare module "core/Core" {
          * 监听内核消息
          *
          * @param {string} type 消息类型
-         * @param {(msg:IMessage)=>void} handler 消息处理函数
+         * @param {IMessageHandler} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
-        listen(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
+        listen(type: string, handler: IMessageHandler, thisArg?: any): void;
         /**
          * 移除内核消息监听
          *
          * @param {string} type 消息类型
-         * @param {(msg:IMessage)=>void} handler 消息处理函数
+         * @param {IMessageHandler} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
-        unlisten(type: string, handler: (msg: IMessage) => void, thisArg?: any): void;
+        unlisten(type: string, handler: IMessageHandler, thisArg?: any): void;
         /*********************** 下面是依赖注入系统 ***********************/
         private _injectDict;
         /**
@@ -599,7 +605,7 @@ declare module "engine/system/System" {
     export const system: System;
 }
 declare module "engine/model/Model" {
-    import IMessage from "core/message/Message";
+    import IMessage from "core/message/IMessage";
     import IDispatcher from "core/interfaces/IDispatcher";
     /**
      * @author Raykid
@@ -1747,6 +1753,26 @@ declare module "engine/module/IModule" {
         onActivate(from: IModuleConstructor | undefined, data?: any): void;
         /** 模块切换到后台是调用（close之后或者其他模块打开时） */
         onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
+    }
+}
+declare module "engine/module/ModuleMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 模块消息
+    */
+    export default class ModuleMessage {
+        /**
+         * 切换模块消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        static MODULE_CHANGE: string;
     }
 }
 declare module "engine/module/ModuleManager" {

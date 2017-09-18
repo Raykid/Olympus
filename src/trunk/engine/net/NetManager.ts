@@ -1,7 +1,7 @@
 /// <reference path="./Decorator.ts"/>
 
 import {core} from "../../core/Core";
-import Message from "../../core/message/Message";
+import IMessage from "../../core/message/IMessage";
 import CoreMessage from "../../core/message/CoreMessage";
 import {extendObject} from "../../utils/ObjectUtil";
 import {listenConstruct, listenDispose} from "../../utils/ConstructUtil";
@@ -31,18 +31,17 @@ export default class NetManager
         core.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
     }
     
-    private onMsgDispatched(msg:CoreMessage):void
+    private onMsgDispatched(msg:IMessage):void
     {
-        var netMsg:RequestData = msg.getMessage() as RequestData;
         // 如果消息是通讯消息则做处理
         if(msg instanceof RequestData)
         {
             // 指定消息参数连接上公共参数作为参数
-            extendObject(netMsg.__params.data, commonData);
+            extendObject(msg.__params.data, commonData);
             // 发送消息
-            netMsg.__policy.sendRequest(netMsg);
+            msg.__policy.sendRequest(msg);
             // 派发系统消息
-            core.dispatch(NetMessage.NET_REQUEST, netMsg);
+            core.dispatch(NetMessage.NET_REQUEST, msg);
         }
     }
 

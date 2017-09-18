@@ -6,7 +6,8 @@ import Dictionary from "../utils/Dictionary";
 import IDisposable from "./interfaces/IDisposable";
 import IConstructor from "./interfaces/IConstructor";
 import IMessage from "./message/IMessage";
-import Message from "./message/Message";
+import IMessageHandler from "./message/IMessageHandler"
+import CommonMessage from "./message/CommonMessage";
 import CoreMessage from "./message/CoreMessage";
 import ICommandConstructor from "./command/ICommandConstructor";
 import Command from "./command/Command";
@@ -29,7 +30,7 @@ import IDispatcher from "./interfaces/IDispatcher";
  */
 interface IMessageData
 {
-    handler:(msg:IMessage)=>void;
+    handler:IMessageHandler;
     thisArg:any;
 }
 
@@ -72,7 +73,12 @@ export default class Core implements IDispatcher
                 var temp:IMessageData = listeners[i];
                 try {
                     // 调用处理函数
-                    temp.handler.call(temp.thisArg, msg);
+                    if(msg instanceof CommonMessage)
+                        // 如果是通用消息，则将参数结构后调用回调
+                        temp.handler.call(temp.thisArg, ...msg.params);
+                    else
+                        // 如果是其他消息，则直接将消息体传给回调
+                        temp.handler.call(temp.thisArg, msg);
                 } catch (error) {
                     console.error(error);
                 }
@@ -110,24 +116,24 @@ export default class Core implements IDispatcher
         var msg:IMessage = typeOrMsg as IMessage;
         if(typeof typeOrMsg == "string")
         {
-            msg = new Message(typeOrMsg);
-            (msg as Message).params = params;
+            msg = new CommonMessage(typeOrMsg);
+            (msg as CommonMessage).params = params;
         }
         // 派发消息
         this.doDispatch(msg);
         // 额外派发一个通用事件
-        this.doDispatch(new CoreMessage(CoreMessage.MESSAGE_DISPATCHED, msg));
+        this.doDispatch(new CommonMessage(CoreMessage.MESSAGE_DISPATCHED, msg));
     }
 
     /**
      * 监听内核消息
      * 
      * @param {string} type 消息类型
-     * @param {(msg:IMessage)=>void} handler 消息处理函数
+     * @param {IMessageHandler} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Core
      */
-    public listen(type:string, handler:(msg:IMessage)=>void, thisArg?:any):void
+    public listen(type:string, handler:IMessageHandler, thisArg?:any):void
     {
         var listeners:IMessageData[] = this._listenerDict[type];
         if(!listeners) this._listenerDict[type] = listeners = [];
@@ -146,11 +152,11 @@ export default class Core implements IDispatcher
      * 移除内核消息监听
      * 
      * @param {string} type 消息类型
-     * @param {(msg:IMessage)=>void} handler 消息处理函数
+     * @param {IMessageHandler} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Core
      */
-    public unlisten(type:string, handler:(msg:IMessage)=>void, thisArg?:any):void
+    public unlisten(type:string, handler:IMessageHandler, thisArg?:any):void
     {
         var listeners:IMessageData[] = this._listenerDict[type];
         // 检查存在性
@@ -278,8 +284,8 @@ export const core:Core = new Core();
 
 /*********************** 下面是装饰器方法实现 ***********************/
 
-/** injectable，仅生成类型实例并注入 */
-window["injectable"] = function Injectable(cls:IInjectableParams|IConstructor):ClassDecorator|void
+/** injectable，仅生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
+window["injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorator|void
 {
     var params:IInjectableParams = cls as IInjectableParams;
     if(params.type instanceof Function)
@@ -298,7 +304,7 @@ window["injectable"] = function Injectable(cls:IInjectableParams|IConstructor):C
 };
 
 /** model */
-window["model"] = function Model(cls:IConstructor):IConstructor
+window["model"] = function(cls:IConstructor):IConstructor
 {
     // Model先进行托管
     var result:IConstructor = wrapConstruct(cls);
@@ -309,7 +315,7 @@ window["model"] = function Model(cls:IConstructor):IConstructor
 }
 
 /** mediator */
-window["mediator"] = function Mediator(cls:IConstructor):IConstructor
+window["mediator"] = function(cls:IConstructor):IConstructor
 {
     // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)
@@ -318,7 +324,7 @@ window["mediator"] = function Mediator(cls:IConstructor):IConstructor
 }
 
 /** inject */
-window["inject"] = function Inject(cls:IConstructor):PropertyDecorator
+window["inject"] = function(cls:IConstructor):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -335,7 +341,7 @@ window["inject"] = function Inject(cls:IConstructor):PropertyDecorator
 };
 
 /** handler */
-window["handler"] = function Handler(type:string):MethodDecorator
+window["handler"] = function(type:string):MethodDecorator
 {
     return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
     {

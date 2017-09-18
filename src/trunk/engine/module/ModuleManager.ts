@@ -7,6 +7,7 @@ import ResponseData from "../net/ResponseData";
 import {netManager} from "../net/NetManager";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
+import ModuleMessage from "./ModuleMessage"
 
 /**
  * @author Raykid
@@ -125,6 +126,8 @@ export default class ModuleManager
                 this._moduleStack.unshift([cls, target]);
                 // 调用onActivate接口
                 target.onActivate(from && from[0], data);
+                // 派发消息
+                core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
             }, this);
         }
     }
@@ -158,6 +161,8 @@ export default class ModuleManager
             target.onClose(data);
             // 调用onActivate接口
             toModule && toModule.onActivate(cls, data);
+            // 派发消息
+            core.dispatch(ModuleMessage.MODULE_CHANGE, cls, to && to[0]);
         }
         else
         {
@@ -175,7 +180,7 @@ export const moduleManager:ModuleManager = core.getInject(ModuleManager)
 /*********************** 下面是装饰器方法实现 ***********************/
 
 /** module */
-window["module"] = function Module(cls:IConstructor):IConstructor
+window["module"] = function(cls:IConstructor):IConstructor
 {
     // 判断一下Module是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)

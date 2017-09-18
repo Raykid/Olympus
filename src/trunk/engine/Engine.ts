@@ -41,7 +41,7 @@ export default class Engine
         // 监听Bridge初始化完毕事件，显示第一个模块
         core.listen(ViewMessage.BRIDGE_ALL_INIT, onAllBridgesInit);
 
-        function onAllBridgesInit(msg:IMessage):void
+        function onAllBridgesInit():void
         {
             // 注销监听
             core.unlisten(ViewMessage.BRIDGE_ALL_INIT, onAllBridgesInit);
