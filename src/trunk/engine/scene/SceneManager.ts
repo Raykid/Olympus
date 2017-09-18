@@ -37,7 +37,7 @@ export default class SceneManager
      */
     public getCurScene():IScene
     {
-        return this._sceneStack[this._sceneStack.length - 1];
+        return this._sceneStack[0];
     }
 
     /**
@@ -63,7 +63,7 @@ export default class SceneManager
     {
         // 非空判断
         if(scene == null) return;
-        // 如果切入的是第一个场景，则改用pushScene操作
+        // 如果切入的是第一个场景，则改用push操作
         if(this.getActiveCount() == 0)
             return this.push(scene, data);
         // 同步执行
@@ -76,7 +76,7 @@ export default class SceneManager
             data,
             scene.getPolicy(),
             ChangeType.Switch,
-            ()=>this._sceneStack[length - 1] = scene
+            ()=>this._sceneStack[0] = scene
         );
         return scene;
     }
@@ -103,7 +103,7 @@ export default class SceneManager
             data,
             scene.getPolicy(),
             ChangeType.Push,
-            ()=>this._sceneStack.push(scene)
+            ()=>this._sceneStack.unshift(scene)
         );
         return scene;
     }
@@ -111,7 +111,7 @@ export default class SceneManager
     /**
      * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
      * 
-     * @param {IScene} scene 要切换出的场景，仅做验证用，如果当前场景不是传入的场景则不会进行切换弹出操作
+     * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
      * @param {*} [data] 要携带给下一个场景的数据
      * @returns {IScene} 场景本体
      * @memberof SceneManager
@@ -133,17 +133,17 @@ export default class SceneManager
 
     private doPop(scene:IScene, data:any):void
     {
-        // 如果是最后一个场景则什么都不做
+        // 如果没有足够的场景储备则什么都不做
         var length:number = this.getActiveCount();
         if(length <= 1)
         {
-            console.log("已经是最后一个场景，无法执行popScene操作");
+            console.log("场景栈中的场景数量不足，无法执行pop操作");
             // 完成步骤
             notify(SYNC_NAME);
             return;
         }
         // 验证是否是当前场景，不是则直接移除，不使用Policy
-        var to:IScene = this._sceneStack[this._sceneStack.length - 2];
+        var to:IScene = this._sceneStack[1];
         var policy:IScenePolicy = scene.getPolicy();
         var index:number = this._sceneStack.indexOf(scene);
         if(index != length - 1)
@@ -158,7 +158,12 @@ export default class SceneManager
             data,
             policy,
             ChangeType.Pop,
-            ()=>this._sceneStack.splice(index, 1)
+            ()=>{
+                // 移除记录
+                this._sceneStack.splice(index, 1);
+                // 销毁场景
+                scene.dispose();
+            }
         );
     }
     
@@ -199,12 +204,13 @@ export default class SceneManager
         core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, from, to);
         // 调用切换接口
         doFunc.call(policy, from, to, ()=>{
-            complete();
             // 后置处理
             from && from.onAfterOut && from.onAfterOut(to, data);
             to && to.onAfterIn && to.onAfterIn(from, data);
             // 派发事件
             core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, from, to);
+            // 调用回调
+            complete();
             // 完成步骤
             notify(SYNC_NAME);
         });

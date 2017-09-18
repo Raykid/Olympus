@@ -1,3 +1,4 @@
+import IDisposable from "../../core/interfaces/IDisposable";
 import IHasBridge from "../../view/bridge/IHasBridge";
 import IScenePolicy from "./IScenePolicy";
 
@@ -9,7 +10,7 @@ import IScenePolicy from "./IScenePolicy";
  * 
  * 场景接口
 */
-export default interface IScene extends IHasBridge
+export default interface IScene extends IHasBridge, IDisposable
 {
     /** 获取切换策略 */
     getPolicy():IScenePolicy;

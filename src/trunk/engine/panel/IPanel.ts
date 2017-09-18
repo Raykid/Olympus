@@ -1,3 +1,4 @@
+import IDisposable from "../../core/interfaces/IDisposable";
 import IHasBridge from "../../view/bridge/IHasBridge";
 import IPanelPolicy from "./IPanelPolicy";
 
@@ -9,7 +10,7 @@ import IPanelPolicy from "./IPanelPolicy";
  * 
  * 弹窗接口
 */
-export default interface IPanel extends IHasBridge
+export default interface IPanel extends IHasBridge, IDisposable
 {
     /** 获取弹出策略 */
     getPolicy():IPanelPolicy;

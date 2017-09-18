@@ -171,6 +171,8 @@ export default class ModuleManager
             // 调用onClose接口
             target.onClose(data);
         }
+        // 销毁关闭的模块
+        target.dispose();
     }
 }
 /** 再额外导出一个单例 */

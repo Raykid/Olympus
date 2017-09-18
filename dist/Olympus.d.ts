@@ -891,6 +891,7 @@ declare module "engine/panel/IPanelPolicy" {
     }
 }
 declare module "engine/panel/IPanel" {
+    import IDisposable from "core/interfaces/IDisposable";
     import IHasBridge from "view/bridge/IHasBridge";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     /**
@@ -901,7 +902,7 @@ declare module "engine/panel/IPanel" {
      *
      * 弹窗接口
     */
-    export default interface IPanel extends IHasBridge {
+    export default interface IPanel extends IHasBridge, IDisposable {
         /** 获取弹出策略 */
         getPolicy(): IPanelPolicy;
         /** 设置切换策略 */
@@ -1168,6 +1169,7 @@ declare module "engine/scene/IScenePolicy" {
     }
 }
 declare module "engine/scene/IScene" {
+    import IDisposable from "core/interfaces/IDisposable";
     import IHasBridge from "view/bridge/IHasBridge";
     import IScenePolicy from "engine/scene/IScenePolicy";
     /**
@@ -1178,7 +1180,7 @@ declare module "engine/scene/IScene" {
      *
      * 场景接口
     */
-    export default interface IScene extends IHasBridge {
+    export default interface IScene extends IHasBridge, IDisposable {
         /** 获取切换策略 */
         getPolicy(): IScenePolicy;
         /** 设置切换策略 */
@@ -1339,7 +1341,7 @@ declare module "engine/scene/SceneManager" {
         /**
          * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
          *
-         * @param {IScene} scene 要切换出的场景，仅做验证用，如果当前场景不是传入的场景则不会进行切换弹出操作
+         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
          * @param {*} [data] 要携带给下一个场景的数据
          * @returns {IScene} 场景本体
          * @memberof SceneManager

@@ -1281,6 +1281,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "engine/
                     panel.onAfterDrop && panel.onAfterDrop(data, to);
                     // 派发消息
                     Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
+                    // 销毁弹窗
+                    panel.dispose();
                 }, to);
             }
             return panel;
@@ -1538,7 +1540,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
          * @memberof SceneManager
          */
         SceneManager.prototype.getCurScene = function () {
-            return this._sceneStack[this._sceneStack.length - 1];
+            return this._sceneStack[0];
         };
         /**
          * 获取活动场景个数
@@ -1562,11 +1564,11 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
             // 非空判断
             if (scene == null)
                 return;
-            // 如果切入的是第一个场景，则改用pushScene操作
+            // 如果切入的是第一个场景，则改用push操作
             if (this.getActiveCount() == 0)
                 return this.push(scene, data);
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Switch, function () { return _this._sceneStack[length - 1] = scene; });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Switch, function () { return _this._sceneStack[0] = scene; });
             return scene;
         };
         /**
@@ -1583,13 +1585,13 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
             if (scene == null)
                 return scene;
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Push, function () { return _this._sceneStack.push(scene); });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Push, function () { return _this._sceneStack.unshift(scene); });
             return scene;
         };
         /**
          * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
          *
-         * @param {IScene} scene 要切换出的场景，仅做验证用，如果当前场景不是传入的场景则不会进行切换弹出操作
+         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
          * @param {*} [data] 要携带给下一个场景的数据
          * @returns {IScene} 场景本体
          * @memberof SceneManager
@@ -1604,16 +1606,16 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
         };
         SceneManager.prototype.doPop = function (scene, data) {
             var _this = this;
-            // 如果是最后一个场景则什么都不做
+            // 如果没有足够的场景储备则什么都不做
             var length = this.getActiveCount();
             if (length <= 1) {
-                console.log("已经是最后一个场景，无法执行popScene操作");
+                console.log("场景栈中的场景数量不足，无法执行pop操作");
                 // 完成步骤
                 SyncUtil_1.notify(SYNC_NAME);
                 return;
             }
             // 验证是否是当前场景，不是则直接移除，不使用Policy
-            var to = this._sceneStack[this._sceneStack.length - 2];
+            var to = this._sceneStack[1];
             var policy = scene.getPolicy();
             var index = this._sceneStack.indexOf(scene);
             if (index != length - 1) {
@@ -1621,7 +1623,12 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
                 policy = NoneScenePolicy_1.default;
             }
             // 执行切换
-            this.doChange(scene, to, data, policy, ChangeType.Pop, function () { return _this._sceneStack.splice(index, 1); });
+            this.doChange(scene, to, data, policy, ChangeType.Pop, function () {
+                // 移除记录
+                _this._sceneStack.splice(index, 1);
+                // 销毁场景
+                scene.dispose();
+            });
         };
         SceneManager.prototype.doChange = function (from, to, data, policy, type, complete) {
             if (!policy)
@@ -1658,12 +1665,13 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
             Core_6.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
             // 调用切换接口
             doFunc.call(policy, from, to, function () {
-                complete();
                 // 后置处理
                 from && from.onAfterOut && from.onAfterOut(to, data);
                 to && to.onAfterIn && to.onAfterIn(from, data);
                 // 派发事件
                 Core_6.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
+                // 调用回调
+                complete();
                 // 完成步骤
                 SyncUtil_1.notify(SYNC_NAME);
             });
@@ -2221,6 +2229,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils
                 // 调用onClose接口
                 target.onClose(data);
             }
+            // 销毁关闭的模块
+            target.dispose();
         };
         ModuleManager = __decorate([
             injectable

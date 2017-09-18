@@ -88,6 +88,8 @@ export default class PanelManager
                 panel.onAfterDrop && panel.onAfterDrop(data, to);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
+                // 销毁弹窗
+                panel.dispose();
             }, to);
         }
         return panel;
