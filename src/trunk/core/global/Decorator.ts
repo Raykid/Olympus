@@ -25,25 +25,25 @@ declare function injectable(cls:IConstructor):void;
  * 生成一个类型的实例并注册到框架注入器中，注册到指定的类型构造器上
  * 
  * @param {IInjectableParams} params 指定要注册到到的类型构造器
- * @returns {ClassDecorator} 
+ * @returns {*} 
  */
-declare function injectable(params:IInjectableParams):ClassDecorator;
+declare function injectable(params:IInjectableParams):any;
 
 /**
  * 标识当前类型是个Model，Model具有装饰器注入功能，且自身也会被注入(Injectable功能)
  * 
  * @param {IConstructor} cls 要注入的Model类
- * @returns {IConstructor} 替换的构造函数
+ * @returns {*} 替换的构造函数
  */
-declare function model(cls:IConstructor):IConstructor;
+declare function model(cls:IConstructor):any;
 
 /**
  * 标识当前类型是个Mediator，Mediator具有装饰器注入功能，但自身不会被注入
  * 
  * @param {IConstructor} cls 要注入的Mediator类
- * @returns {IConstructor} 替换的构造函数
+ * @returns {*} 替换的构造函数
  */
-declare function mediator(cls:IConstructor):IConstructor;
+declare function mediator(cls:IConstructor):any;
 
 /**
  * 注入一个类型的实例

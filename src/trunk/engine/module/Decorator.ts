@@ -13,6 +13,6 @@
  * 标识当前类型是个Module，Module与Mediator类似，具有装饰器注入功能，但自身不会被注入
  * 
  * @param {IConstructor} cls 要注入的Module类
- * @returns {IConstructor} 替换的构造函数
+ * @returns {*} 替换的构造函数
  */
-declare function module(cls:IConstructor):IConstructor;
+declare function module(cls:IConstructor):any;

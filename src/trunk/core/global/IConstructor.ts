@@ -9,5 +9,4 @@
 interface IConstructor extends Function
 {
     new (...args:any[]):any;
-    [key:string]:any;
 }
