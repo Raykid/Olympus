@@ -1,8 +1,8 @@
-import {core} from "../../core/Core"
-import IDispatcher from "../../core/interfaces/IDispatcher"
-import IMessage from "../../core/message/IMessage"
-import IMediator from "../../view/mediator/IMediator"
-import IBridge from "../../view/bridge/IBridge"
+import {core} from "../../core/Core";
+import IDispatcher from "../../core/interfaces/IDispatcher";
+import IMessage from "../../core/message/IMessage";
+import IMediator from "../../view/mediator/IMediator";
+import IBridge from "../../view/bridge/IBridge";
 
 /**
  * @author Raykid

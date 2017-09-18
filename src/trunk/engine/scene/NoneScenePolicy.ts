@@ -1,5 +1,5 @@
-import IScene from "./IScene"
-import IScenePolicy from "./IScenePolicy"
+import IScene from "./IScene";
+import IScenePolicy from "./IScenePolicy";
 
 /**
  * @author Raykid

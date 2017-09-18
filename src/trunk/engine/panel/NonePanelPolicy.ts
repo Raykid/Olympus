@@ -1,5 +1,5 @@
-import IPanel from "./IPanel"
-import IPanelPolicy from "./IPanelPolicy"
+import IPanel from "./IPanel";
+import IPanelPolicy from "./IPanelPolicy";
 
 /**
  * @author Raykid

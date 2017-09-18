@@ -1,5 +1,5 @@
-import IMessage from "../message/IMessage"
-import Command from "./Command"
+import IMessage from "../message/IMessage";
+import Command from "./Command";
 
 /**
  * @author Raykid

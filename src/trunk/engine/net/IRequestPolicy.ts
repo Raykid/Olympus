@@ -1,4 +1,4 @@
-import RequestData from "./RequestData"
+import RequestData from "./RequestData";
 
 /**
  * @author Raykid

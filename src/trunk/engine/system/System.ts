@@ -1,4 +1,4 @@
-import {core} from "../../core/Core"
+import {core} from "../../core/Core";
 
 /**
  * @author Raykid

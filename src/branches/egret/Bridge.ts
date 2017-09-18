@@ -1,4 +1,4 @@
-import IBridge from "../../trunk/view/bridge/IBridge"
+import IBridge from "../../trunk/view/bridge/IBridge";
 
 /**
  * @author Raykid

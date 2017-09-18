@@ -1,7 +1,7 @@
-import Module from "engine/module/Module"
-import ResponseData from "engine/net/ResponseData"
-import ModuleManager from "engine/module/ModuleManager"
-import SecondModule from "./SecondModule"
+import Module from "engine/module/Module";
+import ModuleManager from "engine/module/ModuleManager";
+import ResponseData from "engine/net/ResponseData";
+import SecondModule from "./SecondModule";
 
 /**
  * @author Raykid

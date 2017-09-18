@@ -1,7 +1,7 @@
-import {engine} from "./engine/Engine"
-import IModuleConstructor from "./engine/module/IModuleConstructor"
-import {view} from "./view/View"
-import IBridge from "./view/bridge/IBridge"
+import {engine} from "./engine/Engine";
+import IModuleConstructor from "./engine/module/IModuleConstructor";
+import {view} from "./view/View";
+import IBridge from "./view/bridge/IBridge";
 
 /**
  * @author Raykid

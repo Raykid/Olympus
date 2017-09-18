@@ -1,5 +1,5 @@
-import IHasBridge from "../bridge/IHasBridge"
-import IDisposable from "../../core/interfaces/IDisposable"
+import IHasBridge from "../bridge/IHasBridge";
+import IDisposable from "../../core/interfaces/IDisposable";
 
 /**
  * @author Raykid

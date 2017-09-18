@@ -1,4 +1,4 @@
-import IPanel from "./IPanel"
+import IPanel from "./IPanel";
 
 /**
  * @author Raykid

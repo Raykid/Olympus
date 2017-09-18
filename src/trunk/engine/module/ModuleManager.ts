@@ -1,12 +1,12 @@
 /// <reference path="./Decorator.ts"/>
 
-import {core} from "../../core/Core"
-import {wrapConstruct} from "../../utils/ConstructUtil"
-import RequestData from "../net/RequestData"
-import ResponseData from "../net/ResponseData"
-import {netManager} from "../net/NetManager"
-import IModule from "./IModule"
-import IModuleConstructor from "./IModuleConstructor"
+import {core} from "../../core/Core";
+import {wrapConstruct} from "../../utils/ConstructUtil";
+import RequestData from "../net/RequestData";
+import ResponseData from "../net/ResponseData";
+import {netManager} from "../net/NetManager";
+import IModule from "./IModule";
+import IModuleConstructor from "./IModuleConstructor";
 
 /**
  * @author Raykid

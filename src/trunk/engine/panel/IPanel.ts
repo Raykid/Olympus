@@ -1,5 +1,5 @@
-import IHasBridge from "../../view/bridge/IHasBridge"
-import IPanelPolicy from "./IPanelPolicy"
+import IHasBridge from "../../view/bridge/IHasBridge";
+import IPanelPolicy from "./IPanelPolicy";
 
 /**
  * @author Raykid

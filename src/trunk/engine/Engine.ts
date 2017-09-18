@@ -1,22 +1,22 @@
-import {core} from "../core/Core"
-import IMessage from "../core/message/IMessage"
-import ViewMessage from "../view/message/ViewMessage"
-import System from "./system/System"
-import Model from "./model/Model"
-import Mediator from "./mediator/Mediator"
-import PanelManager from "./panel/PanelManager"
-import PanelMediator from "./panel/PanelMediator"
-import SceneManager from "./scene/SceneManager"
-import SceneMediator from "./scene/SceneMediator"
-import ModuleManager, {moduleManager} from "./module/ModuleManager"
-import IModuleConstructor from "./module/IModuleConstructor"
-import Module from "./module/Module"
-import Explorer from "./env/Explorer"
-import External from "./env/External"
-import Hash from "./env/Hash"
-import Query from "./env/Query"
-import NetManager from "./net/NetManager"
-import HTTPRequestPolicy from "./net/policies/HTTPRequestPolicy"
+import {core} from "../core/Core";
+import IMessage from "../core/message/IMessage";
+import ViewMessage from "../view/message/ViewMessage";
+import System from "./system/System";
+import Model from "./model/Model";
+import Mediator from "./mediator/Mediator";
+import PanelManager from "./panel/PanelManager";
+import PanelMediator from "./panel/PanelMediator";
+import SceneManager from "./scene/SceneManager";
+import SceneMediator from "./scene/SceneMediator";
+import ModuleManager, {moduleManager} from "./module/ModuleManager";
+import IModuleConstructor from "./module/IModuleConstructor";
+import Module from "./module/Module";
+import Explorer from "./env/Explorer";
+import External from "./env/External";
+import Hash from "./env/Hash";
+import Query from "./env/Query";
+import NetManager from "./net/NetManager";
+import HTTPRequestPolicy from "./net/policies/HTTPRequestPolicy";
 
 /**
  * @author Raykid

@@ -1,7 +1,7 @@
-import IDisposable from "../../core/interfaces/IDisposable"
-import RequestData from "../net/RequestData"
-import ResponseData from "../net/ResponseData"
-import IModuleConstructor from "./IModuleConstructor"
+import IDisposable from "../../core/interfaces/IDisposable";
+import RequestData from "../net/RequestData";
+import ResponseData from "../net/ResponseData";
+import IModuleConstructor from "./IModuleConstructor";
 
 /**
  * @author Raykid

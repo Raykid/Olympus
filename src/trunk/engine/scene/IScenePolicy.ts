@@ -1,4 +1,4 @@
-import IScene from "./IScene"
+import IScene from "./IScene";
 
 /**
  * @author Raykid

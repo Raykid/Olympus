@@ -1,5 +1,5 @@
-import Module from "engine/module/Module"
-import ResponseData from "engine/net/ResponseData"
+import Module from "engine/module/Module";
+import ResponseData from "engine/net/ResponseData";
 
 /**
  * @author Raykid

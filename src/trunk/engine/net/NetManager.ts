@@ -1,13 +1,13 @@
 /// <reference path="./Decorator.ts"/>
 
-import {core} from "../../core/Core"
-import Message from "../../core/message/Message"
-import CoreMessage from "../../core/message/CoreMessage"
-import {extendObject} from "../../utils/ObjectUtil"
-import {listenConstruct, listenDispose} from "../../utils/ConstructUtil"
-import RequestData, {commonData} from "./RequestData"
-import ResponseData, {IResponseDataConstructor} from "./ResponseData"
-import NetMessage from "./NetMessage"
+import {core} from "../../core/Core";
+import Message from "../../core/message/Message";
+import CoreMessage from "../../core/message/CoreMessage";
+import {extendObject} from "../../utils/ObjectUtil";
+import {listenConstruct, listenDispose} from "../../utils/ConstructUtil";
+import RequestData, {commonData} from "./RequestData";
+import ResponseData, {IResponseDataConstructor} from "./ResponseData";
+import NetMessage from "./NetMessage";
 
 /**
  * @author Raykid

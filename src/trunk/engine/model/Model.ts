@@ -1,6 +1,6 @@
-import {core} from "../../core/Core"
-import IMessage from "../../core/message/Message"
-import IDispatcher from "../../core/interfaces/IDispatcher"
+import {core} from "../../core/Core";
+import IMessage from "../../core/message/Message";
+import IDispatcher from "../../core/interfaces/IDispatcher";
 
 /**
  * @author Raykid

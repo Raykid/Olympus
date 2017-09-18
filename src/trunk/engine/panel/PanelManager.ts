@@ -1,9 +1,9 @@
-import {core} from "../../core/Core"
-import IConstructor from "../../core/interfaces/IConstructor"
-import IPanel from "./IPanel"
-import IPanelPolicy from "./IPanelPolicy"
-import none from "./NonePanelPolicy"
-import PanelMessage from "./PanelMessage"
+import {core} from "../../core/Core";
+import IConstructor from "../../core/interfaces/IConstructor";
+import IPanel from "./IPanel";
+import IPanelPolicy from "./IPanelPolicy";
+import none from "./NonePanelPolicy";
+import PanelMessage from "./PanelMessage";
 
 /**
  * @author Raykid

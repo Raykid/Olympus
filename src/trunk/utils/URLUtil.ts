@@ -1,4 +1,4 @@
-import {extendObject} from "./ObjectUtil"
+import {extendObject} from "./ObjectUtil";
 
 /**
  * 规整url

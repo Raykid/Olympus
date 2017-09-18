@@ -1,16 +1,16 @@
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
 
-import {listenConstruct, listenDispose, wrapConstruct} from "../utils/ConstructUtil"
-import Dictionary from "../utils/Dictionary"
-import IDisposable from "./interfaces/IDisposable"
-import IConstructor from "./interfaces/IConstructor"
-import IMessage from "./message/IMessage"
-import Message from "./message/Message"
-import CoreMessage from "./message/CoreMessage"
-import ICommandConstructor from "./command/ICommandConstructor"
-import Command from "./command/Command"
-import IDispatcher from "./interfaces/IDispatcher"
+import {listenConstruct, listenDispose, wrapConstruct} from "../utils/ConstructUtil";
+import Dictionary from "../utils/Dictionary";
+import IDisposable from "./interfaces/IDisposable";
+import IConstructor from "./interfaces/IConstructor";
+import IMessage from "./message/IMessage";
+import Message from "./message/Message";
+import CoreMessage from "./message/CoreMessage";
+import ICommandConstructor from "./command/ICommandConstructor";
+import Command from "./command/Command";
+import IDispatcher from "./interfaces/IDispatcher";
 
 /**
  * @author Raykid

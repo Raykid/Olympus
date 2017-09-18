@@ -1,5 +1,5 @@
-import {core} from "../Core"
-import IMessage from "../message/IMessage"
+import {core} from "../Core";
+import IMessage from "../message/IMessage";
 
 /**
  * @author Raykid

@@ -1,5 +1,5 @@
-import IHasBridge from "../../view/bridge/IHasBridge"
-import IScenePolicy from "./IScenePolicy"
+import IHasBridge from "../../view/bridge/IHasBridge";
+import IScenePolicy from "./IScenePolicy";
 
 /**
  * @author Raykid

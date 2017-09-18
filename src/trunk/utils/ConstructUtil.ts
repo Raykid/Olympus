@@ -1,6 +1,6 @@
-import IConstructor from "../core/interfaces/IConstructor"
-import {extendsClass} from "../utils/ObjectUtil"
-import Dictionary from "../utils/Dictionary"
+import IConstructor from "../core/interfaces/IConstructor";
+import {extendsClass} from "../utils/ObjectUtil";
+import Dictionary from "../utils/Dictionary";
 
 /**
  * @author Raykid

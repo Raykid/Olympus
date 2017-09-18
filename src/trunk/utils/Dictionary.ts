@@ -1,4 +1,4 @@
-import {getObjectHash} from "./ObjectUtil"
+import {getObjectHash} from "./ObjectUtil";
 
 /**
  * @author Raykid

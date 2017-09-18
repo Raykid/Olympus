@@ -1,9 +1,9 @@
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
 
-import startup from "Olympus"
-import DOMBridge from "branches/dom/Bridge"
-import FirstModule from "./modules/FirstModule"
+import startup from "Olympus";
+import DOMBridge from "branches/dom/Bridge";
+import FirstModule from "./modules/FirstModule";
 
 
 /**

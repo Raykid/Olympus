@@ -1,5 +1,5 @@
-import MessageType from "./DataType"
-import RequestData from "./RequestData"
+import MessageType from "./DataType";
+import RequestData from "./RequestData";
 
 /**
  * @author Raykid
