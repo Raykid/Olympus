@@ -1,3 +1,5 @@
+/// <reference path="../../core/global/IConstructor.ts"/>
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -6,11 +8,6 @@
  * 
  * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
 */
-
-interface IConstructor extends Function
-{
-    new (...args:any[]):any;
-}
 
 /**
  * 通讯消息返回处理函数的装饰器方法

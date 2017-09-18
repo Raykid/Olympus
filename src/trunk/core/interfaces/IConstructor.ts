@@ -1,3 +1,5 @@
+/// <reference path="../../core/global/IConstructor.ts"/>
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -6,7 +8,4 @@
  * 
  * 任意构造器接口
 */
-export default interface IConstructor extends Function
-{
-    new (...args:any[]):any;
-}
+export default IConstructor;

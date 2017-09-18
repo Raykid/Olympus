@@ -30,14 +30,8 @@ if (Array.prototype.hasOwnProperty("findIndex")) {
         Object.defineProperty(Array.prototype, "findIndex", desc);
     }
 }
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-06
- * @modify date 2017-09-06
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
+/// <reference path="../../core/global/IConstructor.ts"/>
+/// <reference path="../../core/global/IConstructor.ts"/>
 define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1748,14 +1742,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-13
- * @modify date 2017-09-13
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
+/// <reference path="../../core/global/IConstructor.ts"/>
 define("engine/net/IRequestPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1830,14 +1817,7 @@ define("engine/net/RequestData", ["require", "exports"], function (require, expo
     /** 导出公共消息参数对象 */
     exports.commonData = {};
 });
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-13
- * @modify date 2017-09-13
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
+/// <reference path="../../core/global/IConstructor.ts"/>
 define("engine/net/NetMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
