@@ -17,42 +17,42 @@ interface IInjectableParams {
  *
  * @param {IConstructor} cls 要注入的类
  */
-declare function Injectable(cls: IConstructor): void;
+declare function injectable(cls: IConstructor): void;
 /**
  * 标识当前类型是个Model，Model具有装饰器注入功能，且自身也会被注入(Injectable功能)
  *
  * @param {IConstructor} cls 要注入的Model类
  * @returns {*}
  */
-declare function Model(cls: IConstructor): IConstructor;
+declare function model(cls: IConstructor): IConstructor;
 /**
  * 标识当前类型是个Mediator，Mediator具有装饰器注入功能，但自身不会被注入
  *
  * @param {IConstructor} cls 要注入的Mediator类
  * @returns {*}
  */
-declare function Mediator(cls: IConstructor): IConstructor;
+declare function mediator(cls: IConstructor): IConstructor;
 /**
  * 生成一个类型的实例并注册到框架注入器中，注册到指定的类型构造器上
  *
  * @param {IInjectableParams} params 指定要注册到到的类型构造器
  * @returns {ClassDecorator}
  */
-declare function Injectable(params: IInjectableParams): ClassDecorator;
+declare function injectable(params: IInjectableParams): ClassDecorator;
 /**
  * 注入一个类型的实例
  *
  * @param {IConstructor} cls 类型构造器
  * @returns {PropertyDecorator}
  */
-declare function Inject(cls: IConstructor): PropertyDecorator;
+declare function inject(cls: IConstructor): PropertyDecorator;
 /**
  * 消息处理函数的装饰器方法
  *
  * @param {string} type 监听的消息类型
  * @returns {MethodDecorator}
  */
-declare function Handler(type: string): MethodDecorator;
+declare function handler(type: string): MethodDecorator;
 declare module "core/interfaces/IConstructor" {
     /**
      * @author Raykid
@@ -122,6 +122,14 @@ declare module "utils/ObjectUtil" {
      * @returns {string} 哈希值
      */
     export function getObjectHash(target: any): string;
+    /**
+     * 获取多个对象的哈希字符串，会对每个对象调用getObjectHash生成单个哈希值，并用|连接
+     *
+     * @export
+     * @param {...any[]} targets 希望获取哈希值的对象列表
+     * @returns {string} 多个对象共同作用下的哈希值
+     */
+    export function getObjectHashs(...targets: any[]): string;
 }
 declare module "utils/Dictionary" {
     /**
@@ -496,6 +504,42 @@ declare module "core/Core" {
     /** 再额外导出一个单例 */
     export const core: Core;
 }
+declare module "view/message/ViewMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 表现层消息
+    */
+    export default class ViewMessage {
+        /**
+         * 初始化表现层实例前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static BRIDGE_BEFORE_INIT: string;
+        /**
+         * 初始化表现层实例后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static BRIDGE_AFTER_INIT: string;
+        /**
+         * 所有表现层实例都初始化完毕的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static BRIDGE_ALL_INIT: string;
+    }
+}
 declare module "engine/system/System" {
     /**
      * @author Raykid
@@ -632,7 +676,7 @@ declare module "view/bridge/IBridge" {
          * @param {()=>void} complete 初始化完毕后的回调
          * @memberof IBridge
          */
-        init?(complete: () => void): void;
+        init?(complete: (bridge: IBridge) => void): void;
     }
 }
 declare module "view/bridge/IHasBridge" {
@@ -1376,7 +1420,7 @@ interface IConstructor extends Function {
  * @param {IConstructor} cls 要注入的Module类
  * @returns {*}
  */
-declare function Module(cls: IConstructor): IConstructor;
+declare function module(cls: IConstructor): IConstructor;
 declare module "engine/net/IRequestPolicy" {
     import RequestData from "engine/net/RequestData";
     /**
@@ -1567,7 +1611,7 @@ interface IConstructor extends Function {
  * @param {(IConstructor|string)} clsOrType 消息返回体构造器或类型字符串
  * @returns {MethodDecorator}
  */
-declare function Result(clsOrType: IConstructor | string): MethodDecorator;
+declare function result(clsOrType: IConstructor | string): MethodDecorator;
 declare module "engine/net/NetMessage" {
     /**
      * @author Raykid
@@ -1654,12 +1698,12 @@ declare module "engine/net/NetManager" {
         /**
          * 发送多条请求，并且等待返回结果（如果有的话），调用回调
          *
-         * @param {RequestData[]} requests 要发送的请求列表
+         * @param {RequestData[]} [requests 要发送的请求列表
          * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
          * @param {*} [thisArg] this指向
          * @memberof NetManager
          */
-        sendMultiRequests(requests: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any): void;
+        sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any): void;
         /** 这里导出不希望用户使用的方法，供框架内使用 */
         __onResponse(type: string, result: any, request?: RequestData): void | never;
         __onError(err: Error, request?: RequestData): void;
@@ -2213,42 +2257,27 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
     export const httpRequestPolicy: HTTPRequestPolicy;
 }
 declare module "engine/Engine" {
-}
-declare module "view/message/ViewMessage" {
+    import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-09-06
      * @modify date 2017-09-06
      *
-     * 表现层消息
+     * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
+     * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
     */
-    export default class ViewMessage {
+    export default class Engine {
         /**
-         * 初始化表现层实例前的消息
+         * 注册首个模块
          *
-         * @static
-         * @type {string}
-         * @memberof ViewMessage
+         * @param {IModuleConstructor} cls
+         * @memberof Engine
          */
-        static BRIDGE_BEFORE_INIT: string;
-        /**
-         * 初始化表现层实例后的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ViewMessage
-         */
-        static BRIDGE_AFTER_INIT: string;
-        /**
-         * 所有表现层实例都初始化完毕的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ViewMessage
-         */
-        static BRIDGE_ALL_INIT: string;
+        registerFirstModule(cls: IModuleConstructor): void;
     }
+    /** 再额外导出一个单例 */
+    export const engine: Engine;
 }
 declare module "view/View" {
     import IBridge from "view/bridge/IBridge";
@@ -2281,4 +2310,24 @@ declare module "view/View" {
     }
     /** 再额外导出一个单例 */
     export const view: View;
+}
+declare module "Olympus" {
+    import IModuleConstructor from "engine/module/IModuleConstructor";
+    import IBridge from "view/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * Olympus框架便捷启动模块
+    */
+    /**
+     * 启动Olympus框架
+     *
+     * @export
+     * @param {IModuleConstructor} firstModule 应用程序的首个模块
+     * @param {...IBridge[]} bridges 所有可能用到的表现层桥
+     */
+    export default function startup(firstModule: IModuleConstructor, ...bridges: IBridge[]): void;
 }

@@ -1,11 +1,90 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+define("modules/SecondModule", ["require", "exports", "engine/module/Module"], function (require, exports, Module_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 测试第二个模块
+    */
+    var SecondModule = /** @class */ (function (_super) {
+        __extends(SecondModule, _super);
+        function SecondModule() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        SecondModule.prototype.onOpen = function (data) {
+            console.log("second module open");
+        };
+        SecondModule.prototype.onGetResponses = function (responses) {
+            console.log("second module gotResponse");
+        };
+        SecondModule.prototype.onActivate = function (from, data) {
+            console.log("second module activate");
+        };
+        return SecondModule;
+    }(Module_1.default));
+    exports.default = SecondModule;
+});
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 测试首个模块
+    */
+    var FirstModule = /** @class */ (function (_super) {
+        __extends(FirstModule, _super);
+        function FirstModule() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        FirstModule.prototype.onOpen = function (data) {
+            console.log("first module open");
+        };
+        FirstModule.prototype.onGetResponses = function (responses) {
+            console.log("first module gotResponse");
+        };
+        FirstModule.prototype.onActivate = function (from, data) {
+            var _this = this;
+            console.log("first module activate");
+            setTimeout(function () {
+                _this.moduleManager.open(SecondModule_1.default);
+            }, 1000);
+        };
+        __decorate([
+            inject(ModuleManager_1.default)
+        ], FirstModule.prototype, "moduleManager", void 0);
+        FirstModule = __decorate([
+            module
+        ], FirstModule);
+        return FirstModule;
+    }(Module_2.default));
+    exports.default = FirstModule;
+});
 /// <reference path="../dist/Olympus.d.ts"/>
-define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Explorer", "engine/env/Query", "engine/env/External", "engine/env/Hash", "engine/panel/PanelManager", "engine/scene/SceneManager", "engine/module/ModuleManager", "engine/net/NetManager", "engine/system/System"], function (require, exports, Core_1, View_1, Explorer_1, Query_1, External_1, Hash_1, PanelManager_1, SceneManager_1, ModuleManager_1, NetManager_1, System_1) {
+/// <reference path="../dist/DOM.d.ts"/>
+define("main", ["require", "exports", "Olympus", "branches/dom/Bridge", "modules/FirstModule"], function (require, exports, Olympus_1, Bridge_1, FirstModule_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -16,80 +95,6 @@ define("main", ["require", "exports", "core/Core", "view/View", "engine/env/Expl
      *
      * 测试项目
     */
-    Core_1.core.listen("fuck", handler, "this");
-    Core_1.core.dispatch("fuck");
-    function handler(msg) {
-        Core_1.core.unlisten("fuck", handler, this);
-    }
-    var Fuck = (function () {
-        function Fuck() {
-        }
-        __decorate([
-            Inject(Core_1.default)
-        ], Fuck.prototype, "core", void 0);
-        Fuck = __decorate([
-            Model
-        ], Fuck);
-        return Fuck;
-    }());
-    var Fuck2 = (function () {
-        function Fuck2() {
-        }
-        Fuck2.prototype.shit = function () {
-            console.log(this.fuck);
-        };
-        Fuck2.prototype.testHandler = function () {
-            console.log("测试Handler注入成功！");
-        };
-        __decorate([
-            Inject(Fuck)
-        ], Fuck2.prototype, "fuck", void 0);
-        __decorate([
-            Inject(Core_1.default)
-        ], Fuck2.prototype, "core", void 0);
-        __decorate([
-            Inject(View_1.default)
-        ], Fuck2.prototype, "view", void 0);
-        __decorate([
-            Inject(Explorer_1.default)
-        ], Fuck2.prototype, "explorer", void 0);
-        __decorate([
-            Inject(Query_1.default)
-        ], Fuck2.prototype, "query", void 0);
-        __decorate([
-            Inject(External_1.default)
-        ], Fuck2.prototype, "external", void 0);
-        __decorate([
-            Inject(Hash_1.default)
-        ], Fuck2.prototype, "hash", void 0);
-        __decorate([
-            Inject(PanelManager_1.default)
-        ], Fuck2.prototype, "panelManager", void 0);
-        __decorate([
-            Inject(SceneManager_1.default)
-        ], Fuck2.prototype, "sceneManager", void 0);
-        __decorate([
-            Inject(ModuleManager_1.default)
-        ], Fuck2.prototype, "moduleManager", void 0);
-        __decorate([
-            Inject(NetManager_1.default)
-        ], Fuck2.prototype, "netManager", void 0);
-        __decorate([
-            Inject(System_1.default)
-        ], Fuck2.prototype, "system", void 0);
-        __decorate([
-            Handler("fuck")
-        ], Fuck2.prototype, "testHandler", null);
-        Fuck2 = __decorate([
-            Mediator
-        ], Fuck2);
-        return Fuck2;
-    }());
-    var fuck2 = new Fuck2();
-    fuck2.shit();
-    console.log(fuck2);
-    window["fuck2"] = fuck2;
-    window["Fuck2"] = Fuck2;
-    Core_1.core.dispatch("fuck");
+    Olympus_1.default(FirstModule_1.default, new Bridge_1.default("rootDOM"));
 });
 //# sourceMappingURL=main.js.map
