@@ -1,0 +1,3 @@
+[submodule "src/branches/egret/egret-core"]
+	path = src/branches/egret/egret-core
+	url = https://github.com/egret-labs/egret-core.git
