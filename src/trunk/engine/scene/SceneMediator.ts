@@ -1,5 +1,4 @@
 import Mediator from "../mediator/Mediator";
-import IBridge from "../../view/bridge/IBridge";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import { sceneManager } from "./SceneManager";
@@ -14,9 +13,9 @@ import { sceneManager } from "./SceneManager";
 */
 export default abstract class SceneMediator extends Mediator implements IScene
 {
-    public constructor(bridge:IBridge, skin?:any, policy?:IScenePolicy)
+    public constructor(skin?:any, policy?:IScenePolicy)
     {
-        super(bridge, skin);
+        super(skin);
         this.setPolicy(policy);
     }
     

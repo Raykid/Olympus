@@ -980,10 +980,9 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
      * 组件界面中介者基类
     */
     var Mediator = /** @class */ (function () {
-        function Mediator(bridge, skin) {
+        function Mediator(skin) {
             this._isDestroyed = false;
             this._listeners = [];
-            this._bridge = bridge;
             if (skin)
                 this.setSkin(skin);
         }
@@ -995,6 +994,15 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          */
         Mediator.prototype.getBridge = function () {
             return this._bridge;
+        };
+        /**
+         * 设置表现层桥
+         *
+         * @param {IBridge} value 表现层桥
+         * @memberof Mediator
+         */
+        Mediator.prototype.setBridge = function (value) {
+            this._bridge = value;
         };
         /**
          * 获取中介者是否已被销毁
@@ -1095,6 +1103,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
         Mediator.prototype.dispose = function () {
             // 注销事件监听
             this.unmapAllListeners();
+            // 移除表现层桥
+            this._bridge = null;
             // 移除皮肤
             this._skin = null;
             // 设置已被销毁
@@ -1299,8 +1309,8 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
     */
     var PanelMediator = /** @class */ (function (_super) {
         __extends(PanelMediator, _super);
-        function PanelMediator(bridge, skin, policy) {
-            var _this = _super.call(this, bridge, skin) || this;
+        function PanelMediator(skin, policy) {
+            var _this = _super.call(this, skin) || this;
             _this.setPolicy(policy);
             return _this;
         }
@@ -1688,8 +1698,8 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     */
     var SceneMediator = /** @class */ (function (_super) {
         __extends(SceneMediator, _super);
-        function SceneMediator(bridge, skin, policy) {
-            var _this = _super.call(this, bridge, skin) || this;
+        function SceneMediator(skin, policy) {
+            var _this = _super.call(this, skin) || this;
             _this.setPolicy(policy);
             return _this;
         }
@@ -2158,6 +2168,9 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     this._moduleStack.unshift([cls, target]);
                     // 调用onActivate接口
                     target.onActivate(from && from[0], data);
+                    // 如果replace是true，则关掉上一个模块
+                    if (replace)
+                        this.close(from[0]);
                     // 派发消息
                     Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
                 }, this);
@@ -3037,100 +3050,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
-define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager"], function (require, exports, Core_15, ConstructUtil_2, NetManager_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 负责注入的模块
-    */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    function ModelClass(cls) {
-        // Model先进行托管
-        var result = ConstructUtil_2.wrapConstruct(cls);
-        // 然后要注入新生成的类
-        Core_15.core.mapInject(result);
-        // 返回结果
-        return result;
-    }
-    exports.ModelClass = ModelClass;
-    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    function MediatorClass(cls) {
-        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-        return ConstructUtil_2.wrapConstruct(cls);
-    }
-    exports.MediatorClass = MediatorClass;
-    /** 定义模块，支持实例注入 */
-    function ModuleClass(cls) {
-        // 判断一下Module是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-        return ConstructUtil_2.wrapConstruct(cls);
-    }
-    exports.ModuleClass = ModuleClass;
-    /** 处理通讯消息返回 */
-    function ResponseHandler(clsOrType) {
-        return function (prototype, propertyKey, descriptor) {
-            // 监听实例化
-            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
-                NetManager_3.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-                NetManager_3.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-            });
-        };
-    }
-    exports.ResponseHandler = ResponseHandler;
-    ;
-});
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage", "engine/module/ModuleManager"], function (require, exports, Core_16, Injector_10, ViewMessage_1, ModuleManager_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
-     * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
-    */
-    var Engine = /** @class */ (function () {
-        function Engine() {
-        }
-        /**
-         * 注册首个模块
-         *
-         * @param {IModuleConstructor} cls
-         * @memberof Engine
-         */
-        Engine.prototype.registerFirstModule = function (cls) {
-            // 监听Bridge初始化完毕事件，显示第一个模块
-            Core_16.core.listen(ViewMessage_1.default.BRIDGE_ALL_INIT, onAllBridgesInit);
-            function onAllBridgesInit() {
-                // 注销监听
-                Core_16.core.unlisten(ViewMessage_1.default.BRIDGE_ALL_INIT, onAllBridgesInit);
-                // 打开模块
-                ModuleManager_1.moduleManager.open(cls);
-            }
-        };
-        Engine = __decorate([
-            Injector_10.Injectable
-        ], Engine);
-        return Engine;
-    }());
-    exports.default = Engine;
-    /** 再额外导出一个单例 */
-    exports.engine = Core_16.core.getInject(Engine);
-});
-define("view/View", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage"], function (require, exports, Core_17, Injector_11, ViewMessage_2) {
+define("view/View", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage"], function (require, exports, Core_15, Injector_10, ViewMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3155,6 +3075,24 @@ define("view/View", ["require", "exports", "core/Core", "core/injector/Injector"
         View.prototype.getBridge = function (type) {
             var data = this._bridgeDict[type];
             return (data && data[0]);
+        };
+        /**
+         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
+         *
+         * @param {*} skin 皮肤实例
+         * @returns {IBridge|null} 皮肤所属表现层桥实例
+         * @memberof View
+         */
+        View.prototype.getBridgeBySkin = function (skin) {
+            if (skin) {
+                // 遍历所有已注册的表现层桥进行判断
+                for (var type in this._bridgeDict) {
+                    var bridge = this._bridgeDict[type][0];
+                    if (bridge.isMySkin(skin))
+                        return bridge;
+                }
+            }
+            return null;
         };
         /**
          * 注册一个表现层桥实例到框架中
@@ -3188,7 +3126,7 @@ define("view/View", ["require", "exports", "core/Core", "core/injector/Injector"
                         var data = [bridge, false];
                         this._bridgeDict[type] = data;
                         // 派发消息
-                        Core_17.core.dispatch(ViewMessage_2.default.BRIDGE_BEFORE_INIT, bridge);
+                        Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
                         // 初始化该表现层实例
                         if (bridge.init)
                             bridge.init(afterInitBridge);
@@ -3202,7 +3140,7 @@ define("view/View", ["require", "exports", "core/Core", "core/injector/Injector"
             }
             function afterInitBridge(bridge) {
                 // 派发消息
-                Core_17.core.dispatch(ViewMessage_2.default.BRIDGE_AFTER_INIT, bridge);
+                Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_AFTER_INIT, bridge);
                 // 设置初始化完毕属性
                 var data = self._bridgeDict[bridge.getType()];
                 data[1] = true;
@@ -3217,18 +3155,164 @@ define("view/View", ["require", "exports", "core/Core", "core/injector/Injector"
                 allInited = allInited && data[1];
             }
             if (allInited)
-                Core_17.core.dispatch(ViewMessage_2.default.BRIDGE_ALL_INIT);
+                Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_ALL_INIT);
         };
         View = __decorate([
-            Injector_11.Injectable
+            Injector_10.Injectable
         ], View);
         return View;
     }());
     exports.default = View;
     /** 再额外导出一个单例 */
-    exports.view = Core_17.core.getInject(View);
+    exports.view = Core_15.core.getInject(View);
 });
-define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function (require, exports, Engine_1, View_1) {
+define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "utils/Dictionary", "engine/net/NetManager", "view/View"], function (require, exports, Core_16, ConstructUtil_2, Dictionary_3, NetManager_3, View_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 负责注入的模块
+    */
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    function ModelClass(cls) {
+        // Model先进行托管
+        var result = ConstructUtil_2.wrapConstruct(cls);
+        // 然后要注入新生成的类
+        Core_16.core.mapInject(result);
+        // 返回结果
+        return result;
+    }
+    exports.ModelClass = ModelClass;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    function MediatorClass(cls) {
+        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+        // 替换setSkin方法
+        var $setSkin = cls.prototype.setSkin;
+        if ($setSkin instanceof Function) {
+            cls.prototype.setSkin = function (skin) {
+                // 根据skin类型选取表现层桥
+                this.setBridge(View_1.view.getBridgeBySkin(skin));
+                // 调用原始方法
+                $setSkin.apply(this, arguments);
+            };
+        }
+        return ConstructUtil_2.wrapConstruct(cls);
+    }
+    exports.MediatorClass = MediatorClass;
+    /** 定义模块，支持实例注入 */
+    function ModuleClass(cls) {
+        // 判断一下Module是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
+        return ConstructUtil_2.wrapConstruct(cls);
+    }
+    exports.ModuleClass = ModuleClass;
+    /** 处理通讯消息返回 */
+    function ResponseHandler(clsOrType) {
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
+                NetManager_3.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+                NetManager_3.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
+            });
+        };
+    }
+    exports.ResponseHandler = ResponseHandler;
+    ;
+    var _mediatorDict = new Dictionary_3.default();
+    /** 在模块内托管中介者 */
+    function DelegateMediator(prototype, propertyKey) {
+        var mediator;
+        return {
+            configurable: true,
+            enumerable: true,
+            get: function () {
+                return mediator;
+            },
+            set: function (value) {
+                var mediators = _mediatorDict.get(this);
+                if (!mediators) {
+                    _mediatorDict.set(this, mediators = []);
+                    // 替换模块的dispose方法
+                    var $dispose = this.dispose;
+                    this.dispose = function () {
+                        // 将所有已托管的中介者同时销毁
+                        for (var i = 0, len = mediators.length; i < len; i++) {
+                            mediators.pop().dispose();
+                        }
+                        // 销毁自身
+                        $dispose.call(this);
+                    };
+                }
+                // 取消托管中介者
+                if (mediator) {
+                    var index = mediators.indexOf(mediator);
+                    if (index >= 0)
+                        mediators.splice(index, 1);
+                }
+                // 设置中介者
+                mediator = value;
+                // 托管新的中介者
+                if (mediator) {
+                    if (mediators.indexOf(mediator) < 0)
+                        mediators.push(mediator);
+                }
+            }
+        };
+    }
+    exports.DelegateMediator = DelegateMediator;
+    ;
+});
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage", "engine/module/ModuleManager"], function (require, exports, Core_17, Injector_11, ViewMessage_2, ModuleManager_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
+     * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
+    */
+    var Engine = /** @class */ (function () {
+        function Engine() {
+        }
+        /**
+         * 注册首个模块
+         *
+         * @param {IModuleConstructor} cls
+         * @memberof Engine
+         */
+        Engine.prototype.registerFirstModule = function (cls) {
+            // 监听Bridge初始化完毕事件，显示第一个模块
+            Core_17.core.listen(ViewMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
+            function onAllBridgesInit() {
+                // 注销监听
+                Core_17.core.unlisten(ViewMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
+                // 打开模块
+                ModuleManager_1.moduleManager.open(cls);
+            }
+        };
+        Engine = __decorate([
+            Injector_11.Injectable
+        ], Engine);
+        return Engine;
+    }());
+    exports.default = Engine;
+    /** 再额外导出一个单例 */
+    exports.engine = Core_17.core.getInject(Engine);
+});
+define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function (require, exports, Engine_1, View_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3258,7 +3342,7 @@ define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function
             // 注册首个模块
             Engine_1.engine.registerFirstModule(firstModule);
             // 注册并初始化表现层桥实例
-            View_1.view.registerBridge.apply(View_1.view, bridges);
+            View_2.view.registerBridge.apply(View_2.view, bridges);
         };
         return Olympus;
     }());

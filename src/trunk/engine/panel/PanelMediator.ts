@@ -1,5 +1,4 @@
 import Mediator from "../mediator/Mediator";
-import IBridge from "../../view/bridge/IBridge";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 import { panelManager } from "./PanelManager";
@@ -14,9 +13,9 @@ import { panelManager } from "./PanelManager";
 */
 export default abstract class PanelMediator extends Mediator implements IPanel
 {
-    public constructor(bridge:IBridge, skin?:any, policy?:IPanelPolicy)
+    public constructor(skin?:any, policy?:IPanelPolicy)
     {
-        super(bridge, skin);
+        super(skin);
         this.setPolicy(policy);
     }
 

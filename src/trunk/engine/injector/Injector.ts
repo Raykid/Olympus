@@ -1,7 +1,11 @@
 import { core } from "../../core/Core";
 import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
+import Dictionary from "../../utils/Dictionary";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
+import { view } from "../../view/View";
+import IMediator from "../../view/mediator/IMediator";
+import IModule from "../module/IModule";
 
 /**
  * @author Raykid
@@ -29,6 +33,18 @@ export function MediatorClass(cls:IConstructor):IConstructor
     // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)
         console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+    // 替换setSkin方法
+    var $setSkin:(value:any)=>void = cls.prototype.setSkin;
+    if($setSkin instanceof Function)
+    {
+        cls.prototype.setSkin = function(skin:any):void
+        {
+            // 根据skin类型选取表现层桥
+            this.setBridge(view.getBridgeBySkin(skin));
+            // 调用原始方法
+            $setSkin.apply(this, arguments);
+        };
+    }
     return wrapConstruct(cls);
 }
 
@@ -56,5 +72,54 @@ export function ResponseHandler(clsOrType:IResponseDataConstructor|string):Metho
         {
             netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
         });
+    };
+};
+
+var _mediatorDict:Dictionary<IModule, IMediator[]> = new Dictionary();
+/** 在模块内托管中介者 */
+export function DelegateMediator(prototype:IModule, propertyKey:string):any
+{
+    var mediator:IMediator;
+    return {
+        configurable: true,
+        enumerable: true,
+        get: function():IMediator
+        {
+            return mediator;
+        },
+        set: function(value:IMediator):void
+        {
+            var mediators:IMediator[] = _mediatorDict.get(this);
+            if(!mediators)
+            {
+                _mediatorDict.set(this, mediators = []);
+                // 替换模块的dispose方法
+                var $dispose:()=>void = this.dispose;
+                this.dispose = function():void
+                {
+                    // 将所有已托管的中介者同时销毁
+                    for(var i:number = 0, len:number = mediators.length; i < len; i++)
+                    {
+                        mediators.pop().dispose();
+                    }
+                    // 销毁自身
+                    $dispose.call(this);
+                };
+            }
+            // 取消托管中介者
+            if(mediator)
+            {
+                var index:number = mediators.indexOf(mediator);
+                if(index >= 0) mediators.splice(index, 1);
+            }
+            // 设置中介者
+            mediator = value;
+            // 托管新的中介者
+            if(mediator)
+            {
+                if(mediators.indexOf(mediator) < 0)
+                    mediators.push(mediator);
+            }
+        }
     };
 };

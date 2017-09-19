@@ -202,6 +202,16 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
             return this._root;
         };
         /**
+         * 判断皮肤是否是DOM显示节点
+         *
+         * @param {*} skin 皮肤对象
+         * @returns {boolean} 是否是DOM显示节点
+         * @memberof Bridge
+         */
+        Bridge.prototype.isMySkin = function (skin) {
+            return (skin instanceof HTMLElement);
+        };
+        /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
          * @param {()=>void} complete 初始化完毕后的回调
          * @memberof IBridge

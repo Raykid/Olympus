@@ -30,6 +30,27 @@ export default class View
     }
 
     /**
+     * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
+     * 
+     * @param {*} skin 皮肤实例
+     * @returns {IBridge|null} 皮肤所属表现层桥实例
+     * @memberof View
+     */
+    public getBridgeBySkin(skin:any):IBridge|null
+    {
+        if(skin)
+        {
+            // 遍历所有已注册的表现层桥进行判断
+            for(var type in this._bridgeDict)
+            {
+                var bridge:IBridge = this._bridgeDict[type][0];
+                if(bridge.isMySkin(skin)) return bridge;
+            }
+        }
+        return null;
+    }
+
+    /**
      * 注册一个表现层桥实例到框架中
      * 
      * @param {...IBridge[]} bridges 要注册的所有表现层桥

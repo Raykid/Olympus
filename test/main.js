@@ -46,7 +46,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
     }(Module_1.default));
     exports.default = SecondModule;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/injector/Injector", "core/injector/Injector"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, Injector_3) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/injector/Injector", "core/injector/Injector", "engine/mediator/Mediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, Injector_3, Mediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -60,7 +60,9 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var FirstModule = /** @class */ (function (_super) {
         __extends(FirstModule, _super);
         function FirstModule() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._mediator = new FirstMediator();
+            return _this;
         }
         FirstModule_1 = FirstModule;
         FirstModule.prototype.onOpen = function (data) {
@@ -73,7 +75,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             var _this = this;
             console.log("first module activate");
             setTimeout(function () {
-                _this.moduleManager.open(SecondModule_1.default);
+                _this.moduleManager.open(SecondModule_1.default, null, true);
             }, 1000);
         };
         FirstModule.prototype.onModuleChange = function (from, to) {
@@ -86,6 +88,9 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             Injector_3.Inject(ModuleManager_1.default)
         ], FirstModule.prototype, "moduleManager", void 0);
         __decorate([
+            Injector_2.DelegateMediator
+        ], FirstModule.prototype, "_mediator", void 0);
+        __decorate([
             Injector_3.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
         ], FirstModule.prototype, "onModuleChange", null);
         FirstModule = FirstModule_1 = __decorate([
@@ -95,6 +100,22 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         var FirstModule_1;
     }(Module_2.default));
     exports.default = FirstModule;
+    var FirstMediator = /** @class */ (function (_super) {
+        __extends(FirstMediator, _super);
+        function FirstMediator() {
+            var _this = _super.call(this, document.createElement("a")) || this;
+            _this.mapListener(_this.getSkin(), "click", function () {
+                console.log("onclick");
+            }, _this);
+            _this.getSkin().textContent = "Fuck";
+            _this.getBridge().getHTMLWrapper().appendChild(_this.getSkin());
+            return _this;
+        }
+        FirstMediator = __decorate([
+            Injector_2.MediatorClass
+        ], FirstMediator);
+        return FirstMediator;
+    }(Mediator_1.default));
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>

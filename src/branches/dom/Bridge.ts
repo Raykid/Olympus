@@ -32,6 +32,18 @@ export default class Bridge implements IBridge
         return <HTMLElement>this._root;
     }
 
+    /**
+     * 判断皮肤是否是DOM显示节点
+     * 
+     * @param {*} skin 皮肤对象
+     * @returns {boolean} 是否是DOM显示节点
+     * @memberof Bridge
+     */
+    public isMySkin(skin:any):boolean
+    {
+        return (skin instanceof HTMLElement);
+    }
+
     public constructor(root?:HTMLElement|string)
     {
         this._root = root;

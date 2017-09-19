@@ -1,3 +1,5 @@
+/// <reference path="./egret-core/build/egret/egret.d.ts"/>
+
 import IBridge from "../../trunk/view/bridge/IBridge";
 
 /**
@@ -31,7 +33,19 @@ export default class Bridge implements IBridge
      */
     public getHTMLWrapper():HTMLElement
     {
-
+        return null;
+    }
+    
+    /**
+     * 判断皮肤是否是Egret显示对象
+     * 
+     * @param {*} skin 皮肤对象
+     * @returns {boolean} 是否是Egret显示对象
+     * @memberof Bridge
+     */
+    public isMySkin(skin:any):boolean
+    {
+        return (skin instanceof egret.DisplayObject);
     }
     
     /**

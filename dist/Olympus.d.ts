@@ -599,12 +599,22 @@ declare module "view/bridge/IBridge" {
     export default interface IBridge {
         /**
          * 获取表现层类型名称
+         *
          * @return {string} 一个字符串，代表表现层类型名称
          * @memberof IBridge
          */
         getType(): string;
         /**
+         * 判断传入的skin是否是属于该表现层桥的
+         *
+         * @param {*} skin 皮肤实例
+         * @return {boolean} 是否数据该表现层桥
+         * @memberof IBridge
+         */
+        isMySkin(skin: any): boolean;
+        /**
          * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         *
          * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
          * @memberof IBridge
          */
@@ -631,6 +641,7 @@ declare module "view/bridge/IBridge" {
         unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
+         *
          * @param {()=>void} complete 初始化完毕后的回调
          * @memberof IBridge
          */
@@ -652,6 +663,10 @@ declare module "view/bridge/IHasBridge" {
          * 获取表现层桥
          */
         getBridge(): IBridge;
+        /**
+         * 设置表现层桥
+         */
+        setBridge(value: IBridge): void;
     }
 }
 declare module "core/interfaces/IDisposable" {
@@ -742,7 +757,7 @@ declare module "engine/mediator/Mediator" {
      * 组件界面中介者基类
     */
     export default abstract class Mediator implements IMediator, IDispatcher {
-        constructor(bridge: IBridge, skin?: any);
+        constructor(skin?: any);
         private _bridge;
         /**
          * 获取表现层桥
@@ -751,6 +766,13 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         getBridge(): IBridge;
+        /**
+         * 设置表现层桥
+         *
+         * @param {IBridge} value 表现层桥
+         * @memberof Mediator
+         */
+        setBridge(value: IBridge): void;
         private _isDestroyed;
         /**
          * 获取中介者是否已被销毁
@@ -1028,7 +1050,6 @@ declare module "engine/panel/PanelManager" {
 }
 declare module "engine/panel/PanelMediator" {
     import Mediator from "engine/mediator/Mediator";
-    import IBridge from "view/bridge/IBridge";
     import IPanel from "engine/panel/IPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     /**
@@ -1040,7 +1061,7 @@ declare module "engine/panel/PanelMediator" {
      * 实现了IPanel接口的弹窗中介者基类
     */
     export default abstract class PanelMediator extends Mediator implements IPanel {
-        constructor(bridge: IBridge, skin?: any, policy?: IPanelPolicy);
+        constructor(skin?: any, policy?: IPanelPolicy);
         private _policy;
         /**
          * 获取弹出策略
@@ -1322,7 +1343,6 @@ declare module "engine/scene/SceneManager" {
 }
 declare module "engine/scene/SceneMediator" {
     import Mediator from "engine/mediator/Mediator";
-    import IBridge from "view/bridge/IBridge";
     import IScene from "engine/scene/IScene";
     import IScenePolicy from "engine/scene/IScenePolicy";
     /**
@@ -1334,7 +1354,7 @@ declare module "engine/scene/SceneMediator" {
      * 实现了IScene接口的场景中介者基类
     */
     export default abstract class SceneMediator extends Mediator implements IScene {
-        constructor(bridge: IBridge, skin?: any, policy?: IScenePolicy);
+        constructor(skin?: any, policy?: IScenePolicy);
         private _policy;
         /**
          * 获取弹出策略
@@ -2213,8 +2233,49 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
     /** 再额外导出一个实例 */
     export const httpRequestPolicy: HTTPRequestPolicy;
 }
+declare module "view/View" {
+    import IBridge from "view/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * View是表现层模组，用来管理所有表现层对象
+    */
+    export default class View {
+        private _bridgeDict;
+        /**
+         * 获取表现层桥实例
+         *
+         * @param {string} type 表现层类型
+         * @returns {IBridge} 表现层桥实例
+         * @memberof View
+         */
+        getBridge(type: string): IBridge;
+        /**
+         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
+         *
+         * @param {*} skin 皮肤实例
+         * @returns {IBridge|null} 皮肤所属表现层桥实例
+         * @memberof View
+         */
+        getBridgeBySkin(skin: any): IBridge | null;
+        /**
+         * 注册一个表现层桥实例到框架中
+         *
+         * @param {...IBridge[]} bridges 要注册的所有表现层桥
+         * @memberof View
+         */
+        registerBridge(...bridges: IBridge[]): void;
+        private testAllInit();
+    }
+    /** 再额外导出一个单例 */
+    export const view: View;
+}
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
+    import IModule from "engine/module/IModule";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -2231,6 +2292,8 @@ declare module "engine/injector/Injector" {
     export function ModuleClass(cls: IConstructor): IConstructor;
     /** 处理通讯消息返回 */
     export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
+    /** 在模块内托管中介者 */
+    export function DelegateMediator(prototype: IModule, propertyKey: string): any;
 }
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
@@ -2254,38 +2317,6 @@ declare module "engine/Engine" {
     }
     /** 再额外导出一个单例 */
     export const engine: Engine;
-}
-declare module "view/View" {
-    import IBridge from "view/bridge/IBridge";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * View是表现层模组，用来管理所有表现层对象
-    */
-    export default class View {
-        private _bridgeDict;
-        /**
-         * 获取表现层桥实例
-         *
-         * @param {string} type 表现层类型
-         * @returns {IBridge} 表现层桥实例
-         * @memberof View
-         */
-        getBridge(type: string): IBridge;
-        /**
-         * 注册一个表现层桥实例到框架中
-         *
-         * @param {...IBridge[]} bridges 要注册的所有表现层桥
-         * @memberof View
-         */
-        registerBridge(...bridges: IBridge[]): void;
-        private testAllInit();
-    }
-    /** 再额外导出一个单例 */
-    export const view: View;
 }
 declare module "Olympus" {
     import IModuleConstructor from "engine/module/IModuleConstructor";

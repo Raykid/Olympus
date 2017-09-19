@@ -14,4 +14,8 @@ export default interface IHasMediatorBridge
      * 获取表现层桥
      */
     getBridge():IBridge;
+    /**
+     * 设置表现层桥
+     */
+    setBridge(value:IBridge):void;
 }

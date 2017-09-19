@@ -14,9 +14,8 @@ import IBridge from "../../view/bridge/IBridge";
 */
 export default abstract class Mediator implements IMediator, IDispatcher
 {
-    public constructor(bridge:IBridge, skin?:any)
+    public constructor(skin?:any)
     {
-        this._bridge = bridge;
         if(skin) this.setSkin(skin);
     }
 
@@ -30,6 +29,16 @@ export default abstract class Mediator implements IMediator, IDispatcher
     public getBridge():IBridge
     {
         return this._bridge;
+    }
+    /**
+     * 设置表现层桥
+     * 
+     * @param {IBridge} value 表现层桥
+     * @memberof Mediator
+     */
+    public setBridge(value:IBridge):void
+    {
+        this._bridge = value;
     }
     
     private _isDestroyed:boolean = false;
@@ -165,6 +174,8 @@ export default abstract class Mediator implements IMediator, IDispatcher
     {
         // 注销事件监听
         this.unmapAllListeners();
+        // 移除表现层桥
+        this._bridge = null;
         // 移除皮肤
         this._skin = null;
         // 设置已被销毁

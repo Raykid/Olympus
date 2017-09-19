@@ -3,6 +3,7 @@ import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
+import IMediator from "../../view/mediator/IMediator";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 

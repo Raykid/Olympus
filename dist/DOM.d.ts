@@ -10,12 +10,22 @@ declare module "trunk/view/bridge/IBridge" {
     export default interface IBridge {
         /**
          * 获取表现层类型名称
+         *
          * @return {string} 一个字符串，代表表现层类型名称
          * @memberof IBridge
          */
         getType(): string;
         /**
+         * 判断传入的skin是否是属于该表现层桥的
+         *
+         * @param {*} skin 皮肤实例
+         * @return {boolean} 是否数据该表现层桥
+         * @memberof IBridge
+         */
+        isMySkin(skin: any): boolean;
+        /**
          * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         *
          * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
          * @memberof IBridge
          */
@@ -42,6 +52,7 @@ declare module "trunk/view/bridge/IBridge" {
         unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
+         *
          * @param {()=>void} complete 初始化完毕后的回调
          * @memberof IBridge
          */
@@ -137,6 +148,14 @@ declare module "branches/dom/Bridge" {
          * @memberof IBridge
          */
         getHTMLWrapper(): HTMLElement;
+        /**
+         * 判断皮肤是否是DOM显示节点
+         *
+         * @param {*} skin 皮肤对象
+         * @returns {boolean} 是否是DOM显示节点
+         * @memberof Bridge
+         */
+        isMySkin(skin: any): boolean;
         constructor(root?: HTMLElement | string);
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化

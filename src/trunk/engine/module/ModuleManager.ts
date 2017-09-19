@@ -125,6 +125,8 @@ export default class ModuleManager
                 this._moduleStack.unshift([cls, target]);
                 // 调用onActivate接口
                 target.onActivate(from && from[0], data);
+                // 如果replace是true，则关掉上一个模块
+                if(replace) this.close(from[0]);
                 // 派发消息
                 core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
             }, this);
