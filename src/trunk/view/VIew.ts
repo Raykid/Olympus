@@ -76,7 +76,7 @@ export default class View
             var self:View = this;
             for(var bridge of bridges)
             {
-                var type:string = bridge.getType();
+                var type:string = bridge.type;
                 if(!this._bridgeDict[type])
                 {
                     var data:[IBridge, boolean] = [bridge, false];
@@ -99,7 +99,7 @@ export default class View
             // 派发消息
             core.dispatch(ViewMessage.BRIDGE_AFTER_INIT, bridge);
             // 设置初始化完毕属性
-            var data:[IBridge, boolean] = self._bridgeDict[bridge.getType()];
+            var data:[IBridge, boolean] = self._bridgeDict[bridge.type];
             data[1] = true;
             // 测试是否全部初始化完毕
             self.testAllInit();

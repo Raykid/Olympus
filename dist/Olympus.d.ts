@@ -112,10 +112,11 @@ declare module "core/message/IMessage" {
         /**
          * 获取消息类型
          *
-         * @returns {string} 消息类型
+         * @readonly
+         * @type {string}
          * @memberof IMessage
          */
-        getType(): string;
+        readonly type: string;
     }
 }
 declare module "core/message/IMessageHandler" {
@@ -145,7 +146,14 @@ declare module "core/message/Message" {
     */
     export default abstract class Message implements IMessage {
         private _type;
-        getType(): string;
+        /**
+         * 获取消息类型字符串
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Message
+         */
+        readonly type: string;
         constructor(type: string);
     }
 }
@@ -600,10 +608,19 @@ declare module "view/bridge/IBridge" {
         /**
          * 获取表现层类型名称
          *
-         * @return {string} 一个字符串，代表表现层类型名称
+         * @readonly
+         * @type {string}
          * @memberof IBridge
          */
-        getType(): string;
+        readonly type: string;
+        /**
+         * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly htmlWrapper: HTMLElement;
         /**
          * 判断传入的skin是否是属于该表现层桥的
          *
@@ -612,13 +629,6 @@ declare module "view/bridge/IBridge" {
          * @memberof IBridge
          */
         isMySkin(skin: any): boolean;
-        /**
-         * 获取表现层HTML包装器，可以对其样式进行自定义调整
-         *
-         * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
-         * @memberof IBridge
-         */
-        getHTMLWrapper(): HTMLElement;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
@@ -660,13 +670,9 @@ declare module "view/bridge/IHasBridge" {
     */
     export default interface IHasMediatorBridge {
         /**
-         * 获取表现层桥
+         * 表现层桥
          */
-        getBridge(): IBridge;
-        /**
-         * 设置表现层桥
-         */
-        setBridge(value: IBridge): void;
+        bridge: IBridge;
     }
 }
 declare module "core/interfaces/IDisposable" {
@@ -700,21 +706,15 @@ declare module "view/mediator/IMediator" {
          * @returns {boolean} 是否已被销毁
          * @memberof IMediator
          */
-        isDisposed(): boolean;
+        readonly disposed: boolean;
         /**
-         * 获取皮肤
+         * 皮肤
          *
-         * @returns {*} 皮肤引用
+         * @readonly
+         * @type {*}
          * @memberof IMediator
          */
-        getSkin(): any;
-        /**
-         * 设置皮肤
-         *
-         * @param {*} value 皮肤引用
-         * @memberof IMediator
-         */
-        setSkin(value: any): void;
+        skin: any;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
@@ -757,45 +757,30 @@ declare module "engine/mediator/Mediator" {
      * 组件界面中介者基类
     */
     export default abstract class Mediator implements IMediator, IDispatcher {
-        constructor(skin?: any);
-        private _bridge;
         /**
-         * 获取表现层桥
+         * 表现层桥
          *
-         * @returns {IBridge} 表现层桥
+         * @type {IBridge}
          * @memberof Mediator
          */
-        getBridge(): IBridge;
+        bridge: IBridge;
         /**
-         * 设置表现层桥
+         * 皮肤
          *
-         * @param {IBridge} value 表现层桥
+         * @type {*}
          * @memberof Mediator
          */
-        setBridge(value: IBridge): void;
-        private _isDestroyed;
+        skin: any;
+        private _disposed;
         /**
          * 获取中介者是否已被销毁
          *
-         * @returns {boolean} 是否已被销毁
+         * @readonly
+         * @type {boolean}
          * @memberof Mediator
          */
-        isDisposed(): boolean;
-        private _skin;
-        /**
-         * 获取皮肤
-         *
-         * @returns {*} 皮肤引用
-         * @memberof Mediator
-         */
-        getSkin(): any;
-        /**
-         * 设置皮肤
-         *
-         * @param {*} value 皮肤引用
-         * @memberof Mediator
-         */
-        setSkin(value: any): void;
+        readonly disposed: boolean;
+        constructor(skin?: any);
         private _listeners;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
@@ -892,10 +877,8 @@ declare module "engine/panel/IPanel" {
      * 弹窗接口
     */
     export default interface IPanel extends IHasBridge, IDisposable {
-        /** 获取弹出策略 */
-        getPolicy(): IPanelPolicy;
-        /** 设置切换策略 */
-        setPolicy(policy: IPanelPolicy): void;
+        /** 弹出策略 */
+        policy: IPanelPolicy;
         /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
         pop(data?: any, isModel?: boolean, from?: {
             x: number;
@@ -1061,22 +1044,14 @@ declare module "engine/panel/PanelMediator" {
      * 实现了IPanel接口的弹窗中介者基类
     */
     export default abstract class PanelMediator extends Mediator implements IPanel {
+        /**
+         * 弹出策略
+         *
+         * @type {IPanelPolicy}
+         * @memberof PanelMediator
+         */
+        policy: IPanelPolicy;
         constructor(skin?: any, policy?: IPanelPolicy);
-        private _policy;
-        /**
-         * 获取弹出策略
-         *
-         * @returns {IPanelPolicy} 弹出策略
-         * @memberof PanelMediator
-         */
-        getPolicy(): IPanelPolicy;
-        /**
-         * 设置弹出策略
-         *
-         * @param {IPanelPolicy} policy 设置弹出策略
-         * @memberof PanelMediator
-         */
-        setPolicy(policy: IPanelPolicy): void;
         /**
          * 弹出当前弹窗（等同于调用PanelManager.open方法）
          *
@@ -1169,10 +1144,8 @@ declare module "engine/scene/IScene" {
      * 场景接口
     */
     export default interface IScene extends IHasBridge, IDisposable {
-        /** 获取切换策略 */
-        getPolicy(): IScenePolicy;
-        /** 设置切换策略 */
-        setPolicy(policy: IScenePolicy): void;
+        /** 切换策略 */
+        policy: IScenePolicy;
         /** 切入当前场景（相当于调用SceneManager.switch方法） */
         switch(data?: any): IScene;
         /** 推入当前场景（相当于调用SceneManager.push方法） */
@@ -1297,17 +1270,19 @@ declare module "engine/scene/SceneManager" {
         /**
          * 获取当前场景
          *
-         * @returns {IScene} 当前场景
+         * @readonly
+         * @type {IScene}
          * @memberof SceneManager
          */
-        getCurScene(): IScene;
+        readonly currentScene: IScene;
         /**
          * 获取活动场景个数
          *
-         * @returns {number} 活动场景个数
+         * @readonly
+         * @type {number}
          * @memberof SceneManager
          */
-        getActiveCount(): number;
+        readonly activeCount: number;
         /**
          * 切换场景，替换当前场景，当前场景会被销毁
          *
@@ -1354,22 +1329,14 @@ declare module "engine/scene/SceneMediator" {
      * 实现了IScene接口的场景中介者基类
     */
     export default abstract class SceneMediator extends Mediator implements IScene {
+        /**
+         * 切换策略
+         *
+         * @type {IScenePolicy}
+         * @memberof SceneMediator
+         */
+        policy: IScenePolicy;
         constructor(skin?: any, policy?: IScenePolicy);
-        private _policy;
-        /**
-         * 获取弹出策略
-         *
-         * @returns {IScenePolicy} 弹出策略
-         * @memberof SceneMediator
-         */
-        getPolicy(): IScenePolicy;
-        /**
-         * 设置弹出策略
-         *
-         * @param {IScenePolicy} policy 弹出策略
-         * @memberof SceneMediator
-         */
-        setPolicy(policy: IScenePolicy): void;
         /**
          * 切入当前场景（相当于调用SceneManager.switch方法）
          *
@@ -1561,10 +1528,11 @@ declare module "engine/net/RequestData" {
         /**
          * 获取请求消息类型字符串
          *
-         * @returns {string} 请求消息类型字符串
+         * @readonly
+         * @type {string}
          * @memberof RequestData
          */
-        getType(): string;
+        readonly type: string;
     }
     /** 导出公共消息参数对象 */
     export var commonData: any;
@@ -1746,6 +1714,22 @@ declare module "engine/module/ModuleManager" {
     */
     export default class ModuleManager {
         private _moduleStack;
+        /**
+         * 获取当前模块
+         *
+         * @readonly
+         * @type {IModuleConstructor}
+         * @memberof ModuleManager
+         */
+        readonly currentModule: IModuleConstructor | undefined;
+        /**
+         * 获取活动模块数量
+         *
+         * @readonly
+         * @type {number}
+         * @memberof ModuleManager
+         */
+        readonly activeCount: number;
         private getIndex(cls);
         private getAfter(cls);
         private getCurrent();
@@ -1757,20 +1741,6 @@ declare module "engine/module/ModuleManager" {
          * @memberof ModuleManager
          */
         isOpened(cls: IModuleConstructor): boolean;
-        /**
-         * 获取当前模块
-         *
-         * @returns {IModuleConstructor} 当前模块的类型
-         * @memberof ModuleManager
-         */
-        getCurModule(): IModuleConstructor | undefined;
-        /**
-         * 获取活动模块数量
-         *
-         * @returns {number} 活动模块数量
-         * @memberof ModuleManager
-         */
-        getActiveCount(): number;
         /**
          * 打开模块
          *
@@ -1917,34 +1887,38 @@ declare module "engine/env/Explorer" {
         /**
          * 获取浏览器类型枚举值
          *
-         * @returns {ExplorerType} 浏览器类型枚举值
+         * @readonly
+         * @type {ExplorerType}
          * @memberof Explorer
          */
-        getType(): ExplorerType;
+        readonly type: ExplorerType;
         private _typeStr;
         /**
          * 获取浏览器类型字符串
          *
-         * @returns {string} 浏览器类型字符串
+         * @readonly
+         * @type {string}
          * @memberof Explorer
          */
-        getTypeStr(): string;
+        readonly typeStr: string;
         private _version;
         /**
          * 获取浏览器版本
          *
-         * @returns {string} 浏览器版本
+         * @readonly
+         * @type {string}
          * @memberof Explorer
          */
-        getVersion(): string;
+        readonly version: string;
         private _bigVersion;
         /**
          * 获取浏览器大版本
          *
-         * @returns {string} 浏览器大版本
+         * @readonly
+         * @type {string}
          * @memberof Explorer
          */
-        getBigVersion(): string;
+        readonly bigVersion: string;
         constructor();
     }
     /** 再额外导出一个单例 */
@@ -1988,44 +1962,49 @@ declare module "engine/env/Hash" {
         /**
          * 获取原始的哈希字符串
          *
-         * @returns {string}
+         * @readonly
+         * @type {string}
          * @memberof Hash
          */
-        getHash(): string;
+        readonly hash: string;
         private _moduleName;
         /**
          * 获取模块名
          *
-         * @returns {string} 模块名
+         * @readonly
+         * @type {string}
          * @memberof Hash
          */
-        getModuleName(): string;
+        readonly moduleName: string;
         private _params;
         /**
          * 获取传递给模块的参数
          *
-         * @returns {{[key:string]:string}} 模块参数
+         * @readonly
+         * @type {{[key:string]:string}}
          * @memberof Hash
          */
-        getParams(): {
+        readonly params: {
             [key: string]: string;
         };
         private _direct;
         /**
          * 获取是否直接跳转模块
          *
-         * @returns {boolean} 是否直接跳转模块
+         * @readonly
+         * @type {boolean}
          * @memberof Hash
          */
-        getDirect(): boolean;
+        readonly direct: boolean;
         private _keepHash;
         /**
          * 获取是否保持哈希值
          *
-         * @returns {boolean} 是否保持哈希值
+         * @readonly
+         * @type {boolean}
          * @memberof Hash
          */
-        getKeepHash(): boolean;
+        readonly keepHash: boolean;
         constructor();
         /**
          * 获取指定哈希参数

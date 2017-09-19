@@ -16,10 +16,11 @@ export default class Hash
     /**
      * 获取原始的哈希字符串
      * 
-     * @returns {string} 
+     * @readonly
+     * @type {string}
      * @memberof Hash
      */
-    public getHash():string
+    public get hash():string
     {
         return this._hash;
     }
@@ -28,10 +29,11 @@ export default class Hash
     /**
      * 获取模块名
      * 
-     * @returns {string} 模块名
+     * @readonly
+     * @type {string}
      * @memberof Hash
      */
-    public getModuleName():string
+    public get moduleName():string
     {
         return this._moduleName;
     }
@@ -40,10 +42,11 @@ export default class Hash
     /**
      * 获取传递给模块的参数
      * 
-     * @returns {{[key:string]:string}} 模块参数
+     * @readonly
+     * @type {{[key:string]:string}}
      * @memberof Hash
      */
-    public getParams():{[key:string]:string}
+    public get params():{[key:string]:string}
     {
         return this._params;
     }
@@ -52,10 +55,11 @@ export default class Hash
     /**
      * 获取是否直接跳转模块
      * 
-     * @returns {boolean} 是否直接跳转模块
+     * @readonly
+     * @type {boolean}
      * @memberof Hash
      */
-    public getDirect():boolean
+    public get direct():boolean
     {
         return this._direct;
     }
@@ -64,10 +68,11 @@ export default class Hash
     /**
      * 获取是否保持哈希值
      * 
-     * @returns {boolean} 是否保持哈希值
+     * @readonly
+     * @type {boolean}
      * @memberof Hash
      */
-    public getKeepHash():boolean
+    public get keepHash():boolean
     {
         return this._keepHash;
     }

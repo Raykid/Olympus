@@ -13,35 +13,20 @@ import { panelManager } from "./PanelManager";
 */
 export default abstract class PanelMediator extends Mediator implements IPanel
 {
+    /**
+     * 弹出策略
+     * 
+     * @type {IPanelPolicy}
+     * @memberof PanelMediator
+     */
+    public policy:IPanelPolicy;
+    
     public constructor(skin?:any, policy?:IPanelPolicy)
     {
         super(skin);
-        this.setPolicy(policy);
+        this.policy = policy;
     }
 
-    private _policy:IPanelPolicy;
-    /**
-     * 获取弹出策略
-     * 
-     * @returns {IPanelPolicy} 弹出策略
-     * @memberof PanelMediator
-     */
-    public getPolicy():IPanelPolicy
-    {
-        return this._policy;
-    }
-    /**
-     * 设置弹出策略
-     * 
-     * @param {IPanelPolicy} policy 设置弹出策略
-     * @memberof PanelMediator
-     */
-    public setPolicy(policy:IPanelPolicy):void
-    {
-        this._policy = policy;
-    }
-
-    
     /**
      * 弹出当前弹窗（等同于调用PanelManager.open方法）
      * 

@@ -14,66 +14,38 @@ import IBridge from "../../view/bridge/IBridge";
 */
 export default abstract class Mediator implements IMediator, IDispatcher
 {
-    public constructor(skin?:any)
-    {
-        if(skin) this.setSkin(skin);
-    }
+    /**
+     * 表现层桥
+     * 
+     * @type {IBridge}
+     * @memberof Mediator
+     */
+    public bridge:IBridge;
 
-    private _bridge:IBridge;
     /**
-     * 获取表现层桥
+     * 皮肤
      * 
-     * @returns {IBridge} 表现层桥
+     * @type {*}
      * @memberof Mediator
      */
-    public getBridge():IBridge
-    {
-        return this._bridge;
-    }
-    /**
-     * 设置表现层桥
-     * 
-     * @param {IBridge} value 表现层桥
-     * @memberof Mediator
-     */
-    public setBridge(value:IBridge):void
-    {
-        this._bridge = value;
-    }
+    public skin:any;
     
-    private _isDestroyed:boolean = false;
+    private _disposed:boolean = false;
     /**
      * 获取中介者是否已被销毁
      * 
-     * @returns {boolean} 是否已被销毁
+     * @readonly
+     * @type {boolean}
      * @memberof Mediator
      */
-    public isDisposed():boolean
+    public get disposed():boolean
     {
-        return this._isDestroyed;
+        return this._disposed;
     }
 
-    private _skin:any;
-    /**
-     * 获取皮肤
-     * 
-     * @returns {*} 皮肤引用
-     * @memberof Mediator
-     */
-    public getSkin():any
+    public constructor(skin?:any)
     {
-        return this._skin;
-    }
-
-    /**
-     * 设置皮肤
-     * 
-     * @param {*} value 皮肤引用
-     * @memberof Mediator
-     */
-    public setSkin(value:any):void
-    {
-        this._skin = value;
+        if(skin) this.skin = skin;
     }
 
     private _listeners:ListenerData[] = [];
@@ -100,7 +72,7 @@ export default abstract class Mediator implements IMediator, IDispatcher
         // 记录监听
         this._listeners.push({target: target, type: type, handler: handler, thisArg: thisArg});
         // 调用桥接口
-        this._bridge.mapListener(target, type, handler, thisArg);
+        this.bridge.mapListener(target, type, handler, thisArg);
     }
     
     /**
@@ -120,7 +92,7 @@ export default abstract class Mediator implements IMediator, IDispatcher
             if(data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg)
             {
                 // 调用桥接口
-                this._bridge.unmapListener(target, type, handler, thisArg);
+                this.bridge.unmapListener(target, type, handler, thisArg);
                 // 移除记录
                 this._listeners.splice(i, 1);
                 break;
@@ -139,7 +111,7 @@ export default abstract class Mediator implements IMediator, IDispatcher
         {
             var data:ListenerData = this._listeners.pop();
             // 调用桥接口
-            this._bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
+            this.bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
         }
     }
 
@@ -170,16 +142,16 @@ export default abstract class Mediator implements IMediator, IDispatcher
      */
     public dispose():void
     {
-        if(!this._isDestroyed)
+        if(!this._disposed)
         {
             // 注销事件监听
             this.unmapAllListeners();
             // 移除表现层桥
-            this._bridge = null;
+            this.bridge = null;
             // 移除皮肤
-            this._skin = null;
+            this.skin = null;
             // 设置已被销毁
-            this._isDestroyed = true;
+            this._disposed = true;
         }
     }
 }

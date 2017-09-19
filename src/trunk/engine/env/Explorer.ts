@@ -33,10 +33,11 @@ export default class Explorer
     /**
      * 获取浏览器类型枚举值
      * 
-     * @returns {ExplorerType} 浏览器类型枚举值
+     * @readonly
+     * @type {ExplorerType}
      * @memberof Explorer
      */
-    public getType():ExplorerType
+    public get type():ExplorerType
     {
         return this._type;
     }
@@ -45,10 +46,11 @@ export default class Explorer
     /**
      * 获取浏览器类型字符串
      * 
-     * @returns {string} 浏览器类型字符串
+     * @readonly
+     * @type {string}
      * @memberof Explorer
      */
-    public getTypeStr():string
+    public get typeStr():string
     {
         return this._typeStr;
     }
@@ -57,10 +59,11 @@ export default class Explorer
     /**
      * 获取浏览器版本
      * 
-     * @returns {string} 浏览器版本
+     * @readonly
+     * @type {string}
      * @memberof Explorer
      */
-    public getVersion():string
+    public get version():string
     {
         return this._version;
     }
@@ -69,10 +72,11 @@ export default class Explorer
     /**
      * 获取浏览器大版本
      * 
-     * @returns {string} 浏览器大版本
+     * @readonly
+     * @type {string}
      * @memberof Explorer
      */
-    public getBigVersion():string
+    public get bigVersion():string
     {
         return this._bigVersion;
     }

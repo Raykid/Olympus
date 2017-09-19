@@ -268,9 +268,20 @@ define("core/message/Message", ["require", "exports"], function (require, export
         function Message(type) {
             this._type = type;
         }
-        Message.prototype.getType = function () {
-            return this._type;
-        };
+        Object.defineProperty(Message.prototype, "type", {
+            /**
+             * 获取消息类型字符串
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Message
+             */
+            get: function () {
+                return this._type;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return Message;
     }());
     exports.default = Message;
@@ -549,7 +560,7 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
             this.mapInjectValue(this);
         }
         Core.prototype.handleMessages = function (msg) {
-            var listeners = this._listenerDict[msg.getType()];
+            var listeners = this._listenerDict[msg.type];
             if (listeners) {
                 for (var i = 0, len = listeners.length; i < len; i++) {
                     var temp = listeners[i];
@@ -679,7 +690,7 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
             return this._injectDict.get(type);
         };
         Core.prototype.handleCommands = function (msg) {
-            var commands = this._commandDict[msg.getType()];
+            var commands = this._commandDict[msg.type];
             if (!commands)
                 return;
             for (var i = 0, len = commands.length; i < len; i++) {
@@ -981,56 +992,25 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
     */
     var Mediator = /** @class */ (function () {
         function Mediator(skin) {
-            this._isDestroyed = false;
+            this._disposed = false;
             this._listeners = [];
             if (skin)
-                this.setSkin(skin);
+                this.skin = skin;
         }
-        /**
-         * 获取表现层桥
-         *
-         * @returns {IBridge} 表现层桥
-         * @memberof Mediator
-         */
-        Mediator.prototype.getBridge = function () {
-            return this._bridge;
-        };
-        /**
-         * 设置表现层桥
-         *
-         * @param {IBridge} value 表现层桥
-         * @memberof Mediator
-         */
-        Mediator.prototype.setBridge = function (value) {
-            this._bridge = value;
-        };
-        /**
-         * 获取中介者是否已被销毁
-         *
-         * @returns {boolean} 是否已被销毁
-         * @memberof Mediator
-         */
-        Mediator.prototype.isDisposed = function () {
-            return this._isDestroyed;
-        };
-        /**
-         * 获取皮肤
-         *
-         * @returns {*} 皮肤引用
-         * @memberof Mediator
-         */
-        Mediator.prototype.getSkin = function () {
-            return this._skin;
-        };
-        /**
-         * 设置皮肤
-         *
-         * @param {*} value 皮肤引用
-         * @memberof Mediator
-         */
-        Mediator.prototype.setSkin = function (value) {
-            this._skin = value;
-        };
+        Object.defineProperty(Mediator.prototype, "disposed", {
+            /**
+             * 获取中介者是否已被销毁
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this._disposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
@@ -1051,7 +1031,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             // 记录监听
             this._listeners.push({ target: target, type: type, handler: handler, thisArg: thisArg });
             // 调用桥接口
-            this._bridge.mapListener(target, type, handler, thisArg);
+            this.bridge.mapListener(target, type, handler, thisArg);
         };
         /**
          * 注销监听事件
@@ -1067,7 +1047,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
                 var data = this._listeners[i];
                 if (data.target == target && data.type == type && data.handler == handler && data.thisArg == thisArg) {
                     // 调用桥接口
-                    this._bridge.unmapListener(target, type, handler, thisArg);
+                    this.bridge.unmapListener(target, type, handler, thisArg);
                     // 移除记录
                     this._listeners.splice(i, 1);
                     break;
@@ -1083,7 +1063,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             for (var i = 0, len = this._listeners.length; i < len; i++) {
                 var data = this._listeners.pop();
                 // 调用桥接口
-                this._bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
+                this.bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
             }
         };
         Mediator.prototype.dispatch = function (typeOrMsg) {
@@ -1099,15 +1079,15 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          * @memberof Mediator
          */
         Mediator.prototype.dispose = function () {
-            if (!this._isDestroyed) {
+            if (!this._disposed) {
                 // 注销事件监听
                 this.unmapAllListeners();
                 // 移除表现层桥
-                this._bridge = null;
+                this.bridge = null;
                 // 移除皮肤
-                this._skin = null;
+                this.skin = null;
                 // 设置已被销毁
-                this._isDestroyed = true;
+                this._disposed = true;
             }
         };
         return Mediator;
@@ -1239,7 +1219,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
         PanelManager.prototype.open = function (panel, data, isModel, from) {
             if (isModel === void 0) { isModel = true; }
             if (this._panels.indexOf(panel) < 0) {
-                var policy = panel.getPolicy();
+                var policy = panel.policy;
                 if (policy == null)
                     policy = NonePanelPolicy_1.default;
                 // 调用回调
@@ -1268,7 +1248,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
         PanelManager.prototype.close = function (panel, data, to) {
             var index = this._panels.indexOf(panel);
             if (index >= 0) {
-                var policy = panel.getPolicy();
+                var policy = panel.policy;
                 if (policy == null)
                     policy = NonePanelPolicy_1.default;
                 // 调用回调
@@ -1311,27 +1291,9 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
         __extends(PanelMediator, _super);
         function PanelMediator(skin, policy) {
             var _this = _super.call(this, skin) || this;
-            _this.setPolicy(policy);
+            _this.policy = policy;
             return _this;
         }
-        /**
-         * 获取弹出策略
-         *
-         * @returns {IPanelPolicy} 弹出策略
-         * @memberof PanelMediator
-         */
-        PanelMediator.prototype.getPolicy = function () {
-            return this._policy;
-        };
-        /**
-         * 设置弹出策略
-         *
-         * @param {IPanelPolicy} policy 设置弹出策略
-         * @memberof PanelMediator
-         */
-        PanelMediator.prototype.setPolicy = function (policy) {
-            this._policy = policy;
-        };
         /**
          * 弹出当前弹窗（等同于调用PanelManager.open方法）
          *
@@ -1533,24 +1495,34 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
         function SceneManager() {
             this._sceneStack = [];
         }
-        /**
-         * 获取当前场景
-         *
-         * @returns {IScene} 当前场景
-         * @memberof SceneManager
-         */
-        SceneManager.prototype.getCurScene = function () {
-            return this._sceneStack[0];
-        };
-        /**
-         * 获取活动场景个数
-         *
-         * @returns {number} 活动场景个数
-         * @memberof SceneManager
-         */
-        SceneManager.prototype.getActiveCount = function () {
-            return this._sceneStack.length;
-        };
+        Object.defineProperty(SceneManager.prototype, "currentScene", {
+            /**
+             * 获取当前场景
+             *
+             * @readonly
+             * @type {IScene}
+             * @memberof SceneManager
+             */
+            get: function () {
+                return this._sceneStack[0];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneManager.prototype, "activeCount", {
+            /**
+             * 获取活动场景个数
+             *
+             * @readonly
+             * @type {number}
+             * @memberof SceneManager
+             */
+            get: function () {
+                return this._sceneStack.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 切换场景，替换当前场景，当前场景会被销毁
          *
@@ -1565,10 +1537,10 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (scene == null)
                 return;
             // 如果切入的是第一个场景，则改用push操作
-            if (this.getActiveCount() == 0)
+            if (this.activeCount == 0)
                 return this.push(scene, data);
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Switch, function () { return _this._sceneStack[0] = scene; });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy, ChangeType.Switch, function () { return _this._sceneStack[0] = scene; });
             return scene;
         };
         /**
@@ -1585,7 +1557,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (scene == null)
                 return scene;
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.getCurScene(), scene, data, scene.getPolicy(), ChangeType.Push, function () { return _this._sceneStack.unshift(scene); });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy, ChangeType.Push, function () { return _this._sceneStack.unshift(scene); });
             return scene;
         };
         /**
@@ -1607,7 +1579,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
         SceneManager.prototype.doPop = function (scene, data) {
             var _this = this;
             // 如果没有足够的场景储备则什么都不做
-            var length = this.getActiveCount();
+            var length = this.activeCount;
             if (length <= 1) {
                 console.log("场景栈中的场景数量不足，无法执行pop操作");
                 // 完成步骤
@@ -1616,7 +1588,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             }
             // 验证是否是当前场景，不是则直接移除，不使用Policy
             var to = this._sceneStack[1];
-            var policy = scene.getPolicy();
+            var policy = scene.policy;
             var index = this._sceneStack.indexOf(scene);
             if (index != length - 1) {
                 to = null;
@@ -1634,9 +1606,9 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (!policy)
                 policy = NoneScenePolicy_1.default;
             // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-            if (!from || to.getBridge().getType() != from.getBridge().getType()) {
-                from && (from.getBridge().getHTMLWrapper().style.display = "none");
-                to.getBridge().getHTMLWrapper().style.display = "";
+            if (!from || to.bridge.type != from.bridge.type) {
+                from && (from.bridge.htmlWrapper.style.display = "none");
+                to.bridge.htmlWrapper.style.display = "";
                 policy = NoneScenePolicy_1.default;
             }
             // 获取接口引用
@@ -1700,27 +1672,9 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
         __extends(SceneMediator, _super);
         function SceneMediator(skin, policy) {
             var _this = _super.call(this, skin) || this;
-            _this.setPolicy(policy);
+            _this.policy = policy;
             return _this;
         }
-        /**
-         * 获取弹出策略
-         *
-         * @returns {IScenePolicy} 弹出策略
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.getPolicy = function () {
-            return this._policy;
-        };
-        /**
-         * 设置弹出策略
-         *
-         * @param {IScenePolicy} policy 弹出策略
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.setPolicy = function (policy) {
-            this._policy = policy;
-        };
         /**
          * 切入当前场景（相当于调用SceneManager.switch方法）
          *
@@ -1814,15 +1768,20 @@ define("engine/net/RequestData", ["require", "exports"], function (require, expo
              */
             this.__userData = {};
         }
-        /**
-         * 获取请求消息类型字符串
-         *
-         * @returns {string} 请求消息类型字符串
-         * @memberof RequestData
-         */
-        RequestData.prototype.getType = function () {
-            return this.__params.type;
-        };
+        Object.defineProperty(RequestData.prototype, "type", {
+            /**
+             * 获取请求消息类型字符串
+             *
+             * @readonly
+             * @type {string}
+             * @memberof RequestData
+             */
+            get: function () {
+                return this.__params.type;
+            },
+            enumerable: true,
+            configurable: true
+        });
         return RequestData;
     }());
     exports.default = RequestData;
@@ -2079,6 +2038,35 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
         function ModuleManager() {
             this._moduleStack = [];
         }
+        Object.defineProperty(ModuleManager.prototype, "currentModule", {
+            /**
+             * 获取当前模块
+             *
+             * @readonly
+             * @type {IModuleConstructor}
+             * @memberof ModuleManager
+             */
+            get: function () {
+                var curData = this.getCurrent();
+                return (curData && curData[0]);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ModuleManager.prototype, "activeCount", {
+            /**
+             * 获取活动模块数量
+             *
+             * @readonly
+             * @type {number}
+             * @memberof ModuleManager
+             */
+            get: function () {
+                return this._moduleStack.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
         ModuleManager.prototype.getIndex = function (cls) {
             for (var i = 0, len = this._moduleStack.length; i < len; i++) {
                 if (this._moduleStack[i][0] == cls)
@@ -2108,25 +2096,6 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
          */
         ModuleManager.prototype.isOpened = function (cls) {
             return (this._moduleStack.filter(function (temp) { return temp[0] == cls; }).length > 0);
-        };
-        /**
-         * 获取当前模块
-         *
-         * @returns {IModuleConstructor} 当前模块的类型
-         * @memberof ModuleManager
-         */
-        ModuleManager.prototype.getCurModule = function () {
-            var curData = this.getCurrent();
-            return (curData && curData[0]);
-        };
-        /**
-         * 获取活动模块数量
-         *
-         * @returns {number} 活动模块数量
-         * @memberof ModuleManager
-         */
-        ModuleManager.prototype.getActiveCount = function () {
-            return this._moduleStack.length;
         };
         /**
          * 打开模块
@@ -2428,42 +2397,62 @@ define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector
             // 赋值大版本号
             this._bigVersion = this._version.split(".")[0];
         }
-        /**
-         * 获取浏览器类型枚举值
-         *
-         * @returns {ExplorerType} 浏览器类型枚举值
-         * @memberof Explorer
-         */
-        Explorer.prototype.getType = function () {
-            return this._type;
-        };
-        /**
-         * 获取浏览器类型字符串
-         *
-         * @returns {string} 浏览器类型字符串
-         * @memberof Explorer
-         */
-        Explorer.prototype.getTypeStr = function () {
-            return this._typeStr;
-        };
-        /**
-         * 获取浏览器版本
-         *
-         * @returns {string} 浏览器版本
-         * @memberof Explorer
-         */
-        Explorer.prototype.getVersion = function () {
-            return this._version;
-        };
-        /**
-         * 获取浏览器大版本
-         *
-         * @returns {string} 浏览器大版本
-         * @memberof Explorer
-         */
-        Explorer.prototype.getBigVersion = function () {
-            return this._bigVersion;
-        };
+        Object.defineProperty(Explorer.prototype, "type", {
+            /**
+             * 获取浏览器类型枚举值
+             *
+             * @readonly
+             * @type {ExplorerType}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Explorer.prototype, "typeStr", {
+            /**
+             * 获取浏览器类型字符串
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._typeStr;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Explorer.prototype, "version", {
+            /**
+             * 获取浏览器版本
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._version;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Explorer.prototype, "bigVersion", {
+            /**
+             * 获取浏览器大版本
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._bigVersion;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Explorer = __decorate([
             Injector_6.Injectable
         ], Explorer);
@@ -2566,51 +2555,76 @@ define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Inj
                     window.location.hash = "";
             }
         }
-        /**
-         * 获取原始的哈希字符串
-         *
-         * @returns {string}
-         * @memberof Hash
-         */
-        Hash.prototype.getHash = function () {
-            return this._hash;
-        };
-        /**
-         * 获取模块名
-         *
-         * @returns {string} 模块名
-         * @memberof Hash
-         */
-        Hash.prototype.getModuleName = function () {
-            return this._moduleName;
-        };
-        /**
-         * 获取传递给模块的参数
-         *
-         * @returns {{[key:string]:string}} 模块参数
-         * @memberof Hash
-         */
-        Hash.prototype.getParams = function () {
-            return this._params;
-        };
-        /**
-         * 获取是否直接跳转模块
-         *
-         * @returns {boolean} 是否直接跳转模块
-         * @memberof Hash
-         */
-        Hash.prototype.getDirect = function () {
-            return this._direct;
-        };
-        /**
-         * 获取是否保持哈希值
-         *
-         * @returns {boolean} 是否保持哈希值
-         * @memberof Hash
-         */
-        Hash.prototype.getKeepHash = function () {
-            return this._keepHash;
-        };
+        Object.defineProperty(Hash.prototype, "hash", {
+            /**
+             * 获取原始的哈希字符串
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._hash;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "moduleName", {
+            /**
+             * 获取模块名
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._moduleName;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "params", {
+            /**
+             * 获取传递给模块的参数
+             *
+             * @readonly
+             * @type {{[key:string]:string}}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._params;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "direct", {
+            /**
+             * 获取是否直接跳转模块
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._direct;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "keepHash", {
+            /**
+             * 获取是否保持哈希值
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._keepHash;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取指定哈希参数
          *
@@ -3121,7 +3135,7 @@ define("view/View", ["require", "exports", "core/Core", "core/injector/Injector"
                 var self = this;
                 for (var _a = 0, bridges_1 = bridges; _a < bridges_1.length; _a++) {
                     var bridge = bridges_1[_a];
-                    var type = bridge.getType();
+                    var type = bridge.type;
                     if (!this._bridgeDict[type]) {
                         var data = [bridge, false];
                         this._bridgeDict[type] = data;
@@ -3142,7 +3156,7 @@ define("view/View", ["require", "exports", "core/Core", "core/injector/Injector"
                 // 派发消息
                 Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_AFTER_INIT, bridge);
                 // 设置初始化完毕属性
-                var data = self._bridgeDict[bridge.getType()];
+                var data = self._bridgeDict[bridge.type];
                 data[1] = true;
                 // 测试是否全部初始化完毕
                 self.testAllInit();
@@ -3193,15 +3207,20 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         if (!cls.prototype.dispose)
             console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
         // 替换setSkin方法
-        var $setSkin = cls.prototype.setSkin;
-        if ($setSkin instanceof Function) {
-            cls.prototype.setSkin = function (skin) {
+        var $skin;
+        Object.defineProperty(cls.prototype, "skin", {
+            configurable: true,
+            enumerable: true,
+            get: function () {
+                return $skin;
+            },
+            set: function (value) {
                 // 根据skin类型选取表现层桥
-                this.setBridge(View_1.view.getBridgeBySkin(skin));
-                // 调用原始方法
-                $setSkin.apply(this, arguments);
-            };
-        }
+                this.bridge = View_1.view.getBridgeBySkin(value);
+                // 记录值
+                $skin = value;
+            }
+        });
         return ConstructUtil_2.wrapConstruct(cls);
     }
     exports.MediatorClass = MediatorClass;

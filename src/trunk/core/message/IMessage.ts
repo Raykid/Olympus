@@ -11,8 +11,9 @@ export default interface IMessage
     /**
      * 获取消息类型
      * 
-     * @returns {string} 消息类型
+     * @readonly
+     * @type {string}
      * @memberof IMessage
      */
-    getType():string;
+    readonly type:string;
 }

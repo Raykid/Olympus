@@ -17,23 +17,16 @@ export default interface IMediator extends IHasBridge, IDisposable
      * @returns {boolean} 是否已被销毁
      * @memberof IMediator
      */
-    isDisposed():boolean;
+    readonly disposed:boolean;
     
     /**
-     * 获取皮肤
+     * 皮肤
      * 
-     * @returns {*} 皮肤引用
+     * @readonly
+     * @type {*}
      * @memberof IMediator
      */
-    getSkin():any;
-
-    /**
-     * 设置皮肤
-     * 
-     * @param {*} value 皮肤引用
-     * @memberof IMediator
-     */
-    setSkin(value:any):void;
+    skin:any;
     
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

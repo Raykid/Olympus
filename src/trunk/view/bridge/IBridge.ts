@@ -11,10 +11,19 @@ export default interface IBridge
     /**
      * 获取表现层类型名称
      * 
-     * @return {string} 一个字符串，代表表现层类型名称
+     * @readonly
+     * @type {string}
      * @memberof IBridge
      */
-    getType():string;
+    readonly type:string;
+    /**
+     * 获取表现层HTML包装器，可以对其样式进行自定义调整
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof IBridge
+     */
+    readonly htmlWrapper:HTMLElement;
     /**
      * 判断传入的skin是否是属于该表现层桥的
      * 
@@ -23,13 +32,6 @@ export default interface IBridge
      * @memberof IBridge
      */
     isMySkin(skin:any):boolean;
-    /**
-     * 获取表现层HTML包装器，可以对其样式进行自定义调整
-     * 
-     * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
-     * @memberof IBridge
-     */
-    getHTMLWrapper():HTMLElement;
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 

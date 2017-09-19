@@ -77,10 +77,11 @@ export default abstract class RequestData implements IMessage
     /**
      * 获取请求消息类型字符串
      * 
-     * @returns {string} 请求消息类型字符串
+     * @readonly
+     * @type {string}
      * @memberof RequestData
      */
-    public getType():string
+    public get type():string
     {
         return this.__params.type;
     }

@@ -12,10 +12,8 @@ import IPanelPolicy from "./IPanelPolicy";
 */
 export default interface IPanel extends IHasBridge, IDisposable
 {
-    /** 获取弹出策略 */
-    getPolicy():IPanelPolicy;
-    /** 设置切换策略 */
-    setPolicy(policy:IPanelPolicy):void;
+    /** 弹出策略 */
+    policy:IPanelPolicy;
     /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
     pop(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */

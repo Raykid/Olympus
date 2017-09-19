@@ -46,7 +46,7 @@ export default class PanelManager
     {
         if(this._panels.indexOf(panel) < 0)
         {
-            var policy:IPanelPolicy = panel.getPolicy();
+            var policy:IPanelPolicy = panel.policy;
             if(policy == null) policy = none;
             // 调用回调
             panel.onBeforePop && panel.onBeforePop(data, isModel, from);
@@ -77,7 +77,7 @@ export default class PanelManager
         var index:number = this._panels.indexOf(panel);
         if(index >= 0)
         {
-            var policy:IPanelPolicy = panel.getPolicy();
+            var policy:IPanelPolicy = panel.policy;
             if(policy == null) policy = none;
             // 调用回调
             panel.onBeforeDrop && panel.onBeforeDrop(data, to);

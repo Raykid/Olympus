@@ -34,17 +34,22 @@ export function MediatorClass(cls:IConstructor):IConstructor
     if(!cls.prototype.dispose)
         console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
     // 替换setSkin方法
-    var $setSkin:(value:any)=>void = cls.prototype.setSkin;
-    if($setSkin instanceof Function)
-    {
-        cls.prototype.setSkin = function(skin:any):void
+    var $skin:any;
+    Object.defineProperty(cls.prototype, "skin", {
+        configurable: true,
+        enumerable: true,
+        get: function():any
+        {
+            return $skin;
+        },
+        set: function(value:any):void
         {
             // 根据skin类型选取表现层桥
-            this.setBridge(view.getBridgeBySkin(skin));
-            // 调用原始方法
-            $setSkin.apply(this, arguments);
-        };
-    }
+            this.bridge = view.getBridgeBySkin(value);
+            // 记录值
+            $skin = value;
+        }
+    });
     return wrapConstruct(cls);
 }
 

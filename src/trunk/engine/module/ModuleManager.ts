@@ -20,6 +20,31 @@ import ModuleMessage from "./ModuleMessage"
 export default class ModuleManager
 {
     private _moduleStack:[IModuleConstructor, IModule][] = [];
+    
+    /**
+     * 获取当前模块
+     * 
+     * @readonly
+     * @type {IModuleConstructor}
+     * @memberof ModuleManager
+     */ 
+    public get currentModule():IModuleConstructor|undefined
+    {
+        var curData:[IModuleConstructor, IModule] = this.getCurrent();
+        return (curData && curData[0]);
+    }    
+
+    /**
+     * 获取活动模块数量
+     * 
+     * @readonly
+     * @type {number}
+     * @memberof ModuleManager
+     */ 
+    public get activeCount():number
+    {
+        return this._moduleStack.length;
+    }    
 
     private getIndex(cls:IModuleConstructor):number
     {
@@ -57,29 +82,6 @@ export default class ModuleManager
     public isOpened(cls:IModuleConstructor):boolean
     {
         return (this._moduleStack.filter(temp=>temp[0]==cls).length > 0);
-    }
-
-    /**
-     * 获取当前模块
-     * 
-     * @returns {IModuleConstructor} 当前模块的类型
-     * @memberof ModuleManager
-     */
-    public getCurModule():IModuleConstructor|undefined
-    {
-        var curData:[IModuleConstructor, IModule] = this.getCurrent();
-        return (curData && curData[0]);
-    }
-
-    /**
-     * 获取活动模块数量
-     * 
-     * @returns {number} 活动模块数量
-     * @memberof ModuleManager
-     */
-    public getActiveCount():number
-    {
-        return this._moduleStack.length;
     }
 
     /**

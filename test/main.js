@@ -104,11 +104,11 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         __extends(FirstMediator, _super);
         function FirstMediator() {
             var _this = _super.call(this, document.createElement("a")) || this;
-            _this.mapListener(_this.getSkin(), "click", function () {
+            _this.mapListener(_this.skin, "click", function () {
                 console.log("onclick");
             }, _this);
-            _this.getSkin().textContent = "Fuck";
-            _this.getBridge().getHTMLWrapper().appendChild(_this.getSkin());
+            _this.skin.textContent = "Fuck";
+            _this.bridge.htmlWrapper.appendChild(_this.skin);
             return _this;
         }
         FirstMediator = __decorate([

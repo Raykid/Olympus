@@ -185,32 +185,34 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
             this._listenerDict = {};
             this._root = root;
         }
-        /**
-         * 获取表现层类型名称
-         * @return {string} 一个字符串，代表表现层类型名称
-         * @memberof IBridge
-         */
-        Bridge.prototype.getType = function () {
-            return "DOM";
-        };
-        /**
-         * 获取表现层HTML包装器，可以对其样式进行自定义调整
-         * @return {HTMLElement} 表现层的HTML包装器，通常会是一个<div/>标签
-         * @memberof IBridge
-         */
-        Bridge.prototype.getHTMLWrapper = function () {
-            return this._root;
-        };
-        /**
-         * 判断皮肤是否是DOM显示节点
-         *
-         * @param {*} skin 皮肤对象
-         * @returns {boolean} 是否是DOM显示节点
-         * @memberof Bridge
-         */
-        Bridge.prototype.isMySkin = function (skin) {
-            return (skin instanceof HTMLElement);
-        };
+        Object.defineProperty(Bridge.prototype, "type", {
+            /**
+             * 获取表现层类型名称
+             *
+             * @readonly
+             * @type {string}
+             * @memberof IBridge
+             */
+            get: function () {
+                return "DOM";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bridge.prototype, "htmlWrapper", {
+            /**
+             * 获取表现层HTML包装器，可以对其样式进行自定义调整
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof IBridge
+             */
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
          * @param {()=>void} complete 初始化完毕后的回调
@@ -230,9 +232,19 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
             complete(this);
         };
         /**
+         * 判断皮肤是否是DOM显示节点
+         *
+         * @param {*} skin 皮肤对象
+         * @returns {boolean} 是否是DOM显示节点
+         * @memberof Bridge
+         */
+        Bridge.prototype.isMySkin = function (skin) {
+            return (skin instanceof HTMLElement);
+        };
+        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
-         * @param {HTMLElement} target 事件目标对象
+         * @param {EventTarget} target 事件目标对象
          * @param {string} type 事件类型
          * @param {(evt:Event)=>void} handler 事件处理函数
          * @param {*} [thisArg] this指向对象
@@ -255,7 +267,7 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
         /**
          * 注销监听事件
          *
-         * @param {HTMLElement} target 事件目标对象
+         * @param {EventTarget} target 事件目标对象
          * @param {string} type 事件类型
          * @param {(evt:Event)=>void} handler 事件处理函数
          * @param {*} [thisArg] this指向对象

@@ -12,10 +12,8 @@ import IScenePolicy from "./IScenePolicy";
 */
 export default interface IScene extends IHasBridge, IDisposable
 {
-    /** 获取切换策略 */
-    getPolicy():IScenePolicy;
-    /** 设置切换策略 */
-    setPolicy(policy:IScenePolicy):void;
+    /** 切换策略 */
+    policy:IScenePolicy;
     /** 切入当前场景（相当于调用SceneManager.switch方法） */
     switch(data?:any):IScene;
     /** 推入当前场景（相当于调用SceneManager.push方法） */

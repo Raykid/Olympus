@@ -57,10 +57,10 @@ class FirstMediator extends Mediator
     public constructor()
     {
         super(document.createElement("a"));
-        this.mapListener(this.getSkin(), "click", ()=>{
+        this.mapListener(this.skin, "click", ()=>{
             console.log("onclick");
         }, this);
-        this.getSkin().textContent = "Fuck";
-        this.getBridge().getHTMLWrapper().appendChild(this.getSkin());
+        this.skin.textContent = "Fuck";
+        this.bridge.htmlWrapper.appendChild(this.skin);
     }
 }

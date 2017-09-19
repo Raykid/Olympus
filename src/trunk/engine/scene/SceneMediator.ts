@@ -13,34 +13,19 @@ import { sceneManager } from "./SceneManager";
 */
 export default abstract class SceneMediator extends Mediator implements IScene
 {
+    /**
+     * 切换策略
+     * 
+     * @type {IScenePolicy}
+     * @memberof SceneMediator
+     */
+    public policy:IScenePolicy;
+
     public constructor(skin?:any, policy?:IScenePolicy)
     {
         super(skin);
-        this.setPolicy(policy);
+        this.policy = policy;
     }
-    
-    private _policy:IScenePolicy;
-    /**
-     * 获取弹出策略
-     * 
-     * @returns {IScenePolicy} 弹出策略
-     * @memberof SceneMediator
-     */
-    public getPolicy():IScenePolicy
-    {
-        return this._policy;
-    }
-    /**
-     * 设置弹出策略
-     * 
-     * @param {IScenePolicy} policy 弹出策略
-     * @memberof SceneMediator
-     */
-    public setPolicy(policy:IScenePolicy):void
-    {
-        this._policy = policy;
-    }
-
     
     /**
      * 切入当前场景（相当于调用SceneManager.switch方法）

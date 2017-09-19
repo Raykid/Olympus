@@ -62,7 +62,7 @@ export default class Core implements IDispatcher
 
     private handleMessages(msg:IMessage):void
     {
-        var listeners:IMessageData[] = this._listenerDict[msg.getType()];
+        var listeners:IMessageData[] = this._listenerDict[msg.type];
         if(listeners)
         {
             for(var i:number = 0, len:number = listeners.length; i < len; i++)
@@ -230,7 +230,7 @@ export default class Core implements IDispatcher
 
     private handleCommands(msg:IMessage):void
     {
-        var commands:(ICommandConstructor)[] = this._commandDict[msg.getType()];
+        var commands:(ICommandConstructor)[] = this._commandDict[msg.type];
         if(!commands) return;
         for(var i:number = 0, len:number = commands.length; i < len; i++)
         {

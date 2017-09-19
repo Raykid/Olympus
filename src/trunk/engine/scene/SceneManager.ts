@@ -33,10 +33,11 @@ export default class SceneManager
     /**
      * 获取当前场景
      * 
-     * @returns {IScene} 当前场景
+     * @readonly
+     * @type {IScene}
      * @memberof SceneManager
      */
-    public getCurScene():IScene
+    public get currentScene():IScene
     {
         return this._sceneStack[0];
     }
@@ -44,10 +45,11 @@ export default class SceneManager
     /**
      * 获取活动场景个数
      * 
-     * @returns {number} 活动场景个数
+     * @readonly
+     * @type {number}
      * @memberof SceneManager
      */
-    public getActiveCount():number
+    public get activeCount():number
     {
         return this._sceneStack.length;
     }
@@ -65,17 +67,17 @@ export default class SceneManager
         // 非空判断
         if(scene == null) return;
         // 如果切入的是第一个场景，则改用push操作
-        if(this.getActiveCount() == 0)
+        if(this.activeCount == 0)
             return this.push(scene, data);
         // 同步执行
         wait(
             SYNC_NAME,
             this.doChange,
             this,
-            this.getCurScene(),
+            this.currentScene,
             scene,
             data,
-            scene.getPolicy(),
+            scene.policy,
             ChangeType.Switch,
             ()=>this._sceneStack[0] = scene
         );
@@ -99,10 +101,10 @@ export default class SceneManager
             SYNC_NAME,
             this.doChange,
             this,
-            this.getCurScene(),
+            this.currentScene,
             scene,
             data,
-            scene.getPolicy(),
+            scene.policy,
             ChangeType.Push,
             ()=>this._sceneStack.unshift(scene)
         );
@@ -135,7 +137,7 @@ export default class SceneManager
     private doPop(scene:IScene, data:any):void
     {
         // 如果没有足够的场景储备则什么都不做
-        var length:number = this.getActiveCount();
+        var length:number = this.activeCount;
         if(length <= 1)
         {
             console.log("场景栈中的场景数量不足，无法执行pop操作");
@@ -145,7 +147,7 @@ export default class SceneManager
         }
         // 验证是否是当前场景，不是则直接移除，不使用Policy
         var to:IScene = this._sceneStack[1];
-        var policy:IScenePolicy = scene.getPolicy();
+        var policy:IScenePolicy = scene.policy;
         var index:number = this._sceneStack.indexOf(scene);
         if(index != length - 1)
         {
@@ -172,10 +174,10 @@ export default class SceneManager
     {
         if(!policy) policy = none;
         // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-        if(!from || to.getBridge().getType() != from.getBridge().getType())
+        if(!from || to.bridge.type != from.bridge.type)
         {
-            from && (from.getBridge().getHTMLWrapper().style.display = "none");
-            to.getBridge().getHTMLWrapper().style.display = "";
+            from && (from.bridge.htmlWrapper.style.display = "none");
+            to.bridge.htmlWrapper.style.display = "";
             policy = none;
         }
         // 获取接口引用
