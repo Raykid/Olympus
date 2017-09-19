@@ -2291,7 +2291,7 @@ declare module "engine/injector/Injector" {
     export function ModuleClass(cls: IConstructor): IConstructor;
     /** 处理通讯消息返回 */
     export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
-    /** 在模块内托管中介者 */
+    /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: any, propertyKey: string): any;
 }
 declare module "engine/Engine" {

@@ -11,6 +11,11 @@ import { getObjectHashs } from "../../trunk/utils/ObjectUtil";
 */
 export default class Bridge implements IBridge
 {
+    public constructor(root?:HTMLElement|string)
+    {
+        this._root = root;
+    }
+    
     /**
      * 获取表现层类型名称
      * @return {string} 一个字符串，代表表现层类型名称
@@ -44,11 +49,6 @@ export default class Bridge implements IBridge
         return (skin instanceof HTMLElement);
     }
 
-    public constructor(root?:HTMLElement|string)
-    {
-        this._root = root;
-    }
-    
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调

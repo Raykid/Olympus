@@ -3229,7 +3229,7 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     exports.ResponseHandler = ResponseHandler;
     ;
     var _mediatorDict = new Dictionary_3.default();
-    /** 在模块内托管中介者 */
+    /** 在Module内托管Mediator */
     function DelegateMediator(prototype, propertyKey) {
         var mediator;
         return {

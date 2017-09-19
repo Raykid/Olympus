@@ -76,7 +76,7 @@ export function ResponseHandler(clsOrType:IResponseDataConstructor|string):Metho
 };
 
 var _mediatorDict:Dictionary<IModule, IMediator[]> = new Dictionary();
-/** 在模块内托管中介者 */
+/** 在Module内托管Mediator */
 export function DelegateMediator(prototype:any, propertyKey:string):any
 {
     var mediator:IMediator;
