@@ -26,6 +26,14 @@ declare module "trunk/view/bridge/IBridge" {
          */
         readonly htmlWrapper: HTMLElement;
         /**
+         * 获取根显示节点
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly root: any;
+        /**
          * 判断传入的skin是否是属于该表现层桥的
          *
          * @param {*} skin 皮肤实例
@@ -33,6 +41,85 @@ declare module "trunk/view/bridge/IBridge" {
          * @memberof IBridge
          */
         isMySkin(skin: any): boolean;
+        /**
+         * 添加显示
+         *
+         * @param {*} parent 要添加到的父容器
+         * @param {*} target 被添加的显示对象
+         * @return {*} 返回被添加的显示对象
+         * @memberof IBridge
+         */
+        addChild(parent: any, target: any): any;
+        /**
+         * 按索引添加显示
+         *
+         * @param {*} parent 要添加到的父容器
+         * @param {*} target 被添加的显示对象
+         * @param {number} index 要添加到的父级索引
+         * @return {*} 返回被添加的显示对象
+         * @memberof IBridge
+         */
+        addChildAt(parent: any, target: any, index: number): any;
+        /**
+         * 移除显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {*} target 被移除的显示对象
+         * @return {*} 返回被移除的显示对象
+         * @memberof IBridge
+         */
+        removeChild(parent: any, target: any): any;
+        /**
+         * 按索引移除显示
+         *
+         * @param {*} parent 父容器
+         * @param {number} index 索引
+         * @return {*} 返回被移除的显示对象
+         * @memberof IBridge
+         */
+        removeChildAt(parent: any, index: number): any;
+        /**
+         * 移除所有显示对象
+         *
+         * @param {*} parent 父容器
+         * @memberof IBridge
+         */
+        removeChildren(parent: any): void;
+        /**
+         * 获取指定索引处的显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {number} index 指定父级索引
+         * @return {*} 索引处的显示对象
+         * @memberof IBridge
+         */
+        getChildAt(parent: any, index: number): any;
+        /**
+         * 获取显示索引
+         *
+         * @param {*} parent 父容器
+         * @param {*} target 子显示对象
+         * @return {number} target在parent中的索引
+         * @memberof IBridge
+         */
+        getChildIndex(parent: any, target: any): number;
+        /**
+         * 通过名称获取显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {string} name 对象名称
+         * @return {*} 显示对象
+         * @memberof IBridge
+         */
+        getChildByName(parent: any, name: string): any;
+        /**
+         * 获取子显示对象数量
+         *
+         * @param {*} parent 父容器
+         * @return {number} 子显示对象数量
+         * @memberof IBridge
+         */
+        getChildCount(parent: any): number;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
@@ -89,6 +176,14 @@ declare module "branches/egret/Bridge" {
          * @memberof Bridge
          */
         readonly htmlWrapper: HTMLElement;
+        /**
+         * 获取根显示节点
+         *
+         * @readonly
+         * @type {egret.DisplayObjectContainer}
+         * @memberof Bridge
+         */
+        readonly root: egret.DisplayObjectContainer;
         constructor();
         /**
          * 初始化表现层桥
@@ -104,6 +199,85 @@ declare module "branches/egret/Bridge" {
          * @memberof Bridge
          */
         isMySkin(skin: any): boolean;
+        /**
+         * 添加显示
+         *
+         * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
+         * @param {egret.DisplayObject} target 被添加的显示对象
+         * @return {egret.DisplayObject} 返回被添加的显示对象
+         * @memberof Bridge
+         */
+        addChild(parent: egret.DisplayObjectContainer, target: egret.DisplayObject): egret.DisplayObject;
+        /**
+         * 按索引添加显示
+         *
+         * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
+         * @param {egret.DisplayObject} target 被添加的显示对象
+         * @param {number} index 要添加到的父级索引
+         * @return {egret.DisplayObject} 返回被添加的显示对象
+         * @memberof Bridge
+         */
+        addChildAt(parent: egret.DisplayObjectContainer, target: egret.DisplayObject, index: number): egret.DisplayObject;
+        /**
+         * 移除显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {egret.DisplayObject} target 被移除的显示对象
+         * @return {egret.DisplayObject} 返回被移除的显示对象
+         * @memberof Bridge
+         */
+        removeChild(parent: egret.DisplayObjectContainer, target: egret.DisplayObject): egret.DisplayObject;
+        /**
+         * 按索引移除显示
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {number} index 索引
+         * @return {egret.DisplayObject} 返回被移除的显示对象
+         * @memberof Bridge
+         */
+        removeChildAt(parent: egret.DisplayObjectContainer, index: number): egret.DisplayObject;
+        /**
+         * 移除所有显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @memberof Bridge
+         */
+        removeChildren(parent: egret.DisplayObjectContainer): void;
+        /**
+         * 获取指定索引处的显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {number} index 指定父级索引
+         * @return {egret.DisplayObject} 索引处的显示对象
+         * @memberof Bridge
+         */
+        getChildAt(parent: egret.DisplayObjectContainer, index: number): egret.DisplayObject;
+        /**
+         * 获取显示索引
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {egret.DisplayObject} target 子显示对象
+         * @return {number} target在parent中的索引
+         * @memberof Bridge
+         */
+        getChildIndex(parent: egret.DisplayObjectContainer, target: egret.DisplayObject): number;
+        /**
+         * 通过名称获取显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {string} name 对象名称
+         * @return {egret.DisplayObject} 显示对象
+         * @memberof Bridge
+         */
+        getChildByName(parent: egret.DisplayObjectContainer, name: string): egret.DisplayObject;
+        /**
+         * 获取子显示对象数量
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @return {number} 子显示对象数量
+         * @memberof Bridge
+         */
+        getChildCount(parent: egret.DisplayObjectContainer): number;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *

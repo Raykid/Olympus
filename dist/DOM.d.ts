@@ -25,6 +25,14 @@ declare module "trunk/view/bridge/IBridge" {
          */
         readonly htmlWrapper: HTMLElement;
         /**
+         * 获取根显示节点
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly root: any;
+        /**
          * 判断传入的skin是否是属于该表现层桥的
          *
          * @param {*} skin 皮肤实例
@@ -32,6 +40,85 @@ declare module "trunk/view/bridge/IBridge" {
          * @memberof IBridge
          */
         isMySkin(skin: any): boolean;
+        /**
+         * 添加显示
+         *
+         * @param {*} parent 要添加到的父容器
+         * @param {*} target 被添加的显示对象
+         * @return {*} 返回被添加的显示对象
+         * @memberof IBridge
+         */
+        addChild(parent: any, target: any): any;
+        /**
+         * 按索引添加显示
+         *
+         * @param {*} parent 要添加到的父容器
+         * @param {*} target 被添加的显示对象
+         * @param {number} index 要添加到的父级索引
+         * @return {*} 返回被添加的显示对象
+         * @memberof IBridge
+         */
+        addChildAt(parent: any, target: any, index: number): any;
+        /**
+         * 移除显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {*} target 被移除的显示对象
+         * @return {*} 返回被移除的显示对象
+         * @memberof IBridge
+         */
+        removeChild(parent: any, target: any): any;
+        /**
+         * 按索引移除显示
+         *
+         * @param {*} parent 父容器
+         * @param {number} index 索引
+         * @return {*} 返回被移除的显示对象
+         * @memberof IBridge
+         */
+        removeChildAt(parent: any, index: number): any;
+        /**
+         * 移除所有显示对象
+         *
+         * @param {*} parent 父容器
+         * @memberof IBridge
+         */
+        removeChildren(parent: any): void;
+        /**
+         * 获取指定索引处的显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {number} index 指定父级索引
+         * @return {*} 索引处的显示对象
+         * @memberof IBridge
+         */
+        getChildAt(parent: any, index: number): any;
+        /**
+         * 获取显示索引
+         *
+         * @param {*} parent 父容器
+         * @param {*} target 子显示对象
+         * @return {number} target在parent中的索引
+         * @memberof IBridge
+         */
+        getChildIndex(parent: any, target: any): number;
+        /**
+         * 通过名称获取显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {string} name 对象名称
+         * @return {*} 显示对象
+         * @memberof IBridge
+         */
+        getChildByName(parent: any, name: string): any;
+        /**
+         * 获取子显示对象数量
+         *
+         * @param {*} parent 父容器
+         * @return {number} 子显示对象数量
+         * @memberof IBridge
+         */
+        getChildCount(parent: any): number;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
@@ -142,23 +229,31 @@ declare module "branches/dom/Bridge" {
          *
          * @readonly
          * @type {string}
-         * @memberof IBridge
+         * @memberof Bridge
          */
         readonly type: string;
         private _root;
+        /**
+         * 获取根显示节点
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof Bridge
+         */
+        readonly root: HTMLElement;
         /**
          * 获取表现层HTML包装器，可以对其样式进行自定义调整
          *
          * @readonly
          * @type {HTMLElement}
-         * @memberof IBridge
+         * @memberof Bridge
          */
         readonly htmlWrapper: HTMLElement;
         constructor(root?: HTMLElement | string);
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
          * @param {()=>void} complete 初始化完毕后的回调
-         * @memberof IBridge
+         * @memberof Bridge
          */
         init(complete: (bridge: IBridge) => void): void;
         /**
@@ -169,6 +264,85 @@ declare module "branches/dom/Bridge" {
          * @memberof Bridge
          */
         isMySkin(skin: any): boolean;
+        /**
+         * 添加显示
+         *
+         * @param {Element} parent 要添加到的父容器
+         * @param {Element} target 被添加的显示对象
+         * @return {Element} 返回被添加的显示对象
+         * @memberof Bridge
+         */
+        addChild(parent: Element, target: Element): Element;
+        /**
+         * 按索引添加显示
+         *
+         * @param {Element} parent 要添加到的父容器
+         * @param {Element} target 被添加的显示对象
+         * @param {number} index 要添加到的父级索引
+         * @return {Element} 返回被添加的显示对象
+         * @memberof Bridge
+         */
+        addChildAt(parent: Element, target: Element, index: number): Element;
+        /**
+         * 移除显示对象
+         *
+         * @param {Element} parent 父容器
+         * @param {Element} target 被移除的显示对象
+         * @return {Element} 返回被移除的显示对象
+         * @memberof Bridge
+         */
+        removeChild(parent: Element, target: Element): Element;
+        /**
+         * 按索引移除显示
+         *
+         * @param {Element} parent 父容器
+         * @param {number} index 索引
+         * @return {Element} 返回被移除的显示对象
+         * @memberof Bridge
+         */
+        removeChildAt(parent: Element, index: number): Element;
+        /**
+         * 移除所有显示对象
+         *
+         * @param {Element} parent 父容器
+         * @memberof Bridge
+         */
+        removeChildren(parent: Element): void;
+        /**
+         * 获取指定索引处的显示对象
+         *
+         * @param {Element} parent 父容器
+         * @param {number} index 指定父级索引
+         * @return {Element} 索引处的显示对象
+         * @memberof Bridge
+         */
+        getChildAt(parent: Element, index: number): Element;
+        /**
+         * 获取显示索引
+         *
+         * @param {Element} parent 父容器
+         * @param {Element} target 子显示对象
+         * @return {number} target在parent中的索引
+         * @memberof Bridge
+         */
+        getChildIndex(parent: Element, target: Element): number;
+        /**
+         * 通过名称获取显示对象
+         *
+         * @param {Element} parent 父容器
+         * @param {string} name 对象名称
+         * @return {Element} 显示对象
+         * @memberof Bridge
+         */
+        getChildByName(parent: Element, name: string): Element;
+        /**
+         * 获取子显示对象数量
+         *
+         * @param {Element} parent 父容器
+         * @return {number} 子显示对象数量
+         * @memberof Bridge
+         */
+        getChildCount(parent: Element): number;
         private _listenerDict;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
@@ -177,7 +351,7 @@ declare module "branches/dom/Bridge" {
          * @param {string} type 事件类型
          * @param {(evt:Event)=>void} handler 事件处理函数
          * @param {*} [thisArg] this指向对象
-         * @memberof IBridge
+         * @memberof Bridge
          */
         mapListener(target: EventTarget, type: string, handler: (evt: Event) => void, thisArg?: any): void;
         /**
@@ -187,7 +361,7 @@ declare module "branches/dom/Bridge" {
          * @param {string} type 事件类型
          * @param {(evt:Event)=>void} handler 事件处理函数
          * @param {*} [thisArg] this指向对象
-         * @memberof IBridge
+         * @memberof Bridge
          */
         unmapListener(target: EventTarget, type: string, handler: (evt: Event) => void, thisArg?: any): void;
     }

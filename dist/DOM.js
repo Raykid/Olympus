@@ -191,10 +191,24 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
              *
              * @readonly
              * @type {string}
-             * @memberof IBridge
+             * @memberof Bridge
              */
             get: function () {
                 return "DOM";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bridge.prototype, "root", {
+            /**
+             * 获取根显示节点
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof Bridge
+             */
+            get: function () {
+                return this._root;
             },
             enumerable: true,
             configurable: true
@@ -205,7 +219,7 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
              *
              * @readonly
              * @type {HTMLElement}
-             * @memberof IBridge
+             * @memberof Bridge
              */
             get: function () {
                 return this._root;
@@ -216,7 +230,7 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
          * @param {()=>void} complete 初始化完毕后的回调
-         * @memberof IBridge
+         * @memberof Bridge
          */
         Bridge.prototype.init = function (complete) {
             // 如果是名称，则转变成引用
@@ -242,13 +256,116 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
             return (skin instanceof HTMLElement);
         };
         /**
+         * 添加显示
+         *
+         * @param {Element} parent 要添加到的父容器
+         * @param {Element} target 被添加的显示对象
+         * @return {Element} 返回被添加的显示对象
+         * @memberof Bridge
+         */
+        Bridge.prototype.addChild = function (parent, target) {
+            return parent.appendChild(target);
+        };
+        /**
+         * 按索引添加显示
+         *
+         * @param {Element} parent 要添加到的父容器
+         * @param {Element} target 被添加的显示对象
+         * @param {number} index 要添加到的父级索引
+         * @return {Element} 返回被添加的显示对象
+         * @memberof Bridge
+         */
+        Bridge.prototype.addChildAt = function (parent, target, index) {
+            return parent.insertBefore(target, this.getChildAt(parent, index));
+        };
+        /**
+         * 移除显示对象
+         *
+         * @param {Element} parent 父容器
+         * @param {Element} target 被移除的显示对象
+         * @return {Element} 返回被移除的显示对象
+         * @memberof Bridge
+         */
+        Bridge.prototype.removeChild = function (parent, target) {
+            return parent.removeChild(target);
+        };
+        /**
+         * 按索引移除显示
+         *
+         * @param {Element} parent 父容器
+         * @param {number} index 索引
+         * @return {Element} 返回被移除的显示对象
+         * @memberof Bridge
+         */
+        Bridge.prototype.removeChildAt = function (parent, index) {
+            return parent.removeChild(this.getChildAt(parent, index));
+        };
+        /**
+         * 移除所有显示对象
+         *
+         * @param {Element} parent 父容器
+         * @memberof Bridge
+         */
+        Bridge.prototype.removeChildren = function (parent) {
+            for (var i = 0, len = parent.children.length; i < len; i++) {
+                parent.removeChild(parent.children.item(i));
+            }
+        };
+        /**
+         * 获取指定索引处的显示对象
+         *
+         * @param {Element} parent 父容器
+         * @param {number} index 指定父级索引
+         * @return {Element} 索引处的显示对象
+         * @memberof Bridge
+         */
+        Bridge.prototype.getChildAt = function (parent, index) {
+            return parent.children.item(index);
+        };
+        /**
+         * 获取显示索引
+         *
+         * @param {Element} parent 父容器
+         * @param {Element} target 子显示对象
+         * @return {number} target在parent中的索引
+         * @memberof Bridge
+         */
+        Bridge.prototype.getChildIndex = function (parent, target) {
+            for (var i = 0, len = parent.children.length; i < len; i++) {
+                if (target === parent.children.item(i))
+                    return i;
+            }
+            return -1;
+        };
+        /**
+         * 通过名称获取显示对象
+         *
+         * @param {Element} parent 父容器
+         * @param {string} name 对象名称
+         * @return {Element} 显示对象
+         * @memberof Bridge
+         */
+        Bridge.prototype.getChildByName = function (parent, name) {
+            return parent.children.namedItem(name);
+        };
+        /**
+         * 获取子显示对象数量
+         *
+         * @param {Element} parent 父容器
+         * @return {number} 子显示对象数量
+         * @memberof Bridge
+         */
+        Bridge.prototype.getChildCount = function (parent) {
+            return parent.childElementCount;
+        };
+        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
          * @param {EventTarget} target 事件目标对象
          * @param {string} type 事件类型
          * @param {(evt:Event)=>void} handler 事件处理函数
          * @param {*} [thisArg] this指向对象
-         * @memberof IBridge
+         * @memberof Bridge
          */
         Bridge.prototype.mapListener = function (target, type, handler, thisArg) {
             var key = ObjectUtil_1.getObjectHashs(target, type, handler, thisArg);
@@ -271,7 +388,7 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
          * @param {string} type 事件类型
          * @param {(evt:Event)=>void} handler 事件处理函数
          * @param {*} [thisArg] this指向对象
-         * @memberof IBridge
+         * @memberof Bridge
          */
         Bridge.prototype.unmapListener = function (target, type, handler, thisArg) {
             var key = ObjectUtil_1.getObjectHashs(target, type, handler, thisArg);

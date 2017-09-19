@@ -16,7 +16,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {string}
-     * @memberof IBridge
+     * @memberof Bridge
      */
     public get type():string
     {
@@ -25,11 +25,23 @@ export default class Bridge implements IBridge
 
     private _root:HTMLElement|string;
     /**
+     * 获取根显示节点
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof Bridge
+     */
+    public get root():HTMLElement
+    {
+        return <HTMLElement>this._root;
+    }
+
+    /**
      * 获取表现层HTML包装器，可以对其样式进行自定义调整
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof IBridge
+     * @memberof Bridge
      */
     public get htmlWrapper():HTMLElement
     {
@@ -44,7 +56,7 @@ export default class Bridge implements IBridge
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调
-     * @memberof IBridge
+     * @memberof Bridge
      */
     public init(complete:(bridge:IBridge)=>void):void
     {
@@ -74,6 +86,128 @@ export default class Bridge implements IBridge
     {
         return (skin instanceof HTMLElement);
     }
+
+    /**
+     * 添加显示
+     * 
+     * @param {Element} parent 要添加到的父容器
+     * @param {Element} target 被添加的显示对象
+     * @return {Element} 返回被添加的显示对象
+     * @memberof Bridge
+     */
+    public addChild(parent:Element, target:Element):Element
+    {
+        return parent.appendChild(target);
+    }
+
+    /**
+     * 按索引添加显示
+     * 
+     * @param {Element} parent 要添加到的父容器
+     * @param {Element} target 被添加的显示对象
+     * @param {number} index 要添加到的父级索引
+     * @return {Element} 返回被添加的显示对象
+     * @memberof Bridge
+     */
+    public addChildAt(parent:Element, target:Element, index:number):Element
+    {
+        return parent.insertBefore(target, this.getChildAt(parent, index));
+    }
+
+    /**
+     * 移除显示对象
+     * 
+     * @param {Element} parent 父容器
+     * @param {Element} target 被移除的显示对象
+     * @return {Element} 返回被移除的显示对象
+     * @memberof Bridge
+     */
+    public removeChild(parent:Element, target:Element):Element
+    {
+        return parent.removeChild(target);
+    }
+
+    /**
+     * 按索引移除显示
+     * 
+     * @param {Element} parent 父容器
+     * @param {number} index 索引
+     * @return {Element} 返回被移除的显示对象
+     * @memberof Bridge
+     */
+    public removeChildAt(parent:Element, index:number):Element
+    {
+        return parent.removeChild(this.getChildAt(parent, index));
+    }
+
+    /**
+     * 移除所有显示对象
+     * 
+     * @param {Element} parent 父容器
+     * @memberof Bridge
+     */
+    public removeChildren(parent:Element):void
+    {
+        for(var i:number = 0, len:number = parent.children.length; i < len; i++)
+        {
+            parent.removeChild(parent.children.item(i));
+        }
+    }
+
+    /**
+     * 获取指定索引处的显示对象
+     * 
+     * @param {Element} parent 父容器
+     * @param {number} index 指定父级索引
+     * @return {Element} 索引处的显示对象
+     * @memberof Bridge
+     */
+    public getChildAt(parent:Element, index:number):Element
+    {
+        return parent.children.item(index);
+    }
+
+    /**
+     * 获取显示索引
+     * 
+     * @param {Element} parent 父容器
+     * @param {Element} target 子显示对象
+     * @return {number} target在parent中的索引
+     * @memberof Bridge
+     */
+    public getChildIndex(parent:Element, target:Element):number
+    {
+        for(var i:number = 0, len:number = parent.children.length; i < len; i++)
+        {
+            if(target === parent.children.item(i)) return i;
+        }
+        return -1;
+    }
+    
+    /**
+     * 通过名称获取显示对象
+     * 
+     * @param {Element} parent 父容器
+     * @param {string} name 对象名称
+     * @return {Element} 显示对象
+     * @memberof Bridge
+     */
+    public getChildByName(parent:Element, name:string):Element
+    {
+        return parent.children.namedItem(name);
+    }
+
+    /**
+     * 获取子显示对象数量
+     * 
+     * @param {Element} parent 父容器
+     * @return {number} 子显示对象数量
+     * @memberof Bridge
+     */
+    public getChildCount(parent:Element):number
+    {
+        return parent.childElementCount;
+    }
     
     private _listenerDict:{[key:string]:(evt:Event)=>void} = {};
     /**
@@ -83,7 +217,7 @@ export default class Bridge implements IBridge
      * @param {string} type 事件类型
      * @param {(evt:Event)=>void} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof IBridge
+     * @memberof Bridge
      */
     public mapListener(target:EventTarget, type:string, handler:(evt:Event)=>void, thisArg?:any):void
     {
@@ -108,7 +242,7 @@ export default class Bridge implements IBridge
      * @param {string} type 事件类型
      * @param {(evt:Event)=>void} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof IBridge
+     * @memberof Bridge
      */
     public unmapListener(target:EventTarget, type:string, handler:(evt:Event)=>void, thisArg?:any):void
     {

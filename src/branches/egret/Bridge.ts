@@ -35,6 +35,18 @@ export default class Bridge implements IBridge
     {
         return null;
     }
+
+    /**
+     * 获取根显示节点
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof Bridge
+     */
+    public get root():egret.DisplayObjectContainer
+    {
+        return null;
+    }
     
     public constructor()
     {
@@ -60,6 +72,121 @@ export default class Bridge implements IBridge
     public isMySkin(skin:any):boolean
     {
         return (skin instanceof egret.DisplayObject);
+    }
+    
+    /**
+     * 添加显示
+     * 
+     * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
+     * @param {egret.DisplayObject} target 被添加的显示对象
+     * @return {egret.DisplayObject} 返回被添加的显示对象
+     * @memberof Bridge
+     */
+    public addChild(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):egret.DisplayObject
+    {
+        return parent.addChild(target);
+    }
+
+    /**
+     * 按索引添加显示
+     * 
+     * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
+     * @param {egret.DisplayObject} target 被添加的显示对象
+     * @param {number} index 要添加到的父级索引
+     * @return {egret.DisplayObject} 返回被添加的显示对象
+     * @memberof Bridge
+     */
+    public addChildAt(parent:egret.DisplayObjectContainer, target:egret.DisplayObject, index:number):egret.DisplayObject
+    {
+        return parent.addChildAt(target, index);
+    }
+    
+    /**
+     * 移除显示对象
+     * 
+     * @param {egret.DisplayObjectContainer} parent 父容器
+     * @param {egret.DisplayObject} target 被移除的显示对象
+     * @return {egret.DisplayObject} 返回被移除的显示对象
+     * @memberof Bridge
+     */
+    public removeChild(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):egret.DisplayObject
+    {
+        return parent.removeChild(target);
+    }
+
+    /**
+     * 按索引移除显示
+     * 
+     * @param {egret.DisplayObjectContainer} parent 父容器
+     * @param {number} index 索引
+     * @return {egret.DisplayObject} 返回被移除的显示对象
+     * @memberof Bridge
+     */
+    public removeChildAt(parent:egret.DisplayObjectContainer, index:number):egret.DisplayObject
+    {
+        return parent.removeChildAt(index);
+    }
+    
+    /**
+     * 移除所有显示对象
+     * 
+     * @param {egret.DisplayObjectContainer} parent 父容器
+     * @memberof Bridge
+     */
+    public removeChildren(parent:egret.DisplayObjectContainer):void
+    {
+        parent.removeChildren();
+    }
+    
+    /**
+     * 获取指定索引处的显示对象
+     * 
+     * @param {egret.DisplayObjectContainer} parent 父容器
+     * @param {number} index 指定父级索引
+     * @return {egret.DisplayObject} 索引处的显示对象
+     * @memberof Bridge
+     */
+    public getChildAt(parent:egret.DisplayObjectContainer, index:number):egret.DisplayObject
+    {
+        return parent.getChildAt(index);
+    }
+
+    /**
+     * 获取显示索引
+     * 
+     * @param {egret.DisplayObjectContainer} parent 父容器
+     * @param {egret.DisplayObject} target 子显示对象
+     * @return {number} target在parent中的索引
+     * @memberof Bridge
+     */
+    public getChildIndex(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):number
+    {
+        return parent.getChildIndex(target);
+    }
+    
+    /**
+     * 通过名称获取显示对象
+     * 
+     * @param {egret.DisplayObjectContainer} parent 父容器
+     * @param {string} name 对象名称
+     * @return {egret.DisplayObject} 显示对象
+     * @memberof Bridge
+     */
+    public getChildByName(parent:egret.DisplayObjectContainer, name:string):egret.DisplayObject
+    {
+        return parent.getChildByName(name);
+    }
+    
+    /**
+     * 获取子显示对象数量
+     * 
+     * @param {egret.DisplayObjectContainer} parent 父容器
+     * @return {number} 子显示对象数量
+     * @memberof Bridge
+     */
+    public getChildCount(parent:egret.DisplayObjectContainer):number
+    {
+        return parent.numChildren;
     }
     
     /**
