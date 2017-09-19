@@ -9,6 +9,7 @@
   },
   "files": [
     "Olympus.ts",
+    "Injector.ts",
     "core/Core.ts",
     "engine/Engine.ts",
     "view/View.ts"

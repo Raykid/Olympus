@@ -3380,4 +3380,23 @@ define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function
     }());
     exports.default = Olympus;
 });
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-19
+ * @modify date 2017-09-19
+ *
+ * 统一的Injector输出口，所有框架内的装饰器注入方法都可以从这个模块找到
+*/
+define("Injector", ["require", "exports", "core/injector/Injector", "engine/injector/Injector"], function (require, exports, Injector_12, Injector_13) {
+    "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /** 导出core模组的注入方法 */
+    __export(Injector_12);
+    /** 导出engine模组的注入方法 */
+    __export(Injector_13);
+});
 //# sourceMappingURL=Olympus.js.map

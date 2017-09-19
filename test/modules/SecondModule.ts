@@ -1,6 +1,6 @@
 import Module from "engine/module/Module";
 import ResponseData from "engine/net/ResponseData";
-import { ModuleClass } from "engine/injector/Injector";
+import { ModuleClass } from "Injector";
 
 /**
  * @author Raykid

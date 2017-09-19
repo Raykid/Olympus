@@ -3,9 +3,8 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
-import { ModuleClass, ResponseHandler, MediatorClass, DelegateMediator } from "engine/injector/Injector";
-import { Inject, MessageHandler } from "core/injector/Injector";
 import Mediator from "engine/mediator/Mediator";
+import { ModuleClass, DelegateMediator, Inject, MessageHandler, MediatorClass } from "Injector";
 
 /**
  * @author Raykid

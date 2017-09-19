@@ -14,7 +14,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/injector/Injector"], function (require, exports, Module_1, Injector_1) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "Injector"], function (require, exports, Module_1, Injector_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -46,7 +46,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
     }(Module_1.default));
     exports.default = SecondModule;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/injector/Injector", "core/injector/Injector", "engine/mediator/Mediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, Injector_3, Mediator_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/mediator/Mediator", "Injector"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Mediator_1, Injector_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -85,13 +85,13 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 console.log("change to second module!");
         };
         __decorate([
-            Injector_3.Inject(ModuleManager_1.default)
+            Injector_2.Inject(ModuleManager_1.default)
         ], FirstModule.prototype, "moduleManager", void 0);
         __decorate([
             Injector_2.DelegateMediator
         ], FirstModule.prototype, "_mediator", void 0);
         __decorate([
-            Injector_3.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
+            Injector_2.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
         ], FirstModule.prototype, "onModuleChange", null);
         FirstModule = FirstModule_1 = __decorate([
             Injector_2.ModuleClass
