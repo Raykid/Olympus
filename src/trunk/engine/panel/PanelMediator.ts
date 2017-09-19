@@ -2,7 +2,7 @@ import Mediator from "../mediator/Mediator";
 import IBridge from "../../view/bridge/IBridge";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
-import {panelManager} from "./PanelManager";
+import { panelManager } from "./PanelManager";
 
 /**
  * @author Raykid

@@ -1,4 +1,4 @@
-import {core} from "../../core/Core";
+import { core } from "../../core/Core";
 
 /**
  * @author Raykid
@@ -43,4 +43,4 @@ export default class External
     }
 }
 /** 再额外导出一个单例 */
-export const external:External = core.getInject(External)
+export const external:External = core.getInject(External);

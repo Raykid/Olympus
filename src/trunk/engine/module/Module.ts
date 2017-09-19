@@ -1,4 +1,4 @@
-import {core} from "../../core/Core";
+import { core } from "../../core/Core";
 import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
 import RequestData from "../net/RequestData";

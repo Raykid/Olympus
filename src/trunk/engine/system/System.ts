@@ -1,4 +1,4 @@
-import {core} from "../../core/Core";
+import { core } from "../../core/Core";
 
 /**
  * @author Raykid
@@ -166,4 +166,4 @@ export interface ICancelable
 }
 
 /** 再额外导出一个单例 */
-export const system:System = core.getInject(System)
+export const system:System = core.getInject(System);

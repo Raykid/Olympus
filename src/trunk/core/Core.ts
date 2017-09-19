@@ -1,7 +1,7 @@
 /// <reference path="./global/Patch.ts"/>
 /// <reference path="./global/Decorator.ts"/>
 
-import {listenConstruct, listenDispose, wrapConstruct} from "../utils/ConstructUtil";
+import { listenConstruct, listenDispose, wrapConstruct } from "../utils/ConstructUtil";
 import Dictionary from "../utils/Dictionary";
 import IDisposable from "./interfaces/IDisposable";
 import IConstructor from "./interfaces/IConstructor";
@@ -36,7 +36,7 @@ interface IMessageData
 
 export interface IInjectableParams
 {
-    type:IConstructor;
+    type:IConstructor|string;
 }
 
 /**
@@ -176,15 +176,15 @@ export default class Core implements IDispatcher
     }
     
     /*********************** 下面是依赖注入系统 ***********************/
-    private _injectDict:Dictionary<IConstructor, any> = new Dictionary();
+    private _injectDict:Dictionary<IConstructor|string, any> = new Dictionary();
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      * 
      * @param {IConstructor} target 要注入的类型（注意不是实例）
-     * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+     * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
      * @memberof Core
      */
-    public mapInject(target:IConstructor, type?:IConstructor):void
+    public mapInject(target:IConstructor, type?:IConstructor|string):void
     {
         var value:any = new target();
         this.mapInjectValue(value, type);
@@ -194,10 +194,10 @@ export default class Core implements IDispatcher
      * 注入一个对象实例
      * 
      * @param {*} value 要注入的对象实例
-     * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+     * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
      * @memberof Core
      */
-    public mapInjectValue(value:any, type?:IConstructor):void
+    public mapInjectValue(value:any, type?:IConstructor|string):void
     {
         this._injectDict.set(type || value.constructor, value);
     }
@@ -205,10 +205,10 @@ export default class Core implements IDispatcher
     /**
      * 移除类型注入
      * 
-     * @param {IConstructor} target 要移除注入的类型
+     * @param {IConstructor|string} target 要移除注入的类型
      * @memberof Core
      */
-    public unmapInject(target:IConstructor):void
+    public unmapInject(target:IConstructor|string):void
     {
         this._injectDict.delete(target);
     }
@@ -216,11 +216,11 @@ export default class Core implements IDispatcher
     /**
      * 获取注入的对象实例
      * 
-     * @param {(IConstructor)} type 注入对象的类型
+     * @param {IConstructor|string} type 注入对象的类型
      * @returns {*} 注入的对象实例
      * @memberof Core
      */
-    public getInject(type:IConstructor):any
+    public getInject(type:IConstructor|string):any
     {
         // 需要用原始的构造函数取
         type = type["__ori_constructor__"] || type;
@@ -285,15 +285,15 @@ export const core:Core = new Core();
 /*********************** 下面是装饰器方法实现 ***********************/
 
 /** injectable，仅生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
-window["injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorator|void
+window["injectable"] = function(cls:IInjectableParams|IConstructor|string):ClassDecorator|void
 {
     var params:IInjectableParams = cls as IInjectableParams;
-    if(params.type instanceof Function)
+    if(typeof cls == "string" || params.type instanceof Function)
     {
         // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):void
         {
-            core.mapInject(realCls, params.type);
+            core.mapInject(realCls, typeof cls == "string" ? cls : params.type);
         } as ClassDecorator;
     }
     else
@@ -303,28 +303,8 @@ window["injectable"] = function(cls:IInjectableParams|IConstructor):ClassDecorat
     }
 };
 
-/** model */
-window["model"] = function(cls:IConstructor):IConstructor
-{
-    // Model先进行托管
-    var result:IConstructor = wrapConstruct(cls);
-    // 然后要注入新生成的类
-    core.mapInject(result);
-    // 返回结果
-    return result;
-}
-
-/** mediator */
-window["mediator"] = function(cls:IConstructor):IConstructor
-{
-    // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
-    if(!cls.prototype.dispose)
-        console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-    return wrapConstruct(cls);
-}
-
 /** inject */
-window["inject"] = function(cls:IConstructor):PropertyDecorator
+window["inject"] = function(cls:IConstructor|string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {

@@ -17,6 +17,35 @@ interface IConstructor extends Function {
  *
  * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
 */
+/**
+ * 标识当前类型是个Model，Model具有装饰器注入功能，且自身也会被注入(Injectable功能)
+ *
+ * @param {IConstructor} cls 要注入的Model类
+ * @returns {*} 替换的构造函数
+ */
+declare function model(cls: IConstructor): any;
+/**
+ * 标识当前类型是个Mediator，Mediator具有装饰器注入功能，但自身不会被注入
+ *
+ * @param {IConstructor} cls 要注入的Mediator类
+ * @returns {*} 替换的构造函数
+ */
+declare function mediator(cls: IConstructor): any;
+/**
+ * 标识当前类型是个Module，Module与Mediator类似，具有装饰器注入功能，但自身不会被注入
+ *
+ * @param {IConstructor} cls 要注入的Module类
+ * @returns {*} 替换的构造函数
+ */
+declare function module(cls: IConstructor): any;
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-06
+ * @modify date 2017-09-06
+ *
+ * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
+*/
 interface IInjectableParams {
     type: IConstructor;
 }
@@ -33,20 +62,6 @@ declare function injectable(cls: IConstructor): void;
  * @returns {*}
  */
 declare function injectable(params: IInjectableParams): any;
-/**
- * 标识当前类型是个Model，Model具有装饰器注入功能，且自身也会被注入(Injectable功能)
- *
- * @param {IConstructor} cls 要注入的Model类
- * @returns {*} 替换的构造函数
- */
-declare function model(cls: IConstructor): any;
-/**
- * 标识当前类型是个Mediator，Mediator具有装饰器注入功能，但自身不会被注入
- *
- * @param {IConstructor} cls 要注入的Mediator类
- * @returns {*} 替换的构造函数
- */
-declare function mediator(cls: IConstructor): any;
 /**
  * 注入一个类型的实例
  *
@@ -403,7 +418,7 @@ declare module "core/Core" {
     import ICommandConstructor from "core/command/ICommandConstructor";
     import IDispatcher from "core/interfaces/IDispatcher";
     export interface IInjectableParams {
-        type: IConstructor;
+        type: IConstructor | string;
     }
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
@@ -457,33 +472,33 @@ declare module "core/Core" {
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
          * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
          * @memberof Core
          */
-        mapInject(target: IConstructor, type?: IConstructor): void;
+        mapInject(target: IConstructor, type?: IConstructor | string): void;
         /**
          * 注入一个对象实例
          *
          * @param {*} value 要注入的对象实例
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
          * @memberof Core
          */
-        mapInjectValue(value: any, type?: IConstructor): void;
+        mapInjectValue(value: any, type?: IConstructor | string): void;
         /**
          * 移除类型注入
          *
-         * @param {IConstructor} target 要移除注入的类型
+         * @param {IConstructor|string} target 要移除注入的类型
          * @memberof Core
          */
-        unmapInject(target: IConstructor): void;
+        unmapInject(target: IConstructor | string): void;
         /**
          * 获取注入的对象实例
          *
-         * @param {(IConstructor)} type 注入对象的类型
+         * @param {IConstructor|string} type 注入对象的类型
          * @returns {*} 注入的对象实例
          * @memberof Core
          */
-        getInject(type: IConstructor): any;
+        getInject(type: IConstructor | string): any;
         /*********************** 下面是内核命令系统 ***********************/
         private _commandDict;
         private handleCommands(msg);
@@ -1409,21 +1424,6 @@ declare module "engine/scene/SceneMediator" {
         pop(data?: any): IScene;
     }
 }
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-13
- * @modify date 2017-09-13
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
-/**
- * 标识当前类型是个Module，Module与Mediator类似，具有装饰器注入功能，但自身不会被注入
- *
- * @param {IConstructor} cls 要注入的Module类
- * @returns {*} 替换的构造函数
- */
-declare function module(cls: IConstructor): any;
 declare module "engine/net/IRequestPolicy" {
     import RequestData from "engine/net/RequestData";
     /**
@@ -1597,21 +1597,6 @@ declare module "engine/net/RequestData" {
     /** 导出公共消息参数对象 */
     export var commonData: any;
 }
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-13
- * @modify date 2017-09-13
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
-/**
- * 通讯消息返回处理函数的装饰器方法
- *
- * @param {(IConstructor|string)} clsOrType 消息返回体构造器或类型字符串
- * @returns {MethodDecorator}
- */
-declare function result(clsOrType: IConstructor | string): MethodDecorator;
 declare module "engine/net/NetMessage" {
     /**
      * @author Raykid

@@ -1,6 +1,6 @@
-import {engine} from "./engine/Engine";
+import { engine } from "./engine/Engine";
 import IModuleConstructor from "./engine/module/IModuleConstructor";
-import {view} from "./view/View";
+import { view } from "./view/View";
 import IBridge from "./view/bridge/IBridge";
 
 /**

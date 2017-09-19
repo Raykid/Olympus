@@ -2,7 +2,7 @@ import Mediator from "../mediator/Mediator";
 import IBridge from "../../view/bridge/IBridge";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
-import {sceneManager} from "./SceneManager";
+import { sceneManager } from "./SceneManager";
 
 /**
  * @author Raykid

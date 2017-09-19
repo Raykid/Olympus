@@ -1,5 +1,5 @@
 import IBridge from "../../trunk/view/bridge/IBridge";
-import {getObjectHashs} from "../../trunk/utils/ObjectUtil";
+import { getObjectHashs } from "../../trunk/utils/ObjectUtil";
 
 /**
  * @author Raykid

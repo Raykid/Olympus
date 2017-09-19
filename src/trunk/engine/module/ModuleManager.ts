@@ -1,10 +1,8 @@
-/// <reference path="./Decorator.ts"/>
-
-import {core} from "../../core/Core";
-import {wrapConstruct} from "../../utils/ConstructUtil";
+import { core } from "../../core/Core";
+import { wrapConstruct } from "../../utils/ConstructUtil";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
-import {netManager} from "../net/NetManager";
+import { netManager } from "../net/NetManager";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 import ModuleMessage from "./ModuleMessage"
@@ -176,7 +174,7 @@ export default class ModuleManager
     }
 }
 /** 再额外导出一个单例 */
-export const moduleManager:ModuleManager = core.getInject(ModuleManager)
+export const moduleManager:ModuleManager = core.getInject(ModuleManager);
 
 
 /*********************** 下面是装饰器方法实现 ***********************/

@@ -14,6 +14,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+/// <reference path="../../core/global/IConstructor.ts"/>
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -597,7 +598,7 @@ define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Diction
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
          * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
          * @memberof Core
          */
         Core.prototype.mapInject = function (target, type) {
@@ -608,7 +609,7 @@ define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Diction
          * 注入一个对象实例
          *
          * @param {*} value 要注入的对象实例
-         * @param {IConstructor} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
          * @memberof Core
          */
         Core.prototype.mapInjectValue = function (value, type) {
@@ -617,7 +618,7 @@ define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Diction
         /**
          * 移除类型注入
          *
-         * @param {IConstructor} target 要移除注入的类型
+         * @param {IConstructor|string} target 要移除注入的类型
          * @memberof Core
          */
         Core.prototype.unmapInject = function (target) {
@@ -626,7 +627,7 @@ define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Diction
         /**
          * 获取注入的对象实例
          *
-         * @param {(IConstructor)} type 注入对象的类型
+         * @param {IConstructor|string} type 注入对象的类型
          * @returns {*} 注入的对象实例
          * @memberof Core
          */
@@ -691,32 +692,16 @@ define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Diction
     /** injectable，仅生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
     window["injectable"] = function (cls) {
         var params = cls;
-        if (params.type instanceof Function) {
+        if (typeof cls == "string" || params.type instanceof Function) {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
-                exports.core.mapInject(realCls, params.type);
+                exports.core.mapInject(realCls, typeof cls == "string" ? cls : params.type);
             };
         }
         else {
             // 不需要转换注册类型，直接注册
             exports.core.mapInject(cls);
         }
-    };
-    /** model */
-    window["model"] = function (cls) {
-        // Model先进行托管
-        var result = ConstructUtil_1.wrapConstruct(cls);
-        // 然后要注入新生成的类
-        exports.core.mapInject(result);
-        // 返回结果
-        return result;
-    };
-    /** mediator */
-    window["mediator"] = function (cls) {
-        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-        return ConstructUtil_1.wrapConstruct(cls);
     };
     /** inject */
     window["inject"] = function (cls) {
@@ -1755,7 +1740,6 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-/// <reference path="../../core/global/IConstructor.ts"/>
 define("engine/net/IRequestPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1830,7 +1814,6 @@ define("engine/net/RequestData", ["require", "exports"], function (require, expo
     /** 导出公共消息参数对象 */
     exports.commonData = {};
 });
-/// <reference path="../../core/global/IConstructor.ts"/>
 define("engine/net/NetMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1873,8 +1856,7 @@ define("engine/net/NetMessage", ["require", "exports"], function (require, expor
     }());
     exports.default = NetMessage;
 });
-/// <reference path="./Decorator.ts"/>
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "utils/ConstructUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_7, CoreMessage_2, ObjectUtil_3, ConstructUtil_2, RequestData_1, NetMessage_1) {
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_7, CoreMessage_2, ObjectUtil_3, RequestData_1, NetMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NetManager = /** @class */ (function () {
@@ -2032,20 +2014,6 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
     exports.default = NetManager;
     /** 再额外导出一个单例 */
     exports.netManager = Core_7.core.getInject(NetManager);
-    /*********************** 下面是装饰器方法实现 ***********************/
-    /** result */
-    window["result"] = function (clsOrType) {
-        return function (prototype, propertyKey, descriptor) {
-            // 监听实例化
-            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
-                exports.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-                exports.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-            });
-        };
-    };
 });
 define("engine/module/IModuleConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -2081,8 +2049,7 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
     }());
     exports.default = ModuleMessage;
 });
-/// <reference path="./Decorator.ts"/>
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_8, ConstructUtil_3, NetManager_1, ModuleMessage_1) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_8, ConstructUtil_2, NetManager_1, ModuleMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2246,7 +2213,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils
         // 判断一下Module是否有dispose方法，没有的话弹一个警告
         if (!cls.prototype.dispose)
             console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-        return ConstructUtil_3.wrapConstruct(cls);
+        return ConstructUtil_2.wrapConstruct(cls);
     };
 });
 define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_9) {
@@ -3073,7 +3040,8 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "view/message/ViewMessage", "engine/module/ModuleManager"], function (require, exports, Core_14, ViewMessage_1, ModuleManager_1) {
+/// <reference path="global/Decorator.ts"/>
+define("engine/Engine", ["require", "exports", "core/Core", "view/message/ViewMessage", "utils/ConstructUtil", "engine/module/ModuleManager", "engine/net/NetManager"], function (require, exports, Core_14, ViewMessage_1, ConstructUtil_3, ModuleManager_1, NetManager_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3112,6 +3080,36 @@ define("engine/Engine", ["require", "exports", "core/Core", "view/message/ViewMe
     exports.default = Engine;
     /** 再额外导出一个单例 */
     exports.engine = Core_14.core.getInject(Engine);
+    /*********************** 下面是装饰器方法实现 ***********************/
+    /** model */
+    window["model"] = function (cls) {
+        // Model先进行托管
+        var result = ConstructUtil_3.wrapConstruct(cls);
+        // 然后要注入新生成的类
+        Core_14.core.mapInject(result);
+        // 返回结果
+        return result;
+    };
+    /** mediator */
+    window["mediator"] = function (cls) {
+        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+        return ConstructUtil_3.wrapConstruct(cls);
+    };
+    /** result */
+    window["result"] = function (clsOrType) {
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            ConstructUtil_3.listenConstruct(prototype.constructor, function (instance) {
+                NetManager_3.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_3.listenDispose(prototype.constructor, function (instance) {
+                NetManager_3.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
+            });
+        };
+    };
 });
 define("view/View", ["require", "exports", "core/Core", "view/message/ViewMessage"], function (require, exports, Core_15, ViewMessage_2) {
     "use strict";

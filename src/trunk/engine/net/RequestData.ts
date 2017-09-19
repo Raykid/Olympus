@@ -1,6 +1,6 @@
 import IMessage from "../../core/message/IMessage";
 import IRequestPolicy from "./IRequestPolicy";
-import {IResponseDataConstructor} from "./ResponseData";
+import { IResponseDataConstructor } from "./ResponseData";
 
 /**
  * @author Raykid

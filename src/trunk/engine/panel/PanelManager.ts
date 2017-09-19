@@ -1,4 +1,4 @@
-import {core} from "../../core/Core";
+import { core } from "../../core/Core";
 import IConstructor from "../../core/interfaces/IConstructor";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";

@@ -1,4 +1,4 @@
-import {core} from "../core/Core";
+import { core } from "../core/Core";
 import IBridge from "./bridge/IBridge";
 import ViewMessage from "./message/ViewMessage";
 
@@ -96,4 +96,4 @@ export default class View
     }
 }
 /** 再额外导出一个单例 */
-export const view:View = core.getInject(View)
+export const view:View = core.getInject(View);

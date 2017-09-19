@@ -1,4 +1,4 @@
-import {core} from "../Core";
+import { core } from "../Core";
 import IMessage from "../message/IMessage";
 
 /**

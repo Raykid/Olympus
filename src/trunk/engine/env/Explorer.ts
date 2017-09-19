@@ -1,4 +1,4 @@
-import {core} from "../../core/Core";
+import { core } from "../../core/Core";
 
 /**
  * @author Raykid
@@ -162,4 +162,4 @@ export default class Explorer
     }
 }
 /** 再额外导出一个单例 */
-export const explorer:Explorer = core.getInject(Explorer)
+export const explorer:Explorer = core.getInject(Explorer);

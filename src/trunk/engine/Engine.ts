@@ -1,6 +1,9 @@
-import {core} from "../core/Core";
+/// <reference path="global/Decorator.ts"/>
+
+import { core } from "../core/Core";
 import IMessage from "../core/message/IMessage";
 import ViewMessage from "../view/message/ViewMessage";
+import { wrapConstruct, listenConstruct, listenDispose } from "../utils/ConstructUtil";
 import System from "./system/System";
 import Model from "./model/Model";
 import Mediator from "./mediator/Mediator";
@@ -15,8 +18,9 @@ import Explorer from "./env/Explorer";
 import External from "./env/External";
 import Hash from "./env/Hash";
 import Query from "./env/Query";
-import NetManager from "./net/NetManager";
+import NetManager, { netManager } from "./net/NetManager";
 import HTTPRequestPolicy from "./net/policies/HTTPRequestPolicy";
+import { IResponseDataConstructor } from "./net/ResponseData";
 
 /**
  * @author Raykid
@@ -51,4 +55,44 @@ export default class Engine
     }
 }
 /** 再额外导出一个单例 */
-export const engine:Engine = core.getInject(Engine)
+export const engine:Engine = core.getInject(Engine);
+
+/*********************** 下面是装饰器方法实现 ***********************/
+
+/** model */
+window["model"] = function(cls:IConstructor):IConstructor
+{
+    // Model先进行托管
+    var result:IConstructor = wrapConstruct(cls);
+    // 然后要注入新生成的类
+    core.mapInject(result);
+    // 返回结果
+    return result;
+}
+
+/** mediator */
+window["mediator"] = function(cls:IConstructor):IConstructor
+{
+    // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+    if(!cls.prototype.dispose)
+        console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+    return wrapConstruct(cls);
+}
+
+/** result */
+window["result"] = function(clsOrType:IResponseDataConstructor|string):MethodDecorator
+{
+    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    {
+        // 监听实例化
+        listenConstruct(prototype.constructor, function(instance:any):void
+        {
+            netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+        });
+        // 监听销毁
+        listenDispose(prototype.constructor, function(instance:any):void
+        {
+            netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
+        });
+    };
+};

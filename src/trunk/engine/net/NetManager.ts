@@ -1,13 +1,10 @@
-/// <reference path="./Decorator.ts"/>
-
-import {core} from "../../core/Core";
+import { core } from "../../core/Core";
 import IMessage from "../../core/message/IMessage";
 import CoreMessage from "../../core/message/CoreMessage";
-import {extendObject} from "../../utils/ObjectUtil";
-import {listenConstruct, listenDispose} from "../../utils/ConstructUtil";
-import RequestData, {commonData} from "./RequestData";
-import ResponseData, {IResponseDataConstructor} from "./ResponseData";
-import NetMessage from "./NetMessage";
+import { extendObject } from "../../utils/ObjectUtil";
+import RequestData, { commonData } from "./RequestData";
+import ResponseData, { IResponseDataConstructor } from "./ResponseData";
+import NetMessage from "./NetMessage"
 
 /**
  * @author Raykid
@@ -200,24 +197,4 @@ export default class NetManager
     }
 }
 /** 再额外导出一个单例 */
-export const netManager:NetManager = core.getInject(NetManager)
-
-/*********************** 下面是装饰器方法实现 ***********************/
-
-/** result */
-window["result"] = function(clsOrType:IResponseDataConstructor|string):MethodDecorator
-{
-    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
-    {
-        // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:any):void
-        {
-            netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-        });
-        // 监听销毁
-        listenDispose(prototype.constructor, function(instance:any):void
-        {
-            netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-        });
-    };
-};
+export const netManager:NetManager = core.getInject(NetManager);

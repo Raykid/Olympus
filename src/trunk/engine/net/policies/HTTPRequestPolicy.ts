@@ -1,8 +1,8 @@
-import {wrapHost, validateProtocol, joinQueryParams} from "../../../utils/URLUtil";
+import { wrapHost, validateProtocol, joinQueryParams } from "../../../utils/URLUtil";
 import IRequestPolicy from "../IRequestPolicy";
 import RequestData, {IRequestParams} from "../RequestData";
 import HTTPMethod from "../HTTPMethod";
-import {netManager} from "../NetManager";
+import { netManager } from "../NetManager";
 
 /**
  * @author Raykid

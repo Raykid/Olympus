@@ -30,22 +30,6 @@ declare function injectable(cls:IConstructor):void;
 declare function injectable(params:IInjectableParams):any;
 
 /**
- * 标识当前类型是个Model，Model具有装饰器注入功能，且自身也会被注入(Injectable功能)
- * 
- * @param {IConstructor} cls 要注入的Model类
- * @returns {*} 替换的构造函数
- */
-declare function model(cls:IConstructor):any;
-
-/**
- * 标识当前类型是个Mediator，Mediator具有装饰器注入功能，但自身不会被注入
- * 
- * @param {IConstructor} cls 要注入的Mediator类
- * @returns {*} 替换的构造函数
- */
-declare function mediator(cls:IConstructor):any;
-
-/**
  * 注入一个类型的实例
  * 
  * @param {IConstructor} cls 类型构造器

@@ -1,10 +1,10 @@
-import {core} from "../../core/Core";
+import { core } from "../../core/Core";
 import IConstructor from "../../core/interfaces/IConstructor";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import none from "./NoneScenePolicy";
 import SceneMessage from "./SceneMessage";
-import {wait, notify} from "../../utils/SyncUtil";
+import { wait, notify } from "../../utils/SyncUtil";
 
 /**
  * @author Raykid
