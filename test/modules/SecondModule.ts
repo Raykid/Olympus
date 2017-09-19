@@ -1,5 +1,6 @@
 import Module from "engine/module/Module";
 import ResponseData from "engine/net/ResponseData";
+import { ModuleClass } from "engine/injector/Injector";
 
 /**
  * @author Raykid
@@ -9,6 +10,7 @@ import ResponseData from "engine/net/ResponseData";
  * 
  * 测试第二个模块
 */
+@ModuleClass
 export default class SecondModule extends Module
 {
     public onOpen(data?:any):void

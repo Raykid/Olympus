@@ -3,6 +3,8 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
+import { ModuleClass } from "engine/injector/Injector";
+import { Inject, MessageHandler } from "core/injector/Injector";
 
 /**
  * @author Raykid
@@ -12,10 +14,10 @@ import ModuleMessage from "engine/module/ModuleMessage";
  * 
  * 测试首个模块
 */
-@module
+@ModuleClass
 export default class FirstModule extends Module
 {
-    @inject(ModuleManager)
+    @Inject(ModuleManager)
     private moduleManager:ModuleManager;
 
     public onOpen(data?:any):void
@@ -37,8 +39,8 @@ export default class FirstModule extends Module
         }, 1000);
     }
 
-    @handler(ModuleMessage.MODULE_CHANGE)
-    private onSwitchIn(from:any, to:any):void
+    @MessageHandler(ModuleMessage.MODULE_CHANGE)
+    private onModuleChange(from:any, to:any):void
     {
         if(to == FirstModule) console.log("change to first module!");
         else if(to == SecondModule) console.log("change to second module!");

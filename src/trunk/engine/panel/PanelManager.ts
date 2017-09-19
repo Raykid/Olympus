@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector"
 import IConstructor from "../../core/interfaces/IConstructor";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
@@ -13,7 +14,7 @@ import PanelMessage from "./PanelMessage";
  * 
  * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
 */
-@injectable
+@Injectable
 export default class PanelManager
 {
     private _panels:IPanel[] = [];

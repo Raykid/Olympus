@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector"
 
 /**
  * @author Raykid
@@ -8,7 +9,7 @@ import { core } from "../../core/Core";
  * 
  * Query类记录通过GET参数传递给框架的参数字典
 */
-@injectable
+@Injectable
 export default class Query
 {
     private _params:{[key:string]:string};

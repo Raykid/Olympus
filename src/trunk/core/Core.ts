@@ -1,10 +1,6 @@
 /// <reference path="./global/Patch.ts"/>
-/// <reference path="./global/Decorator.ts"/>
 
-import { listenConstruct, listenDispose, wrapConstruct } from "../utils/ConstructUtil";
 import Dictionary from "../utils/Dictionary";
-import IDisposable from "./interfaces/IDisposable";
-import IConstructor from "./interfaces/IConstructor";
 import IMessage from "./message/IMessage";
 import IMessageHandler from "./message/IMessageHandler"
 import CommonMessage from "./message/CommonMessage";
@@ -12,6 +8,7 @@ import CoreMessage from "./message/CoreMessage";
 import ICommandConstructor from "./command/ICommandConstructor";
 import Command from "./command/Command";
 import IDispatcher from "./interfaces/IDispatcher";
+import * as Injector from "./injector/Injector"
 
 /**
  * @author Raykid
@@ -281,59 +278,3 @@ export default class Core implements IDispatcher
 }
 /** 再额外导出一个单例 */
 export const core:Core = new Core();
-
-/*********************** 下面是装饰器方法实现 ***********************/
-
-/** injectable，仅生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
-window["injectable"] = function(cls:IInjectableParams|IConstructor|string):ClassDecorator|void
-{
-    var params:IInjectableParams = cls as IInjectableParams;
-    if(typeof cls == "string" || params.type instanceof Function)
-    {
-        // 需要转换注册类型，需要返回一个ClassDecorator
-        return function(realCls:IConstructor):void
-        {
-            core.mapInject(realCls, typeof cls == "string" ? cls : params.type);
-        } as ClassDecorator;
-    }
-    else
-    {
-        // 不需要转换注册类型，直接注册
-        core.mapInject(cls as IConstructor);
-    }
-};
-
-/** inject */
-window["inject"] = function(cls:IConstructor|string):PropertyDecorator
-{
-    return function(prototype:any, propertyKey:string):void
-    {
-        // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:any):void
-        {
-            Object.defineProperty(instance, propertyKey, {
-                configurable: true,
-                enumerable: true,
-                get: ()=>core.getInject(cls)
-            });
-        });
-    };
-};
-
-/** handler */
-window["handler"] = function(type:string):MethodDecorator
-{
-    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
-    {
-        // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:any):void
-        {
-            core.listen(type, instance[propertyKey], instance);
-        });
-        // 监听销毁
-        listenDispose(prototype.constructor, function(instance:any):void
-        {
-            core.unlisten(type, instance[propertyKey], instance);
-        });
-    };
-};

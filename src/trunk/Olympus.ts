@@ -9,7 +9,7 @@ import IBridge from "./view/bridge/IBridge";
  * @create date 2017-09-18
  * @modify date 2017-09-18
  * 
- * Olympus框架便捷启动模块
+ * Olympus框架便捷启动与框架外观模块
 */
 export default class Olympus
 {

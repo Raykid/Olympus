@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector"
 import { wrapConstruct } from "../../utils/ConstructUtil";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
@@ -15,7 +16,7 @@ import ModuleMessage from "./ModuleMessage"
  * 
  * 模块管理器，管理模块相关的所有操作。模块具有唯一性，同一时间不可以打开两个相同模块，如果打开则会退回到先前的模块处
 */
-@injectable
+@Injectable
 export default class ModuleManager
 {
     private _moduleStack:[IModuleConstructor, IModule][] = [];
@@ -175,15 +176,3 @@ export default class ModuleManager
 }
 /** 再额外导出一个单例 */
 export const moduleManager:ModuleManager = core.getInject(ModuleManager);
-
-
-/*********************** 下面是装饰器方法实现 ***********************/
-
-/** module */
-window["module"] = function(cls:IConstructor):IConstructor
-{
-    // 判断一下Module是否有dispose方法，没有的话弹一个警告
-    if(!cls.prototype.dispose)
-        console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-    return wrapConstruct(cls);
-}

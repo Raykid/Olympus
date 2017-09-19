@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector"
 import IConstructor from "../../core/interfaces/IConstructor";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
@@ -24,7 +25,7 @@ enum ChangeType
     Pop
 }
 
-@injectable
+@Injectable
 export default class SceneManager
 {
     private _sceneStack:IScene[] = [];

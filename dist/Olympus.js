@@ -14,7 +14,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-/// <reference path="../../core/global/IConstructor.ts"/>
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -31,12 +30,6 @@ if (Array.prototype.hasOwnProperty("findIndex")) {
         Object.defineProperty(Array.prototype, "findIndex", desc);
     }
 }
-/// <reference path="../../core/global/IConstructor.ts"/>
-/// <reference path="../../core/global/IConstructor.ts"/>
-define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -252,111 +245,6 @@ define("utils/Dictionary", ["require", "exports", "utils/ObjectUtil"], function 
     }());
     exports.default = Dictionary;
 });
-define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-13
-     * @modify date 2017-09-13
-     *
-     * 装饰器工具集
-    */
-    var instanceDict = new Dictionary_1.default();
-    function handleInstance(instance) {
-        var cls = instance.constructor;
-        var funcs = instanceDict.get(cls);
-        if (funcs)
-            for (var _i = 0, funcs_1 = funcs; _i < funcs_1.length; _i++) {
-                var func = funcs_1[_i];
-                func(instance);
-            }
-    }
-    /**
-     * 包装一个类型，监听类型的实例化操作
-     *
-     * @export
-     * @param {IConstructor} cls 要监听构造的类型构造器
-     * @returns {IConstructor} 新的构造函数
-     */
-    function wrapConstruct(cls) {
-        // 创建一个新的构造函数
-        var func;
-        eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
-        // 动态设置继承
-        ObjectUtil_2.extendsClass(func, cls);
-        // 为新的构造函数打一个标签，用以记录原始的构造函数
-        func["__ori_constructor__"] = cls;
-        // 返回新的构造函数
-        return func;
-        function onConstruct(instance) {
-            // 恢复__proto__
-            instance["__proto__"] = cls.prototype;
-            // 调用父类构造函数构造实例
-            cls.apply(instance, arguments);
-            // 调用回调
-            handleInstance(instance);
-        }
-    }
-    exports.wrapConstruct = wrapConstruct;
-    /**
-     * 监听类型的实例化
-     *
-     * @export
-     * @param {IConstructor} cls 要监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    function listenConstruct(cls, handler) {
-        var list = instanceDict.get(cls);
-        if (!list)
-            instanceDict.set(cls, list = []);
-        if (list.indexOf(handler) < 0)
-            list.push(handler);
-    }
-    exports.listenConstruct = listenConstruct;
-    /**
-     * 移除实例化监听
-     *
-     * @export
-     * @param {IConstructor} cls 要移除监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    function unlistenConstruct(cls, handler) {
-        var list = instanceDict.get(cls);
-        if (list) {
-            var index = list.indexOf(handler);
-            if (index >= 0)
-                list.splice(index, 1);
-        }
-    }
-    exports.unlistenConstruct = unlistenConstruct;
-    /**
-     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
-     *
-     * @export
-     * @param {IConstructor} cls 要监听销毁的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    function listenDispose(cls, handler) {
-        var dispose = cls.prototype.dispose;
-        // 判断类型是否具有dispose方法
-        if (dispose) {
-            // 替换dispose方法
-            cls.prototype.dispose = function () {
-                // 调用回调
-                handler(this);
-                // 调用原始dispose方法执行销毁
-                return dispose.apply(this, arguments);
-            };
-        }
-    }
-    exports.listenDispose = listenDispose;
-});
-define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("core/message/IMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -479,9 +367,163 @@ define("core/interfaces/IDispatcher", ["require", "exports"], function (require,
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+/// <reference path="../../core/global/IConstructor.ts"/>
+define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-13
+     * @modify date 2017-09-13
+     *
+     * 装饰器工具集
+    */
+    var instanceDict = new Dictionary_1.default();
+    function handleInstance(instance) {
+        var cls = instance.constructor;
+        var funcs = instanceDict.get(cls);
+        if (funcs)
+            for (var _i = 0, funcs_1 = funcs; _i < funcs_1.length; _i++) {
+                var func = funcs_1[_i];
+                func(instance);
+            }
+    }
+    /**
+     * 包装一个类型，监听类型的实例化操作
+     *
+     * @export
+     * @param {IConstructor} cls 要监听构造的类型构造器
+     * @returns {IConstructor} 新的构造函数
+     */
+    function wrapConstruct(cls) {
+        // 创建一个新的构造函数
+        var func;
+        eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
+        // 动态设置继承
+        ObjectUtil_2.extendsClass(func, cls);
+        // 为新的构造函数打一个标签，用以记录原始的构造函数
+        func["__ori_constructor__"] = cls;
+        // 返回新的构造函数
+        return func;
+        function onConstruct(instance) {
+            // 恢复__proto__
+            instance["__proto__"] = cls.prototype;
+            // 调用父类构造函数构造实例
+            cls.apply(instance, arguments);
+            // 调用回调
+            handleInstance(instance);
+        }
+    }
+    exports.wrapConstruct = wrapConstruct;
+    /**
+     * 监听类型的实例化
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    function listenConstruct(cls, handler) {
+        var list = instanceDict.get(cls);
+        if (!list)
+            instanceDict.set(cls, list = []);
+        if (list.indexOf(handler) < 0)
+            list.push(handler);
+    }
+    exports.listenConstruct = listenConstruct;
+    /**
+     * 移除实例化监听
+     *
+     * @export
+     * @param {IConstructor} cls 要移除监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    function unlistenConstruct(cls, handler) {
+        var list = instanceDict.get(cls);
+        if (list) {
+            var index = list.indexOf(handler);
+            if (index >= 0)
+                list.splice(index, 1);
+        }
+    }
+    exports.unlistenConstruct = unlistenConstruct;
+    /**
+     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+     *
+     * @export
+     * @param {IConstructor} cls 要监听销毁的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    function listenDispose(cls, handler) {
+        var dispose = cls.prototype.dispose;
+        // 判断类型是否具有dispose方法
+        if (dispose) {
+            // 替换dispose方法
+            cls.prototype.dispose = function () {
+                // 调用回调
+                handler(this);
+                // 调用原始dispose方法执行销毁
+                return dispose.apply(this, arguments);
+            };
+        }
+    }
+    exports.listenDispose = listenDispose;
+});
+define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil"], function (require, exports, Core_2, ConstructUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function Injectable(cls) {
+        var params = cls;
+        if (typeof cls == "string" || params.type instanceof Function) {
+            // 需要转换注册类型，需要返回一个ClassDecorator
+            return function (realCls) {
+                Core_2.core.mapInject(realCls, typeof cls == "string" ? cls : params.type);
+            };
+        }
+        else {
+            // 不需要转换注册类型，直接注册
+            Core_2.core.mapInject(cls);
+        }
+    }
+    exports.Injectable = Injectable;
+    ;
+    /** 赋值注入的实例 */
+    function Inject(cls) {
+        return function (prototype, propertyKey) {
+            // 监听实例化
+            ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
+                Object.defineProperty(instance, propertyKey, {
+                    configurable: true,
+                    enumerable: true,
+                    get: function () { return Core_2.core.getInject(cls); }
+                });
+            });
+        };
+    }
+    exports.Inject = Inject;
+    ;
+    /** 处理内核消息 */
+    function MessageHandler(type) {
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
+                Core_2.core.listen(type, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_1.listenDispose(prototype.constructor, function (instance) {
+                Core_2.core.unlisten(type, instance[propertyKey], instance);
+            });
+        };
+    }
+    exports.MessageHandler = MessageHandler;
+    ;
+});
 /// <reference path="./global/Patch.ts"/>
-/// <reference path="./global/Decorator.ts"/>
-define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Dictionary", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, ConstructUtil_1, Dictionary_2, CommonMessage_1, CoreMessage_1) {
+define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, Dictionary_2, CommonMessage_1, CoreMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -688,47 +730,6 @@ define("core/Core", ["require", "exports", "utils/ConstructUtil", "utils/Diction
     exports.default = Core;
     /** 再额外导出一个单例 */
     exports.core = new Core();
-    /*********************** 下面是装饰器方法实现 ***********************/
-    /** injectable，仅生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
-    window["injectable"] = function (cls) {
-        var params = cls;
-        if (typeof cls == "string" || params.type instanceof Function) {
-            // 需要转换注册类型，需要返回一个ClassDecorator
-            return function (realCls) {
-                exports.core.mapInject(realCls, typeof cls == "string" ? cls : params.type);
-            };
-        }
-        else {
-            // 不需要转换注册类型，直接注册
-            exports.core.mapInject(cls);
-        }
-    };
-    /** inject */
-    window["inject"] = function (cls) {
-        return function (prototype, propertyKey) {
-            // 监听实例化
-            ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
-                Object.defineProperty(instance, propertyKey, {
-                    configurable: true,
-                    enumerable: true,
-                    get: function () { return exports.core.getInject(cls); }
-                });
-            });
-        };
-    };
-    /** handler */
-    window["handler"] = function (type) {
-        return function (prototype, propertyKey, descriptor) {
-            // 监听实例化
-            ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
-                exports.core.listen(type, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            ConstructUtil_1.listenDispose(prototype.constructor, function (instance) {
-                exports.core.unlisten(type, instance[propertyKey], instance);
-            });
-        };
-    };
 });
 define("view/message/ViewMessage", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -772,7 +773,7 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
     }());
     exports.default = ViewMessage;
 });
-define("engine/system/System", ["require", "exports", "core/Core"], function (require, exports, Core_2) {
+define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_3, Injector_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -918,15 +919,15 @@ define("engine/system/System", ["require", "exports", "core/Core"], function (re
             };
         };
         System = __decorate([
-            injectable
+            Injector_1.Injectable
         ], System);
         return System;
     }());
     exports.default = System;
     /** 再额外导出一个单例 */
-    exports.system = Core_2.core.getInject(System);
+    exports.system = Core_3.core.getInject(System);
 });
-define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_3) {
+define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -945,7 +946,7 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_3.core.dispatch.apply(Core_3.core, [typeOrMsg].concat(params));
+            Core_4.core.dispatch.apply(Core_4.core, [typeOrMsg].concat(params));
         };
         return Model;
     }());
@@ -959,11 +960,15 @@ define("view/bridge/IHasBridge", ["require", "exports"], function (require, expo
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("view/mediator/IMediator", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_4) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1080,7 +1085,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_4.core.dispatch.apply(Core_4.core, [typeOrMsg].concat(params));
+            Core_5.core.dispatch.apply(Core_5.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁中介者
@@ -1183,7 +1188,7 @@ define("engine/panel/PanelMessage", ["require", "exports"], function (require, e
     }());
     exports.default = PanelMessage;
 });
-define("engine/panel/PanelManager", ["require", "exports", "core/Core", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage"], function (require, exports, Core_5, NonePanelPolicy_1, PanelMessage_1) {
+define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage"], function (require, exports, Core_6, Injector_2, NonePanelPolicy_1, PanelMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1230,13 +1235,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "engine/
                 // 调用回调
                 panel.onBeforePop && panel.onBeforePop(data, isModel, from);
                 // 派发消息
-                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
+                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
                 // 调用策略接口
                 policy.pop(panel, function () {
                     // 调用回调
                     panel.onAfterPop && panel.onAfterPop(data, isModel, from);
                     // 派发消息
-                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
+                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
                 }, from);
             }
             return panel;
@@ -1259,13 +1264,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "engine/
                 // 调用回调
                 panel.onBeforeDrop && panel.onBeforeDrop(data, to);
                 // 派发消息
-                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
+                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
                 // 调用策略接口
                 policy.drop(panel, function () {
                     // 调用回调
                     panel.onAfterDrop && panel.onAfterDrop(data, to);
                     // 派发消息
-                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
+                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
                     // 销毁弹窗
                     panel.dispose();
                 }, to);
@@ -1273,13 +1278,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "engine/
             return panel;
         };
         PanelManager = __decorate([
-            injectable
+            Injector_2.Injectable
         ], PanelManager);
         return PanelManager;
     }());
     exports.default = PanelManager;
     /** 再额外导出一个单例 */
-    exports.panelManager = Core_5.core.getInject(PanelManager);
+    exports.panelManager = Core_6.core.getInject(PanelManager);
 });
 define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_1) {
     "use strict";
@@ -1496,7 +1501,7 @@ define("utils/SyncUtil", ["require", "exports"], function (require, exports) {
     }
     exports.notify = notify;
 });
-define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_6, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
+define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_7, Injector_3, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1647,14 +1652,14 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
             from && from.onBeforeOut && from.onBeforeOut(to, data);
             to && to.onBeforeIn && to.onBeforeIn(from, data);
             // 派发事件
-            Core_6.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
+            Core_7.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
             // 调用切换接口
             doFunc.call(policy, from, to, function () {
                 // 后置处理
                 from && from.onAfterOut && from.onAfterOut(to, data);
                 to && to.onAfterIn && to.onAfterIn(from, data);
                 // 派发事件
-                Core_6.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
+                Core_7.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
                 // 调用回调
                 complete();
                 // 完成步骤
@@ -1662,13 +1667,13 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "engine/
             });
         };
         SceneManager = __decorate([
-            injectable
+            Injector_3.Injectable
         ], SceneManager);
         return SceneManager;
     }());
     exports.default = SceneManager;
     /** 再额外导出一个单例 */
-    exports.sceneManager = Core_6.core.getInject(SceneManager);
+    exports.sceneManager = Core_7.core.getInject(SceneManager);
 });
 define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_1) {
     "use strict";
@@ -1856,14 +1861,14 @@ define("engine/net/NetMessage", ["require", "exports"], function (require, expor
     }());
     exports.default = NetMessage;
 });
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_7, CoreMessage_2, ObjectUtil_3, RequestData_1, NetMessage_1) {
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_8, Injector_4, CoreMessage_2, ObjectUtil_3, RequestData_1, NetMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NetManager = /** @class */ (function () {
         function NetManager() {
             this._responseDict = {};
             this._responseListeners = {};
-            Core_7.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
+            Core_8.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
         }
         NetManager.prototype.onMsgDispatched = function (msg) {
             // 如果消息是通讯消息则做处理
@@ -1873,7 +1878,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
                 // 发送消息
                 msg.__policy.sendRequest(msg);
                 // 派发系统消息
-                Core_7.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
+                Core_8.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
             }
         };
         /**
@@ -1954,7 +1959,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
                     leftResCount++;
                 }
                 // 发送请求
-                Core_7.core.dispatch(request);
+                Core_8.core.dispatch(request);
             }
             // 测试回调
             testCallback();
@@ -1985,7 +1990,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
                 var response = new cls();
                 response.parse(result);
                 // 派发事件
-                Core_7.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
+                Core_8.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
                 // 触发事件形式监听
                 var listeners = this._responseListeners[type];
                 if (listeners) {
@@ -2004,16 +2009,16 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/messag
         };
         NetManager.prototype.__onError = function (err, request) {
             // 派发事件
-            Core_7.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
+            Core_8.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
         };
         NetManager = __decorate([
-            injectable
+            Injector_4.Injectable
         ], NetManager);
         return NetManager;
     }());
     exports.default = NetManager;
     /** 再额外导出一个单例 */
-    exports.netManager = Core_7.core.getInject(NetManager);
+    exports.netManager = Core_8.core.getInject(NetManager);
 });
 define("engine/module/IModuleConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -2049,7 +2054,7 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
     }());
     exports.default = ModuleMessage;
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_8, ConstructUtil_2, NetManager_1, ModuleMessage_1) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_9, Injector_5, NetManager_1, ModuleMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2154,7 +2159,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils
                     // 调用onActivate接口
                     target.onActivate(from && from[0], data);
                     // 派发消息
-                    Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
+                    Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
                 }, this);
             }
         };
@@ -2188,7 +2193,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils
                 // 调用onActivate接口
                 toModule && toModule.onActivate(cls, data);
                 // 派发消息
-                Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, to && to[0]);
+                Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, to && to[0]);
             }
             else {
                 // 移除模块
@@ -2200,23 +2205,15 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "utils
             target.dispose();
         };
         ModuleManager = __decorate([
-            injectable
+            Injector_5.Injectable
         ], ModuleManager);
         return ModuleManager;
     }());
     exports.default = ModuleManager;
     /** 再额外导出一个单例 */
-    exports.moduleManager = Core_8.core.getInject(ModuleManager);
-    /*********************** 下面是装饰器方法实现 ***********************/
-    /** module */
-    window["module"] = function (cls) {
-        // 判断一下Module是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-        return ConstructUtil_2.wrapConstruct(cls);
-    };
+    exports.moduleManager = Core_9.core.getInject(ModuleManager);
 });
-define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_9) {
+define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2304,7 +2301,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_9.core.dispatch.apply(Core_9.core, [typeOrMsg].concat(params));
+            Core_10.core.dispatch.apply(Core_10.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁模块，可以重写
@@ -2317,7 +2314,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
     }());
     exports.default = Module;
 });
-define("engine/env/Explorer", ["require", "exports", "core/Core"], function (require, exports, Core_10) {
+define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_11, Injector_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2455,15 +2452,15 @@ define("engine/env/Explorer", ["require", "exports", "core/Core"], function (req
             return this._bigVersion;
         };
         Explorer = __decorate([
-            injectable
+            Injector_6.Injectable
         ], Explorer);
         return Explorer;
     }());
     exports.default = Explorer;
     /** 再额外导出一个单例 */
-    exports.explorer = Core_10.core.getInject(Explorer);
+    exports.explorer = Core_11.core.getInject(Explorer);
 });
-define("engine/env/External", ["require", "exports", "core/Core"], function (require, exports, Core_11) {
+define("engine/env/External", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_12, Injector_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2499,15 +2496,15 @@ define("engine/env/External", ["require", "exports", "core/Core"], function (req
             return this._params[key];
         };
         External = __decorate([
-            injectable
+            Injector_7.Injectable
         ], External);
         return External;
     }());
     exports.default = External;
     /** 再额外导出一个单例 */
-    exports.external = Core_11.core.getInject(External);
+    exports.external = Core_12.core.getInject(External);
 });
-define("engine/env/Hash", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
+define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_13, Injector_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2612,15 +2609,15 @@ define("engine/env/Hash", ["require", "exports", "core/Core"], function (require
             return this._params[key];
         };
         Hash = __decorate([
-            injectable
+            Injector_8.Injectable
         ], Hash);
         return Hash;
     }());
     exports.default = Hash;
     /** 再额外导出一个单例 */
-    exports.hash = Core_12.core.getInject(Hash);
+    exports.hash = Core_13.core.getInject(Hash);
 });
-define("engine/env/Query", ["require", "exports", "core/Core"], function (require, exports, Core_13) {
+define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_14, Injector_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2662,13 +2659,13 @@ define("engine/env/Query", ["require", "exports", "core/Core"], function (requir
             return this._params[key];
         };
         Query = __decorate([
-            injectable
+            Injector_9.Injectable
         ], Query);
         return Query;
     }());
     exports.default = Query;
     /** 再额外导出一个单例 */
-    exports.query = Core_13.core.getInject(Query);
+    exports.query = Core_14.core.getInject(Query);
 });
 define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_4) {
     "use strict";
@@ -3040,8 +3037,60 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
-/// <reference path="global/Decorator.ts"/>
-define("engine/Engine", ["require", "exports", "core/Core", "view/message/ViewMessage", "utils/ConstructUtil", "engine/module/ModuleManager", "engine/net/NetManager"], function (require, exports, Core_14, ViewMessage_1, ConstructUtil_3, ModuleManager_1, NetManager_3) {
+define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager"], function (require, exports, Core_15, ConstructUtil_2, NetManager_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 负责注入的模块
+    */
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    function ModelClass(cls) {
+        // Model先进行托管
+        var result = ConstructUtil_2.wrapConstruct(cls);
+        // 然后要注入新生成的类
+        Core_15.core.mapInject(result);
+        // 返回结果
+        return result;
+    }
+    exports.ModelClass = ModelClass;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    function MediatorClass(cls) {
+        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+        return ConstructUtil_2.wrapConstruct(cls);
+    }
+    exports.MediatorClass = MediatorClass;
+    /** 定义模块，支持实例注入 */
+    function ModuleClass(cls) {
+        // 判断一下Module是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
+        return ConstructUtil_2.wrapConstruct(cls);
+    }
+    exports.ModuleClass = ModuleClass;
+    /** 处理通讯消息返回 */
+    function ResponseHandler(clsOrType) {
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
+                NetManager_3.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+                NetManager_3.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
+            });
+        };
+    }
+    exports.ResponseHandler = ResponseHandler;
+    ;
+});
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage", "engine/module/ModuleManager"], function (require, exports, Core_16, Injector_10, ViewMessage_1, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3064,54 +3113,24 @@ define("engine/Engine", ["require", "exports", "core/Core", "view/message/ViewMe
          */
         Engine.prototype.registerFirstModule = function (cls) {
             // 监听Bridge初始化完毕事件，显示第一个模块
-            Core_14.core.listen(ViewMessage_1.default.BRIDGE_ALL_INIT, onAllBridgesInit);
+            Core_16.core.listen(ViewMessage_1.default.BRIDGE_ALL_INIT, onAllBridgesInit);
             function onAllBridgesInit() {
                 // 注销监听
-                Core_14.core.unlisten(ViewMessage_1.default.BRIDGE_ALL_INIT, onAllBridgesInit);
+                Core_16.core.unlisten(ViewMessage_1.default.BRIDGE_ALL_INIT, onAllBridgesInit);
                 // 打开模块
                 ModuleManager_1.moduleManager.open(cls);
             }
         };
         Engine = __decorate([
-            injectable
+            Injector_10.Injectable
         ], Engine);
         return Engine;
     }());
     exports.default = Engine;
     /** 再额外导出一个单例 */
-    exports.engine = Core_14.core.getInject(Engine);
-    /*********************** 下面是装饰器方法实现 ***********************/
-    /** model */
-    window["model"] = function (cls) {
-        // Model先进行托管
-        var result = ConstructUtil_3.wrapConstruct(cls);
-        // 然后要注入新生成的类
-        Core_14.core.mapInject(result);
-        // 返回结果
-        return result;
-    };
-    /** mediator */
-    window["mediator"] = function (cls) {
-        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-        return ConstructUtil_3.wrapConstruct(cls);
-    };
-    /** result */
-    window["result"] = function (clsOrType) {
-        return function (prototype, propertyKey, descriptor) {
-            // 监听实例化
-            ConstructUtil_3.listenConstruct(prototype.constructor, function (instance) {
-                NetManager_3.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            ConstructUtil_3.listenDispose(prototype.constructor, function (instance) {
-                NetManager_3.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-            });
-        };
-    };
+    exports.engine = Core_16.core.getInject(Engine);
 });
-define("view/View", ["require", "exports", "core/Core", "view/message/ViewMessage"], function (require, exports, Core_15, ViewMessage_2) {
+define("view/View", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage"], function (require, exports, Core_17, Injector_11, ViewMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3169,7 +3188,7 @@ define("view/View", ["require", "exports", "core/Core", "view/message/ViewMessag
                         var data = [bridge, false];
                         this._bridgeDict[type] = data;
                         // 派发消息
-                        Core_15.core.dispatch(ViewMessage_2.default.BRIDGE_BEFORE_INIT, bridge);
+                        Core_17.core.dispatch(ViewMessage_2.default.BRIDGE_BEFORE_INIT, bridge);
                         // 初始化该表现层实例
                         if (bridge.init)
                             bridge.init(afterInitBridge);
@@ -3183,7 +3202,7 @@ define("view/View", ["require", "exports", "core/Core", "view/message/ViewMessag
             }
             function afterInitBridge(bridge) {
                 // 派发消息
-                Core_15.core.dispatch(ViewMessage_2.default.BRIDGE_AFTER_INIT, bridge);
+                Core_17.core.dispatch(ViewMessage_2.default.BRIDGE_AFTER_INIT, bridge);
                 // 设置初始化完毕属性
                 var data = self._bridgeDict[bridge.getType()];
                 data[1] = true;
@@ -3198,16 +3217,16 @@ define("view/View", ["require", "exports", "core/Core", "view/message/ViewMessag
                 allInited = allInited && data[1];
             }
             if (allInited)
-                Core_15.core.dispatch(ViewMessage_2.default.BRIDGE_ALL_INIT);
+                Core_17.core.dispatch(ViewMessage_2.default.BRIDGE_ALL_INIT);
         };
         View = __decorate([
-            injectable
+            Injector_11.Injectable
         ], View);
         return View;
     }());
     exports.default = View;
     /** 再额外导出一个单例 */
-    exports.view = Core_15.core.getInject(View);
+    exports.view = Core_17.core.getInject(View);
 });
 define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function (require, exports, Engine_1, View_1) {
     "use strict";
@@ -3218,7 +3237,7 @@ define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function
      * @create date 2017-09-18
      * @modify date 2017-09-18
      *
-     * Olympus框架便捷启动模块
+     * Olympus框架便捷启动与框架外观模块
     */
     var Olympus = /** @class */ (function () {
         function Olympus() {

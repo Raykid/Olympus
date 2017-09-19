@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector"
 import IMessage from "../../core/message/IMessage";
 import CoreMessage from "../../core/message/CoreMessage";
 import { extendObject } from "../../utils/ObjectUtil";
@@ -20,7 +21,7 @@ export interface ResponseHandler
     (response:ResponseData, request?:RequestData):void;
 }
 
-@injectable
+@Injectable
 export default class NetManager
 {
     public constructor()

@@ -1,4 +1,5 @@
 import { core } from "../core/Core";
+import { Injectable } from "../core/injector/Injector"
 import IBridge from "./bridge/IBridge";
 import ViewMessage from "./message/ViewMessage";
 
@@ -10,7 +11,7 @@ import ViewMessage from "./message/ViewMessage";
  * 
  * View是表现层模组，用来管理所有表现层对象
 */
-@injectable
+@Injectable
 export default class View
 {
     private _bridgeDict:{[type:string]:[IBridge, boolean]} = {};

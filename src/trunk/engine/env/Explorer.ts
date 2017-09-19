@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector";
 
 /**
  * @author Raykid
@@ -25,7 +26,7 @@ export enum ExplorerType
     OTHERS
 }
 
-@injectable
+@Injectable
 export default class Explorer
 {
     private _type:ExplorerType;

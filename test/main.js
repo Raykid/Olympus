@@ -14,7 +14,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-define("modules/SecondModule", ["require", "exports", "engine/module/Module"], function (require, exports, Module_1) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/injector/Injector"], function (require, exports, Module_1, Injector_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -39,11 +39,14 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module"], f
         SecondModule.prototype.onActivate = function (from, data) {
             console.log("second module activate");
         };
+        SecondModule = __decorate([
+            Injector_1.ModuleClass
+        ], SecondModule);
         return SecondModule;
     }(Module_1.default));
     exports.default = SecondModule;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/injector/Injector", "core/injector/Injector"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, Injector_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -73,20 +76,20 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 _this.moduleManager.open(SecondModule_1.default);
             }, 1000);
         };
-        FirstModule.prototype.onSwitchIn = function (from, to) {
+        FirstModule.prototype.onModuleChange = function (from, to) {
             if (to == FirstModule_1)
                 console.log("change to first module!");
             else if (to == SecondModule_1.default)
                 console.log("change to second module!");
         };
         __decorate([
-            inject(ModuleManager_1.default)
+            Injector_3.Inject(ModuleManager_1.default)
         ], FirstModule.prototype, "moduleManager", void 0);
         __decorate([
-            handler(ModuleMessage_1.default.MODULE_CHANGE)
-        ], FirstModule.prototype, "onSwitchIn", null);
+            Injector_3.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
+        ], FirstModule.prototype, "onModuleChange", null);
         FirstModule = FirstModule_1 = __decorate([
-            module
+            Injector_2.ModuleClass
         ], FirstModule);
         return FirstModule;
         var FirstModule_1;

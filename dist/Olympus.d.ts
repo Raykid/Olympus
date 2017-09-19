@@ -1,84 +1,3 @@
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-18
- * @modify date 2017-09-18
- *
- * 这个文件是给全局设置一个IConstructor接口而设计的
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-06
- * @modify date 2017-09-06
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
-/**
- * 标识当前类型是个Model，Model具有装饰器注入功能，且自身也会被注入(Injectable功能)
- *
- * @param {IConstructor} cls 要注入的Model类
- * @returns {*} 替换的构造函数
- */
-declare function model(cls: IConstructor): any;
-/**
- * 标识当前类型是个Mediator，Mediator具有装饰器注入功能，但自身不会被注入
- *
- * @param {IConstructor} cls 要注入的Mediator类
- * @returns {*} 替换的构造函数
- */
-declare function mediator(cls: IConstructor): any;
-/**
- * 标识当前类型是个Module，Module与Mediator类似，具有装饰器注入功能，但自身不会被注入
- *
- * @param {IConstructor} cls 要注入的Module类
- * @returns {*} 替换的构造函数
- */
-declare function module(cls: IConstructor): any;
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-06
- * @modify date 2017-09-06
- *
- * 这个文件的存在是为了让装饰器功能可以正常使用，装饰器要求方法必须从window上可访问，因此不能定义在模块里
-*/
-interface IInjectableParams {
-    type: IConstructor;
-}
-/**
- * 生成一个类型的实例并注册到框架注入器中，默认注册到自身类型构造器上
- *
- * @param {IConstructor} cls 要注入的类
- */
-declare function injectable(cls: IConstructor): void;
-/**
- * 生成一个类型的实例并注册到框架注入器中，注册到指定的类型构造器上
- *
- * @param {IInjectableParams} params 指定要注册到到的类型构造器
- * @returns {*}
- */
-declare function injectable(params: IInjectableParams): any;
-/**
- * 注入一个类型的实例
- *
- * @param {IConstructor} cls 类型构造器
- * @returns {PropertyDecorator}
- */
-declare function inject(cls: IConstructor): PropertyDecorator;
-/**
- * 消息处理函数的装饰器方法
- *
- * @param {string} type 监听的消息类型
- * @returns {MethodDecorator}
- */
-declare function handler(type: string): MethodDecorator;
-declare module "core/interfaces/IConstructor" {
-    export default IConstructor;
-}
 declare module "utils/ObjectUtil" {
     /**
      * @author Raykid
@@ -178,54 +97,6 @@ declare module "utils/Dictionary" {
          * @memberof Dictionary
          */
         delete(key: K): void;
-    }
-}
-declare module "utils/ConstructUtil" {
-    import IConstructor from "core/interfaces/IConstructor";
-    /**
-     * 包装一个类型，监听类型的实例化操作
-     *
-     * @export
-     * @param {IConstructor} cls 要监听构造的类型构造器
-     * @returns {IConstructor} 新的构造函数
-     */
-    export function wrapConstruct(cls: IConstructor): IConstructor;
-    /**
-     * 监听类型的实例化
-     *
-     * @export
-     * @param {IConstructor} cls 要监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 移除实例化监听
-     *
-     * @export
-     * @param {IConstructor} cls 要移除监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
-     *
-     * @export
-     * @param {IConstructor} cls 要监听销毁的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
-}
-declare module "core/interfaces/IDisposable" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 可回收接口
-    */
-    export default interface IDisposable {
-        dispose(): void;
     }
 }
 declare module "core/message/IMessage" {
@@ -411,8 +282,76 @@ declare module "core/interfaces/IDispatcher" {
         dispatch(type: string, ...params: any[]): void;
     }
 }
-declare module "core/Core" {
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-18
+ * @modify date 2017-09-18
+ *
+ * 这个文件是给全局设置一个IConstructor接口而设计的
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+declare module "core/interfaces/IConstructor" {
+    export default IConstructor;
+}
+declare module "utils/ConstructUtil" {
     import IConstructor from "core/interfaces/IConstructor";
+    /**
+     * 包装一个类型，监听类型的实例化操作
+     *
+     * @export
+     * @param {IConstructor} cls 要监听构造的类型构造器
+     * @returns {IConstructor} 新的构造函数
+     */
+    export function wrapConstruct(cls: IConstructor): IConstructor;
+    /**
+     * 监听类型的实例化
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 移除实例化监听
+     *
+     * @export
+     * @param {IConstructor} cls 要移除监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+     *
+     * @export
+     * @param {IConstructor} cls 要监听销毁的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
+}
+declare module "core/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * Core模组的装饰器注入模块
+    */
+    /** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
+    export function Injectable(cls: IConstructor): void;
+    export function Injectable(name: string): ClassDecorator;
+    export function Injectable(params: {
+        type: IConstructor;
+    }): ClassDecorator;
+    /** 赋值注入的实例 */
+    export function Inject(cls: IConstructor | string): PropertyDecorator;
+    /** 处理内核消息 */
+    export function MessageHandler(type: string): MethodDecorator;
+}
+declare module "core/Core" {
     import IMessage from "core/message/IMessage";
     import IMessageHandler from "core/message/IMessageHandler";
     import ICommandConstructor from "core/command/ICommandConstructor";
@@ -713,6 +652,19 @@ declare module "view/bridge/IHasBridge" {
          * 获取表现层桥
          */
         getBridge(): IBridge;
+    }
+}
+declare module "core/interfaces/IDisposable" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 可回收接口
+    */
+    export default interface IDisposable {
+        dispose(): void;
     }
 }
 declare module "view/mediator/IMediator" {
@@ -2261,6 +2213,25 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
     /** 再额外导出一个实例 */
     export const httpRequestPolicy: HTTPRequestPolicy;
 }
+declare module "engine/injector/Injector" {
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 负责注入的模块
+    */
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    export function ModelClass(cls: IConstructor): IConstructor;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    export function MediatorClass(cls: IConstructor): IConstructor;
+    /** 定义模块，支持实例注入 */
+    export function ModuleClass(cls: IConstructor): IConstructor;
+    /** 处理通讯消息返回 */
+    export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
+}
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
@@ -2325,7 +2296,7 @@ declare module "Olympus" {
      * @create date 2017-09-18
      * @modify date 2017-09-18
      *
-     * Olympus框架便捷启动模块
+     * Olympus框架便捷启动与框架外观模块
     */
     export default class Olympus {
         /**

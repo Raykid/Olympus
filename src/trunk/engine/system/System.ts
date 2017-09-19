@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector"
 
 /**
  * @author Raykid
@@ -8,7 +9,7 @@ import { core } from "../../core/Core";
  * 
  * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
 */
-@injectable
+@Injectable
 export default class System
 {
     // 这里尝试一下TS的Tuple类型——Raykid
