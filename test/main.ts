@@ -1,7 +1,10 @@
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
+/// <reference path="../dist/Egret.d.ts"/>
+/// <reference path="egret/libs/exml.e.d.ts"/>
 
 import DOMBridge from "branches/dom/Bridge";
+import EgretBridge from "branches/egret/Bridge";
 import FirstModule from "./modules/FirstModule";
 import Olympus from "Olympus";
 
@@ -14,4 +17,15 @@ import Olympus from "Olympus";
  * 
  * 测试项目
 */
-Olympus.startup(FirstModule, new DOMBridge("rootDOM"));
+Olympus.startup(
+    FirstModule,
+    new DOMBridge("rootDOM"),
+    new EgretBridge({
+        width: 720,
+        height: 1280,
+        pathPrefix: "egret/",
+        container: "rootEgret",
+        backgroundColor: 0,
+        scaleMode: egret.StageScaleMode.SHOW_ALL
+    })
+);

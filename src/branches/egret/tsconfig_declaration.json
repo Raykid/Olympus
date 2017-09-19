@@ -2,7 +2,6 @@
   "compilerOptions": {
     "module": "amd",
     "target": "es5",
-    "sourceMap": true,
     "declaration": true,
     "experimentalDecorators": true,
     "outFile": "../../../dist/Egret.js"

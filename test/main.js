@@ -72,11 +72,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             console.log("first module gotResponse");
         };
         FirstModule.prototype.onActivate = function (from, data) {
-            var _this = this;
             console.log("first module activate");
-            setTimeout(function () {
-                _this.moduleManager.open(SecondModule_1.default, null, true);
-            }, 1000);
         };
         FirstModule.prototype.onModuleChange = function (from, to) {
             if (to == FirstModule_1)
@@ -84,9 +80,6 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             else if (to == SecondModule_1.default)
                 console.log("change to second module!");
         };
-        __decorate([
-            Injector_2.Inject(ModuleManager_1.default)
-        ], FirstModule.prototype, "moduleManager", void 0);
         __decorate([
             Injector_2.DelegateMediator
         ], FirstModule.prototype, "_mediator", void 0);
@@ -103,23 +96,39 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var FirstMediator = /** @class */ (function (_super) {
         __extends(FirstMediator, _super);
         function FirstMediator() {
-            var _this = _super.call(this, document.createElement("a")) || this;
-            _this.mapListener(_this.skin, "click", function () {
-                console.log("onclick");
+            var _this = this;
+            var fuck = new Fuck();
+            _this = _super.call(this, fuck) || this;
+            _this.mapListener(fuck.btn, egret.TouchEvent.TOUCH_TAP, function () {
+                fuck.txt.text = "Fuck you!!!";
+                _this.moduleManager.open(SecondModule_1.default, null, true);
             }, _this);
-            _this.skin.textContent = "Fuck";
-            _this.bridge.htmlWrapper.appendChild(_this.skin);
+            _this.bridge.addChild(_this.bridge.sceneLayer, fuck);
             return _this;
         }
+        __decorate([
+            Injector_2.Inject(ModuleManager_1.default)
+        ], FirstMediator.prototype, "moduleManager", void 0);
         FirstMediator = __decorate([
             Injector_2.MediatorClass
         ], FirstMediator);
         return FirstMediator;
     }(Mediator_1.default));
+    var Fuck = /** @class */ (function (_super) {
+        __extends(Fuck, _super);
+        function Fuck() {
+            var _this = _super.call(this) || this;
+            _this.skinName = FuckSkin;
+            return _this;
+        }
+        return Fuck;
+    }(eui.Component));
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
-define("main", ["require", "exports", "branches/dom/Bridge", "modules/FirstModule", "Olympus"], function (require, exports, Bridge_1, FirstModule_2, Olympus_1) {
+/// <reference path="../dist/Egret.d.ts"/>
+/// <reference path="egret/libs/exml.e.d.ts"/>
+define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bridge", "modules/FirstModule", "Olympus"], function (require, exports, Bridge_1, Bridge_2, FirstModule_2, Olympus_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -130,6 +139,13 @@ define("main", ["require", "exports", "branches/dom/Bridge", "modules/FirstModul
      *
      * 测试项目
     */
-    Olympus_1.default.startup(FirstModule_2.default, new Bridge_1.default("rootDOM"));
+    Olympus_1.default.startup(FirstModule_2.default, new Bridge_1.default("rootDOM"), new Bridge_2.default({
+        width: 720,
+        height: 1280,
+        pathPrefix: "egret/",
+        container: "rootEgret",
+        backgroundColor: 0,
+        scaleMode: egret.StageScaleMode.SHOW_ALL
+    }));
 });
 //# sourceMappingURL=main.js.map

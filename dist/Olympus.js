@@ -801,10 +801,10 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
             this._nextFrameList = [];
             this._timer = 0;
             var self = this;
-            try {
+            if (requestAnimationFrame instanceof Function) {
                 requestAnimationFrame(onRequestAnimationFrame);
             }
-            catch (err) {
+            else {
                 // 如果不支持requestAnimationFrame则改用setTimeout计时，延迟时间1000/60毫秒
                 var startTime = Date.now();
                 setInterval(function () {
@@ -3149,20 +3149,25 @@ define("view/View", ["require", "exports", "core/Core", "core/injector/Injector"
             // 进行初始化
             if (bridges.length > 0) {
                 var self = this;
+                // 记录
                 for (var _a = 0, bridges_1 = bridges; _a < bridges_1.length; _a++) {
                     var bridge = bridges_1[_a];
                     var type = bridge.type;
                     if (!this._bridgeDict[type]) {
                         var data = [bridge, false];
                         this._bridgeDict[type] = data;
-                        // 派发消息
-                        Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
-                        // 初始化该表现层实例
-                        if (bridge.init)
-                            bridge.init(afterInitBridge);
-                        else
-                            afterInitBridge(bridge);
                     }
+                }
+                // 开始初始化
+                for (var _b = 0, bridges_2 = bridges; _b < bridges_2.length; _b++) {
+                    var bridge = bridges_2[_b];
+                    // 派发消息
+                    Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
+                    // 初始化该表现层实例
+                    if (bridge.init)
+                        bridge.init(afterInitBridge);
+                    else
+                        afterInitBridge(bridge);
                 }
             }
             else {

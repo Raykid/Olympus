@@ -25,6 +25,18 @@ export default class Bridge implements IBridge
 
     private _root:HTMLElement|string;
     /**
+     * 获取表现层HTML包装器，可以对其样式进行自定义调整
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof Bridge
+     */
+    public get htmlWrapper():HTMLElement
+    {
+        return <HTMLElement>this._root;
+    }
+
+    /**
      * 获取根显示节点
      * 
      * @readonly
@@ -37,13 +49,49 @@ export default class Bridge implements IBridge
     }
 
     /**
-     * 获取表现层HTML包装器，可以对其样式进行自定义调整
+     * 获取背景容器
      * 
      * @readonly
      * @type {HTMLElement}
      * @memberof Bridge
      */
-    public get htmlWrapper():HTMLElement
+    public get bgLayer():HTMLElement
+    {
+        return <HTMLElement>this._root;
+    }
+
+    /**
+     * 获取场景容器
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof Bridge
+     */
+    public get sceneLayer():HTMLElement
+    {
+        return <HTMLElement>this._root;
+    }
+
+    /**
+     * 获取弹窗容器
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof Bridge
+     */
+    public get panelLayer():HTMLElement
+    {
+        return <HTMLElement>this._root;
+    }
+
+    /**
+     * 获取顶级容器
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof Bridge
+     */
+    public get topLayer():HTMLElement
     {
         return <HTMLElement>this._root;
     }

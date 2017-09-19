@@ -74,6 +74,7 @@ export default class View
         if(bridges.length > 0)
         {
             var self:View = this;
+            // 记录
             for(var bridge of bridges)
             {
                 var type:string = bridge.type;
@@ -81,12 +82,16 @@ export default class View
                 {
                     var data:[IBridge, boolean] = [bridge, false];
                     this._bridgeDict[type] = data;
-                    // 派发消息
-                    core.dispatch(ViewMessage.BRIDGE_BEFORE_INIT, bridge);
-                    // 初始化该表现层实例
-                    if(bridge.init) bridge.init(afterInitBridge);
-                    else afterInitBridge(bridge);
                 }
+            }
+            // 开始初始化
+            for(var bridge of bridges)
+            {
+                // 派发消息
+                core.dispatch(ViewMessage.BRIDGE_BEFORE_INIT, bridge);
+                // 初始化该表现层实例
+                if(bridge.init) bridge.init(afterInitBridge);
+                else afterInitBridge(bridge);
             }
         }
         else

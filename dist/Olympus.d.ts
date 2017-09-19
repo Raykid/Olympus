@@ -630,6 +630,38 @@ declare module "view/bridge/IBridge" {
          */
         readonly root: any;
         /**
+         * 获取背景容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly bgLayer: any;
+        /**
+         * 获取场景容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly sceneLayer: any;
+        /**
+         * 获取弹窗容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly panelLayer: any;
+        /**
+         * 获取顶级容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly topLayer: any;
+        /**
          * 判断传入的skin是否是属于该表现层桥的
          *
          * @param {*} skin 皮肤实例

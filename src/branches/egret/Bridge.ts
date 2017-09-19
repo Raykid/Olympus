@@ -1,6 +1,11 @@
 /// <reference path="./egret-core/build/egret/egret.d.ts"/>
+/// <reference path="./egret-core/build/eui/eui.d.ts"/>
+/// <reference path="./egret-core/build/res/res.d.ts"/>
+/// <reference path="./egret-core/build/tween/tween.d.ts"/>
 
 import IBridge from "../../trunk/view/bridge/IBridge";
+import IInitParams from "./IInitParams";
+import RenderMode from "./RenderMode";
 
 /**
  * @author Raykid
@@ -12,6 +17,8 @@ import IBridge from "../../trunk/view/bridge/IBridge";
 */
 export default class Bridge implements IBridge
 {
+    private _initParams:IInitParams;
+
     /**
      * 获取表现层类型名称
      * 
@@ -33,9 +40,10 @@ export default class Bridge implements IBridge
      */
     public get htmlWrapper():HTMLElement
     {
-        return null;
+        return <HTMLElement>this._initParams.container;
     }
 
+    private _root:egret.DisplayObjectContainer;
     /**
      * 获取根显示节点
      * 
@@ -45,11 +53,64 @@ export default class Bridge implements IBridge
      */
     public get root():egret.DisplayObjectContainer
     {
-        return null;
+        return this._root;
     }
     
-    public constructor()
+    private _bgLayer:egret.DisplayObjectContainer;
+    /**
+     * 获取背景容器
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof Bridge
+     */
+    public get bgLayer():egret.DisplayObjectContainer
     {
+        return this._bgLayer;
+    }
+
+    private _sceneLayer:egret.DisplayObjectContainer;
+    /**
+     * 获取场景容器
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof Bridge
+     */
+    public get sceneLayer():egret.DisplayObjectContainer
+    {
+        return this._sceneLayer;
+    }
+
+    private _panelLayer:egret.DisplayObjectContainer;
+    /**
+     * 获取弹窗容器
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof Bridge
+     */
+    public get panelLayer():egret.DisplayObjectContainer
+    {
+        return this._panelLayer;
+    }
+
+    private _topLayer:egret.DisplayObjectContainer;
+    /**
+     * 获取顶级容器
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof Bridge
+     */
+    public get topLayer():egret.DisplayObjectContainer
+    {
+        return this._topLayer;
+    }
+    
+    public constructor(params:IInitParams)
+    {
+        this._initParams = params;
     }
     
     /**
@@ -59,7 +120,120 @@ export default class Bridge implements IBridge
      */
     public init(complete:(bridge:IBridge)=>void):void
     {
-        complete(this);
+        // 生成html和body的样式节点
+        var style:HTMLStyleElement = document.createElement("style");
+        style.textContent = `
+            html, body {
+                -ms-touch-action: none;
+                background: ${egret.toColorString(this._initParams.backgroundColor || 0)};
+                padding: 0;
+                border: 0;
+                margin: 0;
+                height: 100%;
+            }
+        `;
+        document.head.appendChild(style);
+        // 统一容器
+        if(typeof this._initParams.container == "string")
+        {
+            this._initParams.container = document.getElementById(this._initParams.container);
+        }
+        if(!this._initParams.container)
+        {
+            this._initParams.container = document.createElement("div");
+            document.body.appendChild(this._initParams.container);
+        }
+        var container:HTMLElement = this._initParams.container;
+        // 构建容器参数
+        container.style.margin = "auto";
+        container.style.width = "100%";
+        container.style.height = "100%";
+        container.className = "egret-player";
+        container.setAttribute("data-entry-class", "__EgretRoot__");
+        container.setAttribute("data-orientation", "auto");
+        container.setAttribute("data-scale-mode", this._initParams.scaleMode || egret.StageScaleMode.FIXED_NARROW);
+        container.setAttribute("data-frame-rate", (this._initParams.frameRate || 60) + "");
+        container.setAttribute("data-content-width", this._initParams.width + "");
+        container.setAttribute("data-content-height", this._initParams.height + "");
+        container.setAttribute("data-show-paint-rect", (this._initParams.showPaintRect || false) + "");
+        container.setAttribute("data-multi-fingered", (this._initParams.multiFingered || 2) + "");
+        container.setAttribute("data-show-fps", (this._initParams.showFPS || false) + "");
+        container.setAttribute("data-show-fps-style", this._initParams.showFPSStyle || "x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9");
+        container.setAttribute("data-show-log", (this._initParams.showLog || false) + "");
+        // 构建__EgretRoot__类，使得Egret引擎可以通过window寻址的方式找到该类，同时又可以让其将控制权转交给Application
+        var self:Bridge = this;
+        window["__EgretRoot__"] = function():void
+        {
+            egret.Sprite.call(this);
+        };
+        window["__EgretRoot__"].prototype = new egret.Sprite();
+        window["__EgretRoot__"].prototype.$onAddToStage = function(stage:egret.Stage, nestLevel:number):void
+        {
+            // 调用父类方法
+            egret.Sprite.prototype.$onAddToStage.call(this, stage, nestLevel);
+            // 移除引用
+            delete window["__EgretRoot__"];
+            // 将控制权移交给Application对象
+            onRootInitialized(this);
+        }
+        // 根据渲染模式初始化Egret引擎
+        switch(this._initParams.renderMode)
+        {
+            case RenderMode.WEBGL:
+                initEgret("webgl");
+                break;
+            case RenderMode.CANVAS:
+            default:
+                initEgret("canvas");
+                break;
+        }
+        
+        function initEgret(renderMode:string):void
+        {
+            // 启动Egret引擎
+            egret.runEgret({
+                renderMode: renderMode,
+                audioType: 0
+            });
+        }
+
+        function onRootInitialized(root:egret.Sprite):void
+        {
+            self._root = root;
+            // 创建背景显示层
+            self._bgLayer = new egret.Sprite();
+            root.addChild(self._bgLayer);
+            // 创建场景显示层
+            self._sceneLayer = new egret.Sprite();
+            root.addChild(self._sceneLayer);
+            // 创建弹出层
+            self._panelLayer = new egret.Sprite();
+            root.addChild(self._panelLayer);
+            // 创建顶级显示层
+            self._topLayer = new egret.Sprite();
+            root.addChild(self._topLayer);
+            // 设置资源和主题适配器
+            egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
+            egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
+            // 加载资源配置
+            RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
+            RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
+        }
+
+        function onConfigComplete(evt:RES.ResourceEvent):void
+        {
+            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
+            // 加载主题配置
+            var theme:eui.Theme = new eui.Theme(this._initParams.pathPrefix + "resource/default.thm.json", self._root.stage);
+            theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+        }
+
+        function onThemeLoadComplete(evt:eui.UIEvent):void
+        {
+            evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+            // 调用回调
+            complete(this);
+        }
     }
     
     /**
@@ -215,5 +389,89 @@ export default class Bridge implements IBridge
     public unmapListener(target:egret.EventDispatcher, type:string, handler:Function, thisArg?:any):void
     {
         target.removeEventListener(type, handler, thisArg);
+    }
+}
+
+class AssetAdapter implements eui.IAssetAdapter
+{
+    /**
+     * @language zh_CN
+     * 解析素材
+     * @param source 待解析的新素材标识符
+     * @param compFunc 解析完成回调函数，示例：callBack(content:any,source:string):void;
+     * @param thisObject callBack的 this 引用
+     */
+    public getAsset(source:string, compFunc:Function, thisObject:any):void
+    {
+        if(RES.hasRes(source))
+        {
+            var data:any = RES.getRes(source);
+            if(data) onGetRes(data);
+            else RES.getResAsync(source, onGetRes, this);
+        }
+        else
+        {
+            RES.getResByUrl(source, onGetRes, this, RES.ResourceItem.TYPE_IMAGE);
+        }
+        
+        function onGetRes(data:any):void
+        {
+            compFunc.call(thisObject, data, source);
+        }
+    }
+}
+
+class ThemeAdapter implements eui.IThemeAdapter
+{
+    private _initParams:IInitParams;
+
+    public constructor(initParams:IInitParams)
+    {
+        this._initParams = initParams;
+    }
+
+    /**
+     * 解析主题
+     * @param url 待解析的主题url
+     * @param compFunc 解析完成回调函数，示例：compFunc(e:egret.Event):void;
+     * @param errorFunc 解析失败回调函数，示例：errorFunc():void;
+     * @param thisObject 回调的this引用
+     */
+    public getTheme(url:string,compFunc:Function,errorFunc:Function,thisObject:any):void
+    {
+        RES.addEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
+        RES.getResByUrl(url, onGetRes, this, RES.ResourceItem.TYPE_TEXT);
+
+        function onGetRes(e:string):void
+        {
+            try
+            {
+                // 需要为所有主题资源添加路径前缀
+                var data:any = JSON.parse(e);
+                for(var key in data.skins)
+                    data.skins[key] = this._initParams.pathPrefix + data.skins[key];
+                for(var key in data.exmls)
+                {
+                    // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
+                    var exml:any = data.exmls[key];
+                    if(typeof exml == "string")
+                        data.exmls[key] = this._initParams.pathPrefix + exml;
+                    else
+                        exml.path = this._initParams.pathPrefix + exml.path;
+                }
+                e = JSON.stringify(data);
+            }
+            catch(err){}
+            compFunc.call(thisObject, e);
+        }
+
+        function onError(e:RES.ResourceEvent):void
+        {
+            if(e.resItem.url == url)
+            {
+                RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
+                errorFunc.call(thisObject);
+            }
+        }
     }
 }

@@ -33,6 +33,38 @@ declare module "trunk/view/bridge/IBridge" {
          */
         readonly root: any;
         /**
+         * 获取背景容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly bgLayer: any;
+        /**
+         * 获取场景容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly sceneLayer: any;
+        /**
+         * 获取弹窗容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly panelLayer: any;
+        /**
+         * 获取顶级容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly topLayer: any;
+        /**
          * 判断传入的skin是否是属于该表现层桥的
          *
          * @param {*} skin 皮肤实例
@@ -234,6 +266,14 @@ declare module "branches/dom/Bridge" {
         readonly type: string;
         private _root;
         /**
+         * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof Bridge
+         */
+        readonly htmlWrapper: HTMLElement;
+        /**
          * 获取根显示节点
          *
          * @readonly
@@ -242,13 +282,37 @@ declare module "branches/dom/Bridge" {
          */
         readonly root: HTMLElement;
         /**
-         * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         * 获取背景容器
          *
          * @readonly
          * @type {HTMLElement}
          * @memberof Bridge
          */
-        readonly htmlWrapper: HTMLElement;
+        readonly bgLayer: HTMLElement;
+        /**
+         * 获取场景容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof Bridge
+         */
+        readonly sceneLayer: HTMLElement;
+        /**
+         * 获取弹窗容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof Bridge
+         */
+        readonly panelLayer: HTMLElement;
+        /**
+         * 获取顶级容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof Bridge
+         */
+        readonly topLayer: HTMLElement;
         constructor(root?: HTMLElement | string);
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化

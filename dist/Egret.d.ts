@@ -1,4 +1,7 @@
 /// <reference path="../src/branches/egret/egret-core/build/egret/egret.d.ts" />
+/// <reference path="../src/branches/egret/egret-core/build/eui/eui.d.ts" />
+/// <reference path="../src/branches/egret/egret-core/build/res/res.d.ts" />
+/// <reference path="../src/branches/egret/egret-core/build/tween/tween.d.ts" />
 declare module "trunk/view/bridge/IBridge" {
     /**
      * @author Raykid
@@ -33,6 +36,38 @@ declare module "trunk/view/bridge/IBridge" {
          * @memberof IBridge
          */
         readonly root: any;
+        /**
+         * 获取背景容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly bgLayer: any;
+        /**
+         * 获取场景容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly sceneLayer: any;
+        /**
+         * 获取弹窗容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly panelLayer: any;
+        /**
+         * 获取顶级容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly topLayer: any;
         /**
          * 判断传入的skin是否是属于该表现层桥的
          *
@@ -149,8 +184,64 @@ declare module "trunk/view/bridge/IBridge" {
         init?(complete: (bridge: IBridge) => void): void;
     }
 }
+declare module "branches/egret/RenderMode" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 渲染模式枚举
+    */
+    enum RenderMode {
+        AUTO = 0,
+        CANVAS = 1,
+        WEBGL = 2,
+    }
+    export default RenderMode;
+}
+declare module "branches/egret/IInitParams" {
+    import RenderMode from "branches/egret/RenderMode";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * Egret初始化参数接口
+    */
+    export default interface IInitParams {
+        /** 舞台宽度 */
+        width: number;
+        /** 舞台高度 */
+        height: number;
+        /** Egret工程根目录的相对路径前缀，例如："egret/" */
+        pathPrefix: string;
+        /** DOM容器名称或引用，不传递则自动生成一个 */
+        container?: string | HTMLElement;
+        /** 屏幕拉伸模式，使用egret.StageScaleMode中的常量值，默认为egret.StageScaleMode.SHOW_ALL */
+        scaleMode?: string;
+        /** 屏幕渲染帧频，默认为60 */
+        frameRate?: number;
+        /** 是否显示重绘矩形，默认为false */
+        showPaintRect?: boolean;
+        /** 多点触摸的最多点数，默认为2 */
+        multiFingered?: number;
+        /** 是否显示帧频信息，默认为false */
+        showFPS?: boolean;
+        /** 帧频样式，默认为："x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9"*/
+        showFPSStyle?: string;
+        /** 是否显示日志信息，默认为false */
+        showLog?: boolean;
+        /** 背景颜色，默认黑色 */
+        backgroundColor?: number;
+        /** 渲染模式，在harpy.RenderMode中查找枚举值，默认为AUTO **/
+        renderMode?: RenderMode;
+    }
+}
 declare module "branches/egret/Bridge" {
     import IBridge from "trunk/view/bridge/IBridge";
+    import IInitParams from "branches/egret/IInitParams";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -160,6 +251,7 @@ declare module "branches/egret/Bridge" {
      * Egret的表现层桥实现
     */
     export default class Bridge implements IBridge {
+        private _initParams;
         /**
          * 获取表现层类型名称
          *
@@ -176,6 +268,7 @@ declare module "branches/egret/Bridge" {
          * @memberof Bridge
          */
         readonly htmlWrapper: HTMLElement;
+        private _root;
         /**
          * 获取根显示节点
          *
@@ -184,7 +277,43 @@ declare module "branches/egret/Bridge" {
          * @memberof Bridge
          */
         readonly root: egret.DisplayObjectContainer;
-        constructor();
+        private _bgLayer;
+        /**
+         * 获取背景容器
+         *
+         * @readonly
+         * @type {egret.DisplayObjectContainer}
+         * @memberof Bridge
+         */
+        readonly bgLayer: egret.DisplayObjectContainer;
+        private _sceneLayer;
+        /**
+         * 获取场景容器
+         *
+         * @readonly
+         * @type {egret.DisplayObjectContainer}
+         * @memberof Bridge
+         */
+        readonly sceneLayer: egret.DisplayObjectContainer;
+        private _panelLayer;
+        /**
+         * 获取弹窗容器
+         *
+         * @readonly
+         * @type {egret.DisplayObjectContainer}
+         * @memberof Bridge
+         */
+        readonly panelLayer: egret.DisplayObjectContainer;
+        private _topLayer;
+        /**
+         * 获取顶级容器
+         *
+         * @readonly
+         * @type {egret.DisplayObjectContainer}
+         * @memberof Bridge
+         */
+        readonly topLayer: egret.DisplayObjectContainer;
+        constructor(params: IInitParams);
         /**
          * 初始化表现层桥
          * @param {()=>void} complete 初始化完毕后的回调

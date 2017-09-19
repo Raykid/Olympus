@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "outFile": "../../../dist/Egret.js",
+    "allowJs": true
+  },
+  "files": [
+    "Bridge.ts",
+    "egret-core/build/egret/egret.js",
+    "egret-core/build/egret/egret.web.js",
+    "egret-core/build/eui/eui.js",
+    "egret-core/build/res/res.js",
+    "egret-core/build/tween/tween.js"
+  ],
+  "exclude": [
+    "../../trunk"
+  ]
+}

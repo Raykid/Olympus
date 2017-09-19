@@ -17,9 +17,6 @@ import { ModuleClass, DelegateMediator, Inject, MessageHandler, MediatorClass } 
 @ModuleClass
 export default class FirstModule extends Module
 {
-    @Inject(ModuleManager)
-    private moduleManager:ModuleManager;
-
     @DelegateMediator
     private _mediator:FirstMediator = new FirstMediator();
 
@@ -36,10 +33,6 @@ export default class FirstModule extends Module
     public onActivate(from:any, data?:any):void
     {
         console.log("first module activate");
-
-        setTimeout(()=>{
-            this.moduleManager.open(SecondModule, null, true);
-        }, 1000);
     }
 
     @MessageHandler(ModuleMessage.MODULE_CHANGE)
@@ -53,13 +46,29 @@ export default class FirstModule extends Module
 @MediatorClass
 class FirstMediator extends Mediator
 {
+    @Inject(ModuleManager)
+    private moduleManager:ModuleManager;
+    
     public constructor()
     {
-        super(document.createElement("a"));
-        this.mapListener(this.skin, "click", ()=>{
-            console.log("onclick");
+        var fuck:Fuck = new Fuck();
+        super(fuck);
+        this.mapListener(fuck.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
+            fuck.txt.text = "Fuck you!!!";
+            this.moduleManager.open(SecondModule, null, true);
         }, this);
-        this.skin.textContent = "Fuck";
-        this.bridge.htmlWrapper.appendChild(this.skin);
+        this.bridge.addChild(this.bridge.sceneLayer, fuck);
+    }
+}
+
+class Fuck extends eui.Component
+{
+    public btn:eui.Button;
+    public txt:eui.Label;
+    
+    public constructor()
+    {
+        super();
+        this.skinName = FuckSkin;
     }
 }

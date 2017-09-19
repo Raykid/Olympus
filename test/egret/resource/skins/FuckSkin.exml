@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="FuckSkin" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing" width="720" height="1280">
+	<e:Image source="bg_jpg" left="0" right="1" top="0" bottom="5" anchorOffsetX="0" anchorOffsetY="0" width="720" height="1280"/>
+	<e:Button id="btn" label="点我" y="1161.33" horizontalCenter="0"/>
+	<e:Label id="txt" text="看着我" y="412.04" anchorOffsetX="0" width="622.21" anchorOffsetY="0" height="166.24" textAlign="center" horizontalCenter="-1" size="50" textColor="0x000000" bold="true"/>
+</e:Skin>

@@ -199,6 +199,20 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Bridge.prototype, "htmlWrapper", {
+            /**
+             * 获取表现层HTML包装器，可以对其样式进行自定义调整
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof Bridge
+             */
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Bridge.prototype, "root", {
             /**
              * 获取根显示节点
@@ -213,9 +227,51 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bridge.prototype, "htmlWrapper", {
+        Object.defineProperty(Bridge.prototype, "bgLayer", {
             /**
-             * 获取表现层HTML包装器，可以对其样式进行自定义调整
+             * 获取背景容器
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof Bridge
+             */
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bridge.prototype, "sceneLayer", {
+            /**
+             * 获取场景容器
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof Bridge
+             */
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bridge.prototype, "panelLayer", {
+            /**
+             * 获取弹窗容器
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof Bridge
+             */
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Bridge.prototype, "topLayer", {
+            /**
+             * 获取顶级容器
              *
              * @readonly
              * @type {HTMLElement}

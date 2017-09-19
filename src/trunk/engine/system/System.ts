@@ -30,11 +30,11 @@ export default class System
     public constructor()
     {
         var self:System = this;
-        try
+        if(requestAnimationFrame instanceof Function)
         {
             requestAnimationFrame(onRequestAnimationFrame);
         }
-        catch(err)
+        else
         {
             // 如果不支持requestAnimationFrame则改用setTimeout计时，延迟时间1000/60毫秒
             var startTime:number = Date.now();
