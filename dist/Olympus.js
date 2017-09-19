@@ -1081,11 +1081,9 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          */
         Mediator.prototype.unmapAllListeners = function () {
             for (var i = 0, len = this._listeners.length; i < len; i++) {
-                var data = this._listeners[i];
+                var data = this._listeners.pop();
                 // 调用桥接口
                 this._bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
-                // 移除记录
-                this._listeners.splice(i, 1);
             }
         };
         Mediator.prototype.dispatch = function (typeOrMsg) {
@@ -1101,14 +1099,16 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          * @memberof Mediator
          */
         Mediator.prototype.dispose = function () {
-            // 注销事件监听
-            this.unmapAllListeners();
-            // 移除表现层桥
-            this._bridge = null;
-            // 移除皮肤
-            this._skin = null;
-            // 设置已被销毁
-            this._isDestroyed = true;
+            if (!this._isDestroyed) {
+                // 注销事件监听
+                this.unmapAllListeners();
+                // 移除表现层桥
+                this._bridge = null;
+                // 移除皮肤
+                this._skin = null;
+                // 设置已被销毁
+                this._isDestroyed = true;
+            }
         };
         return Mediator;
     }());
@@ -3242,16 +3242,13 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
                 var mediators = _mediatorDict.get(this);
                 if (!mediators) {
                     _mediatorDict.set(this, mediators = []);
-                    // 替换模块的dispose方法
-                    var $dispose = this.dispose;
-                    this.dispose = function () {
+                    // 监听销毁
+                    ConstructUtil_2.listenDispose(prototype.constructor, function (module) {
                         // 将所有已托管的中介者同时销毁
                         for (var i = 0, len = mediators.length; i < len; i++) {
                             mediators.pop().dispose();
                         }
-                        // 销毁自身
-                        $dispose.call(this);
-                    };
+                    });
                 }
                 // 取消托管中介者
                 if (mediator) {

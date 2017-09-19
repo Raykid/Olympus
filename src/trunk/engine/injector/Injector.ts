@@ -77,7 +77,7 @@ export function ResponseHandler(clsOrType:IResponseDataConstructor|string):Metho
 
 var _mediatorDict:Dictionary<IModule, IMediator[]> = new Dictionary();
 /** 在模块内托管中介者 */
-export function DelegateMediator(prototype:IModule, propertyKey:string):any
+export function DelegateMediator(prototype:any, propertyKey:string):any
 {
     var mediator:IMediator;
     return {
@@ -93,18 +93,15 @@ export function DelegateMediator(prototype:IModule, propertyKey:string):any
             if(!mediators)
             {
                 _mediatorDict.set(this, mediators = []);
-                // 替换模块的dispose方法
-                var $dispose:()=>void = this.dispose;
-                this.dispose = function():void
+                // 监听销毁
+                listenDispose(prototype.constructor, function(module:IModule):void
                 {
                     // 将所有已托管的中介者同时销毁
                     for(var i:number = 0, len:number = mediators.length; i < len; i++)
                     {
                         mediators.pop().dispose();
                     }
-                    // 销毁自身
-                    $dispose.call(this);
-                };
+                });
             }
             // 取消托管中介者
             if(mediator)

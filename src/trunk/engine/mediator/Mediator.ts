@@ -137,11 +137,9 @@ export default abstract class Mediator implements IMediator, IDispatcher
     {
         for(var i:number = 0, len:number = this._listeners.length; i < len; i++)
         {
-            var data:ListenerData = this._listeners[i];
+            var data:ListenerData = this._listeners.pop();
             // 调用桥接口
             this._bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
-            // 移除记录
-            this._listeners.splice(i, 1);
         }
     }
 
@@ -172,14 +170,17 @@ export default abstract class Mediator implements IMediator, IDispatcher
      */
     public dispose():void
     {
-        // 注销事件监听
-        this.unmapAllListeners();
-        // 移除表现层桥
-        this._bridge = null;
-        // 移除皮肤
-        this._skin = null;
-        // 设置已被销毁
-        this._isDestroyed = true;
+        if(!this._isDestroyed)
+        {
+            // 注销事件监听
+            this.unmapAllListeners();
+            // 移除表现层桥
+            this._bridge = null;
+            // 移除皮肤
+            this._skin = null;
+            // 设置已被销毁
+            this._isDestroyed = true;
+        }
     }
 }
 

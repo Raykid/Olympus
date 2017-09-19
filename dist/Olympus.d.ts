@@ -2275,7 +2275,6 @@ declare module "view/View" {
 }
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
-    import IModule from "engine/module/IModule";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -2293,7 +2292,7 @@ declare module "engine/injector/Injector" {
     /** 处理通讯消息返回 */
     export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
     /** 在模块内托管中介者 */
-    export function DelegateMediator(prototype: IModule, propertyKey: string): any;
+    export function DelegateMediator(prototype: any, propertyKey: string): any;
 }
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
