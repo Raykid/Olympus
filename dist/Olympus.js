@@ -2208,7 +2208,22 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
     */
     var Module = /** @class */ (function () {
         function Module() {
+            this._disposed = false;
         }
+        Object.defineProperty(Module.prototype, "disposed", {
+            /**
+             * 获取是否已被销毁
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Module
+             */
+            get: function () {
+                return this._disposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 列出模块所需CSS资源URL，可以重写
          *
@@ -2291,6 +2306,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
          * @memberof Module
          */
         Module.prototype.dispose = function () {
+            this._disposed = true;
         };
         return Module;
     }());

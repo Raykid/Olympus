@@ -17,6 +17,19 @@ import IModuleConstructor from "./IModuleConstructor";
 */
 export default abstract class Module implements IModule, IDispatcher
 {
+    private _disposed:boolean = false;
+    /**
+     * 获取是否已被销毁
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberof Module
+     */
+    public get disposed():boolean
+    {
+        return this._disposed;
+    }
+
     /**
      * 列出模块所需CSS资源URL，可以重写
      * 
@@ -129,5 +142,6 @@ export default abstract class Module implements IModule, IDispatcher
      */
     public dispose():void
     {
+        this._disposed = true;
     }
 }

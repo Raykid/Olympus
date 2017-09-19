@@ -685,6 +685,9 @@ declare module "core/interfaces/IDisposable" {
      * 可回收接口
     */
     export default interface IDisposable {
+        /** 是否已经被销毁 */
+        readonly disposed: boolean;
+        /** 销毁 */
         dispose(): void;
     }
 }
@@ -1778,6 +1781,15 @@ declare module "engine/module/Module" {
      * 模块基类
     */
     export default abstract class Module implements IModule, IDispatcher {
+        private _disposed;
+        /**
+         * 获取是否已被销毁
+         *
+         * @readonly
+         * @type {boolean}
+         * @memberof Module
+         */
+        readonly disposed: boolean;
         /**
          * 列出模块所需CSS资源URL，可以重写
          *
