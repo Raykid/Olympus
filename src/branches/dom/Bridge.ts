@@ -1,4 +1,4 @@
-import IBridge from "../../trunk/view/bridge/IBridge";
+import IBridge from "../../trunk/engine/bridge/IBridge";
 import { getObjectHashs } from "../../trunk/utils/ObjectUtil";
 
 /**

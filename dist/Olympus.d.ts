@@ -470,132 +470,7 @@ declare module "core/Core" {
     /** 再额外导出一个单例 */
     export const core: Core;
 }
-declare module "view/message/ViewMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 表现层消息
-    */
-    export default class ViewMessage {
-        /**
-         * 初始化表现层实例前的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ViewMessage
-         */
-        static BRIDGE_BEFORE_INIT: string;
-        /**
-         * 初始化表现层实例后的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ViewMessage
-         */
-        static BRIDGE_AFTER_INIT: string;
-        /**
-         * 所有表现层实例都初始化完毕的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ViewMessage
-         */
-        static BRIDGE_ALL_INIT: string;
-    }
-}
-declare module "engine/system/System" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
-    */
-    export default class System {
-        private _nextFrameList;
-        private _timer;
-        /**
-         * 获取从程序运行到当前所经过的毫秒数
-         *
-         * @returns {number} 毫秒数
-         * @memberof System
-         */
-        getTimer(): number;
-        constructor();
-        private tick();
-        /**
-         * 在下一帧执行某个方法
-         *
-         * @param {Function} handler 希望在下一帧执行的某个方法
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 方法参数列表
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        nextFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
-        /**
-         * 设置延迟回调
-         *
-         * @param {number} duration 延迟毫秒值
-         * @param {Function} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 要传递的参数
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        setTimeout(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
-        /**
-         * 设置延时间隔
-         *
-         * @param {number} duration 延迟毫秒值
-         * @param {Function} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 要传递的参数
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        setInterval(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
-    }
-    export interface ICancelable {
-        cancel(): void;
-    }
-    /** 再额外导出一个单例 */
-    export const system: System;
-}
-declare module "engine/model/Model" {
-    import IMessage from "core/message/IMessage";
-    import IDispatcher from "core/interfaces/IDispatcher";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * Model的基类，也可以不继承该基类，因为Model是很随意的东西
-    */
-    export default abstract class Model implements IDispatcher {
-        /**
-         * 派发内核消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof Core
-         */
-        dispatch(msg: IMessage): void;
-        /**
-         * 派发内核消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof Core
-         */
-        dispatch(type: string, ...params: any[]): void;
-    }
-}
-declare module "view/bridge/IBridge" {
+declare module "engine/bridge/IBridge" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -785,8 +660,173 @@ declare module "view/bridge/IBridge" {
         init?(complete: (bridge: IBridge) => void): void;
     }
 }
-declare module "view/bridge/IHasBridge" {
-    import IBridge from "view/bridge/IBridge";
+declare module "engine/bridge/BridgeMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 表现层消息
+    */
+    export default class BridgeMessage {
+        /**
+         * 初始化表现层实例前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static BRIDGE_BEFORE_INIT: string;
+        /**
+         * 初始化表现层实例后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static BRIDGE_AFTER_INIT: string;
+        /**
+         * 所有表现层实例都初始化完毕的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ViewMessage
+         */
+        static BRIDGE_ALL_INIT: string;
+    }
+}
+declare module "engine/bridge/BridgeManager" {
+    import IBridge from "engine/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来管理所有表现层对象
+    */
+    export default class BridgeManager {
+        private _bridgeDict;
+        /**
+         * 获取表现层桥实例
+         *
+         * @param {string} type 表现层类型
+         * @returns {IBridge} 表现层桥实例
+         * @memberof BridgeManager
+         */
+        getBridge(type: string): IBridge;
+        /**
+         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
+         *
+         * @param {*} skin 皮肤实例
+         * @returns {IBridge|null} 皮肤所属表现层桥实例
+         * @memberof BridgeManager
+         */
+        getBridgeBySkin(skin: any): IBridge | null;
+        /**
+         * 注册一个表现层桥实例到框架中
+         *
+         * @param {...IBridge[]} bridges 要注册的所有表现层桥
+         * @memberof BridgeManager
+         */
+        registerBridge(...bridges: IBridge[]): void;
+        private testAllInit();
+    }
+    /** 再额外导出一个单例 */
+    export const bridgeManager: BridgeManager;
+}
+declare module "engine/system/System" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
+    */
+    export default class System {
+        private _nextFrameList;
+        private _timer;
+        /**
+         * 获取从程序运行到当前所经过的毫秒数
+         *
+         * @returns {number} 毫秒数
+         * @memberof System
+         */
+        getTimer(): number;
+        constructor();
+        private tick();
+        /**
+         * 在下一帧执行某个方法
+         *
+         * @param {Function} handler 希望在下一帧执行的某个方法
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 方法参数列表
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        nextFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+        /**
+         * 设置延迟回调
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        setTimeout(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+        /**
+         * 设置延时间隔
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        setInterval(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+    }
+    export interface ICancelable {
+        cancel(): void;
+    }
+    /** 再额外导出一个单例 */
+    export const system: System;
+}
+declare module "engine/model/Model" {
+    import IMessage from "core/message/IMessage";
+    import IDispatcher from "core/interfaces/IDispatcher";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * Model的基类，也可以不继承该基类，因为Model是很随意的东西
+    */
+    export default abstract class Model implements IDispatcher {
+        /**
+         * 派发内核消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof Core
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发内核消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof Core
+         */
+        dispatch(type: string, ...params: any[]): void;
+    }
+}
+declare module "engine/bridge/IHasBridge" {
+    import IBridge from "engine/bridge/IBridge";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -818,8 +858,8 @@ declare module "core/interfaces/IDisposable" {
         dispose(): void;
     }
 }
-declare module "view/mediator/IMediator" {
-    import IHasBridge from "view/bridge/IHasBridge";
+declare module "engine/mediator/IMediator" {
+    import IHasBridge from "engine/bridge/IHasBridge";
     import IDisposable from "core/interfaces/IDisposable";
     /**
      * @author Raykid
@@ -876,8 +916,8 @@ declare module "view/mediator/IMediator" {
 declare module "engine/mediator/Mediator" {
     import IDispatcher from "core/interfaces/IDispatcher";
     import IMessage from "core/message/IMessage";
-    import IMediator from "view/mediator/IMediator";
-    import IBridge from "view/bridge/IBridge";
+    import IMediator from "engine/mediator/IMediator";
+    import IBridge from "engine/bridge/IBridge";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -996,7 +1036,7 @@ declare module "engine/panel/IPanelPolicy" {
 }
 declare module "engine/panel/IPanel" {
     import IDisposable from "core/interfaces/IDisposable";
-    import IHasBridge from "view/bridge/IHasBridge";
+    import IHasBridge from "engine/bridge/IHasBridge";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     /**
      * @author Raykid
@@ -1265,7 +1305,7 @@ declare module "engine/scene/IScenePolicy" {
 }
 declare module "engine/scene/IScene" {
     import IDisposable from "core/interfaces/IDisposable";
-    import IHasBridge from "view/bridge/IHasBridge";
+    import IHasBridge from "engine/bridge/IHasBridge";
     import IScenePolicy from "engine/scene/IScenePolicy";
     /**
      * @author Raykid
@@ -2355,46 +2395,6 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
     /** 再额外导出一个实例 */
     export const httpRequestPolicy: HTTPRequestPolicy;
 }
-declare module "view/View" {
-    import IBridge from "view/bridge/IBridge";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * View是表现层模组，用来管理所有表现层对象
-    */
-    export default class View {
-        private _bridgeDict;
-        /**
-         * 获取表现层桥实例
-         *
-         * @param {string} type 表现层类型
-         * @returns {IBridge} 表现层桥实例
-         * @memberof View
-         */
-        getBridge(type: string): IBridge;
-        /**
-         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
-         *
-         * @param {*} skin 皮肤实例
-         * @returns {IBridge|null} 皮肤所属表现层桥实例
-         * @memberof View
-         */
-        getBridgeBySkin(skin: any): IBridge | null;
-        /**
-         * 注册一个表现层桥实例到框架中
-         *
-         * @param {...IBridge[]} bridges 要注册的所有表现层桥
-         * @memberof View
-         */
-        registerBridge(...bridges: IBridge[]): void;
-        private testAllInit();
-    }
-    /** 再额外导出一个单例 */
-    export const view: View;
-}
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
     /**
@@ -2441,7 +2441,7 @@ declare module "engine/Engine" {
 }
 declare module "Olympus" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
-    import IBridge from "view/bridge/IBridge";
+    import IBridge from "engine/bridge/IBridge";
     /**
      * @author Raykid
      * @email initial_r@qq.com

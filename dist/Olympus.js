@@ -742,7 +742,11 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
     /** 再额外导出一个单例 */
     exports.core = new Core();
 });
-define("view/message/ViewMessage", ["require", "exports"], function (require, exports) {
+define("engine/bridge/IBridge", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/bridge/BridgeMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -753,8 +757,8 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
      *
      * 表现层消息
     */
-    var ViewMessage = /** @class */ (function () {
-        function ViewMessage() {
+    var BridgeMessage = /** @class */ (function () {
+        function BridgeMessage() {
         }
         /**
          * 初始化表现层实例前的消息
@@ -763,7 +767,7 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
          * @type {string}
          * @memberof ViewMessage
          */
-        ViewMessage.BRIDGE_BEFORE_INIT = "bridgeBeforeInit";
+        BridgeMessage.BRIDGE_BEFORE_INIT = "bridgeBeforeInit";
         /**
          * 初始化表现层实例后的消息
          *
@@ -771,7 +775,7 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
          * @type {string}
          * @memberof ViewMessage
          */
-        ViewMessage.BRIDGE_AFTER_INIT = "bridgeAfterInit";
+        BridgeMessage.BRIDGE_AFTER_INIT = "bridgeAfterInit";
         /**
          * 所有表现层实例都初始化完毕的消息
          *
@@ -779,12 +783,133 @@ define("view/message/ViewMessage", ["require", "exports"], function (require, ex
          * @type {string}
          * @memberof ViewMessage
          */
-        ViewMessage.BRIDGE_ALL_INIT = "bridgeAllInit";
-        return ViewMessage;
+        BridgeMessage.BRIDGE_ALL_INIT = "bridgeAllInit";
+        return BridgeMessage;
     }());
-    exports.default = ViewMessage;
+    exports.default = BridgeMessage;
 });
-define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_3, Injector_1) {
+define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage"], function (require, exports, Core_3, Injector_1, BridgeMessage_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来管理所有表现层对象
+    */
+    var BridgeManager = /** @class */ (function () {
+        function BridgeManager() {
+            this._bridgeDict = {};
+        }
+        /**
+         * 获取表现层桥实例
+         *
+         * @param {string} type 表现层类型
+         * @returns {IBridge} 表现层桥实例
+         * @memberof BridgeManager
+         */
+        BridgeManager.prototype.getBridge = function (type) {
+            var data = this._bridgeDict[type];
+            return (data && data[0]);
+        };
+        /**
+         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
+         *
+         * @param {*} skin 皮肤实例
+         * @returns {IBridge|null} 皮肤所属表现层桥实例
+         * @memberof BridgeManager
+         */
+        BridgeManager.prototype.getBridgeBySkin = function (skin) {
+            if (skin) {
+                // 遍历所有已注册的表现层桥进行判断
+                for (var type in this._bridgeDict) {
+                    var bridge = this._bridgeDict[type][0];
+                    if (bridge.isMySkin(skin))
+                        return bridge;
+                }
+            }
+            return null;
+        };
+        /**
+         * 注册一个表现层桥实例到框架中
+         *
+         * @param {...IBridge[]} bridges 要注册的所有表现层桥
+         * @memberof BridgeManager
+         */
+        BridgeManager.prototype.registerBridge = function () {
+            var _this = this;
+            var bridges = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                bridges[_i] = arguments[_i];
+            }
+            // 进行DOM初始化判断
+            if (!document.body) {
+                var onLoad = function (evt) {
+                    window.removeEventListener("load", onLoad);
+                    // 重新调用注册方法
+                    _this.registerBridge.apply(_this, bridges);
+                };
+                window.addEventListener("load", onLoad);
+                return;
+            }
+            // 进行初始化
+            if (bridges.length > 0) {
+                var self = this;
+                // 记录
+                for (var _a = 0, bridges_1 = bridges; _a < bridges_1.length; _a++) {
+                    var bridge = bridges_1[_a];
+                    var type = bridge.type;
+                    if (!this._bridgeDict[type]) {
+                        var data = [bridge, false];
+                        this._bridgeDict[type] = data;
+                    }
+                }
+                // 开始初始化
+                for (var _b = 0, bridges_2 = bridges; _b < bridges_2.length; _b++) {
+                    var bridge = bridges_2[_b];
+                    // 派发消息
+                    Core_3.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
+                    // 初始化该表现层实例
+                    if (bridge.init)
+                        bridge.init(afterInitBridge);
+                    else
+                        afterInitBridge(bridge);
+                }
+            }
+            else {
+                this.testAllInit();
+            }
+            function afterInitBridge(bridge) {
+                // 派发消息
+                Core_3.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
+                // 设置初始化完毕属性
+                var data = self._bridgeDict[bridge.type];
+                data[1] = true;
+                // 测试是否全部初始化完毕
+                self.testAllInit();
+            }
+        };
+        BridgeManager.prototype.testAllInit = function () {
+            var allInited = true;
+            for (var key in this._bridgeDict) {
+                var data = this._bridgeDict[key];
+                allInited = allInited && data[1];
+            }
+            if (allInited)
+                Core_3.core.dispatch(BridgeMessage_1.default.BRIDGE_ALL_INIT);
+        };
+        BridgeManager = __decorate([
+            Injector_1.Injectable
+        ], BridgeManager);
+        return BridgeManager;
+    }());
+    exports.default = BridgeManager;
+    /** 再额外导出一个单例 */
+    exports.bridgeManager = Core_3.core.getInject(BridgeManager);
+});
+define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_4, Injector_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -930,15 +1055,15 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
             };
         };
         System = __decorate([
-            Injector_1.Injectable
+            Injector_2.Injectable
         ], System);
         return System;
     }());
     exports.default = System;
     /** 再额外导出一个单例 */
-    exports.system = Core_3.core.getInject(System);
+    exports.system = Core_4.core.getInject(System);
 });
-define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_4) {
+define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -957,17 +1082,13 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_4.core.dispatch.apply(Core_4.core, [typeOrMsg].concat(params));
+            Core_5.core.dispatch.apply(Core_5.core, [typeOrMsg].concat(params));
         };
         return Model;
     }());
     exports.default = Model;
 });
-define("view/bridge/IBridge", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("view/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
+define("engine/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -975,11 +1096,11 @@ define("core/interfaces/IDisposable", ["require", "exports"], function (require,
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("view/mediator/IMediator", ["require", "exports"], function (require, exports) {
+define("engine/mediator/IMediator", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_5) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1071,7 +1192,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_5.core.dispatch.apply(Core_5.core, [typeOrMsg].concat(params));
+            Core_6.core.dispatch.apply(Core_6.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁中介者
@@ -1183,7 +1304,7 @@ define("engine/panel/PanelMessage", ["require", "exports"], function (require, e
     }());
     exports.default = PanelMessage;
 });
-define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage"], function (require, exports, Core_6, Injector_2, NonePanelPolicy_1, PanelMessage_1) {
+define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage"], function (require, exports, Core_7, Injector_3, NonePanelPolicy_1, PanelMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1230,7 +1351,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 // 调用回调
                 panel.onBeforePop && panel.onBeforePop(data, isModel, from);
                 // 派发消息
-                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
+                Core_7.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
                 // 添加显示
                 var bridge = panel.bridge;
                 bridge.addChild(bridge.panelLayer, panel.skin);
@@ -1239,7 +1360,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 调用回调
                     panel.onAfterPop && panel.onAfterPop(data, isModel, from);
                     // 派发消息
-                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
+                    Core_7.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
                 }, from);
             }
             return panel;
@@ -1262,13 +1383,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 // 调用回调
                 panel.onBeforeDrop && panel.onBeforeDrop(data, to);
                 // 派发消息
-                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
+                Core_7.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
                 // 调用策略接口
                 policy.drop(panel, function () {
                     // 调用回调
                     panel.onAfterDrop && panel.onAfterDrop(data, to);
                     // 派发消息
-                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
+                    Core_7.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
                     // 移除显示
                     var bridge = panel.bridge;
                     bridge.removeChild(bridge.panelLayer, panel.skin);
@@ -1279,13 +1400,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             return panel;
         };
         PanelManager = __decorate([
-            Injector_2.Injectable
+            Injector_3.Injectable
         ], PanelManager);
         return PanelManager;
     }());
     exports.default = PanelManager;
     /** 再额外导出一个单例 */
-    exports.panelManager = Core_6.core.getInject(PanelManager);
+    exports.panelManager = Core_7.core.getInject(PanelManager);
 });
 define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_1) {
     "use strict";
@@ -1484,7 +1605,7 @@ define("utils/SyncUtil", ["require", "exports"], function (require, exports) {
     }
     exports.notify = notify;
 });
-define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_7, Injector_3, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
+define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_8, Injector_4, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1645,7 +1766,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             from && from.onBeforeOut && from.onBeforeOut(to, data);
             to.onBeforeIn && to.onBeforeIn(from, data);
             // 派发事件
-            Core_7.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
+            Core_8.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
             // 添加显示
             to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 调用切换接口
@@ -1656,7 +1777,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                 from && from.onAfterOut && from.onAfterOut(to, data);
                 to.onAfterIn && to.onAfterIn(from, data);
                 // 派发事件
-                Core_7.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
+                Core_8.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
                 // 调用回调
                 complete();
                 // 完成步骤
@@ -1664,13 +1785,13 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             });
         };
         SceneManager = __decorate([
-            Injector_3.Injectable
+            Injector_4.Injectable
         ], SceneManager);
         return SceneManager;
     }());
     exports.default = SceneManager;
     /** 再额外导出一个单例 */
-    exports.sceneManager = Core_7.core.getInject(SceneManager);
+    exports.sceneManager = Core_8.core.getInject(SceneManager);
 });
 define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_1) {
     "use strict";
@@ -1845,14 +1966,14 @@ define("engine/net/NetMessage", ["require", "exports"], function (require, expor
     }());
     exports.default = NetMessage;
 });
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_8, Injector_4, CoreMessage_2, ObjectUtil_3, RequestData_1, NetMessage_1) {
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_9, Injector_5, CoreMessage_2, ObjectUtil_3, RequestData_1, NetMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NetManager = /** @class */ (function () {
         function NetManager() {
             this._responseDict = {};
             this._responseListeners = {};
-            Core_8.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
+            Core_9.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
         }
         NetManager.prototype.onMsgDispatched = function (msg) {
             // 如果消息是通讯消息则做处理
@@ -1862,7 +1983,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 发送消息
                 msg.__policy.sendRequest(msg);
                 // 派发系统消息
-                Core_8.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
+                Core_9.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
             }
         };
         /**
@@ -1943,7 +2064,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                     leftResCount++;
                 }
                 // 发送请求
-                Core_8.core.dispatch(request);
+                Core_9.core.dispatch(request);
             }
             // 测试回调
             testCallback();
@@ -1974,7 +2095,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 var response = new cls();
                 response.parse(result);
                 // 派发事件
-                Core_8.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
+                Core_9.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
                 // 触发事件形式监听
                 var listeners = this._responseListeners[type];
                 if (listeners) {
@@ -1993,16 +2114,16 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
         };
         NetManager.prototype.__onError = function (err, request) {
             // 派发事件
-            Core_8.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
+            Core_9.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
         };
         NetManager = __decorate([
-            Injector_4.Injectable
+            Injector_5.Injectable
         ], NetManager);
         return NetManager;
     }());
     exports.default = NetManager;
     /** 再额外导出一个单例 */
-    exports.netManager = Core_8.core.getInject(NetManager);
+    exports.netManager = Core_9.core.getInject(NetManager);
 });
 define("engine/module/IModuleConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -2038,7 +2159,7 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
     }());
     exports.default = ModuleMessage;
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_9, Injector_5, NetManager_1, ModuleMessage_1) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_10, Injector_6, NetManager_1, ModuleMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2148,7 +2269,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     if (replace)
                         this.close(from[0]);
                     // 派发消息
-                    Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
+                    Core_10.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
                 }, this);
             }
             else if (after.length > 0) {
@@ -2190,7 +2311,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 调用onActivate接口
                 toModule && toModule.onActivate(cls, data);
                 // 派发消息
-                Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, to && to[0]);
+                Core_10.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, to && to[0]);
             }
             else {
                 // 移除模块
@@ -2202,15 +2323,15 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             target.dispose();
         };
         ModuleManager = __decorate([
-            Injector_5.Injectable
+            Injector_6.Injectable
         ], ModuleManager);
         return ModuleManager;
     }());
     exports.default = ModuleManager;
     /** 再额外导出一个单例 */
-    exports.moduleManager = Core_9.core.getInject(ModuleManager);
+    exports.moduleManager = Core_10.core.getInject(ModuleManager);
 });
-define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_10) {
+define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2313,7 +2434,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_10.core.dispatch.apply(Core_10.core, [typeOrMsg].concat(params));
+            Core_11.core.dispatch.apply(Core_11.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁模块，可以重写
@@ -2327,7 +2448,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
     }());
     exports.default = Module;
 });
-define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_11, Injector_6) {
+define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_12, Injector_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2485,15 +2606,15 @@ define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector
             configurable: true
         });
         Explorer = __decorate([
-            Injector_6.Injectable
+            Injector_7.Injectable
         ], Explorer);
         return Explorer;
     }());
     exports.default = Explorer;
     /** 再额外导出一个单例 */
-    exports.explorer = Core_11.core.getInject(Explorer);
+    exports.explorer = Core_12.core.getInject(Explorer);
 });
-define("engine/env/External", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_12, Injector_7) {
+define("engine/env/External", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_13, Injector_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2529,15 +2650,15 @@ define("engine/env/External", ["require", "exports", "core/Core", "core/injector
             return this._params[key];
         };
         External = __decorate([
-            Injector_7.Injectable
+            Injector_8.Injectable
         ], External);
         return External;
     }());
     exports.default = External;
     /** 再额外导出一个单例 */
-    exports.external = Core_12.core.getInject(External);
+    exports.external = Core_13.core.getInject(External);
 });
-define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_13, Injector_8) {
+define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_14, Injector_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2667,15 +2788,15 @@ define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Inj
             return this._params[key];
         };
         Hash = __decorate([
-            Injector_8.Injectable
+            Injector_9.Injectable
         ], Hash);
         return Hash;
     }());
     exports.default = Hash;
     /** 再额外导出一个单例 */
-    exports.hash = Core_13.core.getInject(Hash);
+    exports.hash = Core_14.core.getInject(Hash);
 });
-define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_14, Injector_9) {
+define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_15, Injector_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2717,13 +2838,13 @@ define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/In
             return this._params[key];
         };
         Query = __decorate([
-            Injector_9.Injectable
+            Injector_10.Injectable
         ], Query);
         return Query;
     }());
     exports.default = Query;
     /** 再额外导出一个单例 */
-    exports.query = Core_14.core.getInject(Query);
+    exports.query = Core_15.core.getInject(Query);
 });
 define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_4) {
     "use strict";
@@ -3095,128 +3216,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
-define("view/View", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage"], function (require, exports, Core_15, Injector_10, ViewMessage_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * View是表现层模组，用来管理所有表现层对象
-    */
-    var View = /** @class */ (function () {
-        function View() {
-            this._bridgeDict = {};
-        }
-        /**
-         * 获取表现层桥实例
-         *
-         * @param {string} type 表现层类型
-         * @returns {IBridge} 表现层桥实例
-         * @memberof View
-         */
-        View.prototype.getBridge = function (type) {
-            var data = this._bridgeDict[type];
-            return (data && data[0]);
-        };
-        /**
-         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
-         *
-         * @param {*} skin 皮肤实例
-         * @returns {IBridge|null} 皮肤所属表现层桥实例
-         * @memberof View
-         */
-        View.prototype.getBridgeBySkin = function (skin) {
-            if (skin) {
-                // 遍历所有已注册的表现层桥进行判断
-                for (var type in this._bridgeDict) {
-                    var bridge = this._bridgeDict[type][0];
-                    if (bridge.isMySkin(skin))
-                        return bridge;
-                }
-            }
-            return null;
-        };
-        /**
-         * 注册一个表现层桥实例到框架中
-         *
-         * @param {...IBridge[]} bridges 要注册的所有表现层桥
-         * @memberof View
-         */
-        View.prototype.registerBridge = function () {
-            var _this = this;
-            var bridges = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                bridges[_i] = arguments[_i];
-            }
-            // 进行DOM初始化判断
-            if (!document.body) {
-                var onLoad = function (evt) {
-                    window.removeEventListener("load", onLoad);
-                    // 重新调用注册方法
-                    _this.registerBridge.apply(_this, bridges);
-                };
-                window.addEventListener("load", onLoad);
-                return;
-            }
-            // 进行初始化
-            if (bridges.length > 0) {
-                var self = this;
-                // 记录
-                for (var _a = 0, bridges_1 = bridges; _a < bridges_1.length; _a++) {
-                    var bridge = bridges_1[_a];
-                    var type = bridge.type;
-                    if (!this._bridgeDict[type]) {
-                        var data = [bridge, false];
-                        this._bridgeDict[type] = data;
-                    }
-                }
-                // 开始初始化
-                for (var _b = 0, bridges_2 = bridges; _b < bridges_2.length; _b++) {
-                    var bridge = bridges_2[_b];
-                    // 派发消息
-                    Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
-                    // 初始化该表现层实例
-                    if (bridge.init)
-                        bridge.init(afterInitBridge);
-                    else
-                        afterInitBridge(bridge);
-                }
-            }
-            else {
-                this.testAllInit();
-            }
-            function afterInitBridge(bridge) {
-                // 派发消息
-                Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_AFTER_INIT, bridge);
-                // 设置初始化完毕属性
-                var data = self._bridgeDict[bridge.type];
-                data[1] = true;
-                // 测试是否全部初始化完毕
-                self.testAllInit();
-            }
-        };
-        View.prototype.testAllInit = function () {
-            var allInited = true;
-            for (var key in this._bridgeDict) {
-                var data = this._bridgeDict[key];
-                allInited = allInited && data[1];
-            }
-            if (allInited)
-                Core_15.core.dispatch(ViewMessage_1.default.BRIDGE_ALL_INIT);
-        };
-        View = __decorate([
-            Injector_10.Injectable
-        ], View);
-        return View;
-    }());
-    exports.default = View;
-    /** 再额外导出一个单例 */
-    exports.view = Core_15.core.getInject(View);
-});
-define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "utils/Dictionary", "engine/net/NetManager", "view/View"], function (require, exports, Core_16, ConstructUtil_2, Dictionary_3, NetManager_3, View_1) {
+define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "utils/Dictionary", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_16, ConstructUtil_2, Dictionary_3, NetManager_3, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3252,7 +3252,7 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
             },
             set: function (value) {
                 // 根据skin类型选取表现层桥
-                this.bridge = View_1.view.getBridgeBySkin(value);
+                this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
                 // 记录值
                 $skin = value;
             }
@@ -3324,7 +3324,7 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     exports.DelegateMediator = DelegateMediator;
     ;
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "view/message/ViewMessage", "engine/module/ModuleManager"], function (require, exports, Core_17, Injector_11, ViewMessage_2, ModuleManager_1) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/module/ModuleManager"], function (require, exports, Core_17, Injector_11, BridgeMessage_2, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3347,10 +3347,10 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
          */
         Engine.prototype.registerFirstModule = function (cls) {
             // 监听Bridge初始化完毕事件，显示第一个模块
-            Core_17.core.listen(ViewMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
+            Core_17.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
             function onAllBridgesInit() {
                 // 注销监听
-                Core_17.core.unlisten(ViewMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
+                Core_17.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
                 // 打开模块
                 ModuleManager_1.moduleManager.open(cls);
             }
@@ -3364,7 +3364,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
     /** 再额外导出一个单例 */
     exports.engine = Core_17.core.getInject(Engine);
 });
-define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function (require, exports, Engine_1, View_2) {
+define("Olympus", ["require", "exports", "engine/Engine", "engine/bridge/BridgeManager"], function (require, exports, Engine_1, BridgeManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3394,7 +3394,7 @@ define("Olympus", ["require", "exports", "engine/Engine", "view/View"], function
             // 注册首个模块
             Engine_1.engine.registerFirstModule(firstModule);
             // 注册并初始化表现层桥实例
-            View_2.view.registerBridge.apply(View_2.view, bridges);
+            BridgeManager_2.bridgeManager.registerBridge.apply(BridgeManager_2.bridgeManager, bridges);
         };
         return Olympus;
     }());

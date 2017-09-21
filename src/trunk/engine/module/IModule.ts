@@ -1,5 +1,5 @@
 import IDisposable from "../../core/interfaces/IDisposable";
-import IMediator from "../../view/mediator/IMediator";
+import IMediator from "../mediator/IMediator";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IModuleConstructor from "./IModuleConstructor";

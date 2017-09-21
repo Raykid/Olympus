@@ -1,6 +1,7 @@
 import { core } from "../core/Core";
 import { Injectable } from "../core/injector/Injector";
-import ViewMessage from "../view/message/ViewMessage";
+import BridgeManager from "./bridge/BridgeManager";
+import BridgeMessage from "./bridge/BridgeMessage";
 import System from "./system/System";
 import Model from "./model/Model";
 import Mediator from "./mediator/Mediator";
@@ -41,12 +42,12 @@ export default class Engine
     public registerFirstModule(cls:IModuleConstructor):void
     {
         // 监听Bridge初始化完毕事件，显示第一个模块
-        core.listen(ViewMessage.BRIDGE_ALL_INIT, onAllBridgesInit);
+        core.listen(BridgeMessage.BRIDGE_ALL_INIT, onAllBridgesInit);
 
         function onAllBridgesInit():void
         {
             // 注销监听
-            core.unlisten(ViewMessage.BRIDGE_ALL_INIT, onAllBridgesInit);
+            core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, onAllBridgesInit);
             // 打开模块
             moduleManager.open(cls);
         }

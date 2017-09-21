@@ -2,7 +2,7 @@
 /// <reference path="../src/branches/egret/egret-core/build/eui/eui.d.ts" />
 /// <reference path="../src/branches/egret/egret-core/build/res/res.d.ts" />
 /// <reference path="../src/branches/egret/egret-core/build/tween/tween.d.ts" />
-declare module "trunk/view/bridge/IBridge" {
+declare module "trunk/engine/bridge/IBridge" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -248,7 +248,7 @@ declare module "branches/egret/IInitParams" {
     }
 }
 declare module "branches/egret/Bridge" {
-    import IBridge from "trunk/view/bridge/IBridge";
+    import IBridge from "trunk/engine/bridge/IBridge";
     import IInitParams from "branches/egret/IInitParams";
     /**
      * @author Raykid

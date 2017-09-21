@@ -11,8 +11,7 @@
     "Olympus.ts",
     "Injector.ts",
     "core/Core.ts",
-    "engine/Engine.ts",
-    "view/View.ts"
+    "engine/Engine.ts"
   ],
   "exclude": [
     "node_modules"

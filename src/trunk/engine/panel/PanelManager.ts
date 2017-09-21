@@ -1,7 +1,7 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector"
 import IConstructor from "../../core/interfaces/IConstructor";
-import IBridge from "../../view/bridge/IBridge";
+import IBridge from "../bridge/IBridge";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 import none from "./NonePanelPolicy";

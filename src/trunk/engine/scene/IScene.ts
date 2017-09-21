@@ -1,5 +1,5 @@
 import IDisposable from "../../core/interfaces/IDisposable";
-import IHasBridge from "../../view/bridge/IHasBridge";
+import IHasBridge from "../bridge/IHasBridge";
 import IScenePolicy from "./IScenePolicy";
 
 /**

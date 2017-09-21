@@ -3,7 +3,7 @@
 /// <reference path="./egret-core/build/res/res.d.ts"/>
 /// <reference path="./egret-core/build/tween/tween.d.ts"/>
 
-import IBridge from "../../trunk/view/bridge/IBridge";
+import IBridge from "../../trunk/engine/bridge/IBridge";
 import IInitParams from "./IInitParams";
 import RenderMode from "./RenderMode";
 

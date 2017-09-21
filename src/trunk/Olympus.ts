@@ -1,7 +1,7 @@
 import { engine } from "./engine/Engine";
 import IModuleConstructor from "./engine/module/IModuleConstructor";
-import { view } from "./view/View";
-import IBridge from "./view/bridge/IBridge";
+import { bridgeManager } from "./engine/bridge/BridgeManager";
+import IBridge from "./engine/bridge/IBridge";
 
 /**
  * @author Raykid
@@ -26,6 +26,6 @@ export default class Olympus
         // 注册首个模块
         engine.registerFirstModule(firstModule);
         // 注册并初始化表现层桥实例
-        view.registerBridge(...bridges);
+        bridgeManager.registerBridge(...bridges);
     }
 }

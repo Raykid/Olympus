@@ -1,4 +1,4 @@
-declare module "trunk/view/bridge/IBridge" {
+declare module "trunk/engine/bridge/IBridge" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -254,7 +254,7 @@ declare module "trunk/utils/ObjectUtil" {
     export function getObjectHashs(...targets: any[]): string;
 }
 declare module "branches/dom/Bridge" {
-    import IBridge from "trunk/view/bridge/IBridge";
+    import IBridge from "trunk/engine/bridge/IBridge";
     /**
      * @author Raykid
      * @email initial_r@qq.com

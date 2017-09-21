@@ -3,9 +3,9 @@ import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/Const
 import Dictionary from "../../utils/Dictionary";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
-import { view } from "../../view/View";
-import IMediator from "../../view/mediator/IMediator";
 import IModule from "../module/IModule";
+import { bridgeManager } from "../bridge/BridgeManager";
+import IMediator from "../mediator/IMediator";
 
 /**
  * @author Raykid
@@ -45,7 +45,7 @@ export function MediatorClass(cls:IConstructor):IConstructor
         set: function(value:any):void
         {
             // 根据skin类型选取表现层桥
-            this.bridge = view.getBridgeBySkin(value);
+            this.bridge = bridgeManager.getBridgeBySkin(value);
             // 记录值
             $skin = value;
         }

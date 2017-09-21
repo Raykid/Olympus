@@ -6,7 +6,7 @@
  * 
  * 表现层消息
 */
-export default class ViewMessage
+export default class BridgeMessage
 {
     /**
      * 初始化表现层实例前的消息

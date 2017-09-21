@@ -1,7 +1,7 @@
-import { core } from "../core/Core";
-import { Injectable } from "../core/injector/Injector"
-import IBridge from "./bridge/IBridge";
-import ViewMessage from "./message/ViewMessage";
+import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector";
+import IBridge from "./IBridge";
+import BridgeMessage from "./BridgeMessage";
 
 /**
  * @author Raykid
@@ -9,10 +9,10 @@ import ViewMessage from "./message/ViewMessage";
  * @create date 2017-09-06
  * @modify date 2017-09-06
  * 
- * View是表现层模组，用来管理所有表现层对象
+ * 用来管理所有表现层对象
 */
 @Injectable
-export default class View
+export default class BridgeManager
 {
     private _bridgeDict:{[type:string]:[IBridge, boolean]} = {};
 
@@ -21,7 +21,7 @@ export default class View
      * 
      * @param {string} type 表现层类型
      * @returns {IBridge} 表现层桥实例
-     * @memberof View
+     * @memberof BridgeManager
      */
     public getBridge(type:string):IBridge
     {
@@ -34,7 +34,7 @@ export default class View
      * 
      * @param {*} skin 皮肤实例
      * @returns {IBridge|null} 皮肤所属表现层桥实例
-     * @memberof View
+     * @memberof BridgeManager
      */
     public getBridgeBySkin(skin:any):IBridge|null
     {
@@ -54,7 +54,7 @@ export default class View
      * 注册一个表现层桥实例到框架中
      * 
      * @param {...IBridge[]} bridges 要注册的所有表现层桥
-     * @memberof View
+     * @memberof BridgeManager
      */
     public registerBridge(...bridges:IBridge[]):void
     {
@@ -73,7 +73,7 @@ export default class View
         // 进行初始化
         if(bridges.length > 0)
         {
-            var self:View = this;
+            var self:BridgeManager = this;
             // 记录
             for(var bridge of bridges)
             {
@@ -88,7 +88,7 @@ export default class View
             for(var bridge of bridges)
             {
                 // 派发消息
-                core.dispatch(ViewMessage.BRIDGE_BEFORE_INIT, bridge);
+                core.dispatch(BridgeMessage.BRIDGE_BEFORE_INIT, bridge);
                 // 初始化该表现层实例
                 if(bridge.init) bridge.init(afterInitBridge);
                 else afterInitBridge(bridge);
@@ -102,7 +102,7 @@ export default class View
         function afterInitBridge(bridge:IBridge):void
         {
             // 派发消息
-            core.dispatch(ViewMessage.BRIDGE_AFTER_INIT, bridge);
+            core.dispatch(BridgeMessage.BRIDGE_AFTER_INIT, bridge);
             // 设置初始化完毕属性
             var data:[IBridge, boolean] = self._bridgeDict[bridge.type];
             data[1] = true;
@@ -119,8 +119,8 @@ export default class View
             var data:[IBridge, boolean] = this._bridgeDict[key];
             allInited = allInited && data[1];
         }
-        if(allInited) core.dispatch(ViewMessage.BRIDGE_ALL_INIT);
+        if(allInited) core.dispatch(BridgeMessage.BRIDGE_ALL_INIT);
     }
 }
 /** 再额外导出一个单例 */
-export const view:View = core.getInject(View);
+export const bridgeManager:BridgeManager = core.getInject(BridgeManager);
