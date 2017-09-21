@@ -202,14 +202,18 @@ export default class SceneManager
         prepareFunc.call(policy, from, to);
         // 前置处理
         from && from.onBeforeOut && from.onBeforeOut(to, data);
-        to && to.onBeforeIn && to.onBeforeIn(from, data);
+        to.onBeforeIn && to.onBeforeIn(from, data);
         // 派发事件
         core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, from, to);
+        // 添加显示
+        to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 调用切换接口
         doFunc.call(policy, from, to, ()=>{
+            // 移除显示
+            from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
             // 后置处理
             from && from.onAfterOut && from.onAfterOut(to, data);
-            to && to.onAfterIn && to.onAfterIn(from, data);
+            to.onAfterIn && to.onAfterIn(from, data);
             // 派发事件
             core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, from, to);
             // 调用回调

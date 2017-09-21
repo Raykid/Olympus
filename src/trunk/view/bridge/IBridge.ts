@@ -117,6 +117,14 @@ export default interface IBridge
      */
     removeChildren(parent:any):void;
     /**
+     * 获取父容器
+     * 
+     * @param {*} target 指定显示对象
+     * @return {*} 父容器
+     * @memberof IBridge
+     */
+    getParent(target:any):any;
+    /**
      * 获取指定索引处的显示对象
      * 
      * @param {*} parent 父容器

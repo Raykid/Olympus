@@ -46,7 +46,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
     }(Module_1.default));
     exports.default = SecondModule;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/mediator/Mediator", "Injector"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Mediator_1, Injector_2) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "engine/panel/PanelMediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, PanelMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -66,7 +66,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         }
         FirstModule_1 = FirstModule;
         FirstModule.prototype.onOpen = function (data) {
-            console.log("first module open");
+            this._mediator.pop(data);
         };
         FirstModule.prototype.onGetResponses = function (responses) {
             console.log("first module gotResponse");
@@ -103,7 +103,6 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 fuck.txt.text = "Fuck you!!!";
                 _this.moduleManager.open(SecondModule_1.default, null, true);
             }, _this);
-            _this.bridge.addChild(_this.bridge.sceneLayer, fuck);
             return _this;
         }
         __decorate([
@@ -113,7 +112,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             Injector_2.MediatorClass
         ], FirstMediator);
         return FirstMediator;
-    }(Mediator_1.default));
+    }(PanelMediator_1.default));
     var Fuck = /** @class */ (function (_super) {
         __extends(Fuck, _super);
         function Fuck() {

@@ -1,6 +1,7 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector"
 import IConstructor from "../../core/interfaces/IConstructor";
+import IBridge from "../../view/bridge/IBridge";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 import none from "./NonePanelPolicy";
@@ -52,6 +53,9 @@ export default class PanelManager
             panel.onBeforePop && panel.onBeforePop(data, isModel, from);
             // 派发消息
             core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModel, from);
+            // 添加显示
+            var bridge:IBridge = panel.bridge;
+            bridge.addChild(bridge.panelLayer, panel.skin);
             // 调用策略接口
             policy.pop(panel, ()=>{
                 // 调用回调
@@ -89,6 +93,9 @@ export default class PanelManager
                 panel.onAfterDrop && panel.onAfterDrop(data, to);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
+                // 移除显示
+                var bridge:IBridge = panel.bridge;
+                bridge.removeChild(bridge.panelLayer, panel.skin);
                 // 销毁弹窗
                 panel.dispose();
             }, to);

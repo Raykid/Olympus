@@ -311,6 +311,18 @@ export default class Bridge implements IBridge
     {
         parent.removeChildren();
     }
+
+    /**
+     * 获取父容器
+     * 
+     * @param {egret.DisplayObject} target 目标对象
+     * @returns {egret.DisplayObjectContainer} 父容器
+     * @memberof Bridge
+     */
+    public getParent(target:egret.DisplayObject):egret.DisplayObjectContainer
+    {
+        return target.parent;
+    }
     
     /**
      * 获取指定索引处的显示对象

@@ -201,6 +201,18 @@ export default class Bridge implements IBridge
             parent.removeChild(parent.children.item(i));
         }
     }
+    
+    /**
+     * 获取父容器
+     * 
+     * @param {Element} target 目标对象
+     * @returns {Element} 父容器
+     * @memberof Bridge
+     */
+    public getParent(target:Element):Element
+    {
+        return target.parentElement;
+    }
 
     /**
      * 获取指定索引处的显示对象

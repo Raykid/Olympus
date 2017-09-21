@@ -121,6 +121,14 @@ declare module "trunk/view/bridge/IBridge" {
          */
         removeChildren(parent: any): void;
         /**
+         * 获取父容器
+         *
+         * @param {*} target 指定显示对象
+         * @return {*} 父容器
+         * @memberof IBridge
+         */
+        getParent(target: any): any;
+        /**
          * 获取指定索引处的显示对象
          *
          * @param {*} parent 父容器
@@ -372,6 +380,14 @@ declare module "branches/egret/Bridge" {
          * @memberof Bridge
          */
         removeChildren(parent: egret.DisplayObjectContainer): void;
+        /**
+         * 获取父容器
+         *
+         * @param {egret.DisplayObject} target 目标对象
+         * @returns {egret.DisplayObjectContainer} 父容器
+         * @memberof Bridge
+         */
+        getParent(target: egret.DisplayObject): egret.DisplayObjectContainer;
         /**
          * 获取指定索引处的显示对象
          *

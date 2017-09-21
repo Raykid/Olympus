@@ -3,8 +3,8 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
-import Mediator from "engine/mediator/Mediator";
 import { ModuleClass, DelegateMediator, Inject, MessageHandler, MediatorClass } from "Injector";
+import PanelMediator from "engine/panel/PanelMediator";
 
 /**
  * @author Raykid
@@ -22,7 +22,7 @@ export default class FirstModule extends Module
 
     public onOpen(data?:any):void
     {
-        console.log("first module open");
+        this._mediator.pop(data);
     }
 
     public onGetResponses(responses:ResponseData[]):void
@@ -44,7 +44,7 @@ export default class FirstModule extends Module
 }
 
 @MediatorClass
-class FirstMediator extends Mediator
+class FirstMediator extends PanelMediator
 {
     @Inject(ModuleManager)
     private moduleManager:ModuleManager;
@@ -57,7 +57,6 @@ class FirstMediator extends Mediator
             fuck.txt.text = "Fuck you!!!";
             this.moduleManager.open(SecondModule, null, true);
         }, this);
-        this.bridge.addChild(this.bridge.sceneLayer, fuck);
     }
 }
 

@@ -55,7 +55,7 @@ export default class ModuleManager
         return -1;
     }
 
-    private getAfter(cls:IModuleConstructor):[IModuleConstructor, IModule][]
+    private getAfter(cls:IModuleConstructor):[IModuleConstructor, IModule][]|null
     {
         var result:[IModuleConstructor, IModule][] = [];
         for(var i:number = 0, len:number = this._moduleStack.length; i < len; i++)
@@ -64,7 +64,7 @@ export default class ModuleManager
             if(temp[0] == cls) return result;
             result.push(temp);
         }
-        return [];
+        return null;
     }
     
     private getCurrent():[IModuleConstructor, IModule]|undefined
@@ -97,17 +97,7 @@ export default class ModuleManager
         // 非空判断
         if(!cls) return;
         var after:[IModuleConstructor, IModule][] = this.getAfter(cls);
-        if(after.length > 0)
-        {
-            // 已经打开了，先关闭当前模块到目标模块之间的所有模块
-            for(var i :number = 1, len:number = after.length; i < len; i++)
-            {
-                this.close(after[i][0], data);
-            }
-            // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
-            this.close(after[0][0], data);
-        }
-        else
+        if(!after)
         {
             // 尚未打开过，正常开启模块
             var target:IModule = new cls();
@@ -132,6 +122,16 @@ export default class ModuleManager
                 // 派发消息
                 core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
             }, this);
+        }
+        else if(after.length > 0)
+        {
+            // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
+            for(var i :number = 1, len:number = after.length; i < len; i++)
+            {
+                this.close(after[i][0], data);
+            }
+            // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
+            this.close(after[0][0], data);
         }
     }
 

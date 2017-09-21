@@ -144,6 +144,12 @@ export default abstract class Mediator implements IMediator, IDispatcher
     {
         if(!this._disposed)
         {
+            // 移除显示
+            if(this.skin)
+            {
+                var parent:any = this.bridge.getParent(this.skin);
+                this.bridge.removeChild(parent, this.skin);
+            }
             // 注销事件监听
             this.unmapAllListeners();
             // 移除表现层桥

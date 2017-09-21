@@ -1080,6 +1080,11 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          */
         Mediator.prototype.dispose = function () {
             if (!this._disposed) {
+                // 移除显示
+                if (this.skin) {
+                    var parent = this.bridge.getParent(this.skin);
+                    this.bridge.removeChild(parent, this.skin);
+                }
                 // 注销事件监听
                 this.unmapAllListeners();
                 // 移除表现层桥
@@ -1226,6 +1231,9 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 panel.onBeforePop && panel.onBeforePop(data, isModel, from);
                 // 派发消息
                 Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
+                // 添加显示
+                var bridge = panel.bridge;
+                bridge.addChild(bridge.panelLayer, panel.skin);
                 // 调用策略接口
                 policy.pop(panel, function () {
                     // 调用回调
@@ -1261,6 +1269,9 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     panel.onAfterDrop && panel.onAfterDrop(data, to);
                     // 派发消息
                     Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
+                    // 移除显示
+                    var bridge = panel.bridge;
+                    bridge.removeChild(bridge.panelLayer, panel.skin);
                     // 销毁弹窗
                     panel.dispose();
                 }, to);
@@ -1632,14 +1643,18 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             prepareFunc.call(policy, from, to);
             // 前置处理
             from && from.onBeforeOut && from.onBeforeOut(to, data);
-            to && to.onBeforeIn && to.onBeforeIn(from, data);
+            to.onBeforeIn && to.onBeforeIn(from, data);
             // 派发事件
             Core_7.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
+            // 添加显示
+            to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 调用切换接口
             doFunc.call(policy, from, to, function () {
+                // 移除显示
+                from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
                 // 后置处理
                 from && from.onAfterOut && from.onAfterOut(to, data);
-                to && to.onAfterIn && to.onAfterIn(from, data);
+                to.onAfterIn && to.onAfterIn(from, data);
                 // 派发事件
                 Core_7.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
                 // 调用回调
@@ -2082,7 +2097,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     return result;
                 result.push(temp);
             }
-            return [];
+            return null;
         };
         ModuleManager.prototype.getCurrent = function () {
             return this._moduleStack[0];
@@ -2111,15 +2126,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             if (!cls)
                 return;
             var after = this.getAfter(cls);
-            if (after.length > 0) {
-                // 已经打开了，先关闭当前模块到目标模块之间的所有模块
-                for (var i = 1, len = after.length; i < len; i++) {
-                    this.close(after[i][0], data);
-                }
-                // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
-                this.close(after[0][0], data);
-            }
-            else {
+            if (!after) {
                 // 尚未打开过，正常开启模块
                 var target = new cls();
                 // 调用onOpen接口
@@ -2143,6 +2150,14 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     // 派发消息
                     Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
                 }, this);
+            }
+            else if (after.length > 0) {
+                // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
+                for (var i = 1, len = after.length; i < len; i++) {
+                    this.close(after[i][0], data);
+                }
+                // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
+                this.close(after[0][0], data);
             }
         };
         /**

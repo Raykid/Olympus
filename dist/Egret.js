@@ -306,6 +306,16 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
             parent.removeChildren();
         };
         /**
+         * 获取父容器
+         *
+         * @param {egret.DisplayObject} target 目标对象
+         * @returns {egret.DisplayObjectContainer} 父容器
+         * @memberof Bridge
+         */
+        Bridge.prototype.getParent = function (target) {
+            return target.parent;
+        };
+        /**
          * 获取指定索引处的显示对象
          *
          * @param {egret.DisplayObjectContainer} parent 父容器

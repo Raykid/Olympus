@@ -368,6 +368,16 @@ define("branches/dom/Bridge", ["require", "exports", "trunk/utils/ObjectUtil"], 
             }
         };
         /**
+         * 获取父容器
+         *
+         * @param {Element} target 目标对象
+         * @returns {Element} 父容器
+         * @memberof Bridge
+         */
+        Bridge.prototype.getParent = function (target) {
+            return target.parentElement;
+        };
+        /**
          * 获取指定索引处的显示对象
          *
          * @param {Element} parent 父容器

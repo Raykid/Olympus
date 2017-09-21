@@ -714,6 +714,14 @@ declare module "view/bridge/IBridge" {
          */
         removeChildren(parent: any): void;
         /**
+         * 获取父容器
+         *
+         * @param {*} target 指定显示对象
+         * @return {*} 父容器
+         * @memberof IBridge
+         */
+        getParent(target: any): any;
+        /**
          * 获取指定索引处的显示对象
          *
          * @param {*} parent 父容器
@@ -999,6 +1007,8 @@ declare module "engine/panel/IPanel" {
      * 弹窗接口
     */
     export default interface IPanel extends IHasBridge, IDisposable {
+        /** 实际显示对象 */
+        skin: any;
         /** 弹出策略 */
         policy: IPanelPolicy;
         /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
@@ -1266,6 +1276,8 @@ declare module "engine/scene/IScene" {
      * 场景接口
     */
     export default interface IScene extends IHasBridge, IDisposable {
+        /** 显示对象 */
+        skin: any;
         /** 切换策略 */
         policy: IScenePolicy;
         /** 切入当前场景（相当于调用SceneManager.switch方法） */
