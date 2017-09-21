@@ -1175,11 +1175,11 @@ declare module "engine/injector/Injector" {
      * 负责注入的模块
     */
     /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    export function ModelClass(cls: IConstructor): IConstructor;
+    export function ModelClass(cls: IConstructor): any;
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    export function MediatorClass(cls: IConstructor): IConstructor;
+    export function MediatorClass(cls: IConstructor): any;
     /** 定义模块，支持实例注入 */
-    export function ModuleClass(cls: IConstructor): IConstructor;
+    export function ModuleClass(cls: IConstructor): any;
     /** 处理通讯消息返回 */
     export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
     /** 在Module内托管Mediator */
@@ -1361,7 +1361,7 @@ declare module "engine/mediator/Mediator" {
      *
      * 组件界面中介者基类
     */
-    export default abstract class Mediator implements IMediator, IDispatcher {
+    export default class Mediator implements IMediator, IDispatcher {
         /**
          * 表现层桥
          *
@@ -1980,7 +1980,7 @@ declare module "engine/panel/PanelMediator" {
      *
      * 实现了IPanel接口的弹窗中介者基类
     */
-    export default abstract class PanelMediator extends Mediator implements IPanel {
+    export default class PanelMediator extends Mediator implements IPanel {
         /**
          * 弹出策略
          *
@@ -2048,7 +2048,7 @@ declare module "engine/scene/SceneMediator" {
      *
      * 实现了IScene接口的场景中介者基类
     */
-    export default abstract class SceneMediator extends Mediator implements IScene {
+    export default class SceneMediator extends Mediator implements IScene {
         /**
          * 切换策略
          *

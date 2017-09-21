@@ -62,7 +62,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
     }(Module_1.default));
     exports.default = SecondModule;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "engine/panel/PanelMediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, PanelMediator_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/mediator/PanelMediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, PanelMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -112,16 +112,15 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var FirstMediator = /** @class */ (function (_super) {
         __extends(FirstMediator, _super);
         function FirstMediator() {
-            return _super.call(this, new Fuck()) || this;
+            return _super.call(this, FuckSkin) || this;
         }
         FirstMediator.prototype.listAssets = function () {
             return ["preload"];
         };
         FirstMediator.prototype.onBeforePop = function () {
             var _this = this;
-            this.skin.skinName = FuckSkin;
-            this.mapListener(this.skin.btn, egret.TouchEvent.TOUCH_TAP, function () {
-                _this.skin.txt.text = "Fuck you!!!";
+            this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
+                _this.txt.text = "Fuck you!!!";
                 _this.moduleManager.open(SecondModule_1.default, null, true);
             }, this);
         };
@@ -133,13 +132,6 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         ], FirstMediator);
         return FirstMediator;
     }(PanelMediator_1.default));
-    var Fuck = /** @class */ (function (_super) {
-        __extends(Fuck, _super);
-        function Fuck() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return Fuck;
-    }(eui.Component));
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>

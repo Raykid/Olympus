@@ -9,6 +9,9 @@ import IBridge from "engine/bridge/IBridge";
 import ModuleMessage from "engine/module/ModuleMessage";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
+import Mediator from "./egret/mediator/Mediator";
+import PanelMediator from "./egret/mediator/PanelMediator";
+import SceneMediator from "./egret/mediator/SceneMediator";
 
 /**
  * @author Raykid
@@ -44,7 +47,7 @@ export default class EgretBridge implements IBridge
     public get htmlWrapper():HTMLElement
     {
         return <HTMLElement>this._initParams.container;
-    }
+    }w
 
     private _root:egret.DisplayObjectContainer;
     /**

@@ -1,30 +1,42 @@
-import Mediator from "../mediator/Mediator";
-import IPanel from "./IPanel";
-import IPanelPolicy from "./IPanelPolicy";
-import { panelManager } from "./PanelManager";
+import Mediator from "./Mediator";
+import IPanel from "engine/panel/IPanel";
+import MediatorProxy from "engine/panel/PanelMediator";
+import IPanelPolicy from "engine/panel/IPanelPolicy";
+import { bridgeManager } from "engine/bridge/BridgeManager";
 
 /**
  * @author Raykid
  * @email initial_r@qq.com
- * @create date 2017-09-06
- * @modify date 2017-09-06
+ * @create date 2017-09-21
+ * @modify date 2017-09-21
  * 
- * 实现了IPanel接口的弹窗中介者基类
+ * Egret的弹窗中介者
 */
 export default class PanelMediator extends Mediator implements IPanel
 {
+    protected _proxy:MediatorProxy;
+
     /**
      * 弹出策略
      * 
      * @type {IPanelPolicy}
      * @memberof PanelMediator
      */
-    public policy:IPanelPolicy;
-    
+    public get policy():IPanelPolicy
+    {
+        return this._proxy.policy;
+    }
+    public set policy(value:IPanelPolicy)
+    {
+        this._proxy.policy = value;
+    }
+
     public constructor(skin?:any, policy?:IPanelPolicy)
     {
         super(skin);
-        this.policy = policy;
+        this._proxy.dispose();
+        this._proxy = new MediatorProxy(this, policy);
+        this.skin = this;
     }
 
     /**
@@ -38,7 +50,7 @@ export default class PanelMediator extends Mediator implements IPanel
      */
     public pop(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel
     {
-        return panelManager.open(this, data, isModel, from);
+        return this._proxy.pop.call(this, data, isModel, from);
     }
 
     /**
@@ -51,7 +63,7 @@ export default class PanelMediator extends Mediator implements IPanel
      */
     public drop(data?:any, to?:{x:number, y:number}):IPanel
     {
-        return panelManager.close(this, data, to);
+        return this._proxy.drop.call(this, data, to);
     }
     
     /** 在弹出前调用的方法 */

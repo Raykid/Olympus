@@ -51,13 +51,13 @@ export default class PanelManager
         {
             var policy:IPanelPolicy = panel.policy;
             if(policy == null) policy = none;
+            // 添加显示
+            var bridge:IBridge = panel.bridge;
+            bridge.addChild(bridge.panelLayer, panel.skin);
             // 调用回调
             panel.onBeforePop(data, isModel, from);
             // 派发消息
             core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModel, from);
-            // 添加显示
-            var bridge:IBridge = panel.bridge;
-            bridge.addChild(bridge.panelLayer, panel.skin);
             // 调用策略接口
             policy.pop(panel, ()=>{
                 // 调用回调

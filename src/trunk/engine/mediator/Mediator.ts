@@ -12,7 +12,7 @@ import IBridge from "../bridge/IBridge";
  * 
  * 组件界面中介者基类
 */
-export default abstract class Mediator implements IMediator, IDispatcher
+export default class Mediator implements IMediator, IDispatcher
 {
     /**
      * 表现层桥
@@ -167,10 +167,10 @@ export default abstract class Mediator implements IMediator, IDispatcher
         if(!this._disposed)
         {
             // 移除显示
-            if(this.skin)
+            if(this.skin && this.bridge)
             {
                 var parent:any = this.bridge.getParent(this.skin);
-                this.bridge.removeChild(parent, this.skin);
+                if(parent) this.bridge.removeChild(parent, this.skin);
             }
             // 注销事件监听
             this.unmapAllListeners();

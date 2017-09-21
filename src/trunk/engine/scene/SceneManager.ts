@@ -200,13 +200,13 @@ export default class SceneManager
         }
         // 调用准备接口
         prepareFunc.call(policy, from, to);
+        // 添加显示
+        to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 前置处理
         from && from.onBeforeOut(to, data);
         to.onBeforeIn(from, data);
         // 派发事件
         core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, from, to);
-        // 添加显示
-        to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 调用切换接口
         doFunc.call(policy, from, to, ()=>{
             // 移除显示

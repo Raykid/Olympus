@@ -4,7 +4,7 @@ import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
 import { ModuleClass, DelegateMediator, Inject, MessageHandler, MediatorClass } from "Injector";
-import PanelMediator from "engine/panel/PanelMediator";
+import PanelMediator from "egret/mediator/PanelMediator";
 
 /**
  * @author Raykid
@@ -49,7 +49,8 @@ class FirstMediator extends PanelMediator
     @Inject(ModuleManager)
     private moduleManager:ModuleManager;
 
-    public skin:Fuck;
+    public btn:eui.Button;
+    public txt:eui.Label;
 
     public listAssets():string[]
     {
@@ -58,21 +59,14 @@ class FirstMediator extends PanelMediator
 
     public constructor()
     {
-        super(new Fuck());
+        super(FuckSkin);
     }
 
     public onBeforePop():void
     {
-        this.skin.skinName = FuckSkin;
-        this.mapListener(this.skin.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
-            this.skin.txt.text = "Fuck you!!!";
+        this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
+            this.txt.text = "Fuck you!!!";
             this.moduleManager.open(SecondModule, null, true);
         }, this);
     }
-}
-
-class Fuck extends eui.Component
-{
-    public btn:eui.Button;
-    public txt:eui.Label;
 }

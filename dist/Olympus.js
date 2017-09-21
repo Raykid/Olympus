@@ -1699,9 +1699,10 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
         Mediator.prototype.dispose = function () {
             if (!this._disposed) {
                 // 移除显示
-                if (this.skin) {
+                if (this.skin && this.bridge) {
                     var parent = this.bridge.getParent(this.skin);
-                    this.bridge.removeChild(parent, this.skin);
+                    if (parent)
+                        this.bridge.removeChild(parent, this.skin);
                 }
                 // 注销事件监听
                 this.unmapAllListeners();
@@ -2127,13 +2128,13 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             }
             // 调用准备接口
             prepareFunc.call(policy, from, to);
+            // 添加显示
+            to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 前置处理
             from && from.onBeforeOut(to, data);
             to.onBeforeIn(from, data);
             // 派发事件
             Core_10.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
-            // 添加显示
-            to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 调用切换接口
             doFunc.call(policy, from, to, function () {
                 // 移除显示
@@ -2204,13 +2205,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 var policy = panel.policy;
                 if (policy == null)
                     policy = NonePanelPolicy_1.default;
+                // 添加显示
+                var bridge = panel.bridge;
+                bridge.addChild(bridge.panelLayer, panel.skin);
                 // 调用回调
                 panel.onBeforePop(data, isModel, from);
                 // 派发消息
                 Core_11.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
-                // 添加显示
-                var bridge = panel.bridge;
-                bridge.addChild(bridge.panelLayer, panel.skin);
                 // 调用策略接口
                 policy.pop(panel, function () {
                     // 调用回调

@@ -16,7 +16,7 @@ import IMediator from "../mediator/IMediator";
 */
 
 /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-export function ModelClass(cls:IConstructor):IConstructor
+export function ModelClass(cls:IConstructor):any
 {
     // Model先进行托管
     var result:IConstructor = wrapConstruct(cls);
@@ -27,7 +27,7 @@ export function ModelClass(cls:IConstructor):IConstructor
 }
 
 /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-export function MediatorClass(cls:IConstructor):IConstructor
+export function MediatorClass(cls:IConstructor):any
 {
     // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)
@@ -53,7 +53,7 @@ export function MediatorClass(cls:IConstructor):IConstructor
 }
 
 /** 定义模块，支持实例注入 */
-export function ModuleClass(cls:IConstructor):IConstructor
+export function ModuleClass(cls:IConstructor):any
 {
     // 判断一下Module是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)

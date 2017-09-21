@@ -27,6 +27,7 @@ define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     })(RenderMode || (RenderMode = {}));
     exports.default = RenderMode;
 });
+/// <reference path="../../../dist/Olympus.d.ts"/>
 define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/version/Version", "engine/panel/PanelManager", "engine/platform/PlatformManager"], function (require, exports, Environment_1, Version_1, PanelManager_1, PlatformManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -151,6 +152,332 @@ define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "e
         return AssetsLoader;
     }());
     exports.default = AssetsLoader;
+});
+/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediator"], function (require, exports, Mediator_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 由于Egret EUI界面的特殊性，需要一个Mediator的基类来简化业务逻辑
+    */
+    var Mediator = /** @class */ (function (_super) {
+        __extends(Mediator, _super);
+        function Mediator(skin) {
+            var _this = _super.call(this) || this;
+            _this._proxy = new Mediator_1.default(_this);
+            _this._skinName = skin;
+            _this.skin = _this;
+            return _this;
+        }
+        Object.defineProperty(Mediator.prototype, "bridge", {
+            /**
+             * 表现层桥
+             *
+             * @type {IBridge}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this._proxy.bridge;
+            },
+            set: function (value) {
+                this._proxy.bridge = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mediator.prototype, "skin", {
+            /**
+             * 皮肤
+             *
+             * @type {*}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this._proxy.skin;
+            },
+            set: function (value) {
+                this._proxy.skin = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mediator.prototype, "disposed", {
+            /**
+             * 获取中介者是否已被销毁
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this._proxy.disposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Mediator.prototype.$onAddToStage = function (stage, nestLevel) {
+            _super.prototype.$onAddToStage.call(this, stage, nestLevel);
+            this.skinName = this._skinName;
+        };
+        /**
+         * 列出中介者所需的资源数组，可重写
+         *
+         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+         * @memberof Mediator
+         */
+        Mediator.prototype.listAssets = function () {
+            return this._proxy.listAssets();
+        };
+        /**
+         * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
+         *
+         * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
+         * @memberof Mediator
+         */
+        Mediator.prototype.loadAssets = function (handler) {
+            this._proxy.loadAssets(handler);
+        };
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.mapListener = function (target, type, handler, thisArg) {
+            this._proxy.mapListener(target, type, handler, thisArg);
+        };
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapListener = function (target, type, handler, thisArg) {
+            this._proxy.unmapListener(target, type, handler, thisArg);
+        };
+        /**
+         * 注销所有注册在当前中介者上的事件监听
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapAllListeners = function () {
+            this._proxy.unmapAllListeners();
+        };
+        Mediator.prototype.dispatch = function (typeOrMsg) {
+            var params = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                params[_i - 1] = arguments[_i];
+            }
+            (_a = this._proxy).dispatch.apply(_a, [typeOrMsg].concat(params));
+            var _a;
+        };
+        /**
+         * 销毁中介者
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.dispose = function () {
+            this._proxy.dispose();
+        };
+        return Mediator;
+    }(eui.Component));
+    exports.default = Mediator;
+});
+define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * Egret的弹窗中介者
+    */
+    var PanelMediator = /** @class */ (function (_super) {
+        __extends(PanelMediator, _super);
+        function PanelMediator(skin, policy) {
+            var _this = _super.call(this, skin) || this;
+            _this._proxy.dispose();
+            _this._proxy = new PanelMediator_1.default(_this, policy);
+            _this.skin = _this;
+            return _this;
+        }
+        Object.defineProperty(PanelMediator.prototype, "policy", {
+            /**
+             * 弹出策略
+             *
+             * @type {IPanelPolicy}
+             * @memberof PanelMediator
+             */
+            get: function () {
+                return this._proxy.policy;
+            },
+            set: function (value) {
+                this._proxy.policy = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 弹出当前弹窗（等同于调用PanelManager.open方法）
+         *
+         * @param {*} [data] 数据
+         * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
+         * @param {{x:number, y:number}} [from] 弹出点坐标
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
+         */
+        PanelMediator.prototype.pop = function (data, isModel, from) {
+            return this._proxy.pop.call(this, data, isModel, from);
+        };
+        /**
+         * 关闭当前弹窗（等同于调用PanelManager.close方法）
+         *
+         * @param {*} [data] 数据
+         * @param {{x:number, y:number}} [to] 关闭点坐标
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
+         */
+        PanelMediator.prototype.drop = function (data, to) {
+            return this._proxy.drop.call(this, data, to);
+        };
+        /** 在弹出前调用的方法 */
+        PanelMediator.prototype.onBeforePop = function (data, isModel, from) {
+            // 可重写
+        };
+        /** 在弹出后调用的方法 */
+        PanelMediator.prototype.onAfterPop = function (data, isModel, from) {
+            // 可重写
+        };
+        /** 在关闭前调用的方法 */
+        PanelMediator.prototype.onBeforeDrop = function (data, to) {
+            // 可重写
+        };
+        /** 在关闭后调用的方法 */
+        PanelMediator.prototype.onAfterDrop = function (data, to) {
+            // 可重写
+        };
+        return PanelMediator;
+    }(Mediator_2.default));
+    exports.default = PanelMediator;
+});
+define("egret/mediator/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * Egret的场景中介者
+    */
+    var SceneMediator = /** @class */ (function (_super) {
+        __extends(SceneMediator, _super);
+        function SceneMediator(skin, policy) {
+            var _this = _super.call(this, skin) || this;
+            _this._proxy.dispose();
+            _this._proxy = new SceneMediator_1.default(_this, policy);
+            _this.skin = _this;
+            return _this;
+        }
+        Object.defineProperty(SceneMediator.prototype, "policy", {
+            /**
+             * 切换策略
+             *
+             * @type {IScenePolicy}
+             * @memberof SceneMediator
+             */
+            get: function () {
+                return this._proxy.policy;
+            },
+            set: function (value) {
+                this._proxy.policy = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 切入当前场景（相当于调用SceneManager.switch方法）
+         *
+         * @param {*} [data] 数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.switch = function (data) {
+            return this._proxy.switch.call(this, data);
+        };
+        /**
+         * 推入当前场景（相当于调用SceneManager.push方法）
+         *
+         * @param {*} [data] 数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.push = function (data) {
+            return this._proxy.push.call(this, data);
+        };
+        /**
+         * 弹出当前场景（相当于调用SceneManager.pop方法）
+         *
+         * @param {*} [data] 数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.pop = function (data) {
+            return this._proxy.pop.call(this, data);
+        };
+        /**
+         * 切入场景开始前调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onBeforeIn = function (fromScene, data) {
+            // 可重写
+        };
+        /**
+         * 切入场景开始后调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onAfterIn = function (fromScene, data) {
+            // 可重写
+        };
+        /**
+         * 切出场景开始前调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onBeforeOut = function (toScene, data) {
+            // 可重写
+        };
+        /**
+         * 切出场景开始后调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onAfterOut = function (toScene, data) {
+            // 可重写
+        };
+        return SceneMediator;
+    }(Mediator_3.default));
+    exports.default = SceneMediator;
 });
 /// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
 /// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
