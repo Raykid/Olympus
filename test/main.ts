@@ -18,14 +18,17 @@ import Olympus from "Olympus";
  * 测试项目
 */
 Olympus.startup(
+    [
+        new DOMBridge("rootDOM"),
+        new EgretBridge({
+            width: 720,
+            height: 1280,
+            pathPrefix: "egret/",
+            container: "rootEgret",
+            backgroundColor: 0,
+            scaleMode: egret.StageScaleMode.SHOW_ALL
+        })
+    ],
     FirstModule,
-    new DOMBridge("rootDOM"),
-    new EgretBridge({
-        width: 720,
-        height: 1280,
-        pathPrefix: "egret/",
-        container: "rootEgret",
-        backgroundColor: 0,
-        scaleMode: egret.StageScaleMode.SHOW_ALL
-    })
+    "loading"
 );

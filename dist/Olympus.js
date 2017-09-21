@@ -249,10 +249,6 @@ define("core/message/IMessage", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("core/message/IMessageHandler", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("core/message/Message", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -607,7 +603,7 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
          * 监听内核消息
          *
          * @param {string} type 消息类型
-         * @param {IMessageHandler} handler 消息处理函数
+         * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
@@ -629,7 +625,7 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
          * 移除内核消息监听
          *
          * @param {string} type 消息类型
-         * @param {IMessageHandler} handler 消息处理函数
+         * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
@@ -2267,7 +2263,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     target.onActivate(from && from[0], data);
                     // 如果replace是true，则关掉上一个模块
                     if (replace)
-                        this.close(from[0]);
+                        this.close(from && from[0]);
                     // 派发消息
                     Core_10.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
                 }, this);
@@ -3324,7 +3320,7 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     exports.DelegateMediator = DelegateMediator;
     ;
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/module/ModuleManager"], function (require, exports, Core_17, Injector_11, BridgeMessage_2, ModuleManager_1) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/module/ModuleMessage"], function (require, exports, Core_17, Injector_11, BridgeMessage_2, ModuleManager_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3342,17 +3338,38 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         /**
          * 注册首个模块
          *
-         * @param {IModuleConstructor} cls
+         * @param {IModuleConstructor} cls 首个模块类型
          * @memberof Engine
          */
         Engine.prototype.registerFirstModule = function (cls) {
+            this._firstModule = cls;
             // 监听Bridge初始化完毕事件，显示第一个模块
-            Core_17.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
-            function onAllBridgesInit() {
-                // 注销监听
-                Core_17.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, onAllBridgesInit);
-                // 打开模块
-                ModuleManager_1.moduleManager.open(cls);
+            Core_17.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+        };
+        /**
+         * 注册程序启动前的Loading DOM节点，当首个模块显示出来后会移除该DOM节点
+         *
+         * @param {Element|string} element loading DOM节点或其ID值
+         * @memberof Engine
+         */
+        Engine.prototype.registerLoadElement = function (element) {
+            this._loadElement = (typeof element == "string" ? document.getElementById(element) : element);
+        };
+        Engine.prototype.onAllBridgesInit = function () {
+            // 注销监听
+            Core_17.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+            // 监听首个模块开启
+            Core_17.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            // 打开首个模块
+            ModuleManager_1.moduleManager.open(this._firstModule);
+        };
+        Engine.prototype.onModuleChange = function (from) {
+            // 注销监听
+            Core_17.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            // 移除loadElement显示
+            if (this._loadElement) {
+                var parent = this._loadElement.parentElement;
+                parent && parent.removeChild(this._loadElement);
             }
         };
         Engine = __decorate([
@@ -3382,17 +3399,24 @@ define("Olympus", ["require", "exports", "engine/Engine", "engine/bridge/BridgeM
          * 启动Olympus框架
          *
          * @static
-         * @param {IModuleConstructor} firstModule 应用程序的首个模块
-         * @param {...IBridge[]} bridges 所有可能用到的表现层桥
+         * @param {IBridge[]} bridges
+         * @param {IModuleConstructor} firstModule
          * @memberof Olympus
          */
-        Olympus.startup = function (firstModule) {
-            var bridges = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                bridges[_i - 1] = arguments[_i];
-            }
+        /**
+         * 启动Olympus框架
+         *
+         * @static
+         * @param {IBridge[]} bridges 表现层桥数组
+         * @param {IModuleConstructor} firstModule 应用程序的首个模块
+         * @param {Element} [loadElement] 会在首个模块被显示出来后从页面中移除
+         * @memberof Olympus
+         */
+        Olympus.startup = function (bridges, firstModule, loadElement) {
             // 注册首个模块
             Engine_1.engine.registerFirstModule(firstModule);
+            // 注册加载DOM节点
+            Engine_1.engine.registerLoadElement(loadElement);
             // 注册并初始化表现层桥实例
             BridgeManager_2.bridgeManager.registerBridge.apply(BridgeManager_2.bridgeManager, bridges);
         };

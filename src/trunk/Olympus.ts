@@ -17,14 +17,29 @@ export default class Olympus
      * 启动Olympus框架
      * 
      * @static
-     * @param {IModuleConstructor} firstModule 应用程序的首个模块
-     * @param {...IBridge[]} bridges 所有可能用到的表现层桥
+     * @param {IBridge[]} bridges 
+     * @param {IModuleConstructor} firstModule 
      * @memberof Olympus
      */
-    public static startup(firstModule:IModuleConstructor, ...bridges:IBridge[]):void
+    /**
+     * 启动Olympus框架
+     * 
+     * @static
+     * @param {IBridge[]} bridges 表现层桥数组
+     * @param {IModuleConstructor} firstModule 应用程序的首个模块
+     * @param {Element} [loadElement] 会在首个模块被显示出来后从页面中移除
+     * @memberof Olympus
+     */
+    public static startup(
+        bridges:IBridge[],
+        firstModule:IModuleConstructor,
+        loadElement?:Element|string
+    ):void
     {
         // 注册首个模块
         engine.registerFirstModule(firstModule);
+        // 注册加载DOM节点
+        engine.registerLoadElement(loadElement);
         // 注册并初始化表现层桥实例
         bridgeManager.registerBridge(...bridges);
     }

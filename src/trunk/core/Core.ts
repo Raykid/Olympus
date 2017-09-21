@@ -2,7 +2,6 @@
 
 import Dictionary from "../utils/Dictionary";
 import IMessage from "./message/IMessage";
-import IMessageHandler from "./message/IMessageHandler"
 import CommonMessage from "./message/CommonMessage";
 import CoreMessage from "./message/CoreMessage";
 import ICommandConstructor from "./command/ICommandConstructor";
@@ -27,7 +26,7 @@ import * as Injector from "./injector/Injector"
  */
 interface IMessageData
 {
-    handler:IMessageHandler;
+    handler:Function;
     thisArg:any;
 }
 
@@ -126,11 +125,11 @@ export default class Core implements IDispatcher
      * 监听内核消息
      * 
      * @param {string} type 消息类型
-     * @param {IMessageHandler} handler 消息处理函数
+     * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Core
      */
-    public listen(type:string, handler:IMessageHandler, thisArg?:any):void
+    public listen(type:string, handler:Function, thisArg?:any):void
     {
         var listeners:IMessageData[] = this._listenerDict[type];
         if(!listeners) this._listenerDict[type] = listeners = [];
@@ -149,11 +148,11 @@ export default class Core implements IDispatcher
      * 移除内核消息监听
      * 
      * @param {string} type 消息类型
-     * @param {IMessageHandler} handler 消息处理函数
+     * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @memberof Core
      */
-    public unlisten(type:string, handler:IMessageHandler, thisArg?:any):void
+    public unlisten(type:string, handler:Function, thisArg?:any):void
     {
         var listeners:IMessageData[] = this._listenerDict[type];
         // 检查存在性

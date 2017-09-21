@@ -119,21 +119,6 @@ declare module "core/message/IMessage" {
         readonly type: string;
     }
 }
-declare module "core/message/IMessageHandler" {
-    import IMessage from "core/message/IMessage";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-18
-     * @modify date 2017-09-18
-     *
-     * 框架消息处理函数接口
-    */
-    export default interface IMessageHandler {
-        (msg: IMessage): void;
-        (...args: any[]): void;
-    }
-}
 declare module "core/message/Message" {
     import IMessage from "core/message/IMessage";
     /**
@@ -361,7 +346,6 @@ declare module "core/injector/Injector" {
 }
 declare module "core/Core" {
     import IMessage from "core/message/IMessage";
-    import IMessageHandler from "core/message/IMessageHandler";
     import ICommandConstructor from "core/command/ICommandConstructor";
     import IDispatcher from "core/interfaces/IDispatcher";
     export interface IInjectableParams {
@@ -399,20 +383,20 @@ declare module "core/Core" {
          * 监听内核消息
          *
          * @param {string} type 消息类型
-         * @param {IMessageHandler} handler 消息处理函数
+         * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
-        listen(type: string, handler: IMessageHandler, thisArg?: any): void;
+        listen(type: string, handler: Function, thisArg?: any): void;
         /**
          * 移除内核消息监听
          *
          * @param {string} type 消息类型
-         * @param {IMessageHandler} handler 消息处理函数
+         * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
-        unlisten(type: string, handler: IMessageHandler, thisArg?: any): void;
+        unlisten(type: string, handler: Function, thisArg?: any): void;
         /*********************** 下面是依赖注入系统 ***********************/
         private _injectDict;
         /**
@@ -2428,13 +2412,24 @@ declare module "engine/Engine" {
      * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
     */
     export default class Engine {
+        private _firstModule;
+        private _loadElement;
         /**
          * 注册首个模块
          *
-         * @param {IModuleConstructor} cls
+         * @param {IModuleConstructor} cls 首个模块类型
          * @memberof Engine
          */
         registerFirstModule(cls: IModuleConstructor): void;
+        /**
+         * 注册程序启动前的Loading DOM节点，当首个模块显示出来后会移除该DOM节点
+         *
+         * @param {Element|string} element loading DOM节点或其ID值
+         * @memberof Engine
+         */
+        registerLoadElement(element: Element | string): void;
+        private onAllBridgesInit();
+        private onModuleChange(from);
     }
     /** 再额外导出一个单例 */
     export const engine: Engine;
@@ -2455,11 +2450,20 @@ declare module "Olympus" {
          * 启动Olympus框架
          *
          * @static
-         * @param {IModuleConstructor} firstModule 应用程序的首个模块
-         * @param {...IBridge[]} bridges 所有可能用到的表现层桥
+         * @param {IBridge[]} bridges
+         * @param {IModuleConstructor} firstModule
          * @memberof Olympus
          */
-        static startup(firstModule: IModuleConstructor, ...bridges: IBridge[]): void;
+        /**
+         * 启动Olympus框架
+         *
+         * @static
+         * @param {IBridge[]} bridges 表现层桥数组
+         * @param {IModuleConstructor} firstModule 应用程序的首个模块
+         * @param {Element} [loadElement] 会在首个模块被显示出来后从页面中移除
+         * @memberof Olympus
+         */
+        static startup(bridges: IBridge[], firstModule: IModuleConstructor, loadElement?: Element | string): void;
     }
 }
 declare module "Injector" {
