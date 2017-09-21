@@ -1,10 +1,14 @@
-/// <reference path="./egret-core/build/egret/egret.d.ts"/>
-/// <reference path="./egret-core/build/eui/eui.d.ts"/>
-/// <reference path="./egret-core/build/res/res.d.ts"/>
-/// <reference path="./egret-core/build/tween/tween.d.ts"/>
+/// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="./egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="./egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../dist/Olympus.d.ts"/>
 
-import IBridge from "../../trunk/engine/bridge/IBridge";
-import RenderMode from "./RenderMode";
+import { core } from "core/Core";
+import IBridge from "engine/bridge/IBridge";
+import ModuleMessage from "engine/module/ModuleMessage";
+import RenderMode from "./egret/RenderMode";
+import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 
 /**
  * @author Raykid
@@ -14,7 +18,7 @@ import RenderMode from "./RenderMode";
  * 
  * Egret的表现层桥实现
 */
-export default class Bridge implements IBridge
+export default class EgretBridge implements IBridge
 {
     private _initParams:IInitParams;
 
@@ -23,7 +27,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {string}
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public get type():string
     {
@@ -35,7 +39,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public get htmlWrapper():HTMLElement
     {
@@ -48,7 +52,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {egret.DisplayObjectContainer}
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public get root():egret.DisplayObjectContainer
     {
@@ -61,7 +65,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {egret.DisplayObjectContainer}
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public get bgLayer():egret.DisplayObjectContainer
     {
@@ -74,7 +78,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {egret.DisplayObjectContainer}
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public get sceneLayer():egret.DisplayObjectContainer
     {
@@ -87,7 +91,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {egret.DisplayObjectContainer}
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public get panelLayer():egret.DisplayObjectContainer
     {
@@ -100,7 +104,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {egret.DisplayObjectContainer}
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public get topLayer():egret.DisplayObjectContainer
     {
@@ -115,7 +119,7 @@ export default class Bridge implements IBridge
     /**
      * 初始化表现层桥
      * @param {()=>void} complete 初始化完毕后的回调
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public init(complete:(bridge:IBridge)=>void):void
     {
@@ -160,7 +164,7 @@ export default class Bridge implements IBridge
         container.setAttribute("data-show-fps-style", this._initParams.showFPSStyle || "x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9");
         container.setAttribute("data-show-log", (this._initParams.showLog || false) + "");
         // 构建__EgretRoot__类，使得Egret引擎可以通过window寻址的方式找到该类，同时又可以让其将控制权转交给Application
-        var self:Bridge = this;
+        var self:EgretBridge = this;
         window["__EgretRoot__"] = function():void
         {
             egret.Sprite.call(this);
@@ -240,7 +244,7 @@ export default class Bridge implements IBridge
      * 
      * @param {*} skin 皮肤对象
      * @returns {boolean} 是否是Egret显示对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public isMySkin(skin:any):boolean
     {
@@ -253,7 +257,7 @@ export default class Bridge implements IBridge
      * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
      * @param {egret.DisplayObject} target 被添加的显示对象
      * @return {egret.DisplayObject} 返回被添加的显示对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public addChild(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):egret.DisplayObject
     {
@@ -267,7 +271,7 @@ export default class Bridge implements IBridge
      * @param {egret.DisplayObject} target 被添加的显示对象
      * @param {number} index 要添加到的父级索引
      * @return {egret.DisplayObject} 返回被添加的显示对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public addChildAt(parent:egret.DisplayObjectContainer, target:egret.DisplayObject, index:number):egret.DisplayObject
     {
@@ -280,7 +284,7 @@ export default class Bridge implements IBridge
      * @param {egret.DisplayObjectContainer} parent 父容器
      * @param {egret.DisplayObject} target 被移除的显示对象
      * @return {egret.DisplayObject} 返回被移除的显示对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public removeChild(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):egret.DisplayObject
     {
@@ -293,7 +297,7 @@ export default class Bridge implements IBridge
      * @param {egret.DisplayObjectContainer} parent 父容器
      * @param {number} index 索引
      * @return {egret.DisplayObject} 返回被移除的显示对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public removeChildAt(parent:egret.DisplayObjectContainer, index:number):egret.DisplayObject
     {
@@ -304,7 +308,7 @@ export default class Bridge implements IBridge
      * 移除所有显示对象
      * 
      * @param {egret.DisplayObjectContainer} parent 父容器
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public removeChildren(parent:egret.DisplayObjectContainer):void
     {
@@ -316,7 +320,7 @@ export default class Bridge implements IBridge
      * 
      * @param {egret.DisplayObject} target 目标对象
      * @returns {egret.DisplayObjectContainer} 父容器
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public getParent(target:egret.DisplayObject):egret.DisplayObjectContainer
     {
@@ -329,7 +333,7 @@ export default class Bridge implements IBridge
      * @param {egret.DisplayObjectContainer} parent 父容器
      * @param {number} index 指定父级索引
      * @return {egret.DisplayObject} 索引处的显示对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public getChildAt(parent:egret.DisplayObjectContainer, index:number):egret.DisplayObject
     {
@@ -342,7 +346,7 @@ export default class Bridge implements IBridge
      * @param {egret.DisplayObjectContainer} parent 父容器
      * @param {egret.DisplayObject} target 子显示对象
      * @return {number} target在parent中的索引
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public getChildIndex(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):number
     {
@@ -355,7 +359,7 @@ export default class Bridge implements IBridge
      * @param {egret.DisplayObjectContainer} parent 父容器
      * @param {string} name 对象名称
      * @return {egret.DisplayObject} 显示对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public getChildByName(parent:egret.DisplayObjectContainer, name:string):egret.DisplayObject
     {
@@ -367,11 +371,35 @@ export default class Bridge implements IBridge
      * 
      * @param {egret.DisplayObjectContainer} parent 父容器
      * @return {number} 子显示对象数量
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public getChildCount(parent:egret.DisplayObjectContainer):number
     {
         return parent.numChildren;
+    }
+
+    /**
+     * 加载资源
+     * 
+     * @param {string[]} assets 资源列表
+     * @param {(err?:Error)=>void} handler 回调函数
+     * @memberof EgretBridge
+     */
+    public loadAssets(assets:string[], handler:(err?:Error)=>void):void
+    {
+        var loader:AssetsLoader = new AssetsLoader({
+            oneError: (evt:RES.ResourceEvent)=>{
+                // 调用回调
+                handler(new Error("资源加载失败"));
+                // 派发加载错误事件
+                core.dispatch(ModuleMessage.MODULE_LOAD_ASSETS_ERROR, evt);
+            },
+            complete: (dict:IResourceDict)=>{
+                // 调用回调
+                handler();
+            }
+        });
+        loader.loadGroups(assets);
     }
     
     /**
@@ -381,7 +409,7 @@ export default class Bridge implements IBridge
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public mapListener(target:egret.EventDispatcher, type:string, handler:Function, thisArg?:any):void
     {
@@ -395,7 +423,7 @@ export default class Bridge implements IBridge
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof Bridge
+     * @memberof EgretBridge
      */
     public unmapListener(target:egret.EventDispatcher, type:string, handler:Function, thisArg?:any):void
     {

@@ -7,6 +7,7 @@ import { netManager } from "../net/NetManager";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 import ModuleMessage from "./ModuleMessage"
+import IMediator from "../mediator/IMediator";
 
 /**
  * @author Raykid
@@ -58,11 +59,10 @@ export default class ModuleManager
     private getAfter(cls:IModuleConstructor):[IModuleConstructor, IModule][]|null
     {
         var result:[IModuleConstructor, IModule][] = [];
-        for(var i:number = 0, len:number = this._moduleStack.length; i < len; i++)
+        for(var module of this._moduleStack)
         {
-            var temp:[IModuleConstructor, IModule] = this._moduleStack[i];
-            if(temp[0] == cls) return result;
-            result.push(temp);
+            if(module[0] == cls) return result;
+            result.push(module);
         }
         return null;
     }
@@ -101,27 +101,39 @@ export default class ModuleManager
         {
             // 尚未打开过，正常开启模块
             var target:IModule = new cls();
-            // 调用onOpen接口
-            target.onOpen(data);
-            // 发送所有模块消息
-            var requests:RequestData[] = target.listInitRequests();
-            netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
-            {
-                var from:[IModuleConstructor, IModule] = this.getCurrent();
-                var fromModule:IModule = from && from[1];
-                // 调用onGetResponses接口
-                target.onGetResponses(responses);
-                // 调用onDeactivate接口
-                fromModule && fromModule.onDeactivate(cls, data);
-                // 插入模块
-                this._moduleStack.unshift([cls, target]);
-                // 调用onActivate接口
-                target.onActivate(from && from[0], data);
-                // 如果replace是true，则关掉上一个模块
-                if(replace) this.close(from && from[0]);
-                // 派发消息
-                core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
-            }, this);
+            // 加载所有已托管中介者的资源
+            var mediators:IMediator[] = target.getDelegatedMediators();
+            var loadMediatorAssets:()=>void = ()=>{
+                if(mediators.length > 0)
+                {
+                    mediators.shift().loadAssets(loadMediatorAssets);
+                }
+                else
+                {
+                    // 调用onOpen接口
+                    target.onOpen(data);
+                    // 发送所有模块消息
+                    var requests:RequestData[] = target.listInitRequests();
+                    netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
+                    {
+                        var from:[IModuleConstructor, IModule] = this.getCurrent();
+                        var fromModule:IModule = from && from[1];
+                        // 调用onGetResponses接口
+                        target.onGetResponses(responses);
+                        // 调用onDeactivate接口
+                        fromModule && fromModule.onDeactivate(cls, data);
+                        // 插入模块
+                        this._moduleStack.unshift([cls, target]);
+                        // 调用onActivate接口
+                        target.onActivate(from && from[0], data);
+                        // 如果replace是true，则关掉上一个模块
+                        if(replace) this.close(from && from[0]);
+                        // 派发消息
+                        core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
+                    }, this);
+                }
+            };
+            loadMediatorAssets();
         }
         else if(after.length > 0)
         {

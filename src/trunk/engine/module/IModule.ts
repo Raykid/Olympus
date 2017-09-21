@@ -20,6 +20,12 @@ export default interface IModule extends IDisposable
     listJsFiles():string[];
     /** 列出模块初始化请求 */
     listInitRequests():RequestData[];
+    /** 将中介者托管给模块 */
+    delegateMediator(mediator:IMediator):void;
+    /** 反托管中介者 */
+    undelegateMediator(mediator:IMediator):void;
+    /** 获取所有已托管的中介者 */
+    getDelegatedMediators():IMediator[];
     /** 当获取到所有消息返回后调用 */
     onGetResponses(responses:ResponseData[]):void;
     /** 打开模块时调用 */

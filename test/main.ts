@@ -3,8 +3,8 @@
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
 
-import DOMBridge from "branches/dom/Bridge";
-import EgretBridge from "branches/egret/Bridge";
+import DOMBridge from "DOMBridge";
+import EgretBridge from "EgretBridge";
 import Olympus from "Olympus";
 import { windowExternal } from "engine/env/WindowExternal";
 import { query } from "engine/env/Query";
@@ -42,7 +42,6 @@ Olympus.startup({
         prod: ["https://www.17zuoye.com/"]
     },
     cdnsDict: {
-        dev: ["http://cdn-cnc.test.17zuoye.net"],
         test: ["https://cdn-cnc.test.17zuoye.net/"],
         staging: ["https://cdn-cnc.staging.17zuoye.net/"],
         prod: ["https://cdn-cnc.17zuoye.com/"]

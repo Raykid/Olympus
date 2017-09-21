@@ -1,8 +1,14 @@
-define("trunk/engine/bridge/IBridge", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("branches/egret/RenderMode", ["require", "exports"], function (require, exports) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -21,15 +27,137 @@ define("branches/egret/RenderMode", ["require", "exports"], function (require, e
     })(RenderMode || (RenderMode = {}));
     exports.default = RenderMode;
 });
-define("branches/egret/IInitParams", ["require", "exports"], function (require, exports) {
+define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/version/Version", "engine/panel/PanelManager", "engine/platform/PlatformManager"], function (require, exports, Environment_1, Version_1, PanelManager_1, PlatformManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var ResourceVersionController = /** @class */ (function (_super) {
+        __extends(ResourceVersionController, _super);
+        function ResourceVersionController() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        ResourceVersionController.prototype.getVirtualUrl = function (url) {
+            // 添加imgDomain
+            url = Environment_1.environment.toCDNHostURL(url);
+            // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
+            url = Version_1.version.wrapHashUrl(url);
+            // 返回url
+            return url;
+        };
+        return ResourceVersionController;
+    }(RES.VersionController));
+    exports.ResourceVersionController = ResourceVersionController;
+    // 这里直接注册一下
+    RES.registerVersionController(new ResourceVersionController());
+    var AssetsLoader = /** @class */ (function () {
+        function AssetsLoader(handler) {
+            this._retryDict = {};
+            this._handler = handler;
+        }
+        AssetsLoader.prototype.loadGroups = function (groups) {
+            // 调用回调
+            this._handler.start && this._handler.start();
+            // 开始加载
+            var groupDict = {};
+            var pgsDict;
+            var len = groups ? groups.length : 0;
+            if (len == 0) {
+                this._handler.complete && this._handler.complete(groupDict);
+            }
+            else {
+                RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
+                RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
+                RES.addEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
+                groups = groups.concat();
+                pgsDict = {};
+                for (var i in groups) {
+                    var group = groups[i];
+                    if (typeof group == "string") {
+                        pgsDict[group] = 0;
+                        RES.loadGroup(group);
+                    }
+                    else {
+                        pgsDict[group.name] = 0;
+                        RES.loadGroup(group.name, group.priority);
+                    }
+                }
+            }
+            function onProgress(evt) {
+                // 填充资源字典
+                var itemDict = groupDict[evt.groupName];
+                if (!itemDict)
+                    groupDict[evt.groupName] = itemDict = {};
+                itemDict[evt.resItem.name] = evt.resItem;
+                // 计算总进度
+                pgsDict[evt.groupName] = evt.itemsLoaded / evt.itemsTotal;
+                var pgs = 0;
+                for (var key in pgsDict) {
+                    pgs += pgsDict[key];
+                }
+                pgs /= len;
+                // 回调
+                this._handler.progress && this._handler.progress(evt.resItem, pgs);
+            }
+            function onOneComplete(evt) {
+                // 调用单一完毕回调
+                this._handler.oneComplete && this._handler.oneComplete(groupDict[evt.groupName]);
+                // 测试是否全部完毕
+                var index = groups.indexOf(evt.groupName);
+                if (index >= 0) {
+                    // 移除加载组名
+                    groups.splice(index, 1);
+                    // 判断是否全部完成
+                    if (groups.length == 0) {
+                        // 移除事件监听
+                        RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
+                        RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
+                        RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
+                        // 调用回调
+                        this._handler.complete && this._handler.complete(groupDict);
+                    }
+                }
+            }
+            function onOneError(evt) {
+                var groupName = evt.groupName;
+                var retryTimes = this._retryDict[groupName];
+                if (retryTimes == null)
+                    retryTimes = 0;
+                if (retryTimes < 3) {
+                    this._retryDict[groupName] = ++retryTimes;
+                    // 打印日志
+                    console.warn("加载失败，重试第" + retryTimes + "次: " + groupName);
+                    // 没到最大重试次数，将为url添加一个随机时间戳重新加回加载队列
+                    RES.loadGroup(evt.groupName);
+                }
+                else {
+                    // 打印日志
+                    console.warn("加载失败3次，正在尝试切换CDN...");
+                    // 尝试切换CDN
+                    var allDone = Environment_1.environment.nextCDN();
+                    if (!allDone) {
+                        // 重新加载
+                        RES.loadGroup(evt.groupName);
+                    }
+                    else {
+                        // 调用模板方法
+                        this._handler.oneError && this._handler.oneError(evt);
+                        // 切换CDN失败了，弹出提示，使用户可以手动刷新页面
+                        PanelManager_1.panelManager.confirm("资源组加载失败[" + groupName + "]，点击确定刷新页面", function () {
+                            PlatformManager_1.platformManager.reload();
+                        });
+                    }
+                }
+            }
+        };
+        return AssetsLoader;
+    }());
+    exports.default = AssetsLoader;
 });
-/// <reference path="./egret-core/build/egret/egret.d.ts"/>
-/// <reference path="./egret-core/build/eui/eui.d.ts"/>
-/// <reference path="./egret-core/build/res/res.d.ts"/>
-/// <reference path="./egret-core/build/tween/tween.d.ts"/>
-define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMode"], function (require, exports, RenderMode_1) {
+/// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="./egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="./egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../dist/Olympus.d.ts"/>
+define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -40,17 +168,17 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
      *
      * Egret的表现层桥实现
     */
-    var Bridge = /** @class */ (function () {
-        function Bridge(params) {
+    var EgretBridge = /** @class */ (function () {
+        function EgretBridge(params) {
             this._initParams = params;
         }
-        Object.defineProperty(Bridge.prototype, "type", {
+        Object.defineProperty(EgretBridge.prototype, "type", {
             /**
              * 获取表现层类型名称
              *
              * @readonly
              * @type {string}
-             * @memberof Bridge
+             * @memberof EgretBridge
              */
             get: function () {
                 return "Egret";
@@ -58,13 +186,13 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bridge.prototype, "htmlWrapper", {
+        Object.defineProperty(EgretBridge.prototype, "htmlWrapper", {
             /**
              * 获取表现层HTML包装器，可以对其样式进行自定义调整
              *
              * @readonly
              * @type {HTMLElement}
-             * @memberof Bridge
+             * @memberof EgretBridge
              */
             get: function () {
                 return this._initParams.container;
@@ -72,13 +200,13 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bridge.prototype, "root", {
+        Object.defineProperty(EgretBridge.prototype, "root", {
             /**
              * 获取根显示节点
              *
              * @readonly
              * @type {egret.DisplayObjectContainer}
-             * @memberof Bridge
+             * @memberof EgretBridge
              */
             get: function () {
                 return this._root;
@@ -86,13 +214,13 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bridge.prototype, "bgLayer", {
+        Object.defineProperty(EgretBridge.prototype, "bgLayer", {
             /**
              * 获取背景容器
              *
              * @readonly
              * @type {egret.DisplayObjectContainer}
-             * @memberof Bridge
+             * @memberof EgretBridge
              */
             get: function () {
                 return this._bgLayer;
@@ -100,13 +228,13 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bridge.prototype, "sceneLayer", {
+        Object.defineProperty(EgretBridge.prototype, "sceneLayer", {
             /**
              * 获取场景容器
              *
              * @readonly
              * @type {egret.DisplayObjectContainer}
-             * @memberof Bridge
+             * @memberof EgretBridge
              */
             get: function () {
                 return this._sceneLayer;
@@ -114,13 +242,13 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bridge.prototype, "panelLayer", {
+        Object.defineProperty(EgretBridge.prototype, "panelLayer", {
             /**
              * 获取弹窗容器
              *
              * @readonly
              * @type {egret.DisplayObjectContainer}
-             * @memberof Bridge
+             * @memberof EgretBridge
              */
             get: function () {
                 return this._panelLayer;
@@ -128,13 +256,13 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Bridge.prototype, "topLayer", {
+        Object.defineProperty(EgretBridge.prototype, "topLayer", {
             /**
              * 获取顶级容器
              *
              * @readonly
              * @type {egret.DisplayObjectContainer}
-             * @memberof Bridge
+             * @memberof EgretBridge
              */
             get: function () {
                 return this._topLayer;
@@ -145,9 +273,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
         /**
          * 初始化表现层桥
          * @param {()=>void} complete 初始化完毕后的回调
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.init = function (complete) {
+        EgretBridge.prototype.init = function (complete) {
             // 生成html和body的样式节点
             var style = document.createElement("style");
             style.textContent = "\n            html, body {\n                -ms-touch-action: none;\n                background: " + egret.toColorString(this._initParams.backgroundColor || 0) + ";\n                padding: 0;\n                border: 0;\n                margin: 0;\n                height: 100%;\n            }\n        ";
@@ -246,9 +374,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          *
          * @param {*} skin 皮肤对象
          * @returns {boolean} 是否是Egret显示对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.isMySkin = function (skin) {
+        EgretBridge.prototype.isMySkin = function (skin) {
             return (skin instanceof egret.DisplayObject);
         };
         /**
@@ -257,9 +385,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
          * @param {egret.DisplayObject} target 被添加的显示对象
          * @return {egret.DisplayObject} 返回被添加的显示对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.addChild = function (parent, target) {
+        EgretBridge.prototype.addChild = function (parent, target) {
             return parent.addChild(target);
         };
         /**
@@ -269,9 +397,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {egret.DisplayObject} target 被添加的显示对象
          * @param {number} index 要添加到的父级索引
          * @return {egret.DisplayObject} 返回被添加的显示对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.addChildAt = function (parent, target, index) {
+        EgretBridge.prototype.addChildAt = function (parent, target, index) {
             return parent.addChildAt(target, index);
         };
         /**
@@ -280,9 +408,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {egret.DisplayObjectContainer} parent 父容器
          * @param {egret.DisplayObject} target 被移除的显示对象
          * @return {egret.DisplayObject} 返回被移除的显示对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.removeChild = function (parent, target) {
+        EgretBridge.prototype.removeChild = function (parent, target) {
             return parent.removeChild(target);
         };
         /**
@@ -291,18 +419,18 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {egret.DisplayObjectContainer} parent 父容器
          * @param {number} index 索引
          * @return {egret.DisplayObject} 返回被移除的显示对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.removeChildAt = function (parent, index) {
+        EgretBridge.prototype.removeChildAt = function (parent, index) {
             return parent.removeChildAt(index);
         };
         /**
          * 移除所有显示对象
          *
          * @param {egret.DisplayObjectContainer} parent 父容器
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.removeChildren = function (parent) {
+        EgretBridge.prototype.removeChildren = function (parent) {
             parent.removeChildren();
         };
         /**
@@ -310,9 +438,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          *
          * @param {egret.DisplayObject} target 目标对象
          * @returns {egret.DisplayObjectContainer} 父容器
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.getParent = function (target) {
+        EgretBridge.prototype.getParent = function (target) {
             return target.parent;
         };
         /**
@@ -321,9 +449,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {egret.DisplayObjectContainer} parent 父容器
          * @param {number} index 指定父级索引
          * @return {egret.DisplayObject} 索引处的显示对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.getChildAt = function (parent, index) {
+        EgretBridge.prototype.getChildAt = function (parent, index) {
             return parent.getChildAt(index);
         };
         /**
@@ -332,9 +460,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {egret.DisplayObjectContainer} parent 父容器
          * @param {egret.DisplayObject} target 子显示对象
          * @return {number} target在parent中的索引
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.getChildIndex = function (parent, target) {
+        EgretBridge.prototype.getChildIndex = function (parent, target) {
             return parent.getChildIndex(target);
         };
         /**
@@ -343,9 +471,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {egret.DisplayObjectContainer} parent 父容器
          * @param {string} name 对象名称
          * @return {egret.DisplayObject} 显示对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.getChildByName = function (parent, name) {
+        EgretBridge.prototype.getChildByName = function (parent, name) {
             return parent.getChildByName(name);
         };
         /**
@@ -353,10 +481,32 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          *
          * @param {egret.DisplayObjectContainer} parent 父容器
          * @return {number} 子显示对象数量
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.getChildCount = function (parent) {
+        EgretBridge.prototype.getChildCount = function (parent) {
             return parent.numChildren;
+        };
+        /**
+         * 加载资源
+         *
+         * @param {string[]} assets 资源列表
+         * @param {(err?:Error)=>void} handler 回调函数
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.loadAssets = function (assets, handler) {
+            var loader = new AssetsLoader_1.default({
+                oneError: function (evt) {
+                    // 调用回调
+                    handler(new Error("资源加载失败"));
+                    // 派发加载错误事件
+                    Core_1.core.dispatch(ModuleMessage_1.default.MODULE_LOAD_ASSETS_ERROR, evt);
+                },
+                complete: function (dict) {
+                    // 调用回调
+                    handler();
+                }
+            });
+            loader.loadGroups(assets);
         };
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
@@ -365,9 +515,9 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {string} type 事件类型
          * @param {Function} handler 事件处理函数
          * @param {*} [thisArg] this指向对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.mapListener = function (target, type, handler, thisArg) {
+        EgretBridge.prototype.mapListener = function (target, type, handler, thisArg) {
             target.addEventListener(type, handler, thisArg);
         };
         /**
@@ -377,14 +527,14 @@ define("branches/egret/Bridge", ["require", "exports", "branches/egret/RenderMod
          * @param {string} type 事件类型
          * @param {Function} handler 事件处理函数
          * @param {*} [thisArg] this指向对象
-         * @memberof Bridge
+         * @memberof EgretBridge
          */
-        Bridge.prototype.unmapListener = function (target, type, handler, thisArg) {
+        EgretBridge.prototype.unmapListener = function (target, type, handler, thisArg) {
             target.removeEventListener(type, handler, thisArg);
         };
-        return Bridge;
+        return EgretBridge;
     }());
-    exports.default = Bridge;
+    exports.default = EgretBridge;
     var AssetAdapter = /** @class */ (function () {
         function AssetAdapter() {
         }

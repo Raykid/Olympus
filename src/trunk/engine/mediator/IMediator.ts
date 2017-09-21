@@ -27,7 +27,23 @@ export default interface IMediator extends IHasBridge, IDisposable
      * @memberof IMediator
      */
     skin:any;
+
+    /**
+     * 列出中介者所需的资源数组，可重写
+     * 
+     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+     * @memberof IMediator
+     */
+    listAssets():string[];
     
+    /**
+     * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
+     * 
+     * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
+     * @memberof IMediator
+     */
+    loadAssets(handler:(err?:Error)=>void):void;
+
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 

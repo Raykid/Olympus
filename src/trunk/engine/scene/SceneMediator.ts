@@ -62,4 +62,43 @@ export default abstract class SceneMediator extends Mediator implements IScene
     {
         return sceneManager.pop(this, data);
     }
+
+    /**
+     * 切入场景开始前调用
+     * @param fromScene 从哪个场景切入
+     * @param data 切场景时可能的参数
+     */
+    public onBeforeIn(fromScene:IScene, data?:any):void
+    {
+        // 可重写
+    }
+
+    /**
+     * 切入场景开始后调用
+     * @param fromScene 从哪个场景切入
+     * @param data 切场景时可能的参数
+     */
+    public onAfterIn(fromScene:IScene, data?:any):void
+    {
+        // 可重写
+    }
+
+    /**
+     * 切出场景开始前调用
+     * @param toScene 要切入到哪个场景
+     * @param data 切场景时可能的参数
+     */
+    public onBeforeOut(toScene:IScene, data?:any):void
+    {
+        // 可重写
+    }
+    /**
+     * 切出场景开始后调用
+     * @param toScene 要切入到哪个场景
+     * @param data 切场景时可能的参数
+     */
+    public onAfterOut(toScene:IScene, data?:any):void
+    {
+        // 可重写
+    }
 }

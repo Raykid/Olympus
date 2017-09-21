@@ -1,6 +1,5 @@
 import { core } from "../../core/Core";
 import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
-import Dictionary from "../../utils/Dictionary";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IModule from "../module/IModule";
@@ -80,7 +79,6 @@ export function ResponseHandler(clsOrType:IResponseDataConstructor|string):Metho
     };
 };
 
-var _mediatorDict:Dictionary<IModule, IMediator[]> = new Dictionary();
 /** 在Module内托管Mediator */
 export function DelegateMediator(prototype:any, propertyKey:string):any
 {
@@ -94,33 +92,17 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
         },
         set: function(value:IMediator):void
         {
-            var mediators:IMediator[] = _mediatorDict.get(this);
-            if(!mediators)
-            {
-                _mediatorDict.set(this, mediators = []);
-                // 监听销毁
-                listenDispose(prototype.constructor, function(module:IModule):void
-                {
-                    // 将所有已托管的中介者同时销毁
-                    for(var i:number = 0, len:number = mediators.length; i < len; i++)
-                    {
-                        mediators.pop().dispose();
-                    }
-                });
-            }
             // 取消托管中介者
             if(mediator)
             {
-                var index:number = mediators.indexOf(mediator);
-                if(index >= 0) mediators.splice(index, 1);
+                this.undelegateMediator(mediator);
             }
             // 设置中介者
             mediator = value;
             // 托管新的中介者
             if(mediator)
             {
-                if(mediators.indexOf(mediator) < 0)
-                    mediators.push(mediator);
+                this.delegateMediator(mediator);
             }
         }
     };

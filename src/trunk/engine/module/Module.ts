@@ -63,6 +63,43 @@ export default abstract class Module implements IModule, IDispatcher
         return null;
     }
 
+    private _mediators:IMediator[] = [];
+    /**
+     * 托管中介者
+     * 
+     * @param {IMediator} mediator 中介者
+     * @memberof Module
+     */
+    public delegateMediator(mediator:IMediator):void
+    {
+        // 托管新的中介者
+        if(this._mediators.indexOf(mediator) < 0)
+            this._mediators.push(mediator);
+    }
+
+    /**
+     * 取消托管中介者
+     * 
+     * @param {IMediator} mediator 中介者
+     * @memberof Module
+     */
+    public undelegateMediator(mediator:IMediator):void
+    {
+        var index:number = this._mediators.indexOf(mediator);
+        if(index >= 0) this._mediators.splice(index, 1);
+    }
+
+    /**
+     * 获取所有已托管的中介者
+     * 
+     * @returns {IMediator[]} 已托管的中介者
+     * @memberof Module
+     */
+    public getDelegatedMediators():IMediator[]
+    {
+        return this._mediators;
+    }
+
     /**
      * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
      * 
@@ -142,6 +179,12 @@ export default abstract class Module implements IModule, IDispatcher
      */
     public dispose():void
     {
+        // 将所有已托管的中介者销毁
+        for(var i:number = 0, len:number = this._mediators.length; i < len; i++)
+        {
+            this._mediators.pop().dispose();
+        }
+        // 记录
         this._disposed = true;
     }
 }

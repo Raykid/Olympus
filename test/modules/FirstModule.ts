@@ -48,13 +48,24 @@ class FirstMediator extends PanelMediator
 {
     @Inject(ModuleManager)
     private moduleManager:ModuleManager;
-    
+
+    public skin:Fuck;
+
+    public listAssets():string[]
+    {
+        return ["preload"];
+    }
+
     public constructor()
     {
-        var fuck:Fuck = new Fuck();
-        super(fuck);
-        this.mapListener(fuck.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
-            fuck.txt.text = "Fuck you!!!";
+        super(new Fuck());
+    }
+
+    public onBeforePop():void
+    {
+        this.skin.skinName = FuckSkin;
+        this.mapListener(this.skin.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
+            this.skin.txt.text = "Fuck you!!!";
             this.moduleManager.open(SecondModule, null, true);
         }, this);
     }
@@ -64,10 +75,4 @@ class Fuck extends eui.Component
 {
     public btn:eui.Button;
     public txt:eui.Label;
-    
-    public constructor()
-    {
-        super();
-        this.skinName = FuckSkin;
-    }
 }

@@ -160,6 +160,14 @@ export default interface IBridge
      */
     getChildCount(parent:any):number;
     /**
+     * 加载资源
+     * 
+     * @param {string[]} assets 资源列表
+     * @param {(err?:Error)=>void} handler 回调函数
+     * @memberof IBridge
+     */
+    loadAssets(assets:string[], handler:(err?:Error)=>void):void;
+    /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
      * @param {*} target 事件目标对象

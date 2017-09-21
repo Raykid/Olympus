@@ -1,5 +1,7 @@
-import IBridge from "../../trunk/engine/bridge/IBridge";
-import { getObjectHashs } from "../../trunk/utils/ObjectUtil";
+/// <reference path="../../dist/Olympus.d.ts"/>
+
+import IBridge from "engine/bridge/IBridge";
+import { getObjectHashs } from "utils/ObjectUtil";
 
 /**
  * @author Raykid
@@ -9,14 +11,14 @@ import { getObjectHashs } from "../../trunk/utils/ObjectUtil";
  * 
  * 基于DOM的表现层桥实现
 */
-export default class Bridge implements IBridge
+export default class DOMBridge implements IBridge
 {
     /**
      * 获取表现层类型名称
      * 
      * @readonly
      * @type {string}
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public get type():string
     {
@@ -29,7 +31,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public get htmlWrapper():HTMLElement
     {
@@ -41,7 +43,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public get root():HTMLElement
     {
@@ -53,7 +55,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public get bgLayer():HTMLElement
     {
@@ -65,7 +67,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public get sceneLayer():HTMLElement
     {
@@ -77,7 +79,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public get panelLayer():HTMLElement
     {
@@ -89,7 +91,7 @@ export default class Bridge implements IBridge
      * 
      * @readonly
      * @type {HTMLElement}
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public get topLayer():HTMLElement
     {
@@ -104,7 +106,7 @@ export default class Bridge implements IBridge
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public init(complete:(bridge:IBridge)=>void):void
     {
@@ -128,7 +130,7 @@ export default class Bridge implements IBridge
      * 
      * @param {*} skin 皮肤对象
      * @returns {boolean} 是否是DOM显示节点
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public isMySkin(skin:any):boolean
     {
@@ -141,7 +143,7 @@ export default class Bridge implements IBridge
      * @param {Element} parent 要添加到的父容器
      * @param {Element} target 被添加的显示对象
      * @return {Element} 返回被添加的显示对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public addChild(parent:Element, target:Element):Element
     {
@@ -155,7 +157,7 @@ export default class Bridge implements IBridge
      * @param {Element} target 被添加的显示对象
      * @param {number} index 要添加到的父级索引
      * @return {Element} 返回被添加的显示对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public addChildAt(parent:Element, target:Element, index:number):Element
     {
@@ -168,7 +170,7 @@ export default class Bridge implements IBridge
      * @param {Element} parent 父容器
      * @param {Element} target 被移除的显示对象
      * @return {Element} 返回被移除的显示对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public removeChild(parent:Element, target:Element):Element
     {
@@ -181,7 +183,7 @@ export default class Bridge implements IBridge
      * @param {Element} parent 父容器
      * @param {number} index 索引
      * @return {Element} 返回被移除的显示对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public removeChildAt(parent:Element, index:number):Element
     {
@@ -192,7 +194,7 @@ export default class Bridge implements IBridge
      * 移除所有显示对象
      * 
      * @param {Element} parent 父容器
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public removeChildren(parent:Element):void
     {
@@ -207,7 +209,7 @@ export default class Bridge implements IBridge
      * 
      * @param {Element} target 目标对象
      * @returns {Element} 父容器
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public getParent(target:Element):Element
     {
@@ -220,7 +222,7 @@ export default class Bridge implements IBridge
      * @param {Element} parent 父容器
      * @param {number} index 指定父级索引
      * @return {Element} 索引处的显示对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public getChildAt(parent:Element, index:number):Element
     {
@@ -233,7 +235,7 @@ export default class Bridge implements IBridge
      * @param {Element} parent 父容器
      * @param {Element} target 子显示对象
      * @return {number} target在parent中的索引
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public getChildIndex(parent:Element, target:Element):number
     {
@@ -250,7 +252,7 @@ export default class Bridge implements IBridge
      * @param {Element} parent 父容器
      * @param {string} name 对象名称
      * @return {Element} 显示对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public getChildByName(parent:Element, name:string):Element
     {
@@ -262,11 +264,24 @@ export default class Bridge implements IBridge
      * 
      * @param {Element} parent 父容器
      * @return {number} 子显示对象数量
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public getChildCount(parent:Element):number
     {
         return parent.childElementCount;
+    }
+    
+    /**
+     * 加载资源
+     * 
+     * @param {string[]} assets 资源列表
+     * @param {(err?:Error)=>void} handler 回调函数
+     * @memberof DOMBridge
+     */
+    public loadAssets(assets:string[], handler:(err?:Error)=>void):void
+    {
+        // DOM暂时不支持加载资源
+        handler();
     }
     
     private _listenerDict:{[key:string]:(evt:Event)=>void} = {};
@@ -277,7 +292,7 @@ export default class Bridge implements IBridge
      * @param {string} type 事件类型
      * @param {(evt:Event)=>void} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public mapListener(target:EventTarget, type:string, handler:(evt:Event)=>void, thisArg?:any):void
     {
@@ -302,7 +317,7 @@ export default class Bridge implements IBridge
      * @param {string} type 事件类型
      * @param {(evt:Event)=>void} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
-     * @memberof Bridge
+     * @memberof DOMBridge
      */
     public unmapListener(target:EventTarget, type:string, handler:(evt:Event)=>void, thisArg?:any):void
     {

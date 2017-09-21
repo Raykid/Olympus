@@ -53,4 +53,28 @@ export default abstract class PanelMediator extends Mediator implements IPanel
     {
         return panelManager.close(this, data, to);
     }
+    
+    /** 在弹出前调用的方法 */
+    public onBeforePop(data?:any, isModel?:boolean, from?:{x:number, y:number}):void
+    {
+        // 可重写
+    }
+
+    /** 在弹出后调用的方法 */
+    public onAfterPop(data?:any, isModel?:boolean, from?:{x:number, y:number}):void
+    {
+        // 可重写
+    }
+
+    /** 在关闭前调用的方法 */
+    public onBeforeDrop(data?:any, to?:{x:number, y:number}):void
+    {
+        // 可重写
+    }
+
+    /** 在关闭后调用的方法 */
+    public onAfterDrop(data?:any, to?:{x:number, y:number}):void
+    {
+        // 可重写
+    }
 }

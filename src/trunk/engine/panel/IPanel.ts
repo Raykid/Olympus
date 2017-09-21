@@ -21,11 +21,11 @@ export default interface IPanel extends IHasBridge, IDisposable
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
     drop(data?:any, to?:{x:number, y:number}):IPanel;
     /** 在弹出前调用的方法 */
-    onBeforePop?(data?:any, isModel?:boolean, from?:{x:number, y:number}):void;
+    onBeforePop(data?:any, isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在弹出后调用的方法 */
-    onAfterPop?(data?:any, isModel?:boolean, from?:{x:number, y:number}):void;
+    onAfterPop(data?:any, isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在关闭前调用的方法 */
-    onBeforeDrop?(data?:any, to?:{x:number, y:number}):void;
+    onBeforeDrop(data?:any, to?:{x:number, y:number}):void;
     /** 在关闭后调用的方法 */
-    onAfterDrop?(data?:any, to?:{x:number, y:number}):void;
+    onAfterDrop(data?:any, to?:{x:number, y:number}):void;
 }

@@ -7,7 +7,7 @@
     "outFile": "../../../dist/Egret.js"
   },
   "files": [
-    "Bridge.ts"
+    "../EgretBridge.ts"
   ],
   "exclude": [
     "../../trunk"

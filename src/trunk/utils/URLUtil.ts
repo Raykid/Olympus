@@ -76,7 +76,7 @@ export function wrapHost(url:string, host:string, forced:boolean = false):string
     }
     else
     {
-        url = host + "/" + url;
+        url = wrapAbsolutePath(url, host);
     }
     // 最后规整一下url
     url = trimURL(url);
@@ -251,39 +251,6 @@ export function joinHashParams(url:string, params:Object):string
         hash += ((hash.indexOf("?") < 0 ? "?" : "&") + encodeURIComponent(key) + "=" + encodeURIComponent(value));
     }
     return (url.split("#")[0] + hash);
-}
-
-/**
- * 添加-r_XXX形式版本号
- * @param url url
- * @param version 版本号，以数字和小写字母组成
- * @returns {string} 加版本号后的url，如果没有查到版本号则返回原始url
- */
-export function join_r_Version(url:string, version:string):string
-{
-    if(version == null) return url;
-    // 去掉version中的非法字符
-    version = version.replace(/[^0-9a-z]+/ig, "");
-    // 插入版本号
-    var reg:RegExp = /([a-zA-Z]+:\/+[^\/\?#]+\/[^\?#]+)\.([^\?]+)(\?.+)?/;
-    var result:RegExpExecArray = reg.exec(url);
-    if(result != null)
-    {
-        url = result[1] + "-r_" + version + "." + result[2] + (result[3] || "");
-    }
-    return url;
-}
-
-/**
- * 移除-r_XXX形式版本号
- * @param url url
- * @returns {string} 移除版本号后的url
- */
-export function remove_r_Version(url:string):string
-{
-    // 去掉-r_XXX版本号，如果有
-    url = url.replace(/\-r_[a-z0-9]+\./ig, ".");
-    return url;
 }
 
 export interface URLLocation

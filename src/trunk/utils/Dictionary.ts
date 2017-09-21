@@ -13,6 +13,20 @@ export default class Dictionary<K, V>
     private _entity:{[hash:string]:V} = {};
 
     /**
+     * 获取字典内的元素数量
+     * 
+     * @readonly
+     * @type {number}
+     * @memberof Dictionary
+     */
+    public get size():number
+    {
+        var size:number = 0;
+        for(var hash in this._entity) size ++;
+        return size;
+    }
+
+    /**
      * 设置一个键值对
      * 
      * @param {K} key 键

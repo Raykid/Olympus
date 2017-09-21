@@ -112,15 +112,19 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var FirstMediator = /** @class */ (function (_super) {
         __extends(FirstMediator, _super);
         function FirstMediator() {
-            var _this = this;
-            var fuck = new Fuck();
-            _this = _super.call(this, fuck) || this;
-            _this.mapListener(fuck.btn, egret.TouchEvent.TOUCH_TAP, function () {
-                fuck.txt.text = "Fuck you!!!";
-                _this.moduleManager.open(SecondModule_1.default, null, true);
-            }, _this);
-            return _this;
+            return _super.call(this, new Fuck()) || this;
         }
+        FirstMediator.prototype.listAssets = function () {
+            return ["preload"];
+        };
+        FirstMediator.prototype.onBeforePop = function () {
+            var _this = this;
+            this.skin.skinName = FuckSkin;
+            this.mapListener(this.skin.btn, egret.TouchEvent.TOUCH_TAP, function () {
+                _this.skin.txt.text = "Fuck you!!!";
+                _this.moduleManager.open(SecondModule_1.default, null, true);
+            }, this);
+        };
         __decorate([
             Injector_2.Inject(ModuleManager_1.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
@@ -132,9 +136,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var Fuck = /** @class */ (function (_super) {
         __extends(Fuck, _super);
         function Fuck() {
-            var _this = _super.call(this) || this;
-            _this.skinName = FuckSkin;
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         return Fuck;
     }(eui.Component));
@@ -143,7 +145,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule"], function (require, exports, Bridge_1, Bridge_2, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_2) {
+define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -156,8 +158,8 @@ define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bri
     */
     Olympus_1.default.startup({
         bridges: [
-            new Bridge_1.default("rootDOM"),
-            new Bridge_2.default({
+            new DOMBridge_1.default("rootDOM"),
+            new EgretBridge_1.default({
                 width: 720,
                 height: 1280,
                 pathPrefix: "egret/",
@@ -176,7 +178,6 @@ define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bri
             prod: ["https://www.17zuoye.com/"]
         },
         cdnsDict: {
-            dev: ["http://cdn-cnc.test.17zuoye.net"],
             test: ["https://cdn-cnc.test.17zuoye.net/"],
             staging: ["https://cdn-cnc.staging.17zuoye.net/"],
             prod: ["https://cdn-cnc.17zuoye.com/"]

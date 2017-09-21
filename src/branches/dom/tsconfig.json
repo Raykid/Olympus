@@ -8,7 +8,7 @@
     "outFile": "../../../dist/DOM.js"
   },
   "files": [
-    "Bridge.ts"
+    "../DOMBridge.ts"
   ],
   "exclude": [
     "../../trunk"

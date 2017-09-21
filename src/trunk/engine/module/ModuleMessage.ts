@@ -16,4 +16,12 @@ export default class ModuleMessage
      * @memberof ModuleMessage
      */
     public static MODULE_CHANGE:string = "moduleChange";
+    /**
+     * 加载模块失败消息
+     * 
+     * @static
+     * @type {string}
+     * @memberof ModuleMessage
+     */
+    public static MODULE_LOAD_ASSETS_ERROR:string = "moduleLoadAssetsError";
 }
