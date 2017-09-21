@@ -2026,188 +2026,40 @@ declare module "engine/module/Module" {
         dispose(): void;
     }
 }
-declare module "engine/env/Explorer" {
+declare module "engine/injector/Injector" {
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
      *
-     * Explorer类记录浏览器相关数据
+     * 负责注入的模块
     */
-    /**
-     * 浏览器类型枚举
-     *
-     * @enum {number}
-     */
-    export enum ExplorerType {
-        IE = 0,
-        EDGE = 1,
-        OPERA = 2,
-        FIREFOX = 3,
-        SAFARI = 4,
-        CHROME = 5,
-        OTHERS = 6,
-    }
-    export default class Explorer {
-        private _type;
-        /**
-         * 获取浏览器类型枚举值
-         *
-         * @readonly
-         * @type {ExplorerType}
-         * @memberof Explorer
-         */
-        readonly type: ExplorerType;
-        private _typeStr;
-        /**
-         * 获取浏览器类型字符串
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Explorer
-         */
-        readonly typeStr: string;
-        private _version;
-        /**
-         * 获取浏览器版本
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Explorer
-         */
-        readonly version: string;
-        private _bigVersion;
-        /**
-         * 获取浏览器大版本
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Explorer
-         */
-        readonly bigVersion: string;
-        constructor();
-    }
-    /** 再额外导出一个单例 */
-    export const explorer: Explorer;
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    export function ModelClass(cls: IConstructor): IConstructor;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    export function MediatorClass(cls: IConstructor): IConstructor;
+    /** 定义模块，支持实例注入 */
+    export function ModuleClass(cls: IConstructor): IConstructor;
+    /** 处理通讯消息返回 */
+    export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
+    /** 在Module内托管Mediator */
+    export function DelegateMediator(prototype: any, propertyKey: string): any;
 }
-declare module "engine/env/External" {
+declare module "Injector" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
      *
-     * External类为window.external参数字典包装类
+     * 统一的Injector输出口，所有框架内的装饰器注入方法都可以从这个模块找到
     */
-    export default class External {
-        private _params;
-        constructor();
-        /**
-         * 获取window.external中的参数
-         *
-         * @param {string} key 参数名
-         * @returns {*} 参数值
-         * @memberof External
-         */
-        getParam(key: string): any;
-    }
-    /** 再额外导出一个单例 */
-    export const external: External;
-}
-declare module "engine/env/Hash" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * Hash类是地址路由（网页哈希）管理器，规定哈希格式为：#[模块名]?[参数名]=[参数值]&[参数名]=[参数值]&...
-    */
-    export default class Hash {
-        private _hash;
-        /**
-         * 获取原始的哈希字符串
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Hash
-         */
-        readonly hash: string;
-        private _moduleName;
-        /**
-         * 获取模块名
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Hash
-         */
-        readonly moduleName: string;
-        private _params;
-        /**
-         * 获取传递给模块的参数
-         *
-         * @readonly
-         * @type {{[key:string]:string}}
-         * @memberof Hash
-         */
-        readonly params: {
-            [key: string]: string;
-        };
-        private _direct;
-        /**
-         * 获取是否直接跳转模块
-         *
-         * @readonly
-         * @type {boolean}
-         * @memberof Hash
-         */
-        readonly direct: boolean;
-        private _keepHash;
-        /**
-         * 获取是否保持哈希值
-         *
-         * @readonly
-         * @type {boolean}
-         * @memberof Hash
-         */
-        readonly keepHash: boolean;
-        constructor();
-        /**
-         * 获取指定哈希参数
-         *
-         * @param {string} key 参数名
-         * @returns {string} 参数值
-         * @memberof Hash
-         */
-        getParam(key: string): string;
-    }
-    /** 再额外导出一个单例 */
-    export const hash: Hash;
-}
-declare module "engine/env/Query" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * Query类记录通过GET参数传递给框架的参数字典
-    */
-    export default class Query {
-        private _params;
-        constructor();
-        /**
-         * 获取GET参数
-         *
-         * @param {string} key 参数key
-         * @returns {string} 参数值
-         * @memberof Query
-         */
-        getParam(key: string): string;
-    }
-    /** 再额外导出一个单例 */
-    export const query: Query;
+    /** 导出core模组的注入方法 */
+    export * from "core/injector/Injector";
+    /** 导出engine模组的注入方法 */
+    export * from "engine/injector/Injector";
 }
 declare module "utils/URLUtil" {
     /**
@@ -2306,6 +2158,268 @@ declare module "utils/URLUtil" {
         hash: string;
     }
 }
+declare module "engine/env/Environment" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 环境参数
+    */
+    export default class Environment {
+        private _env;
+        /**
+         * 获取当前环境字符串
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Environment
+         */
+        readonly env: string;
+        private _hostsDict;
+        /**
+         * 获取当前环境下某索引处的消息域名
+         *
+         * @param {number} [index=0] 域名字典索引，默认是0
+         * @returns {string} 域名字符串，如果取不到则使用当前域名
+         * @memberof Environment
+         */
+        getHost(index?: number): string;
+        private _cdnsDict;
+        private _curCDNIndex;
+        /**
+         * 获取当前使用的CDN域名
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Environment
+         */
+        readonly curCDNHost: string;
+        /**
+         * 切换下一个CDN
+         *
+         * @returns {boolean} 是否已经到达CDN列表的终点，回到了起点
+         * @memberof Environment
+         */
+        nextCDN(): boolean;
+        /**
+         * 初始化Environment对象，因为该对象保存的数据基本来自项目初始参数，所以必须有initialize方法
+         *
+         * @param {string} [env] 当前所属环境字符串
+         * @param {{[env:string]:string[]}} [hostsDict] host数组字典
+         * @param {{[env:string]:string[]}} [cdnsDict] cdn数组字典
+         * @memberof Environment
+         */
+        initialize(env?: string, hostsDict?: {
+            [env: string]: string[];
+        }, cdnsDict?: {
+            [env: string]: string[];
+        }): void;
+        /**
+         * 让url的域名变成消息域名
+         *
+         * @param {string} url 要转变的url
+         * @param {number} [index=0] host索引，默认0
+         * @returns {string} 转变后的url
+         * @memberof Environment
+         */
+        toHostURL(url: string, index?: number): string;
+        /**
+         * 让url的域名变成CDN域名
+         *
+         * @param {string} url 要转变的url
+         * @returns {string} 转变后的url
+         * @memberof Environment
+         */
+        toCDNHostURL(url: string): string;
+    }
+    /** 再额外导出一个单例 */
+    export const environment: Environment;
+}
+declare module "engine/env/Explorer" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Explorer类记录浏览器相关数据
+    */
+    /**
+     * 浏览器类型枚举
+     *
+     * @enum {number}
+     */
+    export enum ExplorerType {
+        IE = 0,
+        EDGE = 1,
+        OPERA = 2,
+        FIREFOX = 3,
+        SAFARI = 4,
+        CHROME = 5,
+        OTHERS = 6,
+    }
+    export default class Explorer {
+        private _type;
+        /**
+         * 获取浏览器类型枚举值
+         *
+         * @readonly
+         * @type {ExplorerType}
+         * @memberof Explorer
+         */
+        readonly type: ExplorerType;
+        private _typeStr;
+        /**
+         * 获取浏览器类型字符串
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Explorer
+         */
+        readonly typeStr: string;
+        private _version;
+        /**
+         * 获取浏览器版本
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Explorer
+         */
+        readonly version: string;
+        private _bigVersion;
+        /**
+         * 获取浏览器大版本
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Explorer
+         */
+        readonly bigVersion: string;
+        constructor();
+    }
+    /** 再额外导出一个单例 */
+    export const explorer: Explorer;
+}
+declare module "engine/env/WindowExternal" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * External类为window.external参数字典包装类
+    */
+    export default class WindowExternal {
+        private _params;
+        constructor();
+        /**
+         * 获取window.external中的参数
+         *
+         * @param {string} key 参数名
+         * @returns {*} 参数值
+         * @memberof External
+         */
+        getParam(key: string): any;
+    }
+    /** 再额外导出一个单例 */
+    export const windowExternal: WindowExternal;
+}
+declare module "engine/env/Hash" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * Hash类是地址路由（网页哈希）管理器，规定哈希格式为：#[模块名]?[参数名]=[参数值]&[参数名]=[参数值]&...
+    */
+    export default class Hash {
+        private _hash;
+        /**
+         * 获取原始的哈希字符串
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Hash
+         */
+        readonly hash: string;
+        private _moduleName;
+        /**
+         * 获取模块名
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Hash
+         */
+        readonly moduleName: string;
+        private _params;
+        /**
+         * 获取传递给模块的参数
+         *
+         * @readonly
+         * @type {{[key:string]:string}}
+         * @memberof Hash
+         */
+        readonly params: {
+            [key: string]: string;
+        };
+        private _direct;
+        /**
+         * 获取是否直接跳转模块
+         *
+         * @readonly
+         * @type {boolean}
+         * @memberof Hash
+         */
+        readonly direct: boolean;
+        private _keepHash;
+        /**
+         * 获取是否保持哈希值
+         *
+         * @readonly
+         * @type {boolean}
+         * @memberof Hash
+         */
+        readonly keepHash: boolean;
+        constructor();
+        /**
+         * 获取指定哈希参数
+         *
+         * @param {string} key 参数名
+         * @returns {string} 参数值
+         * @memberof Hash
+         */
+        getParam(key: string): string;
+    }
+    /** 再额外导出一个单例 */
+    export const hash: Hash;
+}
+declare module "engine/env/Query" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Query类记录通过GET参数传递给框架的参数字典
+    */
+    export default class Query {
+        private _params;
+        constructor();
+        /**
+         * 获取GET参数
+         *
+         * @param {string} key 参数key
+         * @returns {string} 参数值
+         * @memberof Query
+         */
+        getParam(key: string): string;
+    }
+    /** 再额外导出一个单例 */
+    export const query: Query;
+}
 declare module "engine/net/HTTPMethod" {
     /**
      * @author Raykid
@@ -2378,27 +2492,6 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
     }
     /** 再额外导出一个实例 */
     export const httpRequestPolicy: HTTPRequestPolicy;
-}
-declare module "engine/injector/Injector" {
-    import { IResponseDataConstructor } from "engine/net/ResponseData";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 负责注入的模块
-    */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    export function ModelClass(cls: IConstructor): IConstructor;
-    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    export function MediatorClass(cls: IConstructor): IConstructor;
-    /** 定义模块，支持实例注入 */
-    export function ModuleClass(cls: IConstructor): IConstructor;
-    /** 处理通讯消息返回 */
-    export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
-    /** 在Module内托管Mediator */
-    export function DelegateMediator(prototype: any, propertyKey: string): any;
 }
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
@@ -2477,19 +2570,30 @@ declare module "Olympus" {
          * @memberof OlympusInitParams
          */
         loadElement?: Element | string;
+        /**
+         * 环境字符串，默认为"dev"
+         *
+         * @type {string}
+         * @memberof IInitParams
+         */
+        env?: string;
+        /**
+         * 消息域名字典数组，首个字典会被当做默认字典，没传递则会用当前域名代替
+         *
+         * @type {{[env:string]:string[]}}
+         * @memberof IInitParams
+         */
+        hostsDict?: {
+            [env: string]: string[];
+        };
+        /**
+         * CDN域名列表，若没有提供则使用host代替
+         *
+         * @type {{[env:string]:string[]}}
+         * @memberof IInitParams
+         */
+        cdnsDict?: {
+            [env: string]: string[];
+        };
     }
-}
-declare module "Injector" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 统一的Injector输出口，所有框架内的装饰器注入方法都可以从这个模块找到
-    */
-    /** 导出core模组的注入方法 */
-    export * from "core/injector/Injector";
-    /** 导出engine模组的注入方法 */
-    export * from "engine/injector/Injector";
 }

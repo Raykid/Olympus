@@ -2444,403 +2444,132 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
     }());
     exports.default = Module;
 });
-define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_12, Injector_7) {
+define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "utils/Dictionary", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_12, ConstructUtil_2, Dictionary_3, NetManager_2, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
      *
-     * Explorer类记录浏览器相关数据
+     * 负责注入的模块
     */
-    /**
-     * 浏览器类型枚举
-     *
-     * @enum {number}
-     */
-    var ExplorerType;
-    (function (ExplorerType) {
-        ExplorerType[ExplorerType["IE"] = 0] = "IE";
-        ExplorerType[ExplorerType["EDGE"] = 1] = "EDGE";
-        ExplorerType[ExplorerType["OPERA"] = 2] = "OPERA";
-        ExplorerType[ExplorerType["FIREFOX"] = 3] = "FIREFOX";
-        ExplorerType[ExplorerType["SAFARI"] = 4] = "SAFARI";
-        ExplorerType[ExplorerType["CHROME"] = 5] = "CHROME";
-        ExplorerType[ExplorerType["OTHERS"] = 6] = "OTHERS";
-    })(ExplorerType = exports.ExplorerType || (exports.ExplorerType = {}));
-    var Explorer = /** @class */ (function () {
-        function Explorer() {
-            //取得浏览器的userAgent字符串
-            var userAgent = navigator.userAgent;
-            // 判断浏览器类型
-            var regExp;
-            var result;
-            if (window["ActiveXObject"] != null) {
-                // IE浏览器
-                this._type = ExplorerType.IE;
-                // 获取IE版本号
-                regExp = new RegExp("MSIE ([^ ;\\)]+);");
-                result = regExp.exec(userAgent);
-                if (result != null) {
-                    // 是IE8以前
-                    this._version = result[1];
-                }
-                else {
-                    // 是IE9以后
-                    regExp = new RegExp("rv:([^ ;\\)]+)");
-                    result = regExp.exec(userAgent);
-                    this._version = result[1];
-                }
-            }
-            else if (userAgent.indexOf("Edge") > -1) {
-                // Edge浏览器
-                this._type = ExplorerType.EDGE;
-                // 获取Edge版本号
-                regExp = new RegExp("Edge/([^ ;\\)]+)");
-                result = regExp.exec(userAgent);
-                this._version = result[1];
-            }
-            else if (userAgent.indexOf("Firefox") > -1) {
-                // Firefox浏览器
-                this._type = ExplorerType.FIREFOX;
-                // 获取Firefox版本号
-                regExp = new RegExp("Firefox/([^ ;\\)]+)");
-                result = regExp.exec(userAgent);
-                this._version = result[1];
-            }
-            else if (userAgent.indexOf("Opera") > -1) {
-                // Opera浏览器
-                this._type = ExplorerType.OPERA;
-                // 获取Opera版本号
-                regExp = new RegExp("OPR/([^ ;\\)]+)");
-                result = regExp.exec(userAgent);
-                this._version = result[1];
-            }
-            else if (userAgent.indexOf("Chrome") > -1) {
-                // Chrome浏览器
-                this._type = ExplorerType.CHROME;
-                // 获取Crhome版本号
-                regExp = new RegExp("Chrome/([^ ;\\)]+)");
-                result = regExp.exec(userAgent);
-                this._version = result[1];
-            }
-            else if (userAgent.indexOf("Safari") > -1) {
-                // Safari浏览器
-                this._type = ExplorerType.SAFARI;
-                // 获取Safari版本号
-                regExp = new RegExp("Safari/([^ ;\\)]+)");
-                result = regExp.exec(userAgent);
-                this._version = result[1];
-            }
-            else {
-                // 其他浏览器
-                this._type = ExplorerType.OTHERS;
-                // 随意设置一个版本号
-                this._version = "0.0";
-            }
-            // 赋值类型字符串
-            this._typeStr = ExplorerType[this._type];
-            // 赋值大版本号
-            this._bigVersion = this._version.split(".")[0];
-        }
-        Object.defineProperty(Explorer.prototype, "type", {
-            /**
-             * 获取浏览器类型枚举值
-             *
-             * @readonly
-             * @type {ExplorerType}
-             * @memberof Explorer
-             */
-            get: function () {
-                return this._type;
-            },
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    function ModelClass(cls) {
+        // Model先进行托管
+        var result = ConstructUtil_2.wrapConstruct(cls);
+        // 然后要注入新生成的类
+        Core_12.core.mapInject(result);
+        // 返回结果
+        return result;
+    }
+    exports.ModelClass = ModelClass;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    function MediatorClass(cls) {
+        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+        // 替换setSkin方法
+        var $skin;
+        Object.defineProperty(cls.prototype, "skin", {
+            configurable: true,
             enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Explorer.prototype, "typeStr", {
-            /**
-             * 获取浏览器类型字符串
-             *
-             * @readonly
-             * @type {string}
-             * @memberof Explorer
-             */
             get: function () {
-                return this._typeStr;
+                return $skin;
             },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Explorer.prototype, "version", {
-            /**
-             * 获取浏览器版本
-             *
-             * @readonly
-             * @type {string}
-             * @memberof Explorer
-             */
-            get: function () {
-                return this._version;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Explorer.prototype, "bigVersion", {
-            /**
-             * 获取浏览器大版本
-             *
-             * @readonly
-             * @type {string}
-             * @memberof Explorer
-             */
-            get: function () {
-                return this._bigVersion;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Explorer = __decorate([
-            Injector_7.Injectable
-        ], Explorer);
-        return Explorer;
-    }());
-    exports.default = Explorer;
-    /** 再额外导出一个单例 */
-    exports.explorer = Core_12.core.getInject(Explorer);
-});
-define("engine/env/External", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_13, Injector_8) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * External类为window.external参数字典包装类
-    */
-    var External = /** @class */ (function () {
-        function External() {
-            this._params = {};
-            // 处理window.external
-            try {
-                if (!(window.external && typeof window.external === "object")) {
-                    window.external = {};
-                }
+            set: function (value) {
+                // 根据skin类型选取表现层桥
+                this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
+                // 记录值
+                $skin = value;
             }
-            catch (err) {
-                window.external = {};
-            }
-            this._params = window.external;
-        }
-        /**
-         * 获取window.external中的参数
-         *
-         * @param {string} key 参数名
-         * @returns {*} 参数值
-         * @memberof External
-         */
-        External.prototype.getParam = function (key) {
-            return this._params[key];
+        });
+        return ConstructUtil_2.wrapConstruct(cls);
+    }
+    exports.MediatorClass = MediatorClass;
+    /** 定义模块，支持实例注入 */
+    function ModuleClass(cls) {
+        // 判断一下Module是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
+        return ConstructUtil_2.wrapConstruct(cls);
+    }
+    exports.ModuleClass = ModuleClass;
+    /** 处理通讯消息返回 */
+    function ResponseHandler(clsOrType) {
+        return function (prototype, propertyKey, descriptor) {
+            // 监听实例化
+            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
+                NetManager_2.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+                NetManager_2.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
+            });
         };
-        External = __decorate([
-            Injector_8.Injectable
-        ], External);
-        return External;
-    }());
-    exports.default = External;
-    /** 再额外导出一个单例 */
-    exports.external = Core_13.core.getInject(External);
-});
-define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_14, Injector_9) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * Hash类是地址路由（网页哈希）管理器，规定哈希格式为：#[模块名]?[参数名]=[参数值]&[参数名]=[参数值]&...
-    */
-    var Hash = /** @class */ (function () {
-        function Hash() {
-            this._params = {};
-            this._direct = false;
-            this._keepHash = false;
-            this._hash = window.location.hash;
-            var reg = /#([^\?&]+)(\?([^\?&=]+=[^\?&=]+)(&([^\?&=]+=[^\?&=]+))*)?/;
-            var result = reg.exec(this._hash);
-            if (result) {
-                // 解析模块名称
-                this._moduleName = result[1];
-                // 解析模块参数
-                var paramsStr = result[2];
-                if (paramsStr != null) {
-                    paramsStr = paramsStr.substr(1);
-                    var params = paramsStr.split("&");
-                    for (var i = 0, len = params.length; i < len; i++) {
-                        var pair = params[i];
-                        if (pair != null) {
-                            var temp = pair.split("=");
-                            // 键和值都要做一次URL解码
-                            var key = decodeURIComponent(temp[0]);
-                            var value = decodeURIComponent(temp[1]);
-                            this._params[key] = value;
+    }
+    exports.ResponseHandler = ResponseHandler;
+    ;
+    var _mediatorDict = new Dictionary_3.default();
+    /** 在Module内托管Mediator */
+    function DelegateMediator(prototype, propertyKey) {
+        var mediator;
+        return {
+            configurable: true,
+            enumerable: true,
+            get: function () {
+                return mediator;
+            },
+            set: function (value) {
+                var mediators = _mediatorDict.get(this);
+                if (!mediators) {
+                    _mediatorDict.set(this, mediators = []);
+                    // 监听销毁
+                    ConstructUtil_2.listenDispose(prototype.constructor, function (module) {
+                        // 将所有已托管的中介者同时销毁
+                        for (var i = 0, len = mediators.length; i < len; i++) {
+                            mediators.pop().dispose();
                         }
-                    }
+                    });
                 }
-                // 处理direct参数
-                this._direct = (this._params.direct == "true");
-                delete this._params.direct;
-                // 处理keepHash参数
-                this._keepHash = (this._params.keepHash == "true");
-                delete this._params.keepHash;
-                // 如果keepHash不是true，则移除哈希值
-                if (!this._keepHash)
-                    window.location.hash = "";
+                // 取消托管中介者
+                if (mediator) {
+                    var index = mediators.indexOf(mediator);
+                    if (index >= 0)
+                        mediators.splice(index, 1);
+                }
+                // 设置中介者
+                mediator = value;
+                // 托管新的中介者
+                if (mediator) {
+                    if (mediators.indexOf(mediator) < 0)
+                        mediators.push(mediator);
+                }
             }
-        }
-        Object.defineProperty(Hash.prototype, "hash", {
-            /**
-             * 获取原始的哈希字符串
-             *
-             * @readonly
-             * @type {string}
-             * @memberof Hash
-             */
-            get: function () {
-                return this._hash;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Hash.prototype, "moduleName", {
-            /**
-             * 获取模块名
-             *
-             * @readonly
-             * @type {string}
-             * @memberof Hash
-             */
-            get: function () {
-                return this._moduleName;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Hash.prototype, "params", {
-            /**
-             * 获取传递给模块的参数
-             *
-             * @readonly
-             * @type {{[key:string]:string}}
-             * @memberof Hash
-             */
-            get: function () {
-                return this._params;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Hash.prototype, "direct", {
-            /**
-             * 获取是否直接跳转模块
-             *
-             * @readonly
-             * @type {boolean}
-             * @memberof Hash
-             */
-            get: function () {
-                return this._direct;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Hash.prototype, "keepHash", {
-            /**
-             * 获取是否保持哈希值
-             *
-             * @readonly
-             * @type {boolean}
-             * @memberof Hash
-             */
-            get: function () {
-                return this._keepHash;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 获取指定哈希参数
-         *
-         * @param {string} key 参数名
-         * @returns {string} 参数值
-         * @memberof Hash
-         */
-        Hash.prototype.getParam = function (key) {
-            return this._params[key];
         };
-        Hash = __decorate([
-            Injector_9.Injectable
-        ], Hash);
-        return Hash;
-    }());
-    exports.default = Hash;
-    /** 再额外导出一个单例 */
-    exports.hash = Core_14.core.getInject(Hash);
+    }
+    exports.DelegateMediator = DelegateMediator;
+    ;
 });
-define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_15, Injector_10) {
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-19
+ * @modify date 2017-09-19
+ *
+ * 统一的Injector输出口，所有框架内的装饰器注入方法都可以从这个模块找到
+*/
+define("Injector", ["require", "exports", "core/injector/Injector", "engine/injector/Injector"], function (require, exports, Injector_7, Injector_8) {
     "use strict";
+    function __export(m) {
+        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
     Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-05
-     * @modify date 2017-09-05
-     *
-     * Query类记录通过GET参数传递给框架的参数字典
-    */
-    var Query = /** @class */ (function () {
-        function Query() {
-            this._params = {};
-            var loc = window.location.href;
-            var query = loc.substring(loc.search(/\?/) + 1);
-            var vars = query.split('&');
-            for (var i = 0, len = vars.length; i < len; i++) {
-                var pair = vars[i].split('=', 2);
-                if (pair.length != 2 || !pair[0])
-                    continue;
-                var name = pair[0];
-                var value = pair[1];
-                name = decodeURIComponent(name);
-                value = decodeURIComponent(value);
-                // decode twice for ios
-                name = decodeURIComponent(name);
-                value = decodeURIComponent(value);
-                this._params[name] = value;
-            }
-        }
-        /**
-         * 获取GET参数
-         *
-         * @param {string} key 参数key
-         * @returns {string} 参数值
-         * @memberof Query
-         */
-        Query.prototype.getParam = function (key) {
-            return this._params[key];
-        };
-        Query = __decorate([
-            Injector_10.Injectable
-        ], Query);
-        return Query;
-    }());
-    exports.default = Query;
-    /** 再额外导出一个单例 */
-    exports.query = Core_15.core.getInject(Query);
+    /** 导出core模组的注入方法 */
+    __export(Injector_7);
+    /** 导出engine模组的注入方法 */
+    __export(Injector_8);
 });
 define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_4) {
     "use strict";
@@ -3115,11 +2844,544 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
     }
     exports.remove_r_Version = remove_r_Version;
 });
+define("engine/env/Environment", ["require", "exports", "core/Core", "Injector", "utils/URLUtil"], function (require, exports, Core_13, Injector_9, URLUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 环境参数
+    */
+    var Environment = /** @class */ (function () {
+        function Environment() {
+        }
+        Object.defineProperty(Environment.prototype, "env", {
+            /**
+             * 获取当前环境字符串
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Environment
+             */
+            get: function () {
+                return this._env;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 获取当前环境下某索引处的消息域名
+         *
+         * @param {number} [index=0] 域名字典索引，默认是0
+         * @returns {string} 域名字符串，如果取不到则使用当前域名
+         * @memberof Environment
+         */
+        Environment.prototype.getHost = function (index) {
+            if (index === void 0) { index = 0; }
+            var hosts = this._hostsDict[this._env];
+            if (!hosts)
+                return window.location.origin;
+            return (hosts[index] || window.location.origin);
+        };
+        Object.defineProperty(Environment.prototype, "curCDNHost", {
+            /**
+             * 获取当前使用的CDN域名
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Environment
+             */
+            get: function () {
+                var cdns = this._cdnsDict[this._env];
+                if (!cdns)
+                    return window.location.origin;
+                return (cdns[this._curCDNIndex] || window.location.origin);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 切换下一个CDN
+         *
+         * @returns {boolean} 是否已经到达CDN列表的终点，回到了起点
+         * @memberof Environment
+         */
+        Environment.prototype.nextCDN = function () {
+            var cdns = this._cdnsDict[this._env];
+            if (!cdns)
+                return true;
+            this._curCDNIndex++;
+            if (this._curCDNIndex >= cdns.length) {
+                this._curCDNIndex = 0;
+                return true;
+            }
+            return false;
+        };
+        /**
+         * 初始化Environment对象，因为该对象保存的数据基本来自项目初始参数，所以必须有initialize方法
+         *
+         * @param {string} [env] 当前所属环境字符串
+         * @param {{[env:string]:string[]}} [hostsDict] host数组字典
+         * @param {{[env:string]:string[]}} [cdnsDict] cdn数组字典
+         * @memberof Environment
+         */
+        Environment.prototype.initialize = function (env, hostsDict, cdnsDict) {
+            this._env = env || "dev";
+            this._hostsDict = hostsDict || {};
+            this._cdnsDict = cdnsDict || {};
+            this._curCDNIndex = 0;
+        };
+        /**
+         * 让url的域名变成消息域名
+         *
+         * @param {string} url 要转变的url
+         * @param {number} [index=0] host索引，默认0
+         * @returns {string} 转变后的url
+         * @memberof Environment
+         */
+        Environment.prototype.toHostURL = function (url, index) {
+            if (index === void 0) { index = 0; }
+            // 加上domain
+            url = URLUtil_1.wrapHost(url, this.getHost(index));
+            // 统一protocol
+            url = URLUtil_1.validateProtocol(url);
+            // 规整一下
+            url = URLUtil_1.trimURL(url);
+            // 返回url
+            return url;
+        };
+        /**
+         * 让url的域名变成CDN域名
+         *
+         * @param {string} url 要转变的url
+         * @returns {string} 转变后的url
+         * @memberof Environment
+         */
+        Environment.prototype.toCDNHostURL = function (url) {
+            // 加上domain
+            url = URLUtil_1.wrapHost(url, this.curCDNHost);
+            // 统一protocol
+            url = URLUtil_1.validateProtocol(url);
+            // 规整一下
+            url = URLUtil_1.trimURL(url);
+            // 返回url
+            return url;
+        };
+        Environment = __decorate([
+            Injector_9.Injectable
+        ], Environment);
+        return Environment;
+    }());
+    exports.default = Environment;
+    /** 再额外导出一个单例 */
+    exports.environment = Core_13.core.getInject(Environment);
+});
+define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_14, Injector_10) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Explorer类记录浏览器相关数据
+    */
+    /**
+     * 浏览器类型枚举
+     *
+     * @enum {number}
+     */
+    var ExplorerType;
+    (function (ExplorerType) {
+        ExplorerType[ExplorerType["IE"] = 0] = "IE";
+        ExplorerType[ExplorerType["EDGE"] = 1] = "EDGE";
+        ExplorerType[ExplorerType["OPERA"] = 2] = "OPERA";
+        ExplorerType[ExplorerType["FIREFOX"] = 3] = "FIREFOX";
+        ExplorerType[ExplorerType["SAFARI"] = 4] = "SAFARI";
+        ExplorerType[ExplorerType["CHROME"] = 5] = "CHROME";
+        ExplorerType[ExplorerType["OTHERS"] = 6] = "OTHERS";
+    })(ExplorerType = exports.ExplorerType || (exports.ExplorerType = {}));
+    var Explorer = /** @class */ (function () {
+        function Explorer() {
+            //取得浏览器的userAgent字符串
+            var userAgent = navigator.userAgent;
+            // 判断浏览器类型
+            var regExp;
+            var result;
+            if (window["ActiveXObject"] != null) {
+                // IE浏览器
+                this._type = ExplorerType.IE;
+                // 获取IE版本号
+                regExp = new RegExp("MSIE ([^ ;\\)]+);");
+                result = regExp.exec(userAgent);
+                if (result != null) {
+                    // 是IE8以前
+                    this._version = result[1];
+                }
+                else {
+                    // 是IE9以后
+                    regExp = new RegExp("rv:([^ ;\\)]+)");
+                    result = regExp.exec(userAgent);
+                    this._version = result[1];
+                }
+            }
+            else if (userAgent.indexOf("Edge") > -1) {
+                // Edge浏览器
+                this._type = ExplorerType.EDGE;
+                // 获取Edge版本号
+                regExp = new RegExp("Edge/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Firefox") > -1) {
+                // Firefox浏览器
+                this._type = ExplorerType.FIREFOX;
+                // 获取Firefox版本号
+                regExp = new RegExp("Firefox/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Opera") > -1) {
+                // Opera浏览器
+                this._type = ExplorerType.OPERA;
+                // 获取Opera版本号
+                regExp = new RegExp("OPR/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Chrome") > -1) {
+                // Chrome浏览器
+                this._type = ExplorerType.CHROME;
+                // 获取Crhome版本号
+                regExp = new RegExp("Chrome/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else if (userAgent.indexOf("Safari") > -1) {
+                // Safari浏览器
+                this._type = ExplorerType.SAFARI;
+                // 获取Safari版本号
+                regExp = new RegExp("Safari/([^ ;\\)]+)");
+                result = regExp.exec(userAgent);
+                this._version = result[1];
+            }
+            else {
+                // 其他浏览器
+                this._type = ExplorerType.OTHERS;
+                // 随意设置一个版本号
+                this._version = "0.0";
+            }
+            // 赋值类型字符串
+            this._typeStr = ExplorerType[this._type];
+            // 赋值大版本号
+            this._bigVersion = this._version.split(".")[0];
+        }
+        Object.defineProperty(Explorer.prototype, "type", {
+            /**
+             * 获取浏览器类型枚举值
+             *
+             * @readonly
+             * @type {ExplorerType}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._type;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Explorer.prototype, "typeStr", {
+            /**
+             * 获取浏览器类型字符串
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._typeStr;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Explorer.prototype, "version", {
+            /**
+             * 获取浏览器版本
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._version;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Explorer.prototype, "bigVersion", {
+            /**
+             * 获取浏览器大版本
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Explorer
+             */
+            get: function () {
+                return this._bigVersion;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Explorer = __decorate([
+            Injector_10.Injectable
+        ], Explorer);
+        return Explorer;
+    }());
+    exports.default = Explorer;
+    /** 再额外导出一个单例 */
+    exports.explorer = Core_14.core.getInject(Explorer);
+});
+define("engine/env/WindowExternal", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_15, Injector_11) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * External类为window.external参数字典包装类
+    */
+    var WindowExternal = /** @class */ (function () {
+        function WindowExternal() {
+            this._params = {};
+            // 处理window.external
+            try {
+                if (!(window.external && typeof window.external === "object")) {
+                    window.external = {};
+                }
+            }
+            catch (err) {
+                window.external = {};
+            }
+            this._params = window.external;
+        }
+        /**
+         * 获取window.external中的参数
+         *
+         * @param {string} key 参数名
+         * @returns {*} 参数值
+         * @memberof External
+         */
+        WindowExternal.prototype.getParam = function (key) {
+            return this._params[key];
+        };
+        WindowExternal = __decorate([
+            Injector_11.Injectable
+        ], WindowExternal);
+        return WindowExternal;
+    }());
+    exports.default = WindowExternal;
+    /** 再额外导出一个单例 */
+    exports.windowExternal = Core_15.core.getInject(WindowExternal);
+});
+define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_16, Injector_12) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * Hash类是地址路由（网页哈希）管理器，规定哈希格式为：#[模块名]?[参数名]=[参数值]&[参数名]=[参数值]&...
+    */
+    var Hash = /** @class */ (function () {
+        function Hash() {
+            this._params = {};
+            this._direct = false;
+            this._keepHash = false;
+            this._hash = window.location.hash;
+            var reg = /#([^\?&]+)(\?([^\?&=]+=[^\?&=]+)(&([^\?&=]+=[^\?&=]+))*)?/;
+            var result = reg.exec(this._hash);
+            if (result) {
+                // 解析模块名称
+                this._moduleName = result[1];
+                // 解析模块参数
+                var paramsStr = result[2];
+                if (paramsStr != null) {
+                    paramsStr = paramsStr.substr(1);
+                    var params = paramsStr.split("&");
+                    for (var i = 0, len = params.length; i < len; i++) {
+                        var pair = params[i];
+                        if (pair != null) {
+                            var temp = pair.split("=");
+                            // 键和值都要做一次URL解码
+                            var key = decodeURIComponent(temp[0]);
+                            var value = decodeURIComponent(temp[1]);
+                            this._params[key] = value;
+                        }
+                    }
+                }
+                // 处理direct参数
+                this._direct = (this._params.direct == "true");
+                delete this._params.direct;
+                // 处理keepHash参数
+                this._keepHash = (this._params.keepHash == "true");
+                delete this._params.keepHash;
+                // 如果keepHash不是true，则移除哈希值
+                if (!this._keepHash)
+                    window.location.hash = "";
+            }
+        }
+        Object.defineProperty(Hash.prototype, "hash", {
+            /**
+             * 获取原始的哈希字符串
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._hash;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "moduleName", {
+            /**
+             * 获取模块名
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._moduleName;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "params", {
+            /**
+             * 获取传递给模块的参数
+             *
+             * @readonly
+             * @type {{[key:string]:string}}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._params;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "direct", {
+            /**
+             * 获取是否直接跳转模块
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._direct;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Hash.prototype, "keepHash", {
+            /**
+             * 获取是否保持哈希值
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Hash
+             */
+            get: function () {
+                return this._keepHash;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 获取指定哈希参数
+         *
+         * @param {string} key 参数名
+         * @returns {string} 参数值
+         * @memberof Hash
+         */
+        Hash.prototype.getParam = function (key) {
+            return this._params[key];
+        };
+        Hash = __decorate([
+            Injector_12.Injectable
+        ], Hash);
+        return Hash;
+    }());
+    exports.default = Hash;
+    /** 再额外导出一个单例 */
+    exports.hash = Core_16.core.getInject(Hash);
+});
+define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_17, Injector_13) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-05
+     * @modify date 2017-09-05
+     *
+     * Query类记录通过GET参数传递给框架的参数字典
+    */
+    var Query = /** @class */ (function () {
+        function Query() {
+            this._params = {};
+            var loc = window.location.href;
+            var query = loc.substring(loc.search(/\?/) + 1);
+            var vars = query.split('&');
+            for (var i = 0, len = vars.length; i < len; i++) {
+                var pair = vars[i].split('=', 2);
+                if (pair.length != 2 || !pair[0])
+                    continue;
+                var name = pair[0];
+                var value = pair[1];
+                name = decodeURIComponent(name);
+                value = decodeURIComponent(value);
+                // decode twice for ios
+                name = decodeURIComponent(name);
+                value = decodeURIComponent(value);
+                this._params[name] = value;
+            }
+        }
+        /**
+         * 获取GET参数
+         *
+         * @param {string} key 参数key
+         * @returns {string} 参数值
+         * @memberof Query
+         */
+        Query.prototype.getParam = function (key) {
+            return this._params[key];
+        };
+        Query = __decorate([
+            Injector_13.Injectable
+        ], Query);
+        return Query;
+    }());
+    exports.default = Query;
+    /** 再额外导出一个单例 */
+    exports.query = Core_17.core.getInject(Query);
+});
 define("engine/net/HTTPMethod", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/URLUtil", "engine/net/NetManager"], function (require, exports, URLUtil_1, NetManager_2) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/URLUtil", "engine/net/NetManager"], function (require, exports, URLUtil_2, NetManager_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HTTPRequestPolicy = /** @class */ (function () {
@@ -3138,9 +3400,9 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
             var method = params.method || "GET";
             var timeoutId = 0;
             // 取到url
-            var url = URLUtil_1.wrapHost(params.path, params.host, true);
+            var url = URLUtil_2.wrapHost(params.path, params.host, true);
             // 合法化一下protocol
-            url = URLUtil_1.validateProtocol(url);
+            url = URLUtil_2.validateProtocol(url);
             // 生成并初始化xhr
             var xhr = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
             xhr.onreadystatechange = onReadyStateChange;
@@ -3158,7 +3420,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
                         break;
                     case "GET":
                         // 将数据添加到url上
-                        url = URLUtil_1.joinQueryParams(url, params.data);
+                        url = URLUtil_2.joinQueryParams(url, params.data);
                         xhr.open(method, url, true);
                         xhr.send(null);
                         break;
@@ -3179,7 +3441,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
                             if (xhr.status == 200) {
                                 // 成功回调
                                 var result = JSON.parse(xhr.responseText);
-                                NetManager_2.netManager.__onResponse(result, request);
+                                NetManager_3.netManager.__onResponse(result, request);
                             }
                             else if (retryTimes > 0) {
                                 // 没有超过重试上限则重试
@@ -3188,7 +3450,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
                             else {
                                 // 出错回调
                                 var err = new Error(xhr.status + " " + xhr.statusText);
-                                NetManager_2.netManager.__onError(err, request);
+                                NetManager_3.netManager.__onError(err, request);
                             }
                         }
                         catch (err) {
@@ -3212,115 +3474,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
-define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "utils/Dictionary", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_16, ConstructUtil_2, Dictionary_3, NetManager_3, BridgeManager_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 负责注入的模块
-    */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    function ModelClass(cls) {
-        // Model先进行托管
-        var result = ConstructUtil_2.wrapConstruct(cls);
-        // 然后要注入新生成的类
-        Core_16.core.mapInject(result);
-        // 返回结果
-        return result;
-    }
-    exports.ModelClass = ModelClass;
-    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    function MediatorClass(cls) {
-        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-        // 替换setSkin方法
-        var $skin;
-        Object.defineProperty(cls.prototype, "skin", {
-            configurable: true,
-            enumerable: true,
-            get: function () {
-                return $skin;
-            },
-            set: function (value) {
-                // 根据skin类型选取表现层桥
-                this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
-                // 记录值
-                $skin = value;
-            }
-        });
-        return ConstructUtil_2.wrapConstruct(cls);
-    }
-    exports.MediatorClass = MediatorClass;
-    /** 定义模块，支持实例注入 */
-    function ModuleClass(cls) {
-        // 判断一下Module是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-        return ConstructUtil_2.wrapConstruct(cls);
-    }
-    exports.ModuleClass = ModuleClass;
-    /** 处理通讯消息返回 */
-    function ResponseHandler(clsOrType) {
-        return function (prototype, propertyKey, descriptor) {
-            // 监听实例化
-            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
-                NetManager_3.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-                NetManager_3.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-            });
-        };
-    }
-    exports.ResponseHandler = ResponseHandler;
-    ;
-    var _mediatorDict = new Dictionary_3.default();
-    /** 在Module内托管Mediator */
-    function DelegateMediator(prototype, propertyKey) {
-        var mediator;
-        return {
-            configurable: true,
-            enumerable: true,
-            get: function () {
-                return mediator;
-            },
-            set: function (value) {
-                var mediators = _mediatorDict.get(this);
-                if (!mediators) {
-                    _mediatorDict.set(this, mediators = []);
-                    // 监听销毁
-                    ConstructUtil_2.listenDispose(prototype.constructor, function (module) {
-                        // 将所有已托管的中介者同时销毁
-                        for (var i = 0, len = mediators.length; i < len; i++) {
-                            mediators.pop().dispose();
-                        }
-                    });
-                }
-                // 取消托管中介者
-                if (mediator) {
-                    var index = mediators.indexOf(mediator);
-                    if (index >= 0)
-                        mediators.splice(index, 1);
-                }
-                // 设置中介者
-                mediator = value;
-                // 托管新的中介者
-                if (mediator) {
-                    if (mediators.indexOf(mediator) < 0)
-                        mediators.push(mediator);
-                }
-            }
-        };
-    }
-    exports.DelegateMediator = DelegateMediator;
-    ;
-});
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/module/ModuleMessage"], function (require, exports, Core_17, Injector_11, BridgeMessage_2, ModuleManager_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/module/ModuleMessage"], function (require, exports, Core_18, Injector_14, BridgeMessage_2, ModuleManager_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3344,7 +3498,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         Engine.prototype.registerFirstModule = function (cls) {
             this._firstModule = cls;
             // 监听Bridge初始化完毕事件，显示第一个模块
-            Core_17.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+            Core_18.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
         };
         /**
          * 注册程序启动前的Loading DOM节点，当首个模块显示出来后会移除该DOM节点
@@ -3357,15 +3511,15 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         };
         Engine.prototype.onAllBridgesInit = function () {
             // 注销监听
-            Core_17.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+            Core_18.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
             // 监听首个模块开启
-            Core_17.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            Core_18.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
             ModuleManager_1.moduleManager.open(this._firstModule);
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听
-            Core_17.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            Core_18.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 移除loadElement显示
             if (this._loadElement) {
                 var parent = this._loadElement.parentElement;
@@ -3373,15 +3527,15 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             }
         };
         Engine = __decorate([
-            Injector_11.Injectable
+            Injector_14.Injectable
         ], Engine);
         return Engine;
     }());
     exports.default = Engine;
     /** 再额外导出一个单例 */
-    exports.engine = Core_17.core.getInject(Engine);
+    exports.engine = Core_18.core.getInject(Engine);
 });
-define("Olympus", ["require", "exports", "engine/Engine", "engine/bridge/BridgeManager"], function (require, exports, Engine_1, BridgeManager_2) {
+define("Olympus", ["require", "exports", "engine/Engine", "engine/bridge/BridgeManager", "engine/env/Environment"], function (require, exports, Engine_1, BridgeManager_2, Environment_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3407,30 +3561,13 @@ define("Olympus", ["require", "exports", "engine/Engine", "engine/bridge/BridgeM
             Engine_1.engine.registerFirstModule(params.firstModule);
             // 注册加载DOM节点
             Engine_1.engine.registerLoadElement(params.loadElement);
+            // 初始化环境参数
+            Environment_1.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 注册并初始化表现层桥实例
             BridgeManager_2.bridgeManager.registerBridge.apply(BridgeManager_2.bridgeManager, params.bridges);
         };
         return Olympus;
     }());
     exports.default = Olympus;
-});
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-19
- * @modify date 2017-09-19
- *
- * 统一的Injector输出口，所有框架内的装饰器注入方法都可以从这个模块找到
-*/
-define("Injector", ["require", "exports", "core/injector/Injector", "engine/injector/Injector"], function (require, exports, Injector_12, Injector_13) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /** 导出core模组的注入方法 */
-    __export(Injector_12);
-    /** 导出engine模组的注入方法 */
-    __export(Injector_13);
 });
 //# sourceMappingURL=Olympus.js.map

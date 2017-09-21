@@ -10,7 +10,7 @@ import { Injectable } from "../../core/injector/Injector"
  * External类为window.external参数字典包装类
 */
 @Injectable
-export default class External
+export default class WindowExternal
 {
     private _params:{[key:string]:any} = {};
 
@@ -44,4 +44,4 @@ export default class External
     }
 }
 /** 再额外导出一个单例 */
-export const external:External = core.getInject(External);
+export const windowExternal:WindowExternal = core.getInject(WindowExternal);

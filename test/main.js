@@ -127,7 +127,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bridge", "modules/FirstModule", "Olympus"], function (require, exports, Bridge_1, Bridge_2, FirstModule_2, Olympus_1) {
+define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bridge", "modules/FirstModule", "Olympus", "engine/env/WindowExternal", "engine/env/Query", "engine/env/Environment"], function (require, exports, Bridge_1, Bridge_2, FirstModule_2, Olympus_1, WindowExternal_1, Query_1, Environment_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -151,7 +151,21 @@ define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bri
             })
         ],
         firstModule: FirstModule_2.default,
-        loadElement: "loading"
+        loadElement: "loading",
+        env: WindowExternal_1.windowExternal.getParam("server_type") || Query_1.query.getParam("server_type"),
+        hostsDict: {
+            dev: ["http://www.test.17zuoye.net/"],
+            test: ["https://www.test.17zuoye.net/"],
+            staging: ["https://www.staging.17zuoye.net/"],
+            prod: ["https://www.17zuoye.com/"]
+        },
+        cdnsDict: {
+            dev: ["http://cdn-cnc.test.17zuoye.net"],
+            test: ["https://cdn-cnc.test.17zuoye.net/"],
+            staging: ["https://cdn-cnc.staging.17zuoye.net/"],
+            prod: ["https://cdn-cnc.17zuoye.com/"]
+        }
     });
+    console.log(Environment_1.environment.env, Environment_1.environment.getHost(), Environment_1.environment.curCDNHost);
 });
 //# sourceMappingURL=main.js.map

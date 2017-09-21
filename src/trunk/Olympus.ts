@@ -2,6 +2,7 @@ import { engine } from "./engine/Engine";
 import IModuleConstructor from "./engine/module/IModuleConstructor";
 import { bridgeManager } from "./engine/bridge/BridgeManager";
 import IBridge from "./engine/bridge/IBridge";
+import { environment } from "./engine/env/Environment";
 
 /**
  * @author Raykid
@@ -26,6 +27,8 @@ export default class Olympus
         engine.registerFirstModule(params.firstModule);
         // 注册加载DOM节点
         engine.registerLoadElement(params.loadElement);
+        // 初始化环境参数
+        environment.initialize(params.env, params.hostsDict, params.cdnsDict);
         // 注册并初始化表现层桥实例
         bridgeManager.registerBridge(...params.bridges);
     }
@@ -54,4 +57,25 @@ export interface IInitParams
      * @memberof OlympusInitParams
      */
     loadElement?:Element|string;
+    /**
+     * 环境字符串，默认为"dev"
+     * 
+     * @type {string}
+     * @memberof IInitParams
+     */
+    env?:string;
+    /**
+     * 消息域名字典数组，首个字典会被当做默认字典，没传递则会用当前域名代替
+     * 
+     * @type {{[env:string]:string[]}}
+     * @memberof IInitParams
+     */
+    hostsDict?:{[env:string]:string[]};
+    /**
+     * CDN域名列表，若没有提供则使用host代替
+     * 
+     * @type {{[env:string]:string[]}}
+     * @memberof IInitParams
+     */
+    cdnsDict?:{[env:string]:string[]};
 }
