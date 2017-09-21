@@ -177,6 +177,7 @@ export default class NetManager
             var listeners:[ResponseHandler, any, boolean][] = this._responseListeners[type];
             if(listeners)
             {
+                listeners = listeners.concat();
                 for(var listener of listeners)
                 {
                     listener[0].call(listener[1], response, request);

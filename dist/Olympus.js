@@ -558,8 +558,9 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
         Core.prototype.handleMessages = function (msg) {
             var listeners = this._listenerDict[msg.type];
             if (listeners) {
-                for (var i = 0, len = listeners.length; i < len; i++) {
-                    var temp = listeners[i];
+                listeners = listeners.concat();
+                for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
+                    var temp = listeners_1[_i];
                     try {
                         // 调用处理函数
                         if (msg instanceof CommonMessage_1.default)
@@ -687,17 +688,18 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
         };
         Core.prototype.handleCommands = function (msg) {
             var commands = this._commandDict[msg.type];
-            if (!commands)
-                return;
-            for (var i = 0, len = commands.length; i < len; i++) {
-                var cls = commands[i];
-                try {
-                    // 执行命令
-                    var cmd = new cls(msg);
-                    cmd.exec();
-                }
-                catch (error) {
-                    console.error(error);
+            if (commands) {
+                commands = commands.concat();
+                for (var _i = 0, commands_1 = commands; _i < commands_1.length; _i++) {
+                    var cls = commands_1[_i];
+                    try {
+                        // 执行命令
+                        var cmd = new cls(msg);
+                        cmd.exec();
+                    }
+                    catch (error) {
+                        console.error(error);
+                    }
                 }
             }
         };
@@ -2007,8 +2009,8 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             var listeners = this._responseListeners[type];
             if (!listeners)
                 this._responseListeners[type] = listeners = [];
-            for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
-                var listener = listeners_1[_i];
+            for (var _i = 0, listeners_2 = listeners; _i < listeners_2.length; _i++) {
+                var listener = listeners_2[_i];
                 if (handler == listener[0] && thisArg == listener[1] && once == listener[2])
                     return;
             }
@@ -2095,8 +2097,9 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 触发事件形式监听
                 var listeners = this._responseListeners[type];
                 if (listeners) {
-                    for (var _i = 0, listeners_2 = listeners; _i < listeners_2.length; _i++) {
-                        var listener = listeners_2[_i];
+                    listeners = listeners.concat();
+                    for (var _i = 0, listeners_3 = listeners; _i < listeners_3.length; _i++) {
+                        var listener = listeners_3[_i];
                         listener[0].call(listener[1], response, request);
                         // 如果是一次性监听则移除之
                         if (listener[2])

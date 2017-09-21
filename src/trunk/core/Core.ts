@@ -64,9 +64,9 @@ export default class Core implements IDispatcher
         var listeners:IMessageData[] = this._listenerDict[msg.type];
         if(listeners)
         {
-            for(var i:number = 0, len:number = listeners.length; i < len; i++)
+            listeners = listeners.concat();
+            for(var temp of listeners)
             {
-                var temp:IMessageData = listeners[i];
                 try {
                     // 调用处理函数
                     if(msg instanceof CommonMessage)
@@ -230,16 +230,18 @@ export default class Core implements IDispatcher
     private handleCommands(msg:IMessage):void
     {
         var commands:(ICommandConstructor)[] = this._commandDict[msg.type];
-        if(!commands) return;
-        for(var i:number = 0, len:number = commands.length; i < len; i++)
+        if(commands)
         {
-            var cls:ICommandConstructor = commands[i];
-            try {
-                // 执行命令
-                var cmd:Command = new cls(msg);
-                cmd.exec();
-            } catch(error) {
-                console.error(error);
+            commands = commands.concat();
+            for(var cls of commands)
+            {
+                try {
+                    // 执行命令
+                    var cmd:Command = new cls(msg);
+                    cmd.exec();
+                } catch(error) {
+                    console.error(error);
+                }
             }
         }
     }
