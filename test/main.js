@@ -14,6 +14,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal", "engine/env/Query"], function (require, exports, WindowExternal_1, Query_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 初始参数工具，先从windowExternal取，取不到再从query里取
+    */
+    function getParam(key) {
+        return (WindowExternal_1.windowExternal.getParam(key) || Query_1.query.getParam(key));
+    }
+    exports.default = getParam;
+});
 define("modules/SecondModule", ["require", "exports", "engine/module/Module", "Injector"], function (require, exports, Module_1, Injector_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -127,7 +143,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bridge", "modules/FirstModule", "Olympus", "engine/env/WindowExternal", "engine/env/Query", "engine/env/Environment"], function (require, exports, Bridge_1, Bridge_2, FirstModule_2, Olympus_1, WindowExternal_1, Query_1, Environment_1) {
+define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule"], function (require, exports, Bridge_1, Bridge_2, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -152,7 +168,7 @@ define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bri
         ],
         firstModule: FirstModule_2.default,
         loadElement: "loading",
-        env: WindowExternal_1.windowExternal.getParam("server_type") || Query_1.query.getParam("server_type"),
+        env: InitParamsUtil_1.default("server_type"),
         hostsDict: {
             dev: ["http://www.test.17zuoye.net/"],
             test: ["https://www.test.17zuoye.net/"],

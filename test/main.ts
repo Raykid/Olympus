@@ -5,11 +5,12 @@
 
 import DOMBridge from "branches/dom/Bridge";
 import EgretBridge from "branches/egret/Bridge";
-import FirstModule from "./modules/FirstModule";
 import Olympus from "Olympus";
 import { windowExternal } from "engine/env/WindowExternal";
 import { query } from "engine/env/Query";
 import { environment } from "engine/env/Environment";
+import getParam from "./utils/InitParamsUtil"
+import FirstModule from "./modules/FirstModule";
 
 /**
  * @author Raykid
@@ -33,7 +34,7 @@ Olympus.startup({
     ],
     firstModule: FirstModule,
     loadElement: "loading",
-    env: windowExternal.getParam("server_type") || query.getParam("server_type"),
+    env: getParam("server_type"),
     hostsDict: {
         dev: ["http://www.test.17zuoye.net/"],
         test: ["https://www.test.17zuoye.net/"],

@@ -1,5 +1,5 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../core/injector/Injector"
+import { Injectable } from "../../core/injector/Injector";
 
 /**
  * @author Raykid
@@ -17,8 +17,7 @@ export default class Query
     public constructor()
     {
         this._params = {};
-        var loc: string = window.location.href;
-        var query: string = loc.substring(loc.search(/\?/) + 1);
+        var query: string = window.location.search.substr(1);
         var vars: string[] = query.split('&');
         for (var i: number = 0, len: number = vars.length; i < len; i++)
         {
