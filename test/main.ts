@@ -7,6 +7,8 @@ import DOMBridge from "branches/dom/Bridge";
 import EgretBridge from "branches/egret/Bridge";
 import FirstModule from "./modules/FirstModule";
 import Olympus from "Olympus";
+import { core } from "core/Core";
+import { hash } from "engine/env/Hash";
 
 
 /**
@@ -17,8 +19,8 @@ import Olympus from "Olympus";
  * 
  * 测试项目
 */
-Olympus.startup(
-    [
+Olympus.startup({
+    bridges: [
         new DOMBridge("rootDOM"),
         new EgretBridge({
             width: 720,
@@ -29,6 +31,6 @@ Olympus.startup(
             scaleMode: egret.StageScaleMode.SHOW_ALL
         })
     ],
-    FirstModule,
-    "loading"
-);
+    firstModule: FirstModule,
+    loadElement: "loading"
+});

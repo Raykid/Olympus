@@ -17,30 +17,41 @@ export default class Olympus
      * 启动Olympus框架
      * 
      * @static
-     * @param {IBridge[]} bridges 
-     * @param {IModuleConstructor} firstModule 
+     * @param {IInitParams} params 启动参数
      * @memberof Olympus
      */
-    /**
-     * 启动Olympus框架
-     * 
-     * @static
-     * @param {IBridge[]} bridges 表现层桥数组
-     * @param {IModuleConstructor} firstModule 应用程序的首个模块
-     * @param {Element} [loadElement] 会在首个模块被显示出来后从页面中移除
-     * @memberof Olympus
-     */
-    public static startup(
-        bridges:IBridge[],
-        firstModule:IModuleConstructor,
-        loadElement?:Element|string
-    ):void
+    public static startup(params:IInitParams):void
     {
         // 注册首个模块
-        engine.registerFirstModule(firstModule);
+        engine.registerFirstModule(params.firstModule);
         // 注册加载DOM节点
-        engine.registerLoadElement(loadElement);
+        engine.registerLoadElement(params.loadElement);
         // 注册并初始化表现层桥实例
-        bridgeManager.registerBridge(...bridges);
+        bridgeManager.registerBridge(...params.bridges);
     }
+}
+
+export interface IInitParams
+{
+    /**
+     * 表现层桥数组，所有可能用到的表现层桥都要在此实例化并传入
+     * 
+     * @type {IBridge[]}
+     * @memberof OlympusInitParams
+     */
+    bridges:IBridge[];
+    /**
+     * 首模块类型，框架初始化完毕后进入的模块
+     * 
+     * @type {IModuleConstructor}
+     * @memberof OlympusInitParams
+     */
+    firstModule:IModuleConstructor;
+    /**
+     * 会在首个模块被显示出来后从页面中移除
+     * 
+     * @type {(Element|string)}
+     * @memberof OlympusInitParams
+     */
+    loadElement?:Element|string;
 }

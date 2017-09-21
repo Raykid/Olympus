@@ -3399,26 +3399,16 @@ define("Olympus", ["require", "exports", "engine/Engine", "engine/bridge/BridgeM
          * 启动Olympus框架
          *
          * @static
-         * @param {IBridge[]} bridges
-         * @param {IModuleConstructor} firstModule
+         * @param {IInitParams} params 启动参数
          * @memberof Olympus
          */
-        /**
-         * 启动Olympus框架
-         *
-         * @static
-         * @param {IBridge[]} bridges 表现层桥数组
-         * @param {IModuleConstructor} firstModule 应用程序的首个模块
-         * @param {Element} [loadElement] 会在首个模块被显示出来后从页面中移除
-         * @memberof Olympus
-         */
-        Olympus.startup = function (bridges, firstModule, loadElement) {
+        Olympus.startup = function (params) {
             // 注册首个模块
-            Engine_1.engine.registerFirstModule(firstModule);
+            Engine_1.engine.registerFirstModule(params.firstModule);
             // 注册加载DOM节点
-            Engine_1.engine.registerLoadElement(loadElement);
+            Engine_1.engine.registerLoadElement(params.loadElement);
             // 注册并初始化表现层桥实例
-            BridgeManager_2.bridgeManager.registerBridge.apply(BridgeManager_2.bridgeManager, bridges);
+            BridgeManager_2.bridgeManager.registerBridge.apply(BridgeManager_2.bridgeManager, params.bridges);
         };
         return Olympus;
     }());

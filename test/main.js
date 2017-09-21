@@ -138,16 +138,20 @@ define("main", ["require", "exports", "branches/dom/Bridge", "branches/egret/Bri
      *
      * 测试项目
     */
-    Olympus_1.default.startup([
-        new Bridge_1.default("rootDOM"),
-        new Bridge_2.default({
-            width: 720,
-            height: 1280,
-            pathPrefix: "egret/",
-            container: "rootEgret",
-            backgroundColor: 0,
-            scaleMode: egret.StageScaleMode.SHOW_ALL
-        })
-    ], FirstModule_2.default, "loading");
+    Olympus_1.default.startup({
+        bridges: [
+            new Bridge_1.default("rootDOM"),
+            new Bridge_2.default({
+                width: 720,
+                height: 1280,
+                pathPrefix: "egret/",
+                container: "rootEgret",
+                backgroundColor: 0,
+                scaleMode: egret.StageScaleMode.SHOW_ALL
+            })
+        ],
+        firstModule: FirstModule_2.default,
+        loadElement: "loading"
+    });
 });
 //# sourceMappingURL=main.js.map
