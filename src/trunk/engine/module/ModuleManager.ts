@@ -102,7 +102,7 @@ export default class ModuleManager
             // 尚未打开过，正常开启模块
             var target:IModule = new cls();
             // 加载所有已托管中介者的资源
-            var mediators:IMediator[] = target.getDelegatedMediators();
+            var mediators:IMediator[] = target.getDelegatedMediators().concat();
             var loadMediatorAssets:()=>void = ()=>{
                 if(mediators.length > 0)
                 {

@@ -77,6 +77,30 @@ export default class Mediator extends eui.Component implements IMediator
     {
         MediatorProxy.prototype.loadAssets.call(this, handler);
     }
+    
+    /**
+     * 打开
+     * 
+     * @param {*} [data] 
+     * @returns {*} 
+     * @memberof Mediator
+     */
+    public open(data?:any):any
+    {
+        MediatorProxy.prototype.open.call(this, data);
+    }
+
+    /**
+     * 关闭
+     * 
+     * @param {*} [data] 
+     * @returns {*} 
+     * @memberof Mediator
+     */
+    public close(data?:any):any
+    {
+        Mediator.prototype.close.call(this, data);
+    }
 
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

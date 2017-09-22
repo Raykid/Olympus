@@ -1634,6 +1634,26 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             this.bridge.loadAssets(this.listAssets(), handler);
         };
         /**
+         * 打开，为了实现IOpenClose接口
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        Mediator.prototype.open = function (data) {
+            // 暂时啥也不干
+        };
+        /**
+         * 关闭，为了实现IOpenClose接口
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        Mediator.prototype.close = function (data) {
+            // 暂时啥也不干
+        };
+        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
          * @param {*} target 事件目标对象
@@ -2613,7 +2633,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 尚未打开过，正常开启模块
                 var target = new cls();
                 // 加载所有已托管中介者的资源
-                var mediators = target.getDelegatedMediators();
+                var mediators = target.getDelegatedMediators().concat();
                 var loadMediatorAssets = function () {
                     if (mediators.length > 0) {
                         mediators.shift().loadAssets(loadMediatorAssets);
@@ -2831,6 +2851,11 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
          * @memberof Module
          */
         Module.prototype.onOpen = function (data) {
+            // 调用所有已托管中介者的open方法
+            for (var _i = 0, _a = this._mediators; _i < _a.length; _i++) {
+                var mediator = _a[_i];
+                mediator.open(data);
+            }
         };
         /**
          * 关闭模块时调用，可以重写
@@ -2839,6 +2864,11 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
          * @memberof Module
          */
         Module.prototype.onClose = function (data) {
+            // 调用所有已托管中介者的close方法
+            for (var _i = 0, _a = this._mediators; _i < _a.length; _i++) {
+                var mediator = _a[_i];
+                mediator.close(data);
+            }
         };
         /**
          * 模块切换到前台时调用（open之后或者其他模块被关闭时），可以重写

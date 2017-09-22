@@ -112,6 +112,22 @@ declare module "egret/mediator/Mediator" {
          */
         loadAssets(handler: (err?: Error) => void): void;
         /**
+         * 打开
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        open(data?: any): any;
+        /**
+         * 关闭
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        close(data?: any): any;
+        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
          * @param {*} target 事件目标对象

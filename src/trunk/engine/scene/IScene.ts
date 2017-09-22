@@ -1,6 +1,7 @@
 import IDisposable from "../../core/interfaces/IDisposable";
 import IHasBridge from "../bridge/IHasBridge";
 import IScenePolicy from "./IScenePolicy";
+import IOpenClose from "../../core/interfaces/IOpenClose";
 
 /**
  * @author Raykid
@@ -10,7 +11,7 @@ import IScenePolicy from "./IScenePolicy";
  * 
  * 场景接口
 */
-export default interface IScene extends IHasBridge, IDisposable
+export default interface IScene extends IHasBridge, IOpenClose, IDisposable
 {
     /** 显示对象 */
     skin:any;

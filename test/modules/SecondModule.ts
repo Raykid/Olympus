@@ -1,6 +1,6 @@
 import Module from "engine/module/Module";
 import ResponseData from "engine/net/ResponseData";
-import { ModuleClass, DelegateMediator, MediatorClass } from "Injector";
+import { DelegateMediator, MediatorClass } from "Injector";
 import SceneMediator from "egret/mediator/SceneMediator";
 import { moduleManager } from "engine/module/ModuleManager";
 
@@ -12,32 +12,10 @@ import { moduleManager } from "engine/module/ModuleManager";
  * 
  * 测试第二个模块
 */
-@ModuleClass
 export default class SecondModule extends Module
 {
     @DelegateMediator
-    private _mediator:SecondMediator;
-
-    public onOpen(data?:any):void
-    {
-        this._mediator = new SecondMediator();
-        this._mediator.open(data);
-    }
-
-    public onGetResponses(responses:ResponseData[]):void
-    {
-        console.log("second module gotResponse");
-    }
-
-    public onActivate(from:any, data?:any):void
-    {
-        console.log("second module activate");
-    }
-
-    public onClose(data?:any):void
-    {
-        this._mediator.close(data);
-    }
+    private _mediator:SecondMediator = new SecondMediator();
 }
 
 @MediatorClass

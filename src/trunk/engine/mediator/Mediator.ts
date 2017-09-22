@@ -70,6 +70,30 @@ export default class Mediator implements IMediator, IDispatcher
         this.bridge.loadAssets(this.listAssets(), handler);
     }
 
+    /**
+     * 打开，为了实现IOpenClose接口
+     * 
+     * @param {*} [data] 
+     * @returns {*} 
+     * @memberof Mediator
+     */
+    public open(data?:any):any
+    {
+        // 暂时啥也不干
+    }
+
+    /**
+     * 关闭，为了实现IOpenClose接口
+     * 
+     * @param {*} [data] 
+     * @returns {*} 
+     * @memberof Mediator
+     */
+    public close(data?:any):any
+    {
+        // 暂时啥也不干
+    }
+
     private _listeners:ListenerData[] = [];
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

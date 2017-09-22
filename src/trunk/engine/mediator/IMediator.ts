@@ -1,4 +1,5 @@
 import IHasBridge from "../bridge/IHasBridge";
+import IOpenClose from "../../core/interfaces/IOpenClose";
 import IDisposable from "../../core/interfaces/IDisposable";
 
 /**
@@ -9,7 +10,7 @@ import IDisposable from "../../core/interfaces/IDisposable";
  * 
  * 界面中介者接口
 */
-export default interface IMediator extends IHasBridge, IDisposable
+export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
 {
     /**
      * 获取中介者是否已被销毁

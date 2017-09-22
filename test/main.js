@@ -44,27 +44,13 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
     var SecondModule = /** @class */ (function (_super) {
         __extends(SecondModule, _super);
         function SecondModule() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._mediator = new SecondMediator();
+            return _this;
         }
-        SecondModule.prototype.onOpen = function (data) {
-            this._mediator = new SecondMediator();
-            this._mediator.open(data);
-        };
-        SecondModule.prototype.onGetResponses = function (responses) {
-            console.log("second module gotResponse");
-        };
-        SecondModule.prototype.onActivate = function (from, data) {
-            console.log("second module activate");
-        };
-        SecondModule.prototype.onClose = function (data) {
-            this._mediator.close(data);
-        };
         __decorate([
             Injector_1.DelegateMediator
         ], SecondModule.prototype, "_mediator", void 0);
-        SecondModule = __decorate([
-            Injector_1.ModuleClass
-        ], SecondModule);
         return SecondModule;
     }(Module_1.default));
     exports.default = SecondModule;
@@ -98,36 +84,14 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var FirstModule = /** @class */ (function (_super) {
         __extends(FirstModule, _super);
         function FirstModule() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._mediator = new FirstMediator();
+            return _this;
         }
-        FirstModule_1 = FirstModule;
-        FirstModule.prototype.onOpen = function (data) {
-            this._mediator = new FirstMediator();
-            this._mediator.open(data);
-        };
-        FirstModule.prototype.onGetResponses = function (responses) {
-            console.log("first module gotResponse");
-        };
-        FirstModule.prototype.onActivate = function (from, data) {
-            console.log("first module activate");
-        };
-        FirstModule.prototype.onModuleChange = function (from, to) {
-            if (to == FirstModule_1)
-                console.log("change to first module!");
-            else if (to == SecondModule_1.default)
-                console.log("change to second module!");
-        };
         __decorate([
             Injector_2.DelegateMediator
         ], FirstModule.prototype, "_mediator", void 0);
-        __decorate([
-            Injector_2.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
-        ], FirstModule.prototype, "onModuleChange", null);
-        FirstModule = FirstModule_1 = __decorate([
-            Injector_2.ModuleClass
-        ], FirstModule);
         return FirstModule;
-        var FirstModule_1;
     }(Module_2.default));
     exports.default = FirstModule;
     var FirstMediator = /** @class */ (function (_super) {
@@ -145,9 +109,18 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 _this.moduleManager.open(SecondModule_1.default);
             }, this);
         };
+        FirstMediator.prototype.onModuleChange = function (from, to) {
+            if (to == FirstModule)
+                console.log("change to first module!");
+            else if (to == SecondModule_1.default)
+                console.log("change to second module!");
+        };
         __decorate([
             Injector_2.Inject(ModuleManager_2.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
+        __decorate([
+            Injector_2.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
+        ], FirstMediator.prototype, "onModuleChange", null);
         FirstMediator = __decorate([
             Injector_2.MediatorClass
         ], FirstMediator);
@@ -158,7 +131,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_2) {
+define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -181,7 +154,7 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
                 scaleMode: egret.StageScaleMode.SHOW_ALL
             })
         ],
-        firstModule: FirstModule_2.default,
+        firstModule: FirstModule_1.default,
         loadElement: "loading",
         env: InitParamsUtil_1.default("server_type"),
         hostsDict: {

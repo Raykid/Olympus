@@ -1,6 +1,7 @@
 import IDisposable from "../../core/interfaces/IDisposable";
 import IHasBridge from "../bridge/IHasBridge";
 import IPanelPolicy from "./IPanelPolicy";
+import IOpenClose from "../../core/interfaces/IOpenClose";
 
 /**
  * @author Raykid
@@ -10,7 +11,7 @@ import IPanelPolicy from "./IPanelPolicy";
  * 
  * 弹窗接口
 */
-export default interface IPanel extends IHasBridge, IDisposable
+export default interface IPanel extends IHasBridge, IOpenClose, IDisposable
 {
     /** 实际显示对象 */
     skin:any;

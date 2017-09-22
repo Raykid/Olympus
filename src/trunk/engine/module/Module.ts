@@ -66,6 +66,7 @@ export default abstract class Module implements IModule, IDispatcher
     }
 
     private _mediators:IMediator[] = [];
+
     private _disposeDict:Dictionary<IMediator, ()=>void> = new Dictionary();
     private disposeMediator(mediator:IMediator, ...args:any[]):void
     {
@@ -142,6 +143,11 @@ export default abstract class Module implements IModule, IDispatcher
      */
     public onOpen(data?:any):void
     {
+        // 调用所有已托管中介者的open方法
+        for(var mediator of this._mediators)
+        {
+            mediator.open(data);
+        }
     }
 
     /**
@@ -152,6 +158,11 @@ export default abstract class Module implements IModule, IDispatcher
      */
     public onClose(data?:any):void
     {
+        // 调用所有已托管中介者的close方法
+        for(var mediator of this._mediators)
+        {
+            mediator.close(data);
+        }
     }
 
     /**

@@ -211,6 +211,26 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
             Mediator_1.default.prototype.loadAssets.call(this, handler);
         };
         /**
+         * 打开
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        Mediator.prototype.open = function (data) {
+            Mediator_1.default.prototype.open.call(this, data);
+        };
+        /**
+         * 关闭
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        Mediator.prototype.close = function (data) {
+            Mediator.prototype.close.call(this, data);
+        };
+        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
          * @param {*} target 事件目标对象

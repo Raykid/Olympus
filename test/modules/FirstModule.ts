@@ -3,7 +3,7 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
-import { ModuleClass, DelegateMediator, Inject, MessageHandler, MediatorClass } from "Injector";
+import { DelegateMediator, Inject, MessageHandler, MediatorClass } from "Injector";
 import SceneMediator from "egret/mediator/SceneMediator";
 
 /**
@@ -14,34 +14,10 @@ import SceneMediator from "egret/mediator/SceneMediator";
  * 
  * 测试首个模块
 */
-@ModuleClass
 export default class FirstModule extends Module
 {
     @DelegateMediator
-    private _mediator:FirstMediator;
-
-    public onOpen(data?:any):void
-    {
-        this._mediator = new FirstMediator();
-        this._mediator.open(data);
-    }
-
-    public onGetResponses(responses:ResponseData[]):void
-    {
-        console.log("first module gotResponse");
-    }
-
-    public onActivate(from:any, data?:any):void
-    {
-        console.log("first module activate");
-    }
-
-    @MessageHandler(ModuleMessage.MODULE_CHANGE)
-    private onModuleChange(from:any, to:any):void
-    {
-        if(to == FirstModule) console.log("change to first module!");
-        else if(to == SecondModule) console.log("change to second module!");
-    }
+    private _mediator:FirstMediator = new FirstMediator();
 }
 
 @MediatorClass
@@ -69,5 +45,12 @@ class FirstMediator extends SceneMediator
             this.txt.text = "Fuck you!!!";
             this.moduleManager.open(SecondModule);
         }, this);
+    }
+    
+    @MessageHandler(ModuleMessage.MODULE_CHANGE)
+    private onModuleChange(from:any, to:any):void
+    {
+        if(to == FirstModule) console.log("change to first module!");
+        else if(to == SecondModule) console.log("change to second module!");
     }
 }

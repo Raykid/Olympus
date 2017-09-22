@@ -1053,9 +1053,9 @@ declare module "core/interfaces/IOpenClose" {
     */
     export default interface IOpenClose {
         /** 开 */
-        open(...args: any[]): any;
+        open(data?: any, ...args: any[]): any;
         /** 关 */
-        close(...args: any[]): any;
+        close(data?: any, ...args: any[]): any;
     }
 }
 declare module "engine/mediator/IMediator" {
@@ -1417,6 +1417,22 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         loadAssets(handler: (err?: Error) => void): void;
+        /**
+         * 打开，为了实现IOpenClose接口
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        open(data?: any): any;
+        /**
+         * 关闭，为了实现IOpenClose接口
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        close(data?: any): any;
         private _listeners;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
