@@ -1501,12 +1501,12 @@ declare module "engine/panel/IPanel" {
         /** 弹出策略 */
         policy: IPanelPolicy;
         /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
-        pop(data?: any, isModel?: boolean, from?: {
+        open(data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
         }): IPanel;
         /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
-        drop(data?: any, to?: {
+        close(data?: any, to?: {
             x: number;
             y: number;
         }): IPanel;
@@ -1707,12 +1707,10 @@ declare module "engine/scene/IScene" {
         skin: any;
         /** 切换策略 */
         policy: IScenePolicy;
-        /** 切入当前场景（相当于调用SceneManager.switch方法） */
-        switch(data?: any): IScene;
-        /** 推入当前场景（相当于调用SceneManager.push方法） */
-        push(data?: any): IScene;
-        /** 弹出当前场景（相当于调用SceneManager.pop方法） */
-        pop(data?: any): IScene;
+        /** 打开当前场景（相当于调用SceneManager.push方法） */
+        open(data?: any): IScene;
+        /** 关闭当前场景（相当于调用SceneManager.pop方法） */
+        close(data?: any): IScene;
         /**
          * 切入场景开始前调用
          * @param fromScene 从哪个场景切入
@@ -1998,7 +1996,7 @@ declare module "engine/panel/PanelMediator" {
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        pop(data?: any, isModel?: boolean, from?: {
+        open(data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
         }): IPanel;
@@ -2010,7 +2008,7 @@ declare module "engine/panel/PanelMediator" {
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        drop(data?: any, to?: {
+        close(data?: any, to?: {
             x: number;
             y: number;
         }): IPanel;
@@ -2058,29 +2056,21 @@ declare module "engine/scene/SceneMediator" {
         policy: IScenePolicy;
         constructor(skin?: any, policy?: IScenePolicy);
         /**
-         * 切入当前场景（相当于调用SceneManager.switch方法）
+         * 打开当前场景（相当于调用SceneManager.push方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        switch(data?: any): IScene;
+        open(data?: any): IScene;
         /**
-         * 推入当前场景（相当于调用SceneManager.push方法）
+         * 关闭当前场景（相当于调用SceneManager.pop方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        push(data?: any): IScene;
-        /**
-         * 弹出当前场景（相当于调用SceneManager.pop方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        pop(data?: any): IScene;
+        close(data?: any): IScene;
         /**
          * 切入场景开始前调用
          * @param fromScene 从哪个场景切入

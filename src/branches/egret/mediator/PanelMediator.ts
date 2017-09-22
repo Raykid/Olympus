@@ -38,9 +38,9 @@ export default class PanelMediator extends Mediator implements IPanel
      * @returns {IPanel} 弹窗本体
      * @memberof PanelMediator
      */
-    public pop(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel
+    public open(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel
     {
-        return MediatorProxy.prototype.pop.call(this, data, isModel, from);
+        return MediatorProxy.prototype.open.call(this, data, isModel, from);
     }
 
     /**
@@ -51,9 +51,9 @@ export default class PanelMediator extends Mediator implements IPanel
      * @returns {IPanel} 弹窗本体
      * @memberof PanelMediator
      */
-    public drop(data?:any, to?:{x:number, y:number}):IPanel
+    public close(data?:any, to?:{x:number, y:number}):IPanel
     {
-        return MediatorProxy.prototype.drop.call(this, data, to);
+        return MediatorProxy.prototype.close.call(this, data, to);
     }
     
     /** 在弹出前调用的方法 */

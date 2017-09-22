@@ -62,7 +62,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
     }(Module_1.default));
     exports.default = SecondModule;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/mediator/PanelMediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, PanelMediator_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/mediator/SceneMediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, SceneMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -81,7 +81,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         FirstModule_1 = FirstModule;
         FirstModule.prototype.onOpen = function (data) {
             this._mediator = new FirstMediator();
-            this._mediator.pop(data);
+            this._mediator.open(data);
         };
         FirstModule.prototype.onGetResponses = function (responses) {
             console.log("first module gotResponse");
@@ -116,11 +116,11 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         FirstMediator.prototype.listAssets = function () {
             return ["preload"];
         };
-        FirstMediator.prototype.onBeforePop = function () {
+        FirstMediator.prototype.onBeforeIn = function () {
             var _this = this;
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
                 _this.txt.text = "Fuck you!!!";
-                _this.moduleManager.open(SecondModule_1.default, null, true);
+                _this.moduleManager.open(SecondModule_1.default, null);
             }, this);
         };
         __decorate([
@@ -130,7 +130,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             Injector_2.MediatorClass
         ], FirstMediator);
         return FirstMediator;
-    }(PanelMediator_1.default));
+    }(SceneMediator_1.default));
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>

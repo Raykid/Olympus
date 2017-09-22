@@ -190,7 +190,7 @@ declare module "egret/mediator/PanelMediator" {
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        pop(data?: any, isModel?: boolean, from?: {
+        open(data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
         }): IPanel;
@@ -202,7 +202,7 @@ declare module "egret/mediator/PanelMediator" {
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        drop(data?: any, to?: {
+        close(data?: any, to?: {
             x: number;
             y: number;
         }): IPanel;
@@ -250,29 +250,21 @@ declare module "egret/mediator/SceneMediator" {
         policy: IScenePolicy;
         constructor(skin?: any, policy?: IScenePolicy);
         /**
-         * 切入当前场景（相当于调用SceneManager.switch方法）
+         * 打开当前场景（相当于调用SceneManager.push方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        switch(data?: any): IScene;
+        open(data?: any): IScene;
         /**
-         * 推入当前场景（相当于调用SceneManager.push方法）
+         * 关闭当前场景（相当于调用SceneManager.pop方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        push(data?: any): IScene;
-        /**
-         * 弹出当前场景（相当于调用SceneManager.pop方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        pop(data?: any): IScene;
+        close(data?: any): IScene;
         /**
          * 切入场景开始前调用
          * @param fromScene 从哪个场景切入

@@ -28,41 +28,29 @@ export default class SceneMediator extends Mediator implements IScene
         super(skin);
         MediatorProxy.call(this, this, policy);
     }
-    
+
     /**
-     * 切入当前场景（相当于调用SceneManager.switch方法）
+     * 打开当前场景（相当于调用SceneManager.push方法）
      * 
      * @param {*} [data] 数据
      * @returns {IScene} 场景本体
      * @memberof SceneMediator
      */
-    public switch(data?:any):IScene
+    public open(data?:any):IScene
     {
-        return MediatorProxy.prototype.switch.call(this, data);
+        return MediatorProxy.prototype.open.call(this, data);
     }
 
     /**
-     * 推入当前场景（相当于调用SceneManager.push方法）
+     * 关闭当前场景（相当于调用SceneManager.pop方法）
      * 
      * @param {*} [data] 数据
      * @returns {IScene} 场景本体
      * @memberof SceneMediator
      */
-    public push(data?:any):IScene
+    public close(data?:any):IScene
     {
-        return MediatorProxy.prototype.push.call(this, data);
-    }
-
-    /**
-     * 弹出当前场景（相当于调用SceneManager.pop方法）
-     * 
-     * @param {*} [data] 数据
-     * @returns {IScene} 场景本体
-     * @memberof SceneMediator
-     */
-    public pop(data?:any):IScene
-    {
-        return MediatorProxy.prototype.pop.call(this, data);
+        return MediatorProxy.prototype.close.call(this, data);
     }
 
     /**

@@ -4,7 +4,7 @@ import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
 import { ModuleClass, DelegateMediator, Inject, MessageHandler, MediatorClass } from "Injector";
-import PanelMediator from "egret/mediator/PanelMediator";
+import SceneMediator from "egret/mediator/SceneMediator";
 
 /**
  * @author Raykid
@@ -23,7 +23,7 @@ export default class FirstModule extends Module
     public onOpen(data?:any):void
     {
         this._mediator = new FirstMediator();
-        this._mediator.pop(data);
+        this._mediator.open(data);
     }
 
     public onGetResponses(responses:ResponseData[]):void
@@ -45,7 +45,7 @@ export default class FirstModule extends Module
 }
 
 @MediatorClass
-class FirstMediator extends PanelMediator
+class FirstMediator extends SceneMediator
 {
     @Inject(ModuleManager)
     private moduleManager:ModuleManager;
@@ -63,11 +63,11 @@ class FirstMediator extends PanelMediator
         super(FuckSkin);
     }
 
-    public onBeforePop():void
+    public onBeforeIn():void
     {
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
             this.txt.text = "Fuck you!!!";
-            this.moduleManager.open(SecondModule, null, true);
+            this.moduleManager.open(SecondModule, null);
         }, this);
     }
 }

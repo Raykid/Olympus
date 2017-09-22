@@ -17,9 +17,9 @@ export default interface IPanel extends IHasBridge, IDisposable
     /** 弹出策略 */
     policy:IPanelPolicy;
     /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
-    pop(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel;
+    open(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
-    drop(data?:any, to?:{x:number, y:number}):IPanel;
+    close(data?:any, to?:{x:number, y:number}):IPanel;
     /** 在弹出前调用的方法 */
     onBeforePop(data?:any, isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在弹出后调用的方法 */

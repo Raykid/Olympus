@@ -288,8 +288,8 @@ define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Me
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        PanelMediator.prototype.pop = function (data, isModel, from) {
-            return PanelMediator_1.default.prototype.pop.call(this, data, isModel, from);
+        PanelMediator.prototype.open = function (data, isModel, from) {
+            return PanelMediator_1.default.prototype.open.call(this, data, isModel, from);
         };
         /**
          * 关闭当前弹窗（等同于调用PanelManager.drop方法）
@@ -299,8 +299,8 @@ define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Me
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        PanelMediator.prototype.drop = function (data, to) {
-            return PanelMediator_1.default.prototype.drop.call(this, data, to);
+        PanelMediator.prototype.close = function (data, to) {
+            return PanelMediator_1.default.prototype.close.call(this, data, to);
         };
         /** 在弹出前调用的方法 */
         PanelMediator.prototype.onBeforePop = function (data, isModel, from) {
@@ -341,34 +341,24 @@ define("egret/mediator/SceneMediator", ["require", "exports", "engine/scene/Scen
             return _this;
         }
         /**
-         * 切入当前场景（相当于调用SceneManager.switch方法）
+         * 打开当前场景（相当于调用SceneManager.push方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        SceneMediator.prototype.switch = function (data) {
-            return SceneMediator_1.default.prototype.switch.call(this, data);
+        SceneMediator.prototype.open = function (data) {
+            return SceneMediator_1.default.prototype.open.call(this, data);
         };
         /**
-         * 推入当前场景（相当于调用SceneManager.push方法）
+         * 关闭当前场景（相当于调用SceneManager.pop方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        SceneMediator.prototype.push = function (data) {
-            return SceneMediator_1.default.prototype.push.call(this, data);
-        };
-        /**
-         * 弹出当前场景（相当于调用SceneManager.pop方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.pop = function (data) {
-            return SceneMediator_1.default.prototype.pop.call(this, data);
+        SceneMediator.prototype.close = function (data) {
+            return SceneMediator_1.default.prototype.close.call(this, data);
         };
         /**
          * 切入场景开始前调用

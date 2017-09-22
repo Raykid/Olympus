@@ -2375,7 +2375,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        PanelMediator.prototype.pop = function (data, isModel, from) {
+        PanelMediator.prototype.open = function (data, isModel, from) {
             return PanelManager_1.panelManager.pop(this, data, isModel, from);
         };
         /**
@@ -2386,7 +2386,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @returns {IPanel} 弹窗本体
          * @memberof PanelMediator
          */
-        PanelMediator.prototype.drop = function (data, to) {
+        PanelMediator.prototype.close = function (data, to) {
             return PanelManager_1.panelManager.drop(this, data, to);
         };
         /** 在弹出前调用的方法 */
@@ -2428,33 +2428,23 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
             return _this;
         }
         /**
-         * 切入当前场景（相当于调用SceneManager.switch方法）
+         * 打开当前场景（相当于调用SceneManager.push方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        SceneMediator.prototype.switch = function (data) {
-            return SceneManager_2.sceneManager.switch(this, data);
-        };
-        /**
-         * 推入当前场景（相当于调用SceneManager.push方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.push = function (data) {
+        SceneMediator.prototype.open = function (data) {
             return SceneManager_2.sceneManager.push(this, data);
         };
         /**
-         * 弹出当前场景（相当于调用SceneManager.pop方法）
+         * 关闭当前场景（相当于调用SceneManager.pop方法）
          *
          * @param {*} [data] 数据
          * @returns {IScene} 场景本体
          * @memberof SceneMediator
          */
-        SceneMediator.prototype.pop = function (data) {
+        SceneMediator.prototype.close = function (data) {
             return SceneManager_2.sceneManager.pop(this, data);
         };
         /**
