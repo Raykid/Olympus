@@ -20,23 +20,13 @@ import { bridgeManager } from "engine/bridge/BridgeManager";
 */
 export default class Mediator extends eui.Component implements IMediator
 {
-    protected _proxy:MediatorProxy;
-    private _skinName:any;
-
     /**
      * 表现层桥
      * 
      * @type {IBridge}
      * @memberof Mediator
      */
-    public get bridge():IBridge
-    {
-        return this._proxy.bridge;
-    }
-    public set bridge(value:IBridge)
-    {
-        this._proxy.bridge = value;
-    }
+    public bridge:IBridge;
     
     /**
      * 皮肤
@@ -44,15 +34,9 @@ export default class Mediator extends eui.Component implements IMediator
      * @type {*}
      * @memberof Mediator
      */
-    public get skin():any
-    {
-        return this._proxy.skin;
-    }
-    public set skin(value:any)
-    {
-        this._proxy.skin = value;
-    }
+    public skin:any;
     
+    private _disposed:boolean;
     /**
      * 获取中介者是否已被销毁
      * 
@@ -62,21 +46,14 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public get disposed():boolean
     {
-        return this._proxy.disposed;
+        return this._disposed;
     }
     
     public constructor(skin?:any)
     {
         super();
-        this._proxy = new MediatorProxy(this);
-        this._skinName = skin;
-        this.skin = this;
-    }
-
-    public $onAddToStage(stage:egret.Stage, nestLevel:number):void
-    {
-        super.$onAddToStage(stage, nestLevel);
-        this.skinName = this._skinName;
+        MediatorProxy.call(this, this);
+        this.skinName = skin;
     }
 
     /**
@@ -87,7 +64,7 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public listAssets():string[]
     {
-        return this._proxy.listAssets();
+        return MediatorProxy.prototype.listAssets.call(this);
     }
 
     /**
@@ -98,7 +75,7 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public loadAssets(handler:(err?:Error)=>void):void
     {
-        this._proxy.loadAssets(handler);
+        MediatorProxy.prototype.loadAssets.call(this, handler);
     }
 
     /**
@@ -112,7 +89,7 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public mapListener(target:any, type:string, handler:Function, thisArg?:any):void
     {
-        this._proxy.mapListener(target, type, handler, thisArg);
+        MediatorProxy.prototype.mapListener.call(this, target, type, handler, thisArg);
     }
 
     /**
@@ -126,7 +103,7 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public unmapListener(target:any, type:string, handler:Function, thisArg?:any):void
     {
-        this._proxy.unmapListener(target, type, handler, thisArg);
+        MediatorProxy.prototype.unmapListener.call(this, target, type, handler, thisArg);
     }
 
     /**
@@ -136,7 +113,7 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public unmapAllListeners():void
     {
-        this._proxy.unmapAllListeners();
+        MediatorProxy.prototype.unmapAllListeners.call(this);
     }
 
     /**
@@ -156,7 +133,7 @@ export default class Mediator extends eui.Component implements IMediator
     public dispatch(type:string, ...params:any[]):void;
     public dispatch(typeOrMsg:any, ...params:any[]):void
     {
-        this._proxy.dispatch(typeOrMsg, ...params);
+        MediatorProxy.prototype.dispatch.call(this, typeOrMsg, ...params);
     }
 
     /**
@@ -166,6 +143,6 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public dispose():void
     {
-        this._proxy.dispose();
+        MediatorProxy.prototype.dispose.call(this);
     }
 }

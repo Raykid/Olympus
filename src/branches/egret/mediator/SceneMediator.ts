@@ -3,6 +3,7 @@ import MediatorProxy from "engine/scene/SceneMediator";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import Mediator from "./Mediator";
 import { bridgeManager } from "engine/bridge/BridgeManager";
+import { sceneManager } from "engine/scene/SceneManager";
 
 /**
  * @author Raykid
@@ -14,29 +15,18 @@ import { bridgeManager } from "engine/bridge/BridgeManager";
 */
 export default class SceneMediator extends Mediator implements IScene
 {
-    protected _proxy:MediatorProxy;
-
     /**
      * 切换策略
      * 
      * @type {IScenePolicy}
      * @memberof SceneMediator
      */
-    public get policy():IScenePolicy
-    {
-        return this._proxy.policy;
-    }
-    public set policy(value:IScenePolicy)
-    {
-        this._proxy.policy = value;
-    }
+    public policy:IScenePolicy;
     
     public constructor(skin?:any, policy?:IScenePolicy)
     {
         super(skin);
-        this._proxy.dispose();
-        this._proxy = new MediatorProxy(this, policy);
-        this.skin = this;
+        MediatorProxy.call(this, this, policy);
     }
     
     /**
@@ -48,7 +38,7 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public switch(data?:any):IScene
     {
-        return this._proxy.switch.call(this, data);
+        return MediatorProxy.prototype.switch.call(this, data);
     }
 
     /**
@@ -60,7 +50,7 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public push(data?:any):IScene
     {
-        return this._proxy.push.call(this, data);
+        return MediatorProxy.prototype.push.call(this, data);
     }
 
     /**
@@ -72,7 +62,7 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public pop(data?:any):IScene
     {
-        return this._proxy.pop.call(this, data);
+        return MediatorProxy.prototype.pop.call(this, data);
     }
 
     /**
@@ -82,7 +72,7 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public onBeforeIn(fromScene:IScene, data?:any):void
     {
-        // 可重写
+        MediatorProxy.prototype.onBeforeIn.call(this, fromScene, data);
     }
 
     /**
@@ -92,7 +82,7 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public onAfterIn(fromScene:IScene, data?:any):void
     {
-        // 可重写
+        MediatorProxy.prototype.onAfterIn.call(this, fromScene, data);
     }
 
     /**
@@ -102,7 +92,7 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public onBeforeOut(toScene:IScene, data?:any):void
     {
-        // 可重写
+        MediatorProxy.prototype.onBeforeOut.call(this, toScene, data);
     }
     /**
      * 切出场景开始后调用
@@ -111,6 +101,6 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public onAfterOut(toScene:IScene, data?:any):void
     {
-        // 可重写
+        MediatorProxy.prototype.onAfterOut.call(this, toScene, data);
     }
 }

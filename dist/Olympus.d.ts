@@ -1909,7 +1909,7 @@ declare module "engine/panel/PanelManager" {
          * @returns {IPanel} 返回弹窗对象
          * @memberof PanelManager
          */
-        open(panel: IPanel, data?: any, isModel?: boolean, from?: {
+        pop(panel: IPanel, data?: any, isModel?: boolean, from?: {
             x: number;
             y: number;
         }): IPanel;
@@ -1922,7 +1922,7 @@ declare module "engine/panel/PanelManager" {
          * @returns {IPanel} 返回弹窗对象
          * @memberof PanelManager
          */
-        close(panel: IPanel, data?: any, to?: {
+        drop(panel: IPanel, data?: any, to?: {
             x: number;
             y: number;
         }): IPanel;
@@ -1990,7 +1990,7 @@ declare module "engine/panel/PanelMediator" {
         policy: IPanelPolicy;
         constructor(skin?: any, policy?: IPanelPolicy);
         /**
-         * 弹出当前弹窗（等同于调用PanelManager.open方法）
+         * 弹出当前弹窗（等同于调用PanelManager.pop方法）
          *
          * @param {*} [data] 数据
          * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
@@ -2003,7 +2003,7 @@ declare module "engine/panel/PanelMediator" {
             y: number;
         }): IPanel;
         /**
-         * 关闭当前弹窗（等同于调用PanelManager.close方法）
+         * 关闭当前弹窗（等同于调用PanelManager.drop方法）
          *
          * @param {*} [data] 数据
          * @param {{x:number, y:number}} [to] 关闭点坐标

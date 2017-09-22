@@ -45,7 +45,7 @@ export default class PanelManager
      * @returns {IPanel} 返回弹窗对象
      * @memberof PanelManager
      */
-    public open(panel:IPanel, data?:any, isModel:boolean=true, from?:{x:number, y:number}):IPanel
+    public pop(panel:IPanel, data?:any, isModel:boolean=true, from?:{x:number, y:number}):IPanel
     {
         if(this._panels.indexOf(panel) < 0)
         {
@@ -78,7 +78,7 @@ export default class PanelManager
      * @returns {IPanel} 返回弹窗对象
      * @memberof PanelManager
      */
-    public close(panel:IPanel, data?:any, to?:{x:number, y:number}):IPanel
+    public drop(panel:IPanel, data?:any, to?:{x:number, y:number}):IPanel
     {
         var index:number = this._panels.indexOf(panel);
         if(index >= 0)
@@ -161,7 +161,7 @@ export default class PanelManager
         }
         prompt.update(params);
         // 显示并返回弹窗
-        return this.open(prompt);
+        return this.pop(prompt);
     }
 
     /**

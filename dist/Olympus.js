@@ -2199,7 +2199,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
          * @returns {IPanel} 返回弹窗对象
          * @memberof PanelManager
          */
-        PanelManager.prototype.open = function (panel, data, isModel, from) {
+        PanelManager.prototype.pop = function (panel, data, isModel, from) {
             if (isModel === void 0) { isModel = true; }
             if (this._panels.indexOf(panel) < 0) {
                 var policy = panel.policy;
@@ -2231,7 +2231,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
          * @returns {IPanel} 返回弹窗对象
          * @memberof PanelManager
          */
-        PanelManager.prototype.close = function (panel, data, to) {
+        PanelManager.prototype.drop = function (panel, data, to) {
             var index = this._panels.indexOf(panel);
             if (index >= 0) {
                 var policy = panel.policy;
@@ -2293,7 +2293,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             }
             prompt.update(params);
             // 显示并返回弹窗
-            return this.open(prompt);
+            return this.pop(prompt);
         };
         /**
          * 显示警告窗口（只有一个确定按钮）
@@ -2367,7 +2367,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
             return _this;
         }
         /**
-         * 弹出当前弹窗（等同于调用PanelManager.open方法）
+         * 弹出当前弹窗（等同于调用PanelManager.pop方法）
          *
          * @param {*} [data] 数据
          * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
@@ -2376,10 +2376,10 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.pop = function (data, isModel, from) {
-            return PanelManager_1.panelManager.open(this, data, isModel, from);
+            return PanelManager_1.panelManager.pop(this, data, isModel, from);
         };
         /**
-         * 关闭当前弹窗（等同于调用PanelManager.close方法）
+         * 关闭当前弹窗（等同于调用PanelManager.drop方法）
          *
          * @param {*} [data] 数据
          * @param {{x:number, y:number}} [to] 关闭点坐标
@@ -2387,7 +2387,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.drop = function (data, to) {
-            return PanelManager_1.panelManager.close(this, data, to);
+            return PanelManager_1.panelManager.drop(this, data, to);
         };
         /** 在弹出前调用的方法 */
         PanelMediator.prototype.onBeforePop = function (data, isModel, from) {

@@ -63,7 +63,6 @@ declare module "egret/AssetsLoader" {
 declare module "egret/mediator/Mediator" {
     import IMessage from "core/message/IMessage";
     import IMediator from "engine/mediator/IMediator";
-    import MediatorProxy from "engine/mediator/Mediator";
     import IBridge from "engine/bridge/IBridge";
     /**
      * @author Raykid
@@ -74,8 +73,6 @@ declare module "egret/mediator/Mediator" {
      * 由于Egret EUI界面的特殊性，需要一个Mediator的基类来简化业务逻辑
     */
     export default class Mediator extends eui.Component implements IMediator {
-        protected _proxy: MediatorProxy;
-        private _skinName;
         /**
          * 表现层桥
          *
@@ -90,6 +87,7 @@ declare module "egret/mediator/Mediator" {
          * @memberof Mediator
          */
         skin: any;
+        private _disposed;
         /**
          * 获取中介者是否已被销毁
          *
@@ -99,7 +97,6 @@ declare module "egret/mediator/Mediator" {
          */
         readonly disposed: boolean;
         constructor(skin?: any);
-        $onAddToStage(stage: egret.Stage, nestLevel: number): void;
         /**
          * 列出中介者所需的资源数组，可重写
          *
@@ -166,7 +163,6 @@ declare module "egret/mediator/Mediator" {
 declare module "egret/mediator/PanelMediator" {
     import Mediator from "egret/mediator/Mediator";
     import IPanel from "engine/panel/IPanel";
-    import MediatorProxy from "engine/panel/PanelMediator";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     /**
      * @author Raykid
@@ -177,7 +173,6 @@ declare module "egret/mediator/PanelMediator" {
      * Egret的弹窗中介者
     */
     export default class PanelMediator extends Mediator implements IPanel {
-        protected _proxy: MediatorProxy;
         /**
          * 弹出策略
          *
@@ -187,7 +182,7 @@ declare module "egret/mediator/PanelMediator" {
         policy: IPanelPolicy;
         constructor(skin?: any, policy?: IPanelPolicy);
         /**
-         * 弹出当前弹窗（等同于调用PanelManager.open方法）
+         * 弹出当前弹窗（等同于调用PanelManager.pop方法）
          *
          * @param {*} [data] 数据
          * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
@@ -200,7 +195,7 @@ declare module "egret/mediator/PanelMediator" {
             y: number;
         }): IPanel;
         /**
-         * 关闭当前弹窗（等同于调用PanelManager.close方法）
+         * 关闭当前弹窗（等同于调用PanelManager.drop方法）
          *
          * @param {*} [data] 数据
          * @param {{x:number, y:number}} [to] 关闭点坐标
@@ -235,7 +230,6 @@ declare module "egret/mediator/PanelMediator" {
 }
 declare module "egret/mediator/SceneMediator" {
     import IScene from "engine/scene/IScene";
-    import MediatorProxy from "engine/scene/SceneMediator";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import Mediator from "egret/mediator/Mediator";
     /**
@@ -247,7 +241,6 @@ declare module "egret/mediator/SceneMediator" {
      * Egret的场景中介者
     */
     export default class SceneMediator extends Mediator implements IScene {
-        protected _proxy: MediatorProxy;
         /**
          * 切换策略
          *
