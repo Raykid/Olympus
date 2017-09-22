@@ -18,10 +18,11 @@ import PanelMediator from "egret/mediator/PanelMediator";
 export default class FirstModule extends Module
 {
     @DelegateMediator
-    private _mediator:FirstMediator = new FirstMediator();
+    private _mediator:FirstMediator;
 
     public onOpen(data?:any):void
     {
+        this._mediator = new FirstMediator();
         this._mediator.pop(data);
     }
 

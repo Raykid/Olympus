@@ -77,6 +77,6 @@ export default class PanelMediator extends Mediator implements IPanel
     /** 在关闭后调用的方法 */
     public onAfterDrop(data?:any, to?:{x:number, y:number}):void
     {
-        MediatorProxy.prototype.onAfterDrop(this, data, to);
+        MediatorProxy.prototype.onAfterDrop.call(this, data, to);
     }
 }

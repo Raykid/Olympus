@@ -316,7 +316,7 @@ define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Me
         };
         /** 在关闭后调用的方法 */
         PanelMediator.prototype.onAfterDrop = function (data, to) {
-            PanelMediator_1.default.prototype.onAfterDrop(this, data, to);
+            PanelMediator_1.default.prototype.onAfterDrop.call(this, data, to);
         };
         return PanelMediator;
     }(Mediator_2.default));

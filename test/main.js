@@ -76,12 +76,11 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var FirstModule = /** @class */ (function (_super) {
         __extends(FirstModule, _super);
         function FirstModule() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._mediator = new FirstMediator();
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         FirstModule_1 = FirstModule;
         FirstModule.prototype.onOpen = function (data) {
+            this._mediator = new FirstMediator();
             this._mediator.pop(data);
         };
         FirstModule.prototype.onGetResponses = function (responses) {
