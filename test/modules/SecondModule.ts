@@ -1,7 +1,7 @@
 import Module from "engine/module/Module";
 import ResponseData from "engine/net/ResponseData";
 import { DelegateMediator, MediatorClass } from "Injector";
-import SceneMediator from "egret/mediator/SceneMediator";
+import SceneMediator from "egret/scene/SceneMediator";
 import { moduleManager } from "engine/module/ModuleManager";
 
 /**

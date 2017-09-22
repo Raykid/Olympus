@@ -178,7 +178,7 @@ declare module "egret/mediator/Mediator" {
         dispose(): void;
     }
 }
-declare module "egret/mediator/PanelMediator" {
+declare module "egret/panel/PanelMediator" {
     import Mediator from "egret/mediator/Mediator";
     import IPanel from "engine/panel/IPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
@@ -246,7 +246,7 @@ declare module "egret/mediator/PanelMediator" {
         }): void;
     }
 }
-declare module "egret/mediator/SceneMediator" {
+declare module "egret/scene/SceneMediator" {
     import IScene from "engine/scene/IScene";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import Mediator from "egret/mediator/Mediator";

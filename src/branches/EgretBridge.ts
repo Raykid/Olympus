@@ -10,8 +10,8 @@ import ModuleMessage from "engine/module/ModuleMessage";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import Mediator from "./egret/mediator/Mediator";
-import PanelMediator from "./egret/mediator/PanelMediator";
-import SceneMediator from "./egret/mediator/SceneMediator";
+import PanelMediator from "./egret/panel/PanelMediator";
+import SceneMediator from "./egret/scene/SceneMediator";
 
 /**
  * @author Raykid

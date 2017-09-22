@@ -287,7 +287,7 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
     }(eui.Component));
     exports.default = Mediator;
 });
-define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
+define("egret/panel/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -348,7 +348,7 @@ define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Me
     }(Mediator_2.default));
     exports.default = PanelMediator;
 });
-define("egret/mediator/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
+define("egret/scene/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
