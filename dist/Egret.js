@@ -175,7 +175,8 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
             if (callProxy === void 0) { callProxy = true; }
             var _this = _super.call(this) || this;
             callProxy && Mediator_1.default.call(_this, _this);
-            _this.skinName = skin;
+            // skinName不能马上设置（考虑到可能需要预加载资源），延迟到添加显示之前设置
+            _this._skinName = skin;
             return _this;
         }
         Object.defineProperty(Mediator.prototype, "disposed", {
@@ -192,6 +193,10 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
             enumerable: true,
             configurable: true
         });
+        Mediator.prototype.$onAddToStage = function (stage, nestLevel) {
+            this.skinName = this._skinName;
+            _super.prototype.$onAddToStage.call(this, stage, nestLevel);
+        };
         /**
          * 列出中介者所需的资源数组，可重写
          *

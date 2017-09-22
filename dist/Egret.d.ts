@@ -97,6 +97,8 @@ declare module "egret/mediator/Mediator" {
          */
         readonly disposed: boolean;
         constructor(skin?: any, callProxy?: boolean);
+        private _skinName;
+        $onAddToStage(stage: egret.Stage, nestLevel: number): void;
         /**
          * 列出中介者所需的资源数组，可重写
          *
