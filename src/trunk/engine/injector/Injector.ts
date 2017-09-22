@@ -1,3 +1,5 @@
+/// <reference path="./Declaration.ts"/>
+
 import { core } from "../../core/Core";
 import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
 import { IResponseDataConstructor } from "../net/ResponseData";
@@ -25,6 +27,8 @@ export function ModelClass(cls:IConstructor):any
     // 返回结果
     return result;
 }
+// 赋值全局方法
+window["ModelClass"] = ModelClass;
 
 /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
 export function MediatorClass(cls:IConstructor):any
@@ -51,6 +55,8 @@ export function MediatorClass(cls:IConstructor):any
     });
     return wrapConstruct(cls);
 }
+// 赋值全局方法
+window["MediatorClass"] = MediatorClass;
 
 /** 定义模块，支持实例注入 */
 export function ModuleClass(cls:IConstructor):any
@@ -60,6 +66,8 @@ export function ModuleClass(cls:IConstructor):any
         console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
     return wrapConstruct(cls);
 }
+// 赋值全局方法
+window["ModuleClass"] = ModuleClass;
 
 /** 处理通讯消息返回 */
 export function ResponseHandler(clsOrType:IResponseDataConstructor|string):MethodDecorator
@@ -77,7 +85,9 @@ export function ResponseHandler(clsOrType:IResponseDataConstructor|string):Metho
             netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
         });
     };
-};
+}
+// 赋值全局方法
+window["ResponseHandler"] = ResponseHandler;
 
 /** 在Module内托管Mediator */
 export function DelegateMediator(prototype:IModule, propertyKey:string):any
@@ -109,4 +119,6 @@ export function DelegateMediator(prototype:IModule, propertyKey:string):any
             }
         };
     }
-};
+}
+// 赋值全局方法
+window["DelegateMediator"] = DelegateMediator;

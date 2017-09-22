@@ -391,6 +391,7 @@ define("core/interfaces/IDispatcher", ["require", "exports"], function (require,
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+/// <reference path="../global/IConstructor.ts"/>
 /// <reference path="../../core/global/IConstructor.ts"/>
 define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -497,6 +498,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
     }
     exports.listenDispose = listenDispose;
 });
+/// <reference path="./Declaration.ts"/>
 define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil"], function (require, exports, Core_2, ConstructUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -515,6 +517,8 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     }
     exports.Injectable = Injectable;
     ;
+    // 赋值全局方法
+    window["Injectable"] = Injectable;
     /** 赋值注入的实例 */
     function Inject(cls) {
         return function (prototype, propertyKey) {
@@ -530,6 +534,8 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     }
     exports.Inject = Inject;
     ;
+    // 赋值全局方法
+    window["Inject"] = Inject;
     /** 处理内核消息 */
     function MessageHandler(type) {
         return function (prototype, propertyKey, descriptor) {
@@ -545,6 +551,8 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     }
     exports.MessageHandler = MessageHandler;
     ;
+    // 赋值全局方法
+    window["MessageHandler"] = MessageHandler;
 });
 /// <reference path="./global/Patch.ts"/>
 define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, Dictionary_2, CommonMessage_1, CoreMessage_1) {
@@ -952,6 +960,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.bridgeManager = Core_3.core.getInject(BridgeManager);
 });
+/// <reference path="../../core/global/IConstructor.ts"/>
 define("engine/net/DataType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1245,6 +1254,7 @@ define("engine/module/IModule", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+/// <reference path="./Declaration.ts"/>
 define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_5, ConstructUtil_2, NetManager_1, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1266,6 +1276,8 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         return result;
     }
     exports.ModelClass = ModelClass;
+    // 赋值全局方法
+    window["ModelClass"] = ModelClass;
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
     function MediatorClass(cls) {
         // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
@@ -1289,6 +1301,8 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         return ConstructUtil_2.wrapConstruct(cls);
     }
     exports.MediatorClass = MediatorClass;
+    // 赋值全局方法
+    window["MediatorClass"] = MediatorClass;
     /** 定义模块，支持实例注入 */
     function ModuleClass(cls) {
         // 判断一下Module是否有dispose方法，没有的话弹一个警告
@@ -1297,6 +1311,8 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         return ConstructUtil_2.wrapConstruct(cls);
     }
     exports.ModuleClass = ModuleClass;
+    // 赋值全局方法
+    window["ModuleClass"] = ModuleClass;
     /** 处理通讯消息返回 */
     function ResponseHandler(clsOrType) {
         return function (prototype, propertyKey, descriptor) {
@@ -1311,7 +1327,8 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         };
     }
     exports.ResponseHandler = ResponseHandler;
-    ;
+    // 赋值全局方法
+    window["ResponseHandler"] = ResponseHandler;
     /** 在Module内托管Mediator */
     function DelegateMediator(prototype, propertyKey) {
         if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
@@ -1338,7 +1355,8 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         }
     }
     exports.DelegateMediator = DelegateMediator;
-    ;
+    // 赋值全局方法
+    window["DelegateMediator"] = DelegateMediator;
 });
 /**
  * @author Raykid

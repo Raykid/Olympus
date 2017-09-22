@@ -1,3 +1,5 @@
+/// <reference path="./Declaration.ts"/>
+
 import { core } from "../Core";
 import { listenConstruct, listenDispose } from "../../utils/ConstructUtil";
 
@@ -31,6 +33,8 @@ export function Injectable(cls:{type:IConstructor}|IConstructor|string):ClassDec
         core.mapInject(cls as IConstructor);
     }
 };
+// 赋值全局方法
+window["Injectable"] = Injectable;
 
 /** 赋值注入的实例 */
 export function Inject(cls:IConstructor|string):PropertyDecorator
@@ -48,6 +52,8 @@ export function Inject(cls:IConstructor|string):PropertyDecorator
         });
     };
 };
+// 赋值全局方法
+window["Inject"] = Inject;
 
 /** 处理内核消息 */
 export function MessageHandler(type:string):MethodDecorator
@@ -66,3 +72,5 @@ export function MessageHandler(type:string):MethodDecorator
         });
     };
 };
+// 赋值全局方法
+window["MessageHandler"] = MessageHandler;

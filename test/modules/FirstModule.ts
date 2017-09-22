@@ -3,7 +3,6 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
-import { DelegateMediator, Inject, MessageHandler, MediatorClass } from "Injector";
 import SceneMediator from "egret/scene/SceneMediator";
 
 /**

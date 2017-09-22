@@ -294,6 +294,21 @@ declare module "core/interfaces/IDispatcher" {
 interface IConstructor extends Function {
     new (...args: any[]): any;
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-22
+ * @modify date 2017-09-22
+ *
+ * core模组内所有装饰器的全局声明
+*/
+declare function Injectable(cls: IConstructor): void;
+declare function Injectable(name: string): ClassDecorator;
+declare function Injectable(params: {
+    type: IConstructor;
+}): ClassDecorator;
+declare function Inject(cls: IConstructor | string): PropertyDecorator;
+declare function MessageHandler(type: string): MethodDecorator;
 declare module "core/interfaces/IConstructor" {
     export default IConstructor;
 }
@@ -986,6 +1001,19 @@ declare module "engine/bridge/BridgeManager" {
     /** 再额外导出一个单例 */
     export const bridgeManager: BridgeManager;
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-22
+ * @modify date 2017-09-22
+ *
+ * core模组内所有装饰器的全局声明
+*/
+declare function ModelClass(cls: IConstructor): any;
+declare function MediatorClass(cls: IConstructor): any;
+declare function ModuleClass(cls: IConstructor): any;
+declare function ResponseHandler(clsOrType: IConstructor | string): MethodDecorator;
+declare function DelegateMediator(prototype: any, propertyKey: string): any;
 declare module "engine/net/DataType" {
     /**
      * @author Raykid
