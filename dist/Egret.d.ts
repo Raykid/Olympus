@@ -386,9 +386,9 @@ declare module "egret/scene/FadeScenePolicy" {
 }
 declare module "EgretBridge" {
     import IBridge from "engine/bridge/IBridge";
-    import RenderMode from "egret/RenderMode";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
+    import RenderMode from "egret/RenderMode";
     /**
      * @author Raykid
      * @email initial_r@qq.com

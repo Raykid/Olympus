@@ -7,6 +7,8 @@
 import { core } from "core/Core";
 import IBridge from "engine/bridge/IBridge";
 import ModuleMessage from "engine/module/ModuleMessage";
+import IPanelPolicy from "engine/panel/IPanelPolicy";
+import IScenePolicy from "engine/scene/IScenePolicy";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import Mediator from "./egret/mediator/Mediator";
@@ -14,8 +16,6 @@ import PanelMediator from "./egret/panel/PanelMediator";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import SceneMediator from "./egret/scene/SceneMediator";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
-import IPanelPolicy from "engine/panel/IPanelPolicy";
-import IScenePolicy from "engine/scene/IScenePolicy";
 
 /**
  * @author Raykid
@@ -38,7 +38,7 @@ export default class EgretBridge implements IBridge
      */
     public get type():string
     {
-        return "Egret"
+        return "Egret";
     }
 
     /**

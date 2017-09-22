@@ -24,7 +24,7 @@ export default class DOMBridge implements IBridge
      */
     public get type():string
     {
-        return "DOM"
+        return "DOM";
     }
 
     private _root:HTMLElement|string;
