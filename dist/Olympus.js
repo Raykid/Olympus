@@ -1298,26 +1298,28 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     ;
     /** 在Module内托管Mediator */
     function DelegateMediator(prototype, propertyKey) {
-        var mediator;
-        return {
-            configurable: true,
-            enumerable: true,
-            get: function () {
-                return mediator;
-            },
-            set: function (value) {
-                // 取消托管中介者
-                if (mediator) {
-                    this.undelegateMediator(mediator);
+        if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
+            var mediator;
+            return {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                    return mediator;
+                },
+                set: function (value) {
+                    // 取消托管中介者
+                    if (mediator) {
+                        this.undelegateMediator(mediator);
+                    }
+                    // 设置中介者
+                    mediator = value;
+                    // 托管新的中介者
+                    if (mediator) {
+                        this.delegateMediator(mediator);
+                    }
                 }
-                // 设置中介者
-                mediator = value;
-                // 托管新的中介者
-                if (mediator) {
-                    this.delegateMediator(mediator);
-                }
-            }
-        };
+            };
+        }
     }
     exports.DelegateMediator = DelegateMediator;
     ;

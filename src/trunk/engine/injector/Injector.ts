@@ -80,30 +80,33 @@ export function ResponseHandler(clsOrType:IResponseDataConstructor|string):Metho
 };
 
 /** 在Module内托管Mediator */
-export function DelegateMediator(prototype:any, propertyKey:string):any
+export function DelegateMediator(prototype:IModule, propertyKey:string):any
 {
-    var mediator:IMediator;
-    return {
-        configurable: true,
-        enumerable: true,
-        get: function():IMediator
-        {
-            return mediator;
-        },
-        set: function(value:IMediator):void
-        {
-            // 取消托管中介者
-            if(mediator)
+    if(prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function)
+    {
+        var mediator:IMediator;
+        return {
+            configurable: true,
+            enumerable: true,
+            get: function():IMediator
             {
-                this.undelegateMediator(mediator);
-            }
-            // 设置中介者
-            mediator = value;
-            // 托管新的中介者
-            if(mediator)
+                return mediator;
+            },
+            set: function(value:IMediator):void
             {
-                this.delegateMediator(mediator);
+                // 取消托管中介者
+                if(mediator)
+                {
+                    this.undelegateMediator(mediator);
+                }
+                // 设置中介者
+                mediator = value;
+                // 托管新的中介者
+                if(mediator)
+                {
+                    this.delegateMediator(mediator);
+                }
             }
-        }
-    };
+        };
+    }
 };
