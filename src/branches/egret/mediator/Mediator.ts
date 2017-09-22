@@ -49,10 +49,10 @@ export default class Mediator extends eui.Component implements IMediator
         return this._disposed;
     }
     
-    public constructor(skin?:any)
+    public constructor(skin?:any, callProxy:boolean=true)
     {
         super();
-        MediatorProxy.call(this, this);
+        callProxy && MediatorProxy.call(this, this);
         this.skinName = skin;
     }
 

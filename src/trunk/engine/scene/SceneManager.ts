@@ -137,8 +137,7 @@ export default class SceneManager
     private doPop(scene:IScene, data:any):void
     {
         // 如果没有足够的场景储备则什么都不做
-        var length:number = this.activeCount;
-        if(length <= 1)
+        if(this.activeCount <= 1)
         {
             console.log("场景栈中的场景数量不足，无法执行pop操作");
             // 完成步骤
@@ -149,7 +148,7 @@ export default class SceneManager
         var to:IScene = this._sceneStack[1];
         var policy:IScenePolicy = scene.policy;
         var index:number = this._sceneStack.indexOf(scene);
-        if(index != length - 1)
+        if(index != 0)
         {
             to = null;
             policy = none;
@@ -174,10 +173,10 @@ export default class SceneManager
     {
         if(!policy) policy = none;
         // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-        if(!from || to.bridge.type != from.bridge.type)
+        if(!from || !to || to.bridge.type != from.bridge.type)
         {
             from && (from.bridge.htmlWrapper.style.display = "none");
-            to.bridge.htmlWrapper.style.display = "";
+            to && (to.bridge.htmlWrapper.style.display = "");
             policy = none;
         }
         // 获取接口引用
@@ -201,10 +200,10 @@ export default class SceneManager
         // 调用准备接口
         prepareFunc.call(policy, from, to);
         // 添加显示
-        to.bridge.addChild(to.bridge.sceneLayer, to.skin);
+        to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 前置处理
         from && from.onBeforeOut(to, data);
-        to.onBeforeIn(from, data);
+        to && to.onBeforeIn(from, data);
         // 派发事件
         core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, from, to);
         // 调用切换接口
@@ -213,7 +212,7 @@ export default class SceneManager
             from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
             // 后置处理
             from && from.onAfterOut(to, data);
-            to.onAfterIn(from, data);
+            to && to.onAfterIn(from, data);
             // 派发事件
             core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, from, to);
             // 调用回调

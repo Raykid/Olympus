@@ -1213,6 +1213,10 @@ define("engine/bridge/IHasBridge", ["require", "exports"], function (require, ex
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("core/interfaces/IOpenClose", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("engine/mediator/IMediator", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -2077,8 +2081,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
         SceneManager.prototype.doPop = function (scene, data) {
             var _this = this;
             // 如果没有足够的场景储备则什么都不做
-            var length = this.activeCount;
-            if (length <= 1) {
+            if (this.activeCount <= 1) {
                 console.log("场景栈中的场景数量不足，无法执行pop操作");
                 // 完成步骤
                 SyncUtil_1.notify(SYNC_NAME);
@@ -2088,7 +2091,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             var to = this._sceneStack[1];
             var policy = scene.policy;
             var index = this._sceneStack.indexOf(scene);
-            if (index != length - 1) {
+            if (index != 0) {
                 to = null;
                 policy = NoneScenePolicy_1.default;
             }
@@ -2104,9 +2107,9 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (!policy)
                 policy = NoneScenePolicy_1.default;
             // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-            if (!from || to.bridge.type != from.bridge.type) {
+            if (!from || !to || to.bridge.type != from.bridge.type) {
                 from && (from.bridge.htmlWrapper.style.display = "none");
-                to.bridge.htmlWrapper.style.display = "";
+                to && (to.bridge.htmlWrapper.style.display = "");
                 policy = NoneScenePolicy_1.default;
             }
             // 获取接口引用
@@ -2129,10 +2132,10 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             // 调用准备接口
             prepareFunc.call(policy, from, to);
             // 添加显示
-            to.bridge.addChild(to.bridge.sceneLayer, to.skin);
+            to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 前置处理
             from && from.onBeforeOut(to, data);
-            to.onBeforeIn(from, data);
+            to && to.onBeforeIn(from, data);
             // 派发事件
             Core_10.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
             // 调用切换接口
@@ -2141,7 +2144,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                 from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
                 // 后置处理
                 from && from.onAfterOut(to, data);
-                to.onAfterIn(from, data);
+                to && to.onAfterIn(from, data);
                 // 派发事件
                 Core_10.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
                 // 调用回调
@@ -2661,6 +2664,9 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             // 非空判断
             if (!cls)
                 return;
+            // 数量判断，不足一个模块时不关闭
+            if (this.activeCount <= 1)
+                return;
             // 存在性判断
             var index = this.getIndex(cls);
             if (index < 0)
@@ -2688,8 +2694,6 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 调用onClose接口
                 target.onClose(data);
             }
-            // 销毁关闭的模块
-            target.dispose();
         };
         ModuleManager = __decorate([
             Injector_9.Injectable
@@ -2700,7 +2704,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.moduleManager = Core_12.core.getInject(ModuleManager);
 });
-define("engine/module/Module", ["require", "exports", "core/Core"], function (require, exports, Core_13) {
+define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager"], function (require, exports, Core_13, Dictionary_3, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2715,6 +2719,7 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
         function Module() {
             this._disposed = false;
             this._mediators = [];
+            this._disposeDict = new Dictionary_3.default();
         }
         Object.defineProperty(Module.prototype, "disposed", {
             /**
@@ -2757,6 +2762,20 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
         Module.prototype.listInitRequests = function () {
             return null;
         };
+        Module.prototype.disposeMediator = function (mediator) {
+            var args = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                args[_i - 1] = arguments[_i];
+            }
+            // 调用原始销毁方法
+            this._disposeDict.get(mediator).apply(mediator, args);
+            // 取消托管
+            this.undelegateMediator(mediator);
+            // 如果所有已托管的中介者都已经被销毁，则销毁当前模块
+            if (this._mediators.length <= 0)
+                this.dispose();
+        };
+        ;
         /**
          * 托管中介者
          *
@@ -2764,9 +2783,13 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
          * @memberof Module
          */
         Module.prototype.delegateMediator = function (mediator) {
-            // 托管新的中介者
-            if (this._mediators.indexOf(mediator) < 0)
+            if (this._mediators.indexOf(mediator) < 0) {
+                // 托管新的中介者
                 this._mediators.push(mediator);
+                // 篡改dispose方法，以监听其dispose
+                this._disposeDict.set(mediator, mediator.dispose);
+                mediator.dispose = this.disposeMediator.bind(this, mediator);
+            }
         };
         /**
          * 取消托管中介者
@@ -2776,8 +2799,13 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
          */
         Module.prototype.undelegateMediator = function (mediator) {
             var index = this._mediators.indexOf(mediator);
-            if (index >= 0)
+            if (index >= 0) {
+                // 取消托管中介者
                 this._mediators.splice(index, 1);
+                // 恢复dispose方法，取消监听dispose
+                mediator.dispose = this._disposeDict.get(mediator);
+                this._disposeDict.delete(mediator);
+            }
         };
         /**
          * 获取所有已托管的中介者
@@ -2843,9 +2871,17 @@ define("engine/module/Module", ["require", "exports", "core/Core"], function (re
          * @memberof Module
          */
         Module.prototype.dispose = function () {
+            // 关闭自身
+            var cls = this.constructor;
+            ModuleManager_1.moduleManager.close(cls);
+            // 如果没关上则不销毁
+            if (ModuleManager_1.moduleManager.isOpened(cls))
+                return;
             // 将所有已托管的中介者销毁
             for (var i = 0, len = this._mediators.length; i < len; i++) {
-                this._mediators.pop().dispose();
+                var mediator = this._mediators.pop();
+                this.undelegateMediator(mediator);
+                mediator.dispose();
             }
             // 记录
             this._disposed = true;
@@ -3860,7 +3896,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.httpRequestPolicy = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_2, BridgeMessage_2, ModuleManager_1, Environment_1, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3909,7 +3945,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             // 监听首个模块开启
             Core_20.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
-            ModuleManager_1.moduleManager.open(this._firstModule);
+            ModuleManager_2.moduleManager.open(this._firstModule);
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听

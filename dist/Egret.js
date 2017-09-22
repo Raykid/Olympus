@@ -171,9 +171,10 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
     */
     var Mediator = /** @class */ (function (_super) {
         __extends(Mediator, _super);
-        function Mediator(skin) {
+        function Mediator(skin, callProxy) {
+            if (callProxy === void 0) { callProxy = true; }
             var _this = _super.call(this) || this;
-            Mediator_1.default.call(_this, _this);
+            callProxy && Mediator_1.default.call(_this, _this);
             _this.skinName = skin;
             return _this;
         }
@@ -275,7 +276,7 @@ define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Me
     var PanelMediator = /** @class */ (function (_super) {
         __extends(PanelMediator, _super);
         function PanelMediator(skin, policy) {
-            var _this = _super.call(this, skin) || this;
+            var _this = _super.call(this, skin, false) || this;
             PanelMediator_1.default.call(_this, _this, policy);
             return _this;
         }
@@ -336,7 +337,7 @@ define("egret/mediator/SceneMediator", ["require", "exports", "engine/scene/Scen
     var SceneMediator = /** @class */ (function (_super) {
         __extends(SceneMediator, _super);
         function SceneMediator(skin, policy) {
-            var _this = _super.call(this, skin) || this;
+            var _this = _super.call(this, skin, false) || this;
             SceneMediator_1.default.call(_this, _this, policy);
             return _this;
         }

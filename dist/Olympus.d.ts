@@ -1042,8 +1042,25 @@ declare module "engine/bridge/IHasBridge" {
         bridge: IBridge;
     }
 }
+declare module "core/interfaces/IOpenClose" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 可开关的接口
+    */
+    export default interface IOpenClose {
+        /** 开 */
+        open(...args: any[]): any;
+        /** 关 */
+        close(...args: any[]): any;
+    }
+}
 declare module "engine/mediator/IMediator" {
     import IHasBridge from "engine/bridge/IHasBridge";
+    import IOpenClose from "core/interfaces/IOpenClose";
     import IDisposable from "core/interfaces/IDisposable";
     /**
      * @author Raykid
@@ -1053,7 +1070,7 @@ declare module "engine/mediator/IMediator" {
      *
      * 界面中介者接口
     */
-    export default interface IMediator extends IHasBridge, IDisposable {
+    export default interface IMediator extends IHasBridge, IOpenClose, IDisposable {
         /**
          * 获取中介者是否已被销毁
          *
@@ -1487,6 +1504,7 @@ declare module "engine/panel/IPanel" {
     import IDisposable from "core/interfaces/IDisposable";
     import IHasBridge from "engine/bridge/IHasBridge";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
+    import IOpenClose from "core/interfaces/IOpenClose";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1495,7 +1513,7 @@ declare module "engine/panel/IPanel" {
      *
      * 弹窗接口
     */
-    export default interface IPanel extends IHasBridge, IDisposable {
+    export default interface IPanel extends IHasBridge, IOpenClose, IDisposable {
         /** 实际显示对象 */
         skin: any;
         /** 弹出策略 */
@@ -1694,6 +1712,7 @@ declare module "engine/scene/IScene" {
     import IDisposable from "core/interfaces/IDisposable";
     import IHasBridge from "engine/bridge/IHasBridge";
     import IScenePolicy from "engine/scene/IScenePolicy";
+    import IOpenClose from "core/interfaces/IOpenClose";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1702,7 +1721,7 @@ declare module "engine/scene/IScene" {
      *
      * 场景接口
     */
-    export default interface IScene extends IHasBridge, IDisposable {
+    export default interface IScene extends IHasBridge, IOpenClose, IDisposable {
         /** 显示对象 */
         skin: any;
         /** 切换策略 */
@@ -2233,6 +2252,8 @@ declare module "engine/module/Module" {
          */
         listInitRequests(): RequestData[];
         private _mediators;
+        private _disposeDict;
+        private disposeMediator(mediator, ...args);
         /**
          * 托管中介者
          *

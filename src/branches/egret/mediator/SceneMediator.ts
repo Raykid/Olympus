@@ -25,7 +25,7 @@ export default class SceneMediator extends Mediator implements IScene
     
     public constructor(skin?:any, policy?:IScenePolicy)
     {
-        super(skin);
+        super(skin, false);
         MediatorProxy.call(this, this, policy);
     }
 

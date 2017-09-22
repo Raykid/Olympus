@@ -67,7 +67,7 @@ class FirstMediator extends SceneMediator
     {
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
             this.txt.text = "Fuck you!!!";
-            this.moduleManager.open(SecondModule, null);
+            this.moduleManager.open(SecondModule);
         }, this);
     }
 }

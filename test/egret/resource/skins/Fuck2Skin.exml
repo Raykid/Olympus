@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="Fuck2Skin" width="720" height="1280" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+	<e:Image width="506" height="610" x="107" y="102" source="egret_icon_png" anchorOffsetX="0" anchorOffsetY="0"/>
+	<e:Button id="btn" label="返回" x="310" y="856"/>
+</e:Skin>

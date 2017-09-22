@@ -30,7 +30,7 @@ define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal
     }
     exports.default = getParam;
 });
-define("modules/SecondModule", ["require", "exports", "engine/module/Module", "Injector"], function (require, exports, Module_1, Injector_1) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "Injector", "egret/mediator/SceneMediator", "engine/module/ModuleManager"], function (require, exports, Module_1, Injector_1, SceneMediator_1, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -47,7 +47,8 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
             return _super !== null && _super.apply(this, arguments) || this;
         }
         SecondModule.prototype.onOpen = function (data) {
-            console.log("second module open");
+            this._mediator = new SecondMediator();
+            this._mediator.open(data);
         };
         SecondModule.prototype.onGetResponses = function (responses) {
             console.log("second module gotResponse");
@@ -55,14 +56,35 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
         SecondModule.prototype.onActivate = function (from, data) {
             console.log("second module activate");
         };
+        SecondModule.prototype.onClose = function (data) {
+            this._mediator.close(data);
+        };
+        __decorate([
+            Injector_1.DelegateMediator
+        ], SecondModule.prototype, "_mediator", void 0);
         SecondModule = __decorate([
             Injector_1.ModuleClass
         ], SecondModule);
         return SecondModule;
     }(Module_1.default));
     exports.default = SecondModule;
+    var SecondMediator = /** @class */ (function (_super) {
+        __extends(SecondMediator, _super);
+        function SecondMediator() {
+            return _super.call(this, Fuck2Skin) || this;
+        }
+        SecondMediator.prototype.onBeforeIn = function () {
+            this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
+                ModuleManager_1.moduleManager.close(SecondModule);
+            });
+        };
+        SecondMediator = __decorate([
+            Injector_1.MediatorClass
+        ], SecondMediator);
+        return SecondMediator;
+    }(SceneMediator_1.default));
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/mediator/SceneMediator"], function (require, exports, Module_2, ModuleManager_1, SecondModule_1, ModuleMessage_1, Injector_2, SceneMediator_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/mediator/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, Injector_2, SceneMediator_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -120,17 +142,17 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             var _this = this;
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
                 _this.txt.text = "Fuck you!!!";
-                _this.moduleManager.open(SecondModule_1.default, null);
+                _this.moduleManager.open(SecondModule_1.default);
             }, this);
         };
         __decorate([
-            Injector_2.Inject(ModuleManager_1.default)
+            Injector_2.Inject(ModuleManager_2.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
         FirstMediator = __decorate([
             Injector_2.MediatorClass
         ], FirstMediator);
         return FirstMediator;
-    }(SceneMediator_1.default));
+    }(SceneMediator_2.default));
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>

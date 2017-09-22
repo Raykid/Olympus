@@ -96,7 +96,7 @@ declare module "egret/mediator/Mediator" {
          * @memberof Mediator
          */
         readonly disposed: boolean;
-        constructor(skin?: any);
+        constructor(skin?: any, callProxy?: boolean);
         /**
          * 列出中介者所需的资源数组，可重写
          *

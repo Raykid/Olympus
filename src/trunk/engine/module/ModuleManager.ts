@@ -158,6 +158,8 @@ export default class ModuleManager
     {
         // 非空判断
         if(!cls) return;
+        // 数量判断，不足一个模块时不关闭
+        if(this.activeCount <= 1) return;
         // 存在性判断
         var index:number = this.getIndex(cls);
         if(index < 0) return;
@@ -186,8 +188,6 @@ export default class ModuleManager
             // 调用onClose接口
             target.onClose(data);
         }
-        // 销毁关闭的模块
-        target.dispose();
     }
 }
 /** 再额外导出一个单例 */

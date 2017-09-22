@@ -25,7 +25,7 @@ export default class PanelMediator extends Mediator implements IPanel
 
     public constructor(skin?:any, policy?:IPanelPolicy)
     {
-        super(skin);
+        super(skin, false);
         MediatorProxy.call(this, this, policy);
     }
 
