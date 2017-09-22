@@ -30,7 +30,7 @@ define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal
     }
     exports.default = getParam;
 });
-define("modules/SecondModule", ["require", "exports", "engine/module/Module", "Injector", "engine/module/ModuleManager", "egret/scene/SceneMediator"], function (require, exports, Module_1, Injector_1, ModuleManager_1, SceneMediator_1) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "egret/scene/SceneMediator"], function (require, exports, Module_1, ModuleManager_1, SceneMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -49,7 +49,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
             return _this;
         }
         __decorate([
-            Injector_1.DelegateMediator
+            DelegateMediator
         ], SecondModule.prototype, "_mediator", void 0);
         return SecondModule;
     }(Module_1.default));
@@ -65,12 +65,12 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
             });
         };
         SecondMediator = __decorate([
-            Injector_1.MediatorClass
+            MediatorClass
         ], SecondMediator);
         return SecondMediator;
     }(SceneMediator_1.default));
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/scene/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, Injector_2, SceneMediator_2) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "egret/scene/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, SceneMediator_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -89,7 +89,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             return _this;
         }
         __decorate([
-            Injector_2.DelegateMediator
+            DelegateMediator
         ], FirstModule.prototype, "_mediator", void 0);
         return FirstModule;
     }(Module_2.default));
@@ -116,13 +116,13 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 console.log("change to second module!");
         };
         __decorate([
-            Injector_2.Inject(ModuleManager_2.default)
+            Inject(ModuleManager_2.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
-            Injector_2.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
+            MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
         ], FirstMediator.prototype, "onModuleChange", null);
         FirstMediator = __decorate([
-            Injector_2.MediatorClass
+            MediatorClass
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));
