@@ -287,7 +287,7 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
     }(eui.Component));
     exports.default = Mediator;
 });
-define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
+define("egret/panel/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -348,7 +348,121 @@ define("egret/mediator/PanelMediator", ["require", "exports", "egret/mediator/Me
     }(Mediator_2.default));
     exports.default = PanelMediator;
 });
-define("egret/mediator/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-22
+ * @modify date 2017-09-22
+ *
+ * Egret缓动工具集，用来弥补Egret的Tween的不足
+*/
+define("egret/utils/TweenUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function tweenTo(target, props, duration, ease) {
+        return egret.Tween.get(target).to(props, duration, ease);
+    }
+    exports.tweenTo = tweenTo;
+    function tweenFrom(target, props, duration, ease) {
+        // 对换参数状态
+        var toProps = {};
+        for (var key in props) {
+            toProps[key] = target[key];
+            target[key] = props[key];
+        }
+        // 开始缓动
+        return egret.Tween.get(target).to(toProps, duration, ease);
+    }
+    exports.tweenFrom = tweenFrom;
+});
+/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/panel/BackPanelPolicy", ["require", "exports", "egret/utils/TweenUtil"], function (require, exports, TweenUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 回弹效果
+    */
+    var BackPanelPolicy = /** @class */ (function () {
+        function BackPanelPolicy() {
+        }
+        /**
+         * 显示时调用
+         * @param panel 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param from 动画起始点
+         */
+        BackPanelPolicy.prototype.pop = function (panel, callback, from) {
+            // 开始动画弹出
+            var entity = panel.skin;
+            egret.Tween.removeTweens(entity);
+            // 恢复体积
+            entity.scaleX = 1;
+            entity.scaleY = 1;
+            var fromX = 0;
+            var fromY = 0;
+            if (from != null) {
+                fromX = from.x || entity.x;
+                fromY = from.y || entity.y;
+            }
+            else {
+                fromX = entity.x + entity.width * 0.5;
+                fromY = entity.y + entity.height * 0.5;
+            }
+            // 开始缓动
+            TweenUtil_1.tweenFrom(entity, {
+                x: fromX,
+                y: fromY,
+                scaleX: 0,
+                scaleY: 0
+            }, 300, egret.Ease.backOut).call(callback);
+        };
+        /**
+         * 关闭时调用
+         * @param popup 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param to 动画完结点
+         */
+        BackPanelPolicy.prototype.drop = function (panel, callback, to) {
+            // 开始动画关闭
+            var entity = panel.skin;
+            egret.Tween.removeTweens(entity);
+            var toX = 0;
+            var toY = 0;
+            if (to != null) {
+                toX = to.x || entity.x + entity.width * 0.5;
+                toY = to.y || entity.y + entity.height * 0.5;
+            }
+            else {
+                toX = entity.x + entity.width * 0.5;
+                toY = entity.y + entity.height * 0.5;
+            }
+            TweenUtil_1.tweenTo(entity, {
+                x: toX,
+                y: toY,
+                scaleX: 0,
+                scaleY: 0
+            }, 300, egret.Ease.backIn).call(function () {
+                // 恢复体积
+                entity.scaleX = 1;
+                entity.scaleY = 1;
+                if (callback != null)
+                    callback();
+            });
+        };
+        return BackPanelPolicy;
+    }());
+    exports.default = BackPanelPolicy;
+});
+define("egret/scene/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -422,12 +536,92 @@ define("egret/mediator/SceneMediator", ["require", "exports", "engine/scene/Scen
     }(Mediator_3.default));
     exports.default = SceneMediator;
 });
+/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 淡入淡出场景切换策略
+    */
+    var FadeScenePolicy = /** @class */ (function () {
+        function FadeScenePolicy() {
+            this._tempSnapshot = new egret.Bitmap();
+        }
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        FadeScenePolicy.prototype.prepareSwitch = function (from, to) {
+            if (from != null) {
+                var root = from.bridge.root;
+                // 截取当前屏幕
+                var texture = new egret.RenderTexture();
+                texture.drawToTexture(root);
+                this._tempSnapshot.texture = texture;
+                this._tempSnapshot.alpha = 1;
+                root.addChild(this._tempSnapshot);
+                // 移除from
+                var fromDisplay = from.skin;
+                if (fromDisplay.parent != null) {
+                    fromDisplay.parent.removeChild(fromDisplay);
+                }
+            }
+        };
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        FadeScenePolicy.prototype.switch = function (from, to, callback) {
+            if (from != null) {
+                // 开始淡出
+                egret.Tween.removeTweens(this._tempSnapshot);
+                egret.Tween.get(this._tempSnapshot).to({
+                    alpha: 0
+                }, 300).call(function () {
+                    // 移除截屏
+                    if (this._tempSnapshot.parent != null) {
+                        this._tempSnapshot.parent.removeChild(this._tempSnapshot);
+                    }
+                    // 回收资源
+                    if (this._tempSnapshot.texture != null) {
+                        this._tempSnapshot.texture.dispose();
+                        this._tempSnapshot.texture = null;
+                    }
+                    // 调用回调
+                    callback();
+                }, this);
+            }
+            else {
+                // 移除截屏
+                if (this._tempSnapshot.parent != null) {
+                    this._tempSnapshot.parent.removeChild(this._tempSnapshot);
+                }
+                // 调用回调
+                callback();
+            }
+        };
+        return FadeScenePolicy;
+    }());
+    exports.default = FadeScenePolicy;
+});
 /// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
 /// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
 /// <reference path="./egret/egret-core/build/res/res.d.ts"/>
 /// <reference path="./egret/egret-core/build/tween/tween.d.ts"/>
 /// <reference path="../../dist/Olympus.d.ts"/>
-define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1) {
+define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -440,6 +634,8 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
     */
     var EgretBridge = /** @class */ (function () {
         function EgretBridge(params) {
+            this._defaultPanelPolicy = new BackPanelPolicy_1.default();
+            this._defaultScenePolicy = new FadeScenePolicy_1.default();
             this._initParams = params;
         }
         Object.defineProperty(EgretBridge.prototype, "type", {
@@ -536,6 +732,34 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
              */
             get: function () {
                 return this._topLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "defaultPanelPolicy", {
+            /**
+             * 获取默认弹窗策略
+             *
+             * @readonly
+             * @type {IPanelPolicy}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._defaultPanelPolicy;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "defaultScenePolicy", {
+            /**
+             * 获取默认场景切换策略
+             *
+             * @readonly
+             * @type {IScenePolicy}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._defaultScenePolicy;
             },
             enumerable: true,
             configurable: true
@@ -658,7 +882,10 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
          * @memberof EgretBridge
          */
         EgretBridge.prototype.addChild = function (parent, target) {
-            return parent.addChild(target);
+            if (parent && target)
+                return parent.addChild(target);
+            else
+                return target;
         };
         /**
          * 按索引添加显示
@@ -670,7 +897,10 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
          * @memberof EgretBridge
          */
         EgretBridge.prototype.addChildAt = function (parent, target, index) {
-            return parent.addChildAt(target, index);
+            if (parent && target)
+                return parent.addChildAt(target, index);
+            else
+                return target;
         };
         /**
          * 移除显示对象
@@ -681,7 +911,10 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
          * @memberof EgretBridge
          */
         EgretBridge.prototype.removeChild = function (parent, target) {
-            return parent.removeChild(target);
+            if (parent && target && target.parent == parent)
+                return parent.removeChild(target);
+            else
+                return target;
         };
         /**
          * 按索引移除显示

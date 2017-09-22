@@ -1,3 +1,6 @@
+import IPanelPolicy from "../panel/IPanelPolicy";
+import IScenePolicy from "../scene/IScenePolicy";
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -64,6 +67,22 @@ export default interface IBridge
      * @memberof IBridge
      */
     readonly topLayer:any;
+    /**
+     * 获取默认弹窗策略
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof IBridge
+     */
+    readonly defaultPanelPolicy:IPanelPolicy;
+    /**
+     * 获取场景切换策略
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof IBridge
+     */
+    readonly defaultScenePolicy:IScenePolicy;
     /**
      * 判断传入的skin是否是属于该表现层桥的
      * 

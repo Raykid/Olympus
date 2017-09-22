@@ -757,6 +757,34 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
     /** 再额外导出一个单例 */
     exports.core = new Core();
 });
+define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/interfaces/IOpenClose", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/panel/IPanel", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/panel/IPanelPolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/scene/IScene", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/scene/IScenePolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("engine/bridge/IBridge", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1204,18 +1232,6 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
     exports.default = NetManager;
     /** 再额外导出一个单例 */
     exports.netManager = Core_4.core.getInject(NetManager);
-});
-define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("core/interfaces/IOpenClose", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/mediator/IMediator", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -1744,14 +1760,6 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
     }());
     exports.default = Mediator;
 });
-define("engine/panel/IPanelPolicy", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/panel/IPanel", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("engine/panel/NonePanelPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1844,14 +1852,6 @@ define("engine/panel/IPromptPanel", ["require", "exports"], function (require, e
         ButtonType[ButtonType["normal"] = 0] = "normal";
         ButtonType[ButtonType["important"] = 1] = "important";
     })(ButtonType = exports.ButtonType || (exports.ButtonType = {}));
-});
-define("engine/scene/IScenePolicy", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/scene/IScene", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/scene/NoneScenePolicy", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -2064,7 +2064,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (this.activeCount == 0)
                 return this.push(scene, data);
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy, ChangeType.Switch, function () { return _this._sceneStack[0] = scene; });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Switch, function () { return _this._sceneStack[0] = scene; });
             return scene;
         };
         /**
@@ -2081,7 +2081,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (scene == null)
                 return scene;
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy, ChangeType.Push, function () { return _this._sceneStack.unshift(scene); });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Push, function () { return _this._sceneStack.unshift(scene); });
             return scene;
         };
         /**
@@ -2111,7 +2111,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             }
             // 验证是否是当前场景，不是则直接移除，不使用Policy
             var to = this._sceneStack[1];
-            var policy = scene.policy;
+            var policy = scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default;
             var index = this._sceneStack.indexOf(scene);
             if (index != 0) {
                 to = null;
@@ -2126,8 +2126,6 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             });
         };
         SceneManager.prototype.doChange = function (from, to, data, policy, type, complete) {
-            if (!policy)
-                policy = NoneScenePolicy_1.default;
             // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
             if (!from || !to || to.bridge.type != from.bridge.type) {
                 from && (from.bridge.htmlWrapper.style.display = "none");
@@ -2227,9 +2225,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
         PanelManager.prototype.pop = function (panel, data, isModel, from) {
             if (isModel === void 0) { isModel = true; }
             if (this._panels.indexOf(panel) < 0) {
-                var policy = panel.policy;
-                if (policy == null)
-                    policy = NonePanelPolicy_1.default;
+                var policy = panel.policy || panel.bridge.defaultPanelPolicy || NonePanelPolicy_1.default;
                 // 添加显示
                 var bridge = panel.bridge;
                 bridge.addChild(bridge.panelLayer, panel.skin);
@@ -2244,6 +2240,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 派发消息
                     Core_11.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
                 }, from);
+                // 记录
+                this._panels.push(panel);
             }
             return panel;
         };
@@ -2259,9 +2257,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
         PanelManager.prototype.drop = function (panel, data, to) {
             var index = this._panels.indexOf(panel);
             if (index >= 0) {
-                var policy = panel.policy;
-                if (policy == null)
-                    policy = NonePanelPolicy_1.default;
+                var policy = panel.policy || panel.bridge.defaultPanelPolicy || NonePanelPolicy_1.default;
                 // 调用回调
                 panel.onBeforeDrop(data, to);
                 // 派发消息
@@ -2278,6 +2274,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 销毁弹窗
                     panel.dispose();
                 }, to);
+                // 移除记录
+                this._panels.splice(index, 1);
             }
             return panel;
         };

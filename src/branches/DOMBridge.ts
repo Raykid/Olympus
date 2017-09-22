@@ -2,6 +2,8 @@
 
 import IBridge from "engine/bridge/IBridge";
 import { getObjectHashs } from "utils/ObjectUtil";
+import IPanelPolicy from "engine/panel/IPanelPolicy";
+import IScenePolicy from "engine/scene/IScenePolicy";
 
 /**
  * @author Raykid
@@ -96,6 +98,30 @@ export default class DOMBridge implements IBridge
     public get topLayer():HTMLElement
     {
         return <HTMLElement>this._root;
+    }
+    
+    /**
+     * 获取默认弹窗策略
+     * 
+     * @readonly
+     * @type {IPanelPolicy}
+     * @memberof EgretBridge
+     */
+    public get defaultPanelPolicy():IPanelPolicy
+    {
+        return null;
+    }
+
+    /**
+     * 获取默认场景切换策略
+     * 
+     * @readonly
+     * @type {IScenePolicy}
+     * @memberof EgretBridge
+     */
+    public get defaultScenePolicy():IScenePolicy
+    {
+        return null;
     }
     
     public constructor(root?:HTMLElement|string)

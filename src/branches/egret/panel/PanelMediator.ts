@@ -1,4 +1,4 @@
-import Mediator from "./Mediator";
+import Mediator from "../mediator/Mediator";
 import IPanel from "engine/panel/IPanel";
 import MediatorProxy from "engine/panel/PanelMediator";
 import IPanelPolicy from "engine/panel/IPanelPolicy";

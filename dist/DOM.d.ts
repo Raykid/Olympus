@@ -1,6 +1,8 @@
 /// <reference path="Olympus.d.ts" />
 declare module "DOMBridge" {
     import IBridge from "engine/bridge/IBridge";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
+    import IScenePolicy from "engine/scene/IScenePolicy";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -67,6 +69,22 @@ declare module "DOMBridge" {
          * @memberof DOMBridge
          */
         readonly topLayer: HTMLElement;
+        /**
+         * 获取默认弹窗策略
+         *
+         * @readonly
+         * @type {IPanelPolicy}
+         * @memberof EgretBridge
+         */
+        readonly defaultPanelPolicy: IPanelPolicy;
+        /**
+         * 获取默认场景切换策略
+         *
+         * @readonly
+         * @type {IScenePolicy}
+         * @memberof EgretBridge
+         */
+        readonly defaultScenePolicy: IScenePolicy;
         constructor(root?: HTMLElement | string);
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化

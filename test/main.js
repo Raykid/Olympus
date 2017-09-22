@@ -30,7 +30,7 @@ define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal
     }
     exports.default = getParam;
 });
-define("modules/SecondModule", ["require", "exports", "engine/module/Module", "Injector", "egret/mediator/SceneMediator", "engine/module/ModuleManager"], function (require, exports, Module_1, Injector_1, SceneMediator_1, ModuleManager_1) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "Injector", "engine/module/ModuleManager", "egret/scene/SceneMediator"], function (require, exports, Module_1, Injector_1, ModuleManager_1, SceneMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -70,7 +70,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "I
         return SecondMediator;
     }(SceneMediator_1.default));
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/mediator/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, Injector_2, SceneMediator_2) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "Injector", "egret/scene/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, Injector_2, SceneMediator_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

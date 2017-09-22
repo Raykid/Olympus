@@ -77,7 +77,7 @@ export default class SceneManager
             this.currentScene,
             scene,
             data,
-            scene.policy,
+            scene.policy || scene.bridge.defaultScenePolicy || none,
             ChangeType.Switch,
             ()=>this._sceneStack[0] = scene
         );
@@ -104,7 +104,7 @@ export default class SceneManager
             this.currentScene,
             scene,
             data,
-            scene.policy,
+            scene.policy || scene.bridge.defaultScenePolicy || none,
             ChangeType.Push,
             ()=>this._sceneStack.unshift(scene)
         );
@@ -146,7 +146,7 @@ export default class SceneManager
         }
         // 验证是否是当前场景，不是则直接移除，不使用Policy
         var to:IScene = this._sceneStack[1];
-        var policy:IScenePolicy = scene.policy;
+        var policy:IScenePolicy = scene.policy || scene.bridge.defaultScenePolicy || none;
         var index:number = this._sceneStack.indexOf(scene);
         if(index != 0)
         {
@@ -171,7 +171,6 @@ export default class SceneManager
     
     private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, complete:()=>void):void
     {
-        if(!policy) policy = none;
         // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
         if(!from || !to || to.bridge.type != from.bridge.type)
         {

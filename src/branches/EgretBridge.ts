@@ -10,8 +10,12 @@ import ModuleMessage from "engine/module/ModuleMessage";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import Mediator from "./egret/mediator/Mediator";
-import PanelMediator from "./egret/mediator/PanelMediator";
-import SceneMediator from "./egret/mediator/SceneMediator";
+import PanelMediator from "./egret/panel/PanelMediator";
+import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
+import SceneMediator from "./egret/scene/SceneMediator";
+import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
+import IPanelPolicy from "engine/panel/IPanelPolicy";
+import IScenePolicy from "engine/scene/IScenePolicy";
 
 /**
  * @author Raykid
@@ -112,6 +116,32 @@ export default class EgretBridge implements IBridge
     public get topLayer():egret.DisplayObjectContainer
     {
         return this._topLayer;
+    }
+
+    private _defaultPanelPolicy:IPanelPolicy = new BackPanelPolicy();
+    /**
+     * 获取默认弹窗策略
+     * 
+     * @readonly
+     * @type {IPanelPolicy}
+     * @memberof EgretBridge
+     */
+    public get defaultPanelPolicy():IPanelPolicy
+    {
+        return this._defaultPanelPolicy;
+    }
+
+    private _defaultScenePolicy:IScenePolicy = new FadeScenePolicy();
+    /**
+     * 获取默认场景切换策略
+     * 
+     * @readonly
+     * @type {IScenePolicy}
+     * @memberof EgretBridge
+     */
+    public get defaultScenePolicy():IScenePolicy
+    {
+        return this._defaultScenePolicy;
     }
     
     public constructor(params:IInitParams)
@@ -264,7 +294,10 @@ export default class EgretBridge implements IBridge
      */
     public addChild(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):egret.DisplayObject
     {
-        return parent.addChild(target);
+        if(parent && target)
+            return parent.addChild(target);
+        else
+            return target;
     }
 
     /**
@@ -278,7 +311,10 @@ export default class EgretBridge implements IBridge
      */
     public addChildAt(parent:egret.DisplayObjectContainer, target:egret.DisplayObject, index:number):egret.DisplayObject
     {
-        return parent.addChildAt(target, index);
+        if(parent && target)
+            return parent.addChildAt(target, index);
+        else
+            return target;
     }
     
     /**
@@ -291,7 +327,10 @@ export default class EgretBridge implements IBridge
      */
     public removeChild(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):egret.DisplayObject
     {
-        return parent.removeChild(target);
+        if(parent && target && target.parent == parent)
+            return parent.removeChild(target);
+        else
+            return target;
     }
 
     /**

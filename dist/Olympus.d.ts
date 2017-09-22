@@ -462,7 +462,241 @@ declare module "core/Core" {
     /** 再额外导出一个单例 */
     export const core: Core;
 }
+declare module "core/interfaces/IDisposable" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 可回收接口
+    */
+    export default interface IDisposable {
+        /** 是否已经被销毁 */
+        readonly disposed: boolean;
+        /** 销毁 */
+        dispose(): void;
+    }
+}
+declare module "engine/bridge/IHasBridge" {
+    import IBridge from "engine/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 标识拥有表现层桥的接口
+    */
+    export default interface IHasMediatorBridge {
+        /**
+         * 表现层桥
+         */
+        bridge: IBridge;
+    }
+}
+declare module "core/interfaces/IOpenClose" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 可开关的接口
+    */
+    export default interface IOpenClose {
+        /** 开 */
+        open(data?: any, ...args: any[]): any;
+        /** 关 */
+        close(data?: any, ...args: any[]): any;
+    }
+}
+declare module "engine/panel/IPanel" {
+    import IDisposable from "core/interfaces/IDisposable";
+    import IHasBridge from "engine/bridge/IHasBridge";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
+    import IOpenClose from "core/interfaces/IOpenClose";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 弹窗接口
+    */
+    export default interface IPanel extends IHasBridge, IOpenClose, IDisposable {
+        /** 实际显示对象 */
+        skin: any;
+        /** 弹出策略 */
+        policy: IPanelPolicy;
+        /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
+        open(data?: any, isModel?: boolean, from?: {
+            x: number;
+            y: number;
+        }): IPanel;
+        /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
+        close(data?: any, to?: {
+            x: number;
+            y: number;
+        }): IPanel;
+        /** 在弹出前调用的方法 */
+        onBeforePop(data?: any, isModel?: boolean, from?: {
+            x: number;
+            y: number;
+        }): void;
+        /** 在弹出后调用的方法 */
+        onAfterPop(data?: any, isModel?: boolean, from?: {
+            x: number;
+            y: number;
+        }): void;
+        /** 在关闭前调用的方法 */
+        onBeforeDrop(data?: any, to?: {
+            x: number;
+            y: number;
+        }): void;
+        /** 在关闭后调用的方法 */
+        onAfterDrop(data?: any, to?: {
+            x: number;
+            y: number;
+        }): void;
+    }
+}
+declare module "engine/panel/IPanelPolicy" {
+    import IPanel from "engine/panel/IPanel";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 弹窗动画策略，负责将弹窗动画与弹窗实体解耦
+    */
+    export default interface IPanelPolicy {
+        /**
+         * 显示时调用
+         * @param panel 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param from 动画起始点
+         */
+        pop(panel: IPanel, callback: () => void, from?: {
+            x: number;
+            y: number;
+        }): void;
+        /**
+         * 关闭时调用
+         * @param panel 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param to 动画完结点
+         */
+        drop(panel: IPanel, callback: () => void, to?: {
+            x: number;
+            y: number;
+        }): void;
+    }
+}
+declare module "engine/scene/IScene" {
+    import IDisposable from "core/interfaces/IDisposable";
+    import IHasBridge from "engine/bridge/IHasBridge";
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    import IOpenClose from "core/interfaces/IOpenClose";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景接口
+    */
+    export default interface IScene extends IHasBridge, IOpenClose, IDisposable {
+        /** 显示对象 */
+        skin: any;
+        /** 切换策略 */
+        policy: IScenePolicy;
+        /** 打开当前场景（相当于调用SceneManager.push方法） */
+        open(data?: any): IScene;
+        /** 关闭当前场景（相当于调用SceneManager.pop方法） */
+        close(data?: any): IScene;
+        /**
+         * 切入场景开始前调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        onBeforeIn(fromScene: IScene, data?: any): void;
+        /**
+         * 切入场景开始后调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        onAfterIn(fromScene: IScene, data?: any): void;
+        /**
+         * 切出场景开始前调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        onBeforeOut(toScene: IScene, data?: any): void;
+        /**
+         * 切出场景开始后调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        onAfterOut(toScene: IScene, data?: any): void;
+    }
+}
+declare module "engine/scene/IScenePolicy" {
+    import IScene from "engine/scene/IScene";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景动画策略，负责将场景动画与场景实体解耦
+    */
+    export default interface IScenePolicy {
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        prepareSwitch(from: IScene, to: IScene): void;
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        switch(from: IScene, to: IScene, callback: () => void): void;
+        /**
+         * 准备Push场景时调度，如果没有定义该方法则套用PrepareSwitch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        preparePush?(from: IScene, to: IScene): void;
+        /**
+         * Push场景时调度，如果没有定义该方法则套用switch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        push?(from: IScene, to: IScene, callback: () => void): void;
+        /**
+         * 准备Pop场景时调度，如果没有定义该方法则套用PrepareSwitch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        preparePop?(from: IScene, to: IScene): void;
+        /**
+         * Pop场景时调度，如果没有定义该方法则套用switch
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        pop?(from: IScene, to: IScene, callback: () => void): void;
+    }
+}
 declare module "engine/bridge/IBridge" {
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
+    import IScenePolicy from "engine/scene/IScenePolicy";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -528,6 +762,22 @@ declare module "engine/bridge/IBridge" {
          * @memberof IBridge
          */
         readonly topLayer: any;
+        /**
+         * 获取默认弹窗策略
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly defaultPanelPolicy: IPanelPolicy;
+        /**
+         * 获取场景切换策略
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly defaultScenePolicy: IScenePolicy;
         /**
          * 判断传入的skin是否是属于该表现层桥的
          *
@@ -1009,55 +1259,6 @@ declare module "engine/net/NetManager" {
     /** 再额外导出一个单例 */
     export const netManager: NetManager;
 }
-declare module "core/interfaces/IDisposable" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 可回收接口
-    */
-    export default interface IDisposable {
-        /** 是否已经被销毁 */
-        readonly disposed: boolean;
-        /** 销毁 */
-        dispose(): void;
-    }
-}
-declare module "engine/bridge/IHasBridge" {
-    import IBridge from "engine/bridge/IBridge";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 标识拥有表现层桥的接口
-    */
-    export default interface IHasMediatorBridge {
-        /**
-         * 表现层桥
-         */
-        bridge: IBridge;
-    }
-}
-declare module "core/interfaces/IOpenClose" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-22
-     * @modify date 2017-09-22
-     *
-     * 可开关的接口
-    */
-    export default interface IOpenClose {
-        /** 开 */
-        open(data?: any, ...args: any[]): any;
-        /** 关 */
-        close(data?: any, ...args: any[]): any;
-    }
-}
 declare module "engine/mediator/IMediator" {
     import IHasBridge from "engine/bridge/IHasBridge";
     import IOpenClose from "core/interfaces/IOpenClose";
@@ -1484,89 +1685,6 @@ declare module "engine/mediator/Mediator" {
         dispose(): void;
     }
 }
-declare module "engine/panel/IPanelPolicy" {
-    import IPanel from "engine/panel/IPanel";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 弹窗动画策略，负责将弹窗动画与弹窗实体解耦
-    */
-    export default interface IPanelPolicy {
-        /**
-         * 显示时调用
-         * @param panel 弹出框对象
-         * @param callback 完成回调，必须调用
-         * @param from 动画起始点
-         */
-        pop(panel: IPanel, callback: () => void, from?: {
-            x: number;
-            y: number;
-        }): void;
-        /**
-         * 关闭时调用
-         * @param panel 弹出框对象
-         * @param callback 完成回调，必须调用
-         * @param to 动画完结点
-         */
-        drop(panel: IPanel, callback: () => void, to?: {
-            x: number;
-            y: number;
-        }): void;
-    }
-}
-declare module "engine/panel/IPanel" {
-    import IDisposable from "core/interfaces/IDisposable";
-    import IHasBridge from "engine/bridge/IHasBridge";
-    import IPanelPolicy from "engine/panel/IPanelPolicy";
-    import IOpenClose from "core/interfaces/IOpenClose";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 弹窗接口
-    */
-    export default interface IPanel extends IHasBridge, IOpenClose, IDisposable {
-        /** 实际显示对象 */
-        skin: any;
-        /** 弹出策略 */
-        policy: IPanelPolicy;
-        /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
-        open(data?: any, isModel?: boolean, from?: {
-            x: number;
-            y: number;
-        }): IPanel;
-        /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
-        close(data?: any, to?: {
-            x: number;
-            y: number;
-        }): IPanel;
-        /** 在弹出前调用的方法 */
-        onBeforePop(data?: any, isModel?: boolean, from?: {
-            x: number;
-            y: number;
-        }): void;
-        /** 在弹出后调用的方法 */
-        onAfterPop(data?: any, isModel?: boolean, from?: {
-            x: number;
-            y: number;
-        }): void;
-        /** 在关闭前调用的方法 */
-        onBeforeDrop(data?: any, to?: {
-            x: number;
-            y: number;
-        }): void;
-        /** 在关闭后调用的方法 */
-        onAfterDrop(data?: any, to?: {
-            x: number;
-            y: number;
-        }): void;
-    }
-}
 declare module "engine/panel/NonePanelPolicy" {
     import IPanel from "engine/panel/IPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
@@ -1671,106 +1789,6 @@ declare module "engine/panel/IPromptPanel" {
          * @param params 弹窗数据
          */
         update(params: IPromptParams): void;
-    }
-}
-declare module "engine/scene/IScenePolicy" {
-    import IScene from "engine/scene/IScene";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 场景动画策略，负责将场景动画与场景实体解耦
-    */
-    export default interface IScenePolicy {
-        /**
-         * 准备切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         */
-        prepareSwitch(from: IScene, to: IScene): void;
-        /**
-         * 切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         * @param callback 切换完毕的回调方法
-         */
-        switch(from: IScene, to: IScene, callback: () => void): void;
-        /**
-         * 准备Push场景时调度，如果没有定义该方法则套用PrepareSwitch
-         * @param from 切出的场景
-         * @param to 切入的场景
-         */
-        preparePush?(from: IScene, to: IScene): void;
-        /**
-         * Push场景时调度，如果没有定义该方法则套用switch
-         * @param from 切出的场景
-         * @param to 切入的场景
-         * @param callback 切换完毕的回调方法
-         */
-        push?(from: IScene, to: IScene, callback: () => void): void;
-        /**
-         * 准备Pop场景时调度，如果没有定义该方法则套用PrepareSwitch
-         * @param from 切出的场景
-         * @param to 切入的场景
-         */
-        preparePop?(from: IScene, to: IScene): void;
-        /**
-         * Pop场景时调度，如果没有定义该方法则套用switch
-         * @param from 切出的场景
-         * @param to 切入的场景
-         * @param callback 切换完毕的回调方法
-         */
-        pop?(from: IScene, to: IScene, callback: () => void): void;
-    }
-}
-declare module "engine/scene/IScene" {
-    import IDisposable from "core/interfaces/IDisposable";
-    import IHasBridge from "engine/bridge/IHasBridge";
-    import IScenePolicy from "engine/scene/IScenePolicy";
-    import IOpenClose from "core/interfaces/IOpenClose";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 场景接口
-    */
-    export default interface IScene extends IHasBridge, IOpenClose, IDisposable {
-        /** 显示对象 */
-        skin: any;
-        /** 切换策略 */
-        policy: IScenePolicy;
-        /** 打开当前场景（相当于调用SceneManager.push方法） */
-        open(data?: any): IScene;
-        /** 关闭当前场景（相当于调用SceneManager.pop方法） */
-        close(data?: any): IScene;
-        /**
-         * 切入场景开始前调用
-         * @param fromScene 从哪个场景切入
-         * @param data 切场景时可能的参数
-         */
-        onBeforeIn(fromScene: IScene, data?: any): void;
-        /**
-         * 切入场景开始后调用
-         * @param fromScene 从哪个场景切入
-         * @param data 切场景时可能的参数
-         */
-        onAfterIn(fromScene: IScene, data?: any): void;
-        /**
-         * 切出场景开始前调用
-         * @param toScene 要切入到哪个场景
-         * @param data 切场景时可能的参数
-         */
-        onBeforeOut(toScene: IScene, data?: any): void;
-        /**
-         * 切出场景开始后调用
-         * @param toScene 要切入到哪个场景
-         * @param data 切场景时可能的参数
-         */
-        onAfterOut(toScene: IScene, data?: any): void;
     }
 }
 declare module "engine/scene/NoneScenePolicy" {

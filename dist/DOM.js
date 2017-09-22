@@ -113,6 +113,34 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DOMBridge.prototype, "defaultPanelPolicy", {
+            /**
+             * 获取默认弹窗策略
+             *
+             * @readonly
+             * @type {IPanelPolicy}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DOMBridge.prototype, "defaultScenePolicy", {
+            /**
+             * 获取默认场景切换策略
+             *
+             * @readonly
+             * @type {IScenePolicy}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
          * @param {()=>void} complete 初始化完毕后的回调

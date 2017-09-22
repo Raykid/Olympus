@@ -178,7 +178,7 @@ declare module "egret/mediator/Mediator" {
         dispose(): void;
     }
 }
-declare module "egret/mediator/PanelMediator" {
+declare module "egret/panel/PanelMediator" {
     import Mediator from "egret/mediator/Mediator";
     import IPanel from "engine/panel/IPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
@@ -246,7 +246,53 @@ declare module "egret/mediator/PanelMediator" {
         }): void;
     }
 }
-declare module "egret/mediator/SceneMediator" {
+declare module "egret/utils/TweenUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * Egret缓动工具集，用来弥补Egret的Tween的不足
+    */
+    export function tweenTo(target: any, props: any, duration?: number, ease?: Function): egret.Tween;
+    export function tweenFrom(target: any, props: any, duration?: number, ease?: Function): egret.Tween;
+}
+declare module "egret/panel/BackPanelPolicy" {
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
+    import IPanel from "engine/panel/IPanel";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 回弹效果
+    */
+    export default class BackPanelPolicy implements IPanelPolicy {
+        /**
+         * 显示时调用
+         * @param panel 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param from 动画起始点
+         */
+        pop(panel: IPanel, callback: () => void, from?: {
+            x: number;
+            y: number;
+        }): void;
+        /**
+         * 关闭时调用
+         * @param popup 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param to 动画完结点
+         */
+        drop(panel: IPanel, callback: () => void, to?: {
+            x: number;
+            y: number;
+        }): void;
+    }
+}
+declare module "egret/scene/SceneMediator" {
     import IScene from "engine/scene/IScene";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import Mediator from "egret/mediator/Mediator";
@@ -309,9 +355,40 @@ declare module "egret/mediator/SceneMediator" {
         onAfterOut(toScene: IScene, data?: any): void;
     }
 }
+declare module "egret/scene/FadeScenePolicy" {
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    import IScene from "engine/scene/IScene";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 淡入淡出场景切换策略
+    */
+    export default class FadeScenePolicy implements IScenePolicy {
+        private _tempSnapshot;
+        constructor();
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        prepareSwitch(from: IScene, to: IScene): void;
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        switch(from: IScene, to: IScene, callback: () => void): void;
+    }
+}
 declare module "EgretBridge" {
     import IBridge from "engine/bridge/IBridge";
     import RenderMode from "egret/RenderMode";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
+    import IScenePolicy from "engine/scene/IScenePolicy";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -384,6 +461,24 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         readonly topLayer: egret.DisplayObjectContainer;
+        private _defaultPanelPolicy;
+        /**
+         * 获取默认弹窗策略
+         *
+         * @readonly
+         * @type {IPanelPolicy}
+         * @memberof EgretBridge
+         */
+        readonly defaultPanelPolicy: IPanelPolicy;
+        private _defaultScenePolicy;
+        /**
+         * 获取默认场景切换策略
+         *
+         * @readonly
+         * @type {IScenePolicy}
+         * @memberof EgretBridge
+         */
+        readonly defaultScenePolicy: IScenePolicy;
         constructor(params: IInitParams);
         /**
          * 初始化表现层桥

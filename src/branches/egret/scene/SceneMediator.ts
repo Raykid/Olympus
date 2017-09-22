@@ -1,7 +1,7 @@
 import IScene from "engine/scene/IScene";
 import MediatorProxy from "engine/scene/SceneMediator";
 import IScenePolicy from "engine/scene/IScenePolicy";
-import Mediator from "./Mediator";
+import Mediator from "../mediator/Mediator";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import { sceneManager } from "engine/scene/SceneManager";
 

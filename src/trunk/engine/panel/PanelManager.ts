@@ -49,8 +49,7 @@ export default class PanelManager
     {
         if(this._panels.indexOf(panel) < 0)
         {
-            var policy:IPanelPolicy = panel.policy;
-            if(policy == null) policy = none;
+            var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
             // 添加显示
             var bridge:IBridge = panel.bridge;
             bridge.addChild(bridge.panelLayer, panel.skin);
@@ -65,6 +64,8 @@ export default class PanelManager
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModel, from);
             }, from);
+            // 记录
+            this._panels.push(panel);
         }
         return panel;
     }
@@ -83,8 +84,7 @@ export default class PanelManager
         var index:number = this._panels.indexOf(panel);
         if(index >= 0)
         {
-            var policy:IPanelPolicy = panel.policy;
-            if(policy == null) policy = none;
+            var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
             // 调用回调
             panel.onBeforeDrop(data, to);
             // 派发消息
@@ -101,6 +101,8 @@ export default class PanelManager
                 // 销毁弹窗
                 panel.dispose();
             }, to);
+            // 移除记录
+            this._panels.splice(index, 1);
         }
         return panel;
     }
