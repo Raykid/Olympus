@@ -223,7 +223,7 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
          * @memberof Mediator
          */
         Mediator.prototype.open = function (data) {
-            Mediator_1.default.prototype.open.call(this, data);
+            return Mediator_1.default.prototype.open.call(this, data);
         };
         /**
          * 关闭
@@ -233,7 +233,7 @@ define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediat
          * @memberof Mediator
          */
         Mediator.prototype.close = function (data) {
-            Mediator.prototype.close.call(this, data);
+            return Mediator_1.default.prototype.close.call(this, data);
         };
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

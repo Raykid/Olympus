@@ -95,7 +95,7 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public open(data?:any):any
     {
-        MediatorProxy.prototype.open.call(this, data);
+        return MediatorProxy.prototype.open.call(this, data);
     }
 
     /**
@@ -107,7 +107,7 @@ export default class Mediator extends eui.Component implements IMediator
      */
     public close(data?:any):any
     {
-        Mediator.prototype.close.call(this, data);
+        return MediatorProxy.prototype.close.call(this, data);
     }
 
     /**
