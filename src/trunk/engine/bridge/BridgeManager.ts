@@ -2,6 +2,7 @@ import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import IBridge from "./IBridge";
 import BridgeMessage from "./BridgeMessage";
+import { panelManager } from "../panel/PanelManager";
 
 /**
  * @author Raykid
@@ -89,6 +90,8 @@ export default class BridgeManager
             {
                 // 派发消息
                 core.dispatch(BridgeMessage.BRIDGE_BEFORE_INIT, bridge);
+                // 注册通用提示框
+                panelManager.registerPrompt(bridge.type, bridge.promptPanel);
                 // 初始化该表现层实例
                 if(bridge.init) bridge.init(afterInitBridge);
                 else afterInitBridge(bridge);

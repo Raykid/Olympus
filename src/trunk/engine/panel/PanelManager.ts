@@ -111,6 +111,28 @@ export default class PanelManager
 
     private _promptDict:{[type:string]:IPromptPanel} = {};
     /**
+     * 注册通用弹窗
+     * 
+     * @param {string} type 通用弹窗要注册到的表现层类型
+     * @param {IPromptPanel} prompt 通用弹窗实例
+     * @memberof PanelManager
+     */
+    public registerPrompt(type:string, prompt:IPromptPanel):void
+    {
+        this._promptDict[type] = prompt;
+    }
+    /**
+     * 取消注册通用弹窗
+     * 
+     * @param {string} type 要取消注册通用弹窗的表现层类型
+     * @memberof PanelManager
+     */
+    public unregisterPrompt(type:string):void
+    {
+        delete this._promptDict[type];
+    }
+
+    /**
      * 显示提示窗口
      * 
      * @param {string} msg 要显示的文本

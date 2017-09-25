@@ -11,9 +11,9 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
      * 基于DOM的表现层桥实现
     */
     var DOMBridge = /** @class */ (function () {
-        function DOMBridge(root) {
+        function DOMBridge(params) {
             this._listenerDict = {};
-            this._root = root;
+            this._initParams = params;
         }
         Object.defineProperty(DOMBridge.prototype, "type", {
             /**
@@ -38,7 +38,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
              * @memberof DOMBridge
              */
             get: function () {
-                return this._root;
+                return this._initParams.container;
             },
             enumerable: true,
             configurable: true
@@ -52,7 +52,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
              * @memberof DOMBridge
              */
             get: function () {
-                return this._root;
+                return this._initParams.container;
             },
             enumerable: true,
             configurable: true
@@ -66,7 +66,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
              * @memberof DOMBridge
              */
             get: function () {
-                return this._root;
+                return this._initParams.container;
             },
             enumerable: true,
             configurable: true
@@ -80,7 +80,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
              * @memberof DOMBridge
              */
             get: function () {
-                return this._root;
+                return this._initParams.container;
             },
             enumerable: true,
             configurable: true
@@ -94,7 +94,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
              * @memberof DOMBridge
              */
             get: function () {
-                return this._root;
+                return this._initParams.container;
             },
             enumerable: true,
             configurable: true
@@ -108,7 +108,21 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
              * @memberof DOMBridge
              */
             get: function () {
-                return this._root;
+                return this._initParams.container;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(DOMBridge.prototype, "promptPanel", {
+            /**
+             * 获取通用提示框
+             *
+             * @readonly
+             * @type {IPromptPanel}
+             * @memberof DOMBridge
+             */
+            get: function () {
+                return this._initParams.promptPanel;
             },
             enumerable: true,
             configurable: true
@@ -148,13 +162,13 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
          */
         DOMBridge.prototype.init = function (complete) {
             // 如果是名称，则转变成引用
-            if (typeof this._root == "string") {
-                this._root = document.getElementById(this._root);
+            if (typeof this._initParams.container == "string") {
+                this._initParams.container = document.getElementById(this._initParams.container);
             }
             // 如果是空，则生成一个
-            if (!this._root) {
-                this._root = document.createElement("div");
-                document.body.appendChild(this._root);
+            if (!this._initParams.container) {
+                this._initParams.container = document.createElement("div");
+                document.body.appendChild(this._initParams.container);
             }
             // 调用回调
             complete(this);

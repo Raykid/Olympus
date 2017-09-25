@@ -144,7 +144,9 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
     */
     Olympus_1.default.startup({
         bridges: [
-            new DOMBridge_1.default("rootDOM"),
+            new DOMBridge_1.default({
+                container: "rootDOM"
+            }),
             new EgretBridge_1.default({
                 width: 720,
                 height: 1280,

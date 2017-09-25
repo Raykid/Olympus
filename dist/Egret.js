@@ -736,6 +736,20 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(EgretBridge.prototype, "promptPanel", {
+            /**
+             * 获取通用提示框
+             *
+             * @readonly
+             * @type {IPromptPanel}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._initParams.promptPanel;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(EgretBridge.prototype, "defaultPanelPolicy", {
             /**
              * 获取默认弹窗策略

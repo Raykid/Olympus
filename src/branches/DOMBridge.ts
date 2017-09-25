@@ -2,6 +2,7 @@
 
 import IBridge from "engine/bridge/IBridge";
 import { getObjectHashs } from "utils/ObjectUtil";
+import IPromptPanel from "engine/panel/IPromptPanel";
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 
@@ -15,6 +16,8 @@ import IScenePolicy from "engine/scene/IScenePolicy";
 */
 export default class DOMBridge implements IBridge
 {
+    private _initParams:IInitParams;
+
     /**
      * 获取表现层类型名称
      * 
@@ -27,7 +30,6 @@ export default class DOMBridge implements IBridge
         return "DOM";
     }
 
-    private _root:HTMLElement|string;
     /**
      * 获取表现层HTML包装器，可以对其样式进行自定义调整
      * 
@@ -37,7 +39,7 @@ export default class DOMBridge implements IBridge
      */
     public get htmlWrapper():HTMLElement
     {
-        return <HTMLElement>this._root;
+        return <HTMLElement>this._initParams.container;
     }
 
     /**
@@ -49,7 +51,7 @@ export default class DOMBridge implements IBridge
      */
     public get root():HTMLElement
     {
-        return <HTMLElement>this._root;
+        return <HTMLElement>this._initParams.container;
     }
 
     /**
@@ -61,7 +63,7 @@ export default class DOMBridge implements IBridge
      */
     public get bgLayer():HTMLElement
     {
-        return <HTMLElement>this._root;
+        return <HTMLElement>this._initParams.container;
     }
 
     /**
@@ -73,7 +75,7 @@ export default class DOMBridge implements IBridge
      */
     public get sceneLayer():HTMLElement
     {
-        return <HTMLElement>this._root;
+        return <HTMLElement>this._initParams.container;
     }
 
     /**
@@ -85,7 +87,7 @@ export default class DOMBridge implements IBridge
      */
     public get panelLayer():HTMLElement
     {
-        return <HTMLElement>this._root;
+        return <HTMLElement>this._initParams.container;
     }
 
     /**
@@ -97,7 +99,19 @@ export default class DOMBridge implements IBridge
      */
     public get topLayer():HTMLElement
     {
-        return <HTMLElement>this._root;
+        return <HTMLElement>this._initParams.container;
+    }
+
+    /**
+     * 获取通用提示框
+     * 
+     * @readonly
+     * @type {IPromptPanel}
+     * @memberof DOMBridge
+     */
+    public get promptPanel():IPromptPanel
+    {
+        return this._initParams.promptPanel;
     }
     
     /**
@@ -124,9 +138,9 @@ export default class DOMBridge implements IBridge
         return null;
     }
     
-    public constructor(root?:HTMLElement|string)
+    public constructor(params:IInitParams)
     {
-        this._root = root;
+        this._initParams = params;
     }
     
     /**
@@ -137,15 +151,15 @@ export default class DOMBridge implements IBridge
     public init(complete:(bridge:IBridge)=>void):void
     {
         // 如果是名称，则转变成引用
-        if(typeof this._root == "string")
+        if(typeof this._initParams.container == "string")
         {
-            this._root = document.getElementById(this._root);
+            this._initParams.container = document.getElementById(this._initParams.container);
         }
         // 如果是空，则生成一个
-        if(!this._root)
+        if(!this._initParams.container)
         {
-            this._root = document.createElement("div");
-            document.body.appendChild(this._root);
+            this._initParams.container = document.createElement("div");
+            document.body.appendChild(this._initParams.container);
         }
         // 调用回调
         complete(this);
@@ -357,4 +371,12 @@ export default class DOMBridge implements IBridge
             delete this._listenerDict[key];
         }
     }
+}
+
+export interface IInitParams
+{
+    /** DOM容器名称或引用，不传递则自动生成一个 */
+    container?:string|HTMLElement;
+    /** 通用提示框 */
+    promptPanel?:IPromptPanel;
 }

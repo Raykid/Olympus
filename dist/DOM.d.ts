@@ -1,6 +1,7 @@
 /// <reference path="Olympus.d.ts" />
 declare module "DOMBridge" {
     import IBridge from "engine/bridge/IBridge";
+    import IPromptPanel from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     /**
@@ -12,6 +13,7 @@ declare module "DOMBridge" {
      * 基于DOM的表现层桥实现
     */
     export default class DOMBridge implements IBridge {
+        private _initParams;
         /**
          * 获取表现层类型名称
          *
@@ -20,7 +22,6 @@ declare module "DOMBridge" {
          * @memberof DOMBridge
          */
         readonly type: string;
-        private _root;
         /**
          * 获取表现层HTML包装器，可以对其样式进行自定义调整
          *
@@ -70,6 +71,14 @@ declare module "DOMBridge" {
          */
         readonly topLayer: HTMLElement;
         /**
+         * 获取通用提示框
+         *
+         * @readonly
+         * @type {IPromptPanel}
+         * @memberof DOMBridge
+         */
+        readonly promptPanel: IPromptPanel;
+        /**
          * 获取默认弹窗策略
          *
          * @readonly
@@ -85,7 +94,7 @@ declare module "DOMBridge" {
          * @memberof EgretBridge
          */
         readonly defaultScenePolicy: IScenePolicy;
-        constructor(root?: HTMLElement | string);
+        constructor(params: IInitParams);
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
          * @param {()=>void} complete 初始化完毕后的回调
@@ -216,5 +225,11 @@ declare module "DOMBridge" {
          * @memberof DOMBridge
          */
         unmapListener(target: EventTarget, type: string, handler: (evt: Event) => void, thisArg?: any): void;
+    }
+    export interface IInitParams {
+        /** DOM容器名称或引用，不传递则自动生成一个 */
+        container?: string | HTMLElement;
+        /** 通用提示框 */
+        promptPanel?: IPromptPanel;
     }
 }

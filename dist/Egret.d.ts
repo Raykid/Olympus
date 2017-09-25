@@ -386,6 +386,7 @@ declare module "egret/scene/FadeScenePolicy" {
 }
 declare module "EgretBridge" {
     import IBridge from "engine/bridge/IBridge";
+    import IPromptPanel from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import RenderMode from "egret/RenderMode";
@@ -415,7 +416,6 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         readonly htmlWrapper: HTMLElement;
-        w: any;
         private _root;
         /**
          * 获取根显示节点
@@ -461,6 +461,14 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         readonly topLayer: egret.DisplayObjectContainer;
+        /**
+         * 获取通用提示框
+         *
+         * @readonly
+         * @type {IPromptPanel}
+         * @memberof EgretBridge
+         */
+        readonly promptPanel: IPromptPanel;
         private _defaultPanelPolicy;
         /**
          * 获取默认弹窗策略
@@ -637,5 +645,7 @@ declare module "EgretBridge" {
         backgroundColor?: number;
         /** 渲染模式，在harpy.RenderMode中查找枚举值，默认为AUTO **/
         renderMode?: RenderMode;
+        /** 通用提示框 */
+        promptPanel?: IPromptPanel;
     }
 }

@@ -1,3 +1,4 @@
+import IPromptPanel from "../panel/IPromptPanel";
 import IPanelPolicy from "../panel/IPanelPolicy";
 import IScenePolicy from "../scene/IScenePolicy";
 
@@ -67,6 +68,14 @@ export default interface IBridge
      * @memberof IBridge
      */
     readonly topLayer:any;
+    /**
+     * 获取通用提示框
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof IBridge
+     */
+    readonly promptPanel:IPromptPanel;
     /**
      * 获取默认弹窗策略
      * 

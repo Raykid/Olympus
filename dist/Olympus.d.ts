@@ -510,6 +510,39 @@ declare module "engine/bridge/IHasBridge" {
         bridge: IBridge;
     }
 }
+declare module "engine/panel/IPanelPolicy" {
+    import IPanel from "engine/panel/IPanel";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 弹窗动画策略，负责将弹窗动画与弹窗实体解耦
+    */
+    export default interface IPanelPolicy {
+        /**
+         * 显示时调用
+         * @param panel 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param from 动画起始点
+         */
+        pop(panel: IPanel, callback: () => void, from?: {
+            x: number;
+            y: number;
+        }): void;
+        /**
+         * 关闭时调用
+         * @param panel 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param to 动画完结点
+         */
+        drop(panel: IPanel, callback: () => void, to?: {
+            x: number;
+            y: number;
+        }): void;
+    }
+}
 declare module "core/interfaces/IOpenClose" {
     /**
      * @author Raykid
@@ -576,37 +609,42 @@ declare module "engine/panel/IPanel" {
         }): void;
     }
 }
-declare module "engine/panel/IPanelPolicy" {
+declare module "engine/panel/IPromptPanel" {
     import IPanel from "engine/panel/IPanel";
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
      *
-     * 弹窗动画策略，负责将弹窗动画与弹窗实体解耦
+     * 通用弹窗的各种接口
     */
-    export default interface IPanelPolicy {
+    export enum ButtonType {
+        normal = 0,
+        important = 1,
+    }
+    export interface IPromptParams {
+        msg: string;
+        style?: any;
+        title?: string;
+        handlers?: IPromptHandler[];
+    }
+    export interface IPromptHandler {
+        /** 与按钮绑定的数据 */
+        data: any;
+        /** 按钮上显示的文本，不传递则默认使用data的字符串值 */
+        text?: string;
+        /** 回调函数，当前按钮被点击时调用，参数为data对象 */
+        handler?: (data?: any) => void;
+        /** 按钮类型，默认为normal */
+        buttonType?: ButtonType;
+    }
+    export default interface IPromptPanel extends IPanel {
         /**
-         * 显示时调用
-         * @param panel 弹出框对象
-         * @param callback 完成回调，必须调用
-         * @param from 动画起始点
+         * 更新通用提示窗显示
+         * @param params 弹窗数据
          */
-        pop(panel: IPanel, callback: () => void, from?: {
-            x: number;
-            y: number;
-        }): void;
-        /**
-         * 关闭时调用
-         * @param panel 弹出框对象
-         * @param callback 完成回调，必须调用
-         * @param to 动画完结点
-         */
-        drop(panel: IPanel, callback: () => void, to?: {
-            x: number;
-            y: number;
-        }): void;
+        update(params: IPromptParams): void;
     }
 }
 declare module "engine/scene/IScene" {
@@ -710,6 +748,7 @@ declare module "engine/scene/IScenePolicy" {
     }
 }
 declare module "engine/bridge/IBridge" {
+    import IPromptPanel from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     /**
@@ -777,6 +816,14 @@ declare module "engine/bridge/IBridge" {
          * @memberof IBridge
          */
         readonly topLayer: any;
+        /**
+         * 获取通用提示框
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly promptPanel: IPromptPanel;
         /**
          * 获取默认弹窗策略
          *
@@ -960,6 +1007,318 @@ declare module "engine/bridge/BridgeMessage" {
          */
         static BRIDGE_ALL_INIT: string;
     }
+}
+declare module "engine/panel/NonePanelPolicy" {
+    import IPanel from "engine/panel/IPanel";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 无任何动画的弹出策略，可应用于任何显示层实现
+    */
+    export class NonePanelPolicy implements IPanelPolicy {
+        pop(panel: IPanel, callback: () => void, from?: {
+            x: number;
+            y: number;
+        }): void;
+        drop(panel: IPanel, callback: () => void, from?: {
+            x: number;
+            y: number;
+        }): void;
+    }
+    const _default: NonePanelPolicy;
+    export default _default;
+}
+declare module "engine/panel/PanelMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 弹窗相关的消息
+    */
+    export default class PanelMessage {
+        /**
+         * 打开弹窗前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof PanelMessage
+         */
+        static PANEL_BEFORE_POP: string;
+        /**
+         * 打开弹窗后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof PanelMessage
+         */
+        static PANEL_AFTER_POP: string;
+        /**
+         * 关闭弹窗前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof PanelMessage
+         */
+        static PANEL_BEFORE_DROP: string;
+        /**
+         * 关闭弹窗后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof PanelMessage
+         */
+        static PANEL_AFTER_DROP: string;
+    }
+}
+declare module "engine/scene/NoneScenePolicy" {
+    import IScene from "engine/scene/IScene";
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 无任何动画的场景策略，可应用于任何显示层实现
+    */
+    export class NoneScenePolicy implements IScenePolicy {
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        prepareSwitch(from: IScene, to: IScene): void;
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        switch(from: IScene, to: IScene, callback: () => void): void;
+    }
+    const _default: NoneScenePolicy;
+    export default _default;
+}
+declare module "engine/scene/SceneMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景相关的消息
+    */
+    export default class SceneMessage {
+        /**
+         * 切换场景前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        static SCENE_BEFORE_CHANGE: string;
+        /**
+         * 切换场景后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        static SCENE_AFTER_CHANGE: string;
+    }
+}
+declare module "utils/SyncUtil" {
+    /**
+     * 判断是否正在进行操作
+     *
+     * @export
+     * @param {string} name 队列名
+     * @returns {boolean} 队列是否正在操作
+     */
+    export function isOperating(name: string): boolean;
+    /**
+     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
+     *
+     * @export
+     * @param name 一个队列的名字
+     * @param {Function} fn 要执行的方法
+     * @param {*} [thisArg] 方法this对象
+     * @param {...any[]} [args] 方法参数
+     */
+    export function wait(name: string, fn: Function, thisArg?: any, ...args: any[]): void;
+    /**
+     * 完成一步操作并唤醒后续操作
+     *
+     * @export
+     * @param {string} name 队列名字
+     * @returns {void}
+     */
+    export function notify(name: string): void;
+}
+declare module "engine/scene/SceneManager" {
+    import IScene from "engine/scene/IScene";
+    export default class SceneManager {
+        private _sceneStack;
+        /**
+         * 获取当前场景
+         *
+         * @readonly
+         * @type {IScene}
+         * @memberof SceneManager
+         */
+        readonly currentScene: IScene;
+        /**
+         * 获取活动场景个数
+         *
+         * @readonly
+         * @type {number}
+         * @memberof SceneManager
+         */
+        readonly activeCount: number;
+        /**
+         * 切换场景，替换当前场景，当前场景会被销毁
+         *
+         * @param {IScene} scene 要切换到的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        switch(scene: IScene, data?: any): IScene;
+        /**
+         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
+         *
+         * @param {IScene} scene 要推入的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        push(scene: IScene, data?: any): IScene;
+        /**
+         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
+         *
+         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        pop(scene: IScene, data?: any): IScene;
+        private doPop(scene, data);
+        private doChange(from, to, data, policy, type, complete);
+    }
+    /** 再额外导出一个单例 */
+    export const sceneManager: SceneManager;
+}
+declare module "engine/panel/PanelManager" {
+    import IConstructor from "core/interfaces/IConstructor";
+    import IPanel from "engine/panel/IPanel";
+    import IPromptPanel, { IPromptParams, IPromptHandler } from "engine/panel/IPromptPanel";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
+    */
+    export default class PanelManager {
+        private _panels;
+        /**
+         * 获取当前显示的弹窗数组（副本）
+         *
+         * @param {IConstructor} [cls] 弹窗类型，如果传递该参数则只返回该类型的已打开弹窗，否则将返回所有已打开的弹窗
+         * @returns {IPanel[]} 已打开弹窗数组
+         * @memberof PanelManager
+         */
+        getOpened(cls?: IConstructor): IPanel[];
+        /**
+         * 打开一个弹窗
+         *
+         * @param {IPanel} panel 要打开的弹窗
+         * @param {*} [data] 数据
+         * @param {boolean} [isModel=true] 是否模态弹出
+         * @param {{x:number, y:number}} [from] 弹出起点位置
+         * @returns {IPanel} 返回弹窗对象
+         * @memberof PanelManager
+         */
+        pop(panel: IPanel, data?: any, isModel?: boolean, from?: {
+            x: number;
+            y: number;
+        }): IPanel;
+        /**
+         * 关闭一个弹窗
+         *
+         * @param {IPanel} panel 要关闭的弹窗
+         * @param {*} [data] 数据
+         * @param {{x:number, y:number}} [to] 关闭终点位置
+         * @returns {IPanel} 返回弹窗对象
+         * @memberof PanelManager
+         */
+        drop(panel: IPanel, data?: any, to?: {
+            x: number;
+            y: number;
+        }): IPanel;
+        /************************ 下面是通用弹窗的逻辑 ************************/
+        private _promptDict;
+        /**
+         * 注册通用弹窗
+         *
+         * @param {string} type 通用弹窗要注册到的表现层类型
+         * @param {IPromptPanel} prompt 通用弹窗实例
+         * @memberof PanelManager
+         */
+        registerPrompt(type: string, prompt: IPromptPanel): void;
+        /**
+         * 取消注册通用弹窗
+         *
+         * @param {string} type 要取消注册通用弹窗的表现层类型
+         * @memberof PanelManager
+         */
+        unregisterPrompt(type: string): void;
+        /**
+         * 显示提示窗口
+         *
+         * @param {string} msg 要显示的文本
+         * @param {...IPromptHandler[]} handlers 按钮回调数组
+         * @returns {IPanel} 返回被显示的弹窗
+         * @memberof PanelManager
+         */
+        prompt(msg: string, ...handlers: IPromptHandler[]): IPanel;
+        /**
+         * 显示提示窗口
+         *
+         * @param {IPromptParams} params 弹窗数据
+         * @returns {IPanel} 返回被显示的弹窗
+         * @memberof PanelManager
+         */
+        prompt(params: IPromptParams): IPanel;
+        /**
+         * 显示警告窗口（只有一个确定按钮）
+         *
+         * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
+         * @param {()=>void} [okHandler] 确定按钮点击回调
+         * @returns {IPanel} 返回被显示的弹窗
+         * @memberof PanelManager
+         */
+        alert(msgOrParams: string | IPromptParams, okHandler?: () => void): IPanel;
+        /**
+         * 显示确认窗口（有一个确定按钮和一个取消按钮）
+         *
+         * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
+         * @param {()=>void} [okHandler] 确定按钮点击回调
+         * @param {()=>void} [cancelHandler] 取消按钮点击回调
+         * @returns {IPanel} 返回被显示的弹窗
+         * @memberof PanelManager
+         */
+        confirm(msgOrParams: string | IPromptParams, okHandler?: () => void, cancelHandler?: () => void): IPanel;
+    }
+    /** 再额外导出一个单例 */
+    export const panelManager: PanelManager;
 }
 declare module "engine/bridge/BridgeManager" {
     import IBridge from "engine/bridge/IBridge";
@@ -1712,341 +2071,6 @@ declare module "engine/mediator/Mediator" {
          */
         dispose(): void;
     }
-}
-declare module "engine/panel/NonePanelPolicy" {
-    import IPanel from "engine/panel/IPanel";
-    import IPanelPolicy from "engine/panel/IPanelPolicy";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 无任何动画的弹出策略，可应用于任何显示层实现
-    */
-    export class NonePanelPolicy implements IPanelPolicy {
-        pop(panel: IPanel, callback: () => void, from?: {
-            x: number;
-            y: number;
-        }): void;
-        drop(panel: IPanel, callback: () => void, from?: {
-            x: number;
-            y: number;
-        }): void;
-    }
-    const _default: NonePanelPolicy;
-    export default _default;
-}
-declare module "engine/panel/PanelMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 弹窗相关的消息
-    */
-    export default class PanelMessage {
-        /**
-         * 打开弹窗前的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof PanelMessage
-         */
-        static PANEL_BEFORE_POP: string;
-        /**
-         * 打开弹窗后的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof PanelMessage
-         */
-        static PANEL_AFTER_POP: string;
-        /**
-         * 关闭弹窗前的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof PanelMessage
-         */
-        static PANEL_BEFORE_DROP: string;
-        /**
-         * 关闭弹窗后的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof PanelMessage
-         */
-        static PANEL_AFTER_DROP: string;
-    }
-}
-declare module "engine/panel/IPromptPanel" {
-    import IPanel from "engine/panel/IPanel";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 通用弹窗的各种接口
-    */
-    export enum ButtonType {
-        normal = 0,
-        important = 1,
-    }
-    export interface IPromptParams {
-        msg: string;
-        style?: any;
-        title?: string;
-        handlers?: IPromptHandler[];
-    }
-    export interface IPromptHandler {
-        /** 与按钮绑定的数据 */
-        data: any;
-        /** 按钮上显示的文本，不传递则默认使用data的字符串值 */
-        text?: string;
-        /** 回调函数，当前按钮被点击时调用，参数为data对象 */
-        handler?: (data?: any) => void;
-        /** 按钮类型，默认为normal */
-        buttonType?: ButtonType;
-    }
-    export default interface IPromptPanel extends IPanel {
-        /**
-         * 更新通用提示窗显示
-         * @param params 弹窗数据
-         */
-        update(params: IPromptParams): void;
-    }
-}
-declare module "engine/scene/NoneScenePolicy" {
-    import IScene from "engine/scene/IScene";
-    import IScenePolicy from "engine/scene/IScenePolicy";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 无任何动画的场景策略，可应用于任何显示层实现
-    */
-    export class NoneScenePolicy implements IScenePolicy {
-        /**
-         * 准备切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         */
-        prepareSwitch(from: IScene, to: IScene): void;
-        /**
-         * 切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         * @param callback 切换完毕的回调方法
-         */
-        switch(from: IScene, to: IScene, callback: () => void): void;
-    }
-    const _default: NoneScenePolicy;
-    export default _default;
-}
-declare module "engine/scene/SceneMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 场景相关的消息
-    */
-    export default class SceneMessage {
-        /**
-         * 切换场景前的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof SceneMessage
-         */
-        static SCENE_BEFORE_CHANGE: string;
-        /**
-         * 切换场景后的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof SceneMessage
-         */
-        static SCENE_AFTER_CHANGE: string;
-    }
-}
-declare module "utils/SyncUtil" {
-    /**
-     * 判断是否正在进行操作
-     *
-     * @export
-     * @param {string} name 队列名
-     * @returns {boolean} 队列是否正在操作
-     */
-    export function isOperating(name: string): boolean;
-    /**
-     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
-     *
-     * @export
-     * @param name 一个队列的名字
-     * @param {Function} fn 要执行的方法
-     * @param {*} [thisArg] 方法this对象
-     * @param {...any[]} [args] 方法参数
-     */
-    export function wait(name: string, fn: Function, thisArg?: any, ...args: any[]): void;
-    /**
-     * 完成一步操作并唤醒后续操作
-     *
-     * @export
-     * @param {string} name 队列名字
-     * @returns {void}
-     */
-    export function notify(name: string): void;
-}
-declare module "engine/scene/SceneManager" {
-    import IScene from "engine/scene/IScene";
-    export default class SceneManager {
-        private _sceneStack;
-        /**
-         * 获取当前场景
-         *
-         * @readonly
-         * @type {IScene}
-         * @memberof SceneManager
-         */
-        readonly currentScene: IScene;
-        /**
-         * 获取活动场景个数
-         *
-         * @readonly
-         * @type {number}
-         * @memberof SceneManager
-         */
-        readonly activeCount: number;
-        /**
-         * 切换场景，替换当前场景，当前场景会被销毁
-         *
-         * @param {IScene} scene 要切换到的场景
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        switch(scene: IScene, data?: any): IScene;
-        /**
-         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
-         *
-         * @param {IScene} scene 要推入的场景
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        push(scene: IScene, data?: any): IScene;
-        /**
-         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
-         *
-         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        pop(scene: IScene, data?: any): IScene;
-        private doPop(scene, data);
-        private doChange(from, to, data, policy, type, complete);
-    }
-    /** 再额外导出一个单例 */
-    export const sceneManager: SceneManager;
-}
-declare module "engine/panel/PanelManager" {
-    import IConstructor from "core/interfaces/IConstructor";
-    import IPanel from "engine/panel/IPanel";
-    import { IPromptParams, IPromptHandler } from "engine/panel/IPromptPanel";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
-    */
-    export default class PanelManager {
-        private _panels;
-        /**
-         * 获取当前显示的弹窗数组（副本）
-         *
-         * @param {IConstructor} [cls] 弹窗类型，如果传递该参数则只返回该类型的已打开弹窗，否则将返回所有已打开的弹窗
-         * @returns {IPanel[]} 已打开弹窗数组
-         * @memberof PanelManager
-         */
-        getOpened(cls?: IConstructor): IPanel[];
-        /**
-         * 打开一个弹窗
-         *
-         * @param {IPanel} panel 要打开的弹窗
-         * @param {*} [data] 数据
-         * @param {boolean} [isModel=true] 是否模态弹出
-         * @param {{x:number, y:number}} [from] 弹出起点位置
-         * @returns {IPanel} 返回弹窗对象
-         * @memberof PanelManager
-         */
-        pop(panel: IPanel, data?: any, isModel?: boolean, from?: {
-            x: number;
-            y: number;
-        }): IPanel;
-        /**
-         * 关闭一个弹窗
-         *
-         * @param {IPanel} panel 要关闭的弹窗
-         * @param {*} [data] 数据
-         * @param {{x:number, y:number}} [to] 关闭终点位置
-         * @returns {IPanel} 返回弹窗对象
-         * @memberof PanelManager
-         */
-        drop(panel: IPanel, data?: any, to?: {
-            x: number;
-            y: number;
-        }): IPanel;
-        /************************ 下面是通用弹窗的逻辑 ************************/
-        private _promptDict;
-        /**
-         * 显示提示窗口
-         *
-         * @param {string} msg 要显示的文本
-         * @param {...IPromptHandler[]} handlers 按钮回调数组
-         * @returns {IPanel} 返回被显示的弹窗
-         * @memberof PanelManager
-         */
-        prompt(msg: string, ...handlers: IPromptHandler[]): IPanel;
-        /**
-         * 显示提示窗口
-         *
-         * @param {IPromptParams} params 弹窗数据
-         * @returns {IPanel} 返回被显示的弹窗
-         * @memberof PanelManager
-         */
-        prompt(params: IPromptParams): IPanel;
-        /**
-         * 显示警告窗口（只有一个确定按钮）
-         *
-         * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
-         * @param {()=>void} [okHandler] 确定按钮点击回调
-         * @returns {IPanel} 返回被显示的弹窗
-         * @memberof PanelManager
-         */
-        alert(msgOrParams: string | IPromptParams, okHandler?: () => void): IPanel;
-        /**
-         * 显示确认窗口（有一个确定按钮和一个取消按钮）
-         *
-         * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
-         * @param {()=>void} [okHandler] 确定按钮点击回调
-         * @param {()=>void} [cancelHandler] 取消按钮点击回调
-         * @returns {IPanel} 返回被显示的弹窗
-         * @memberof PanelManager
-         */
-        confirm(msgOrParams: string | IPromptParams, okHandler?: () => void, cancelHandler?: () => void): IPanel;
-    }
-    /** 再额外导出一个单例 */
-    export const panelManager: PanelManager;
 }
 declare module "engine/panel/PanelMediator" {
     import Mediator from "engine/mediator/Mediator";

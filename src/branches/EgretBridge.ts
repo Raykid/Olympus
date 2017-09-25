@@ -7,6 +7,7 @@
 import { core } from "core/Core";
 import IBridge from "engine/bridge/IBridge";
 import ModuleMessage from "engine/module/ModuleMessage";
+import IPromptPanel from "engine/panel/IPromptPanel";
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import RenderMode from "./egret/RenderMode";
@@ -51,7 +52,7 @@ export default class EgretBridge implements IBridge
     public get htmlWrapper():HTMLElement
     {
         return <HTMLElement>this._initParams.container;
-    }w
+    }
 
     private _root:egret.DisplayObjectContainer;
     /**
@@ -116,6 +117,18 @@ export default class EgretBridge implements IBridge
     public get topLayer():egret.DisplayObjectContainer
     {
         return this._topLayer;
+    }
+    
+    /**
+     * 获取通用提示框
+     * 
+     * @readonly
+     * @type {IPromptPanel}
+     * @memberof EgretBridge
+     */
+    public get promptPanel():IPromptPanel
+    {
+        return this._initParams.promptPanel;
     }
 
     private _defaultPanelPolicy:IPanelPolicy = new BackPanelPolicy();
@@ -501,6 +514,8 @@ export interface IInitParams
     backgroundColor?:number;
     /** 渲染模式，在harpy.RenderMode中查找枚举值，默认为AUTO **/
     renderMode?:RenderMode;
+    /** 通用提示框 */
+    promptPanel?:IPromptPanel;
 }
 
 class AssetAdapter implements eui.IAssetAdapter

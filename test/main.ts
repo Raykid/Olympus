@@ -22,7 +22,9 @@ import FirstModule from "./modules/FirstModule";
 */
 Olympus.startup({
     bridges: [
-        new DOMBridge("rootDOM"),
+        new DOMBridge({
+            container: "rootDOM"
+        }),
         new EgretBridge({
             width: 720,
             height: 1280,
