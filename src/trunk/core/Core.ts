@@ -1,13 +1,13 @@
 /// <reference path="./global/Patch.ts"/>
 
 import Dictionary from "../utils/Dictionary";
+import * as Injector from "./injector/Injector";
 import IMessage from "./message/IMessage";
 import CommonMessage from "./message/CommonMessage";
 import CoreMessage from "./message/CoreMessage";
 import ICommandConstructor from "./command/ICommandConstructor";
 import Command from "./command/Command";
 import IDispatcher from "./interfaces/IDispatcher";
-import * as Injector from "./injector/Injector"
 
 Injector;
 

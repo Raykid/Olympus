@@ -107,6 +107,90 @@ declare module "utils/Dictionary" {
         delete(key: K): void;
     }
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-18
+ * @modify date 2017-09-18
+ *
+ * 这个文件是给全局设置一个IConstructor接口而设计的
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-22
+ * @modify date 2017-09-22
+ *
+ * core模组内所有装饰器的全局声明
+*/
+declare function Injectable(cls: IConstructor): void;
+declare function Injectable(name: string): ClassDecorator;
+declare function Injectable(params: {
+    type: IConstructor;
+}): ClassDecorator;
+declare function Inject(cls: IConstructor | string): PropertyDecorator;
+declare function MessageHandler(type: string): MethodDecorator;
+declare module "core/interfaces/IConstructor" {
+    export default IConstructor;
+}
+declare module "utils/ConstructUtil" {
+    import IConstructor from "core/interfaces/IConstructor";
+    /**
+     * 包装一个类型，监听类型的实例化操作
+     *
+     * @export
+     * @param {IConstructor} cls 要监听构造的类型构造器
+     * @returns {IConstructor} 新的构造函数
+     */
+    export function wrapConstruct(cls: IConstructor): IConstructor;
+    /**
+     * 监听类型的实例化
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 移除实例化监听
+     *
+     * @export
+     * @param {IConstructor} cls 要移除监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+     *
+     * @export
+     * @param {IConstructor} cls 要监听销毁的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
+}
+declare module "core/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * Core模组的装饰器注入模块
+    */
+    /** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
+    export function Injectable(cls: IConstructor): void;
+    export function Injectable(name: string): ClassDecorator;
+    export function Injectable(params: {
+        type: IConstructor;
+    }): ClassDecorator;
+    /** 赋值注入的实例 */
+    export function Inject(cls: IConstructor | string): PropertyDecorator;
+    /** 处理内核消息 */
+    export function MessageHandler(type: string): MethodDecorator;
+}
 declare module "core/message/IMessage" {
     /**
      * @author Raykid
@@ -283,90 +367,6 @@ declare module "core/interfaces/IDispatcher" {
         dispatch(type: string, ...params: any[]): void;
     }
 }
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-18
- * @modify date 2017-09-18
- *
- * 这个文件是给全局设置一个IConstructor接口而设计的
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-22
- * @modify date 2017-09-22
- *
- * core模组内所有装饰器的全局声明
-*/
-declare function Injectable(cls: IConstructor): void;
-declare function Injectable(name: string): ClassDecorator;
-declare function Injectable(params: {
-    type: IConstructor;
-}): ClassDecorator;
-declare function Inject(cls: IConstructor | string): PropertyDecorator;
-declare function MessageHandler(type: string): MethodDecorator;
-declare module "core/interfaces/IConstructor" {
-    export default IConstructor;
-}
-declare module "utils/ConstructUtil" {
-    import IConstructor from "core/interfaces/IConstructor";
-    /**
-     * 包装一个类型，监听类型的实例化操作
-     *
-     * @export
-     * @param {IConstructor} cls 要监听构造的类型构造器
-     * @returns {IConstructor} 新的构造函数
-     */
-    export function wrapConstruct(cls: IConstructor): IConstructor;
-    /**
-     * 监听类型的实例化
-     *
-     * @export
-     * @param {IConstructor} cls 要监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 移除实例化监听
-     *
-     * @export
-     * @param {IConstructor} cls 要移除监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
-     *
-     * @export
-     * @param {IConstructor} cls 要监听销毁的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
-}
-declare module "core/injector/Injector" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * Core模组的装饰器注入模块
-    */
-    /** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
-    export function Injectable(cls: IConstructor): void;
-    export function Injectable(name: string): ClassDecorator;
-    export function Injectable(params: {
-        type: IConstructor;
-    }): ClassDecorator;
-    /** 赋值注入的实例 */
-    export function Inject(cls: IConstructor | string): PropertyDecorator;
-    /** 处理内核消息 */
-    export function MessageHandler(type: string): MethodDecorator;
-}
 declare module "core/Core" {
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
@@ -477,6 +477,318 @@ declare module "core/Core" {
     /** 再额外导出一个单例 */
     export const core: Core;
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-22
+ * @modify date 2017-09-22
+ *
+ * engine模组内所有装饰器的全局声明
+*/
+declare function ModelClass(cls: IConstructor): any;
+declare function MediatorClass(cls: IConstructor): any;
+declare function ModuleClass(cls: IConstructor): any;
+declare function ResponseHandler(clsOrType: IConstructor | string): MethodDecorator;
+declare function DelegateMediator(prototype: any, propertyKey: string): any;
+declare module "engine/net/DataType" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 请求或返回数据结构体
+    */
+    export default abstract class DataType {
+        private __rawData;
+        /**
+         * 解析后端返回的JSON对象，生成结构体
+         *
+         * @param {any} data 后端返回的JSON对象
+         * @returns {DataType} 结构体对象
+         * @memberof DataType
+         */
+        parse(data: any): DataType;
+        /**
+         * 解析逻辑，需要子类实现
+         *
+         * @protected
+         * @abstract
+         * @param {*} data JSON对象
+         * @memberof DataType
+         */
+        protected abstract doParse(data: any): void;
+        /**
+         * 打包数据成为一个Object，需要子类实现
+         *
+         * @returns {*} 打包后的数据
+         * @memberof DataType
+         */
+        abstract pack(): any;
+    }
+}
+declare module "engine/net/IRequestPolicy" {
+    import RequestData from "engine/net/RequestData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 请求策略，根据使用的策略不同，请求的行为也会有所不同，例如使用HTTP或者Socket
+    */
+    export default interface IRequestPolicy {
+        /**
+         * 发送请求逻辑
+         *
+         * @param {RequestData} request 请求
+         * @memberof IRequestPolicy
+         */
+        sendRequest(request: RequestData): void;
+    }
+}
+declare module "engine/net/RequestData" {
+    import IMessage from "core/message/IMessage";
+    import IRequestPolicy from "engine/net/IRequestPolicy";
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯发送消息基类
+    */
+    export interface IRequestParams {
+        /**
+         * 消息名
+         *
+         * @type {string}
+         * @memberof IRequestParams
+         */
+        type: string;
+        /**
+         * 消息路径
+         *
+         * @type {string}
+         * @memberof IRequestParams
+         */
+        path: string;
+        /**
+         * 消息数据
+         *
+         * @type {*}
+         * @memberof IRequestParams
+         */
+        data: any;
+        /**
+         * 协议类型
+         *
+         * @type {string}
+         * @memberof IRequestParams
+         */
+        protocol: string;
+        /**
+         * 返回类型，如果消息没有返回类型或不确定是否有返回类型，则此处可以不定义（如Socket消息）
+         *
+         * @type {IResponseDataConstructor}
+         * @memberof IRequestParams
+         */
+        response?: IResponseDataConstructor;
+        /**
+         * 其他可能需要的参数
+         *
+         * @type {*}
+         * @memberof IRequestParams
+         */
+        [key: string]: any;
+    }
+    export default abstract class RequestData implements IMessage {
+        /**
+         * 用户参数，可以保存任意参数到Message中，该参数中的数据不会被发送
+         *
+         * @type {*}
+         * @memberof RequestData
+         */
+        __userData: any;
+        /**
+         * 请求参数，可以运行时修改
+         *
+         * @abstract
+         * @type {IRequestParams}
+         * @memberof RequestData
+         */
+        abstract __params: IRequestParams;
+        /**
+         * 消息发送接收策略
+         *
+         * @abstract
+         * @type {IRequestPolicy}
+         * @memberof RequestData
+         */
+        abstract __policy: IRequestPolicy;
+        /**
+         * 获取请求消息类型字符串
+         *
+         * @readonly
+         * @type {string}
+         * @memberof RequestData
+         */
+        readonly type: string;
+    }
+    /** 导出公共消息参数对象 */
+    export var commonData: any;
+}
+declare module "engine/net/ResponseData" {
+    import DataType from "engine/net/DataType";
+    import RequestData from "engine/net/RequestData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯返回消息基类
+    */
+    export interface IResponseParams {
+        type: string;
+        protocol: string;
+        method: null | "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH" | "MOVE" | "COPY" | "LINK" | "UNLINK" | "WRAPPED" | "Extension-mothed";
+        request?: RequestData;
+        [key: string]: any;
+    }
+    export default abstract class ResponseData extends DataType {
+        /**
+         * 返回参数
+         *
+         * @abstract
+         * @type {IResponseParams}
+         * @memberof ResponseType
+         */
+        abstract __params: IResponseParams;
+    }
+    export interface IResponseDataConstructor {
+        new (): ResponseData;
+        readonly type: string;
+    }
+}
+declare module "engine/net/NetMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯相关的消息
+    */
+    export default class NetMessage {
+        /**
+         * 发送网络请求消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_REQUEST: string;
+        /**
+         * 接受网络返回消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_RESPONSE: string;
+        /**
+         * 网络请求错误消息
+         *
+         * @static
+         * @type {string}
+         * @memberof NetMessage
+         */
+        static NET_ERROR: string;
+    }
+}
+declare module "engine/net/NetUtil" {
+    import DataType from "engine/net/DataType";
+    export function packArray(arr: any[]): any[];
+    export function parseArray(arr: any[], cls?: DataTypeClass): any[];
+    export function packMap(map: {
+        [key: string]: any;
+    }): {
+        [key: string]: any;
+    };
+    export function parseMap(map: {
+        [key: string]: any;
+    }, cls?: DataTypeClass): {
+        [key: string]: any;
+    };
+    export interface DataTypeClass {
+        new (): DataType;
+    }
+}
+declare module "engine/net/NetManager" {
+    import RequestData from "engine/net/RequestData";
+    import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-12
+     * @modify date 2017-09-12
+     *
+     * 网络管理器
+    */
+    export interface ResponseHandler {
+        (response: ResponseData, request?: RequestData): void;
+    }
+    export default class NetManager {
+        constructor();
+        private onMsgDispatched(msg);
+        private _responseDict;
+        /**
+         * 注册一个返回结构体
+         *
+         * @param {string} type 返回类型
+         * @param {IResponseDataConstructor} cls 返回结构体构造器
+         * @memberof NetManager
+         */
+        registerResponse(cls: IResponseDataConstructor): void;
+        private _responseListeners;
+        /**
+         * 添加一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        listenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        /**
+         * 移除一个通讯返回监听
+         *
+         * @param {(IResponseDataConstructor|string)} clsOrType 要移除监听的返回结构构造器或者类型字符串
+         * @param {ResponseHandler} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {boolean} [once=false] 是否一次性监听
+         * @memberof NetManager
+         */
+        unlistenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        /**
+         * 发送多条请求，并且等待返回结果（如果有的话），调用回调
+         *
+         * @param {RequestData[]} [requests 要发送的请求列表
+         * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
+         * @param {*} [thisArg] this指向
+         * @memberof NetManager
+         */
+        sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any): void;
+        /** 这里导出不希望用户使用的方法，供框架内使用 */
+        __onResponse(type: string, result: any, request?: RequestData): void | never;
+        __onError(err: Error, request?: RequestData): void;
+    }
+    /** 再额外导出一个单例 */
+    export const netManager: NetManager;
+}
 declare module "core/interfaces/IDisposable" {
     /**
      * @author Raykid
@@ -491,23 +803,6 @@ declare module "core/interfaces/IDisposable" {
         readonly disposed: boolean;
         /** 销毁 */
         dispose(): void;
-    }
-}
-declare module "engine/bridge/IHasBridge" {
-    import IBridge from "engine/bridge/IBridge";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 标识拥有表现层桥的接口
-    */
-    export default interface IHasMediatorBridge {
-        /**
-         * 表现层桥
-         */
-        bridge: IBridge;
     }
 }
 declare module "engine/panel/IPanelPolicy" {
@@ -972,6 +1267,146 @@ declare module "engine/bridge/IBridge" {
         init?(complete: (bridge: IBridge) => void): void;
     }
 }
+declare module "engine/bridge/IHasBridge" {
+    import IBridge from "engine/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 标识拥有表现层桥的接口
+    */
+    export default interface IHasMediatorBridge {
+        /**
+         * 表现层桥
+         */
+        bridge: IBridge;
+    }
+}
+declare module "engine/mediator/IMediator" {
+    import IHasBridge from "engine/bridge/IHasBridge";
+    import IOpenClose from "core/interfaces/IOpenClose";
+    import IDisposable from "core/interfaces/IDisposable";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-04
+     * @modify date 2017-09-04
+     *
+     * 界面中介者接口
+    */
+    export default interface IMediator extends IHasBridge, IOpenClose, IDisposable {
+        /**
+         * 获取中介者是否已被销毁
+         *
+         * @returns {boolean} 是否已被销毁
+         * @memberof IMediator
+         */
+        readonly disposed: boolean;
+        /**
+         * 皮肤
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IMediator
+         */
+        skin: any;
+        /**
+         * 列出中介者所需的资源数组，可重写
+         *
+         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+         * @memberof IMediator
+         */
+        listAssets(): string[];
+        /**
+         * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
+         *
+         * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
+         * @memberof IMediator
+         */
+        loadAssets(handler: (err?: Error) => void): void;
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IMediator
+         */
+        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IMediator
+         */
+        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 注销所有注册在当前中介者上的事件监听
+         *
+         * @memberof IMediator
+         */
+        unmapAllListeners(): void;
+    }
+}
+declare module "engine/module/IModuleConstructor" {
+    import IModule from "engine/module/IModule";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * 模块构造器接口
+    */
+    export default interface IModuleConstructor {
+        new (): IModule;
+    }
+}
+declare module "engine/module/IModule" {
+    import IDisposable from "core/interfaces/IDisposable";
+    import IMediator from "engine/mediator/IMediator";
+    import RequestData from "engine/net/RequestData";
+    import ResponseData from "engine/net/ResponseData";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 业务模块接口
+    */
+    export default interface IModule extends IDisposable {
+        /** 列出模块所需CSS资源URL */
+        listStyleFiles(): string[];
+        /** 列出模块所需JS资源URL */
+        listJsFiles(): string[];
+        /** 列出模块初始化请求 */
+        listInitRequests(): RequestData[];
+        /** 将中介者托管给模块 */
+        delegateMediator(mediator: IMediator): void;
+        /** 反托管中介者 */
+        undelegateMediator(mediator: IMediator): void;
+        /** 获取所有已托管的中介者 */
+        getDelegatedMediators(): IMediator[];
+        /** 当获取到所有消息返回后调用 */
+        onGetResponses(responses: ResponseData[]): void;
+        /** 打开模块时调用 */
+        onOpen(data?: any): void;
+        /** 关闭模块时调用 */
+        onClose(data?: any): void;
+        /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
+        onActivate(from: IModuleConstructor | undefined, data?: any): void;
+        /** 模块切换到后台是调用（close之后或者其他模块打开时） */
+        onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
+    }
+}
 declare module "engine/bridge/BridgeMessage" {
     /**
      * @author Raykid
@@ -1359,441 +1794,6 @@ declare module "engine/bridge/BridgeManager" {
     }
     /** 再额外导出一个单例 */
     export const bridgeManager: BridgeManager;
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-22
- * @modify date 2017-09-22
- *
- * engine模组内所有装饰器的全局声明
-*/
-declare function ModelClass(cls: IConstructor): any;
-declare function MediatorClass(cls: IConstructor): any;
-declare function ModuleClass(cls: IConstructor): any;
-declare function ResponseHandler(clsOrType: IConstructor | string): MethodDecorator;
-declare function DelegateMediator(prototype: any, propertyKey: string): any;
-declare module "engine/net/DataType" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 请求或返回数据结构体
-    */
-    export default abstract class DataType {
-        private __rawData;
-        /**
-         * 解析后端返回的JSON对象，生成结构体
-         *
-         * @param {any} data 后端返回的JSON对象
-         * @returns {DataType} 结构体对象
-         * @memberof DataType
-         */
-        parse(data: any): DataType;
-        /**
-         * 解析逻辑，需要子类实现
-         *
-         * @protected
-         * @abstract
-         * @param {*} data JSON对象
-         * @memberof DataType
-         */
-        protected abstract doParse(data: any): void;
-        /**
-         * 打包数据成为一个Object，需要子类实现
-         *
-         * @returns {*} 打包后的数据
-         * @memberof DataType
-         */
-        abstract pack(): any;
-    }
-}
-declare module "engine/net/IRequestPolicy" {
-    import RequestData from "engine/net/RequestData";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 请求策略，根据使用的策略不同，请求的行为也会有所不同，例如使用HTTP或者Socket
-    */
-    export default interface IRequestPolicy {
-        /**
-         * 发送请求逻辑
-         *
-         * @param {RequestData} request 请求
-         * @memberof IRequestPolicy
-         */
-        sendRequest(request: RequestData): void;
-    }
-}
-declare module "engine/net/RequestData" {
-    import IMessage from "core/message/IMessage";
-    import IRequestPolicy from "engine/net/IRequestPolicy";
-    import { IResponseDataConstructor } from "engine/net/ResponseData";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 通讯发送消息基类
-    */
-    export interface IRequestParams {
-        /**
-         * 消息名
-         *
-         * @type {string}
-         * @memberof IRequestParams
-         */
-        type: string;
-        /**
-         * 消息路径
-         *
-         * @type {string}
-         * @memberof IRequestParams
-         */
-        path: string;
-        /**
-         * 消息数据
-         *
-         * @type {*}
-         * @memberof IRequestParams
-         */
-        data: any;
-        /**
-         * 协议类型
-         *
-         * @type {string}
-         * @memberof IRequestParams
-         */
-        protocol: string;
-        /**
-         * 返回类型，如果消息没有返回类型或不确定是否有返回类型，则此处可以不定义（如Socket消息）
-         *
-         * @type {IResponseDataConstructor}
-         * @memberof IRequestParams
-         */
-        response?: IResponseDataConstructor;
-        /**
-         * 其他可能需要的参数
-         *
-         * @type {*}
-         * @memberof IRequestParams
-         */
-        [key: string]: any;
-    }
-    export default abstract class RequestData implements IMessage {
-        /**
-         * 用户参数，可以保存任意参数到Message中，该参数中的数据不会被发送
-         *
-         * @type {*}
-         * @memberof RequestData
-         */
-        __userData: any;
-        /**
-         * 请求参数，可以运行时修改
-         *
-         * @abstract
-         * @type {IRequestParams}
-         * @memberof RequestData
-         */
-        abstract __params: IRequestParams;
-        /**
-         * 消息发送接收策略
-         *
-         * @abstract
-         * @type {IRequestPolicy}
-         * @memberof RequestData
-         */
-        abstract __policy: IRequestPolicy;
-        /**
-         * 获取请求消息类型字符串
-         *
-         * @readonly
-         * @type {string}
-         * @memberof RequestData
-         */
-        readonly type: string;
-    }
-    /** 导出公共消息参数对象 */
-    export var commonData: any;
-}
-declare module "engine/net/ResponseData" {
-    import DataType from "engine/net/DataType";
-    import RequestData from "engine/net/RequestData";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 通讯返回消息基类
-    */
-    export interface IResponseParams {
-        type: string;
-        protocol: string;
-        method: null | "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH" | "MOVE" | "COPY" | "LINK" | "UNLINK" | "WRAPPED" | "Extension-mothed";
-        request?: RequestData;
-        [key: string]: any;
-    }
-    export default abstract class ResponseData extends DataType {
-        /**
-         * 返回参数
-         *
-         * @abstract
-         * @type {IResponseParams}
-         * @memberof ResponseType
-         */
-        abstract __params: IResponseParams;
-    }
-    export interface IResponseDataConstructor {
-        new (): ResponseData;
-        readonly type: string;
-    }
-}
-declare module "engine/net/NetMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 通讯相关的消息
-    */
-    export default class NetMessage {
-        /**
-         * 发送网络请求消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        static NET_REQUEST: string;
-        /**
-         * 接受网络返回消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        static NET_RESPONSE: string;
-        /**
-         * 网络请求错误消息
-         *
-         * @static
-         * @type {string}
-         * @memberof NetMessage
-         */
-        static NET_ERROR: string;
-    }
-}
-declare module "engine/net/NetUtil" {
-    import DataType from "engine/net/DataType";
-    export function packArray(arr: any[]): any[];
-    export function parseArray(arr: any[], cls?: DataTypeClass): any[];
-    export function packMap(map: {
-        [key: string]: any;
-    }): {
-        [key: string]: any;
-    };
-    export function parseMap(map: {
-        [key: string]: any;
-    }, cls?: DataTypeClass): {
-        [key: string]: any;
-    };
-    export interface DataTypeClass {
-        new (): DataType;
-    }
-}
-declare module "engine/net/NetManager" {
-    import RequestData from "engine/net/RequestData";
-    import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-12
-     * @modify date 2017-09-12
-     *
-     * 网络管理器
-    */
-    export interface ResponseHandler {
-        (response: ResponseData, request?: RequestData): void;
-    }
-    export default class NetManager {
-        constructor();
-        private onMsgDispatched(msg);
-        private _responseDict;
-        /**
-         * 注册一个返回结构体
-         *
-         * @param {string} type 返回类型
-         * @param {IResponseDataConstructor} cls 返回结构体构造器
-         * @memberof NetManager
-         */
-        registerResponse(cls: IResponseDataConstructor): void;
-        private _responseListeners;
-        /**
-         * 添加一个通讯返回监听
-         *
-         * @param {(IResponseDataConstructor|string)} clsOrType 要监听的返回结构构造器或者类型字符串
-         * @param {ResponseHandler} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {boolean} [once=false] 是否一次性监听
-         * @memberof NetManager
-         */
-        listenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
-        /**
-         * 移除一个通讯返回监听
-         *
-         * @param {(IResponseDataConstructor|string)} clsOrType 要移除监听的返回结构构造器或者类型字符串
-         * @param {ResponseHandler} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {boolean} [once=false] 是否一次性监听
-         * @memberof NetManager
-         */
-        unlistenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
-        /**
-         * 发送多条请求，并且等待返回结果（如果有的话），调用回调
-         *
-         * @param {RequestData[]} [requests 要发送的请求列表
-         * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
-         * @param {*} [thisArg] this指向
-         * @memberof NetManager
-         */
-        sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any): void;
-        /** 这里导出不希望用户使用的方法，供框架内使用 */
-        __onResponse(type: string, result: any, request?: RequestData): void | never;
-        __onError(err: Error, request?: RequestData): void;
-    }
-    /** 再额外导出一个单例 */
-    export const netManager: NetManager;
-}
-declare module "engine/mediator/IMediator" {
-    import IHasBridge from "engine/bridge/IHasBridge";
-    import IOpenClose from "core/interfaces/IOpenClose";
-    import IDisposable from "core/interfaces/IDisposable";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-04
-     * @modify date 2017-09-04
-     *
-     * 界面中介者接口
-    */
-    export default interface IMediator extends IHasBridge, IOpenClose, IDisposable {
-        /**
-         * 获取中介者是否已被销毁
-         *
-         * @returns {boolean} 是否已被销毁
-         * @memberof IMediator
-         */
-        readonly disposed: boolean;
-        /**
-         * 皮肤
-         *
-         * @readonly
-         * @type {*}
-         * @memberof IMediator
-         */
-        skin: any;
-        /**
-         * 列出中介者所需的资源数组，可重写
-         *
-         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-         * @memberof IMediator
-         */
-        listAssets(): string[];
-        /**
-         * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
-         *
-         * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
-         * @memberof IMediator
-         */
-        loadAssets(handler: (err?: Error) => void): void;
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IMediator
-         */
-        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IMediator
-         */
-        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销所有注册在当前中介者上的事件监听
-         *
-         * @memberof IMediator
-         */
-        unmapAllListeners(): void;
-    }
-}
-declare module "engine/module/IModuleConstructor" {
-    import IModule from "engine/module/IModule";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * 模块构造器接口
-    */
-    export default interface IModuleConstructor {
-        new (): IModule;
-    }
-}
-declare module "engine/module/IModule" {
-    import IDisposable from "core/interfaces/IDisposable";
-    import IMediator from "engine/mediator/IMediator";
-    import RequestData from "engine/net/RequestData";
-    import ResponseData from "engine/net/ResponseData";
-    import IModuleConstructor from "engine/module/IModuleConstructor";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 业务模块接口
-    */
-    export default interface IModule extends IDisposable {
-        /** 列出模块所需CSS资源URL */
-        listStyleFiles(): string[];
-        /** 列出模块所需JS资源URL */
-        listJsFiles(): string[];
-        /** 列出模块初始化请求 */
-        listInitRequests(): RequestData[];
-        /** 将中介者托管给模块 */
-        delegateMediator(mediator: IMediator): void;
-        /** 反托管中介者 */
-        undelegateMediator(mediator: IMediator): void;
-        /** 获取所有已托管的中介者 */
-        getDelegatedMediators(): IMediator[];
-        /** 当获取到所有消息返回后调用 */
-        onGetResponses(responses: ResponseData[]): void;
-        /** 打开模块时调用 */
-        onOpen(data?: any): void;
-        /** 关闭模块时调用 */
-        onClose(data?: any): void;
-        /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
-        onActivate(from: IModuleConstructor | undefined, data?: any): void;
-        /** 模块切换到后台是调用（close之后或者其他模块打开时） */
-        onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
-    }
 }
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";

@@ -66196,7 +66196,7 @@ define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require,
 /// <reference path="./egret/egret-libs/res/res.d.ts"/>
 /// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../dist/Olympus.d.ts"/>
-define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy", "egret/injector/Injector"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1, Injector) {
+define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/injector/Injector", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, Injector, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     Injector;
