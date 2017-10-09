@@ -9,6 +9,8 @@ import Command from "./command/Command";
 import IDispatcher from "./interfaces/IDispatcher";
 import * as Injector from "./injector/Injector"
 
+Injector;
+
 /**
  * @author Raykid
  * @email initial_r@qq.com

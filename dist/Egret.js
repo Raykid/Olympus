@@ -65776,6 +65776,70 @@ var egret;
         }
     })(tween = egret.tween || (egret.tween = {}));
 })(egret || (egret = {}));
+/// <reference path="../egret-libs/eui/eui.d.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/utils/SkinUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * Egret皮肤工具集
+    */
+    function wrapSkin(mediator, skin) {
+        var comp = new eui.Component();
+        mediator.skin = comp;
+        // 监听添加舞台事件，将皮肤贴上去
+        comp.addEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
+        return comp;
+        function onAddedToStage(event) {
+            comp.removeEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
+            comp.skinName = skin;
+            // 转发ui引用
+            for (var key in comp) {
+                var target = comp[key];
+                if (target instanceof eui.Component ||
+                    target instanceof eui.Image ||
+                    target instanceof eui.Label ||
+                    target instanceof eui.EditableText ||
+                    target instanceof eui.BitmapLabel ||
+                    target instanceof eui.sys.UIComponentImpl) {
+                    mediator[key] = target;
+                }
+            }
+        }
+    }
+    exports.wrapSkin = wrapSkin;
+});
+/// <reference path="../egret-libs/egret/egret.d.ts"/>
+/// <reference path="../egret-libs/eui/eui.d.ts"/>
+/// <reference path="./Declaration.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", "egret/utils/SkinUtil"], function (require, exports, ConstructUtil_1, SkinUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    function EgretSkin(skin) {
+        return function (cls) {
+            // 监听类型实例化，转换皮肤格式
+            ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, skin); });
+        };
+    }
+    exports.EgretSkin = EgretSkin;
+    // 赋值全局方法
+    window["EgretSkin"] = EgretSkin;
+});
 define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -65922,201 +65986,6 @@ define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "e
     }());
     exports.default = AssetsLoader;
 });
-/// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-libs/res/res.d.ts"/>
-/// <reference path="../../egret/egret-libs/tween/tween.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
-define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediator"], function (require, exports, Mediator_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 由于Egret EUI界面的特殊性，需要一个Mediator的基类来简化业务逻辑
-    */
-    var Mediator = /** @class */ (function (_super) {
-        __extends(Mediator, _super);
-        function Mediator(skin, callProxy) {
-            if (callProxy === void 0) { callProxy = true; }
-            var _this = _super.call(this) || this;
-            callProxy && Mediator_1.default.call(_this, _this);
-            // skinName不能马上设置（考虑到可能需要预加载资源），延迟到添加显示之前设置
-            _this._skinName = skin;
-            return _this;
-        }
-        Object.defineProperty(Mediator.prototype, "disposed", {
-            /**
-             * 获取中介者是否已被销毁
-             *
-             * @readonly
-             * @type {boolean}
-             * @memberof Mediator
-             */
-            get: function () {
-                return this._disposed;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Mediator.prototype.$onAddToStage = function (stage, nestLevel) {
-            this.skinName = this._skinName;
-            _super.prototype.$onAddToStage.call(this, stage, nestLevel);
-        };
-        /**
-         * 列出中介者所需的资源数组，可重写
-         *
-         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-         * @memberof Mediator
-         */
-        Mediator.prototype.listAssets = function () {
-            return Mediator_1.default.prototype.listAssets.call(this);
-        };
-        /**
-         * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
-         *
-         * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
-         * @memberof Mediator
-         */
-        Mediator.prototype.loadAssets = function (handler) {
-            Mediator_1.default.prototype.loadAssets.call(this, handler);
-        };
-        /**
-         * 打开
-         *
-         * @param {*} [data]
-         * @returns {*}
-         * @memberof Mediator
-         */
-        Mediator.prototype.open = function (data) {
-            return Mediator_1.default.prototype.open.call(this, data);
-        };
-        /**
-         * 关闭
-         *
-         * @param {*} [data]
-         * @returns {*}
-         * @memberof Mediator
-         */
-        Mediator.prototype.close = function (data) {
-            return Mediator_1.default.prototype.close.call(this, data);
-        };
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        Mediator.prototype.mapListener = function (target, type, handler, thisArg) {
-            Mediator_1.default.prototype.mapListener.call(this, target, type, handler, thisArg);
-        };
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        Mediator.prototype.unmapListener = function (target, type, handler, thisArg) {
-            Mediator_1.default.prototype.unmapListener.call(this, target, type, handler, thisArg);
-        };
-        /**
-         * 注销所有注册在当前中介者上的事件监听
-         *
-         * @memberof Mediator
-         */
-        Mediator.prototype.unmapAllListeners = function () {
-            Mediator_1.default.prototype.unmapAllListeners.call(this);
-        };
-        Mediator.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            (_a = Mediator_1.default.prototype.dispatch).call.apply(_a, [this, typeOrMsg].concat(params));
-            var _a;
-        };
-        /**
-         * 销毁中介者
-         *
-         * @memberof Mediator
-         */
-        Mediator.prototype.dispose = function () {
-            Mediator_1.default.prototype.dispose.call(this);
-        };
-        return Mediator;
-    }(eui.Component));
-    exports.default = Mediator;
-});
-define("egret/panel/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * Egret的弹窗中介者
-    */
-    var PanelMediator = /** @class */ (function (_super) {
-        __extends(PanelMediator, _super);
-        function PanelMediator(skin, policy) {
-            var _this = _super.call(this, skin, false) || this;
-            PanelMediator_1.default.call(_this, _this, policy);
-            return _this;
-        }
-        /**
-         * 弹出当前弹窗（等同于调用PanelManager.pop方法）
-         *
-         * @param {*} [data] 数据
-         * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
-         * @param {{x:number, y:number}} [from] 弹出点坐标
-         * @returns {IPanel} 弹窗本体
-         * @memberof PanelMediator
-         */
-        PanelMediator.prototype.open = function (data, isModel, from) {
-            return PanelMediator_1.default.prototype.open.call(this, data, isModel, from);
-        };
-        /**
-         * 关闭当前弹窗（等同于调用PanelManager.drop方法）
-         *
-         * @param {*} [data] 数据
-         * @param {{x:number, y:number}} [to] 关闭点坐标
-         * @returns {IPanel} 弹窗本体
-         * @memberof PanelMediator
-         */
-        PanelMediator.prototype.close = function (data, to) {
-            return PanelMediator_1.default.prototype.close.call(this, data, to);
-        };
-        /** 在弹出前调用的方法 */
-        PanelMediator.prototype.onBeforePop = function (data, isModel, from) {
-            PanelMediator_1.default.prototype.onBeforePop.call(this, data, isModel, from);
-        };
-        /** 在弹出后调用的方法 */
-        PanelMediator.prototype.onAfterPop = function (data, isModel, from) {
-            PanelMediator_1.default.prototype.onAfterPop.call(this, data, isModel, from);
-        };
-        /** 在关闭前调用的方法 */
-        PanelMediator.prototype.onBeforeDrop = function (data, to) {
-            PanelMediator_1.default.prototype.onBeforeDrop.call(this, data, to);
-        };
-        /** 在关闭后调用的方法 */
-        PanelMediator.prototype.onAfterDrop = function (data, to) {
-            PanelMediator_1.default.prototype.onAfterDrop.call(this, data, to);
-        };
-        return PanelMediator;
-    }(Mediator_2.default));
-    exports.default = PanelMediator;
-});
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -66231,80 +66100,6 @@ define("egret/panel/BackPanelPolicy", ["require", "exports", "egret/utils/TweenU
     }());
     exports.default = BackPanelPolicy;
 });
-define("egret/scene/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * Egret的场景中介者
-    */
-    var SceneMediator = /** @class */ (function (_super) {
-        __extends(SceneMediator, _super);
-        function SceneMediator(skin, policy) {
-            var _this = _super.call(this, skin, false) || this;
-            SceneMediator_1.default.call(_this, _this, policy);
-            return _this;
-        }
-        /**
-         * 打开当前场景（相当于调用SceneManager.push方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.open = function (data) {
-            return SceneMediator_1.default.prototype.open.call(this, data);
-        };
-        /**
-         * 关闭当前场景（相当于调用SceneManager.pop方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.close = function (data) {
-            return SceneMediator_1.default.prototype.close.call(this, data);
-        };
-        /**
-         * 切入场景开始前调用
-         * @param fromScene 从哪个场景切入
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onBeforeIn = function (fromScene, data) {
-            SceneMediator_1.default.prototype.onBeforeIn.call(this, fromScene, data);
-        };
-        /**
-         * 切入场景开始后调用
-         * @param fromScene 从哪个场景切入
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onAfterIn = function (fromScene, data) {
-            SceneMediator_1.default.prototype.onAfterIn.call(this, fromScene, data);
-        };
-        /**
-         * 切出场景开始前调用
-         * @param toScene 要切入到哪个场景
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onBeforeOut = function (toScene, data) {
-            SceneMediator_1.default.prototype.onBeforeOut.call(this, toScene, data);
-        };
-        /**
-         * 切出场景开始后调用
-         * @param toScene 要切入到哪个场景
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onAfterOut = function (toScene, data) {
-            SceneMediator_1.default.prototype.onAfterOut.call(this, toScene, data);
-        };
-        return SceneMediator;
-    }(Mediator_3.default));
-    exports.default = SceneMediator;
-});
 /// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
 /// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
 /// <reference path="../../egret/egret-libs/res/res.d.ts"/>
@@ -66390,16 +66185,17 @@ define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require,
 /// <reference path="./egret/egret-libs/res/res.d.ts"/>
 /// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../dist/Olympus.d.ts"/>
-define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
+define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy", "egret/injector/Injector"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1, Injector) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com
      * @create date 2017-09-18
      * @modify date 2017-09-18
      *
-     * Egret的表现层桥实现
+     * Egret的表现层桥实现，当前Egret版本：5.0.7
     */
     var EgretBridge = /** @class */ (function () {
         function EgretBridge(params) {

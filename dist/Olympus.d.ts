@@ -1366,7 +1366,7 @@ declare module "engine/bridge/BridgeManager" {
  * @create date 2017-09-22
  * @modify date 2017-09-22
  *
- * core模组内所有装饰器的全局声明
+ * engine模组内所有装饰器的全局声明
 */
 declare function ModelClass(cls: IConstructor): any;
 declare function MediatorClass(cls: IConstructor): any;

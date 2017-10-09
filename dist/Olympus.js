@@ -555,9 +555,10 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     window["MessageHandler"] = MessageHandler;
 });
 /// <reference path="./global/Patch.ts"/>
-define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, Dictionary_2, CommonMessage_1, CoreMessage_1) {
+define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/CommonMessage", "core/message/CoreMessage", "core/injector/Injector"], function (require, exports, Dictionary_2, CommonMessage_1, CoreMessage_1, Injector) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    Injector;
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -4048,9 +4049,10 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_1, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage", "engine/injector/Injector"], function (require, exports, Core_20, Injector_16, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_1, Version_1, ModuleMessage_2, Injector) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com

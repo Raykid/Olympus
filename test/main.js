@@ -30,7 +30,7 @@ define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal
     }
     exports.default = getParam;
 });
-define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "egret/scene/SceneMediator"], function (require, exports, Module_1, ModuleManager_1, SceneMediator_1) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "engine/scene/SceneMediator"], function (require, exports, Module_1, ModuleManager_1, SceneMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -57,7 +57,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
     var SecondMediator = /** @class */ (function (_super) {
         __extends(SecondMediator, _super);
         function SecondMediator() {
-            return _super.call(this, Fuck2Skin) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         SecondMediator.prototype.onBeforeIn = function () {
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
@@ -65,12 +65,13 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             });
         };
         SecondMediator = __decorate([
-            MediatorClass
+            MediatorClass,
+            EgretSkin("Fuck2Skin")
         ], SecondMediator);
         return SecondMediator;
     }(SceneMediator_1.default));
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "egret/scene/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, SceneMediator_2) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, SceneMediator_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -97,7 +98,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
     var FirstMediator = /** @class */ (function (_super) {
         __extends(FirstMediator, _super);
         function FirstMediator() {
-            return _super.call(this, FuckSkin) || this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         FirstMediator.prototype.listAssets = function () {
             return ["preload"];
@@ -122,7 +123,8 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
         ], FirstMediator.prototype, "onModuleChange", null);
         FirstMediator = __decorate([
-            MediatorClass
+            MediatorClass,
+            EgretSkin("FuckSkin")
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));

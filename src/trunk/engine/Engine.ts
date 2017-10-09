@@ -22,9 +22,11 @@ import Version, { version } from "./version/Version";
 import NetManager, { netManager } from "./net/NetManager";
 import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
 import { IResponseDataConstructor } from "./net/ResponseData";
-import * as Injector from "./injector/Injector"
 import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
+import * as Injector from "./injector/Injector"
+
+Injector;
 
 /**
  * @author Raykid

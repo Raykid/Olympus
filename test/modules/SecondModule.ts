@@ -1,7 +1,7 @@
 import Module from "engine/module/Module";
 import ResponseData from "engine/net/ResponseData";
 import { moduleManager } from "engine/module/ModuleManager";
-import SceneMediator from "egret/scene/SceneMediator";
+import SceneMediator from "engine/scene/SceneMediator";
 
 /**
  * @author Raykid
@@ -18,14 +18,10 @@ export default class SecondModule extends Module
 }
 
 @MediatorClass
+@EgretSkin("Fuck2Skin")
 class SecondMediator extends SceneMediator
 {
     public btn:eui.Button;
-
-    public constructor()
-    {
-        super(Fuck2Skin);
-    }
 
     public onBeforeIn():void
     {

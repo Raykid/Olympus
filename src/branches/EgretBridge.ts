@@ -12,11 +12,11 @@ import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
-import Mediator from "./egret/mediator/Mediator";
-import PanelMediator from "./egret/panel/PanelMediator";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
-import SceneMediator from "./egret/scene/SceneMediator";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
+import * as Injector from "./egret/injector/Injector";
+
+Injector;
 
 /**
  * @author Raykid

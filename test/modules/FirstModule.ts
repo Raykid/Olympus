@@ -3,7 +3,7 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
-import SceneMediator from "egret/scene/SceneMediator";
+import SceneMediator from "engine/scene/SceneMediator";
 
 /**
  * @author Raykid
@@ -20,6 +20,7 @@ export default class FirstModule extends Module
 }
 
 @MediatorClass
+@EgretSkin("FuckSkin")
 class FirstMediator extends SceneMediator
 {
     @Inject(ModuleManager)
@@ -31,11 +32,6 @@ class FirstMediator extends SceneMediator
     public listAssets():string[]
     {
         return ["preload"];
-    }
-
-    public constructor()
-    {
-        super(FuckSkin);
     }
 
     public onBeforeIn():void
