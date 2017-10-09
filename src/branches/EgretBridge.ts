@@ -1,7 +1,7 @@
-/// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="./egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="./egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="./egret/egret-libs/egret/egret.d.ts"/>
+/// <reference path="./egret/egret-libs/eui/eui.d.ts"/>
+/// <reference path="./egret/egret-libs/res/res.d.ts"/>
+/// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../dist/Olympus.d.ts"/>
 
 import { core } from "core/Core";

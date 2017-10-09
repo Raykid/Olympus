@@ -156,7 +156,7 @@ define("net/type/Test", ["require", "exports", "engine/net/DataType"], function 
     }(DataType_1.default));
     exports.default = Test;
 });
-define("net/response/TestResponse", ["require", "exports", "engine/net/ResponseData", "net/type/Test"], function (require, exports, ResponseData_1, Test_1) {
+define("net/response/TestResponse", ["require", "exports", "engine/net/ResponseData", "engine/net/NetManager", "net/type/Test"], function (require, exports, ResponseData_1, NetManager_1, Test_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -198,6 +198,8 @@ define("net/response/TestResponse", ["require", "exports", "engine/net/ResponseD
         return TestResponse;
     }(ResponseData_1.default));
     exports.default = TestResponse;
+    /** 注册返回体 */
+    NetManager_1.netManager.registerResponse(TestResponse);
 });
 define("net/request/TestRequest", ["require", "exports", "engine/net/RequestData", "engine/net/policies/HTTPRequestPolicy", "net/response/TestResponse"], function (require, exports, RequestData_1, HTTPRequestPolicy_1, TestResponse_1) {
     "use strict";

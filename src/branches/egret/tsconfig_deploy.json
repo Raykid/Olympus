@@ -8,11 +8,11 @@
     "allowJs": true
   },
   "files": [
-    "egret-core/build/egret/egret.js",
-    "egret-core/build/egret/egret.web.js",
-    "egret-core/build/eui/eui.js",
-    "egret-core/build/res/res.js",
-    "egret-core/build/tween/tween.js",
+    "egret-libs/egret/egret.js",
+    "egret-libs/egret/egret.web.js",
+    "egret-libs/eui/eui.js",
+    "egret-libs/res/res.js",
+    "egret-libs/tween/tween.js",
     "../EgretBridge.ts"
   ],
   "exclude": [

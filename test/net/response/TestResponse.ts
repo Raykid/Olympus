@@ -1,4 +1,5 @@
 import ResponseData, { IResponseParams } from "engine/net/ResponseData";
+import { netManager } from "engine/net/NetManager";
 import * as NetUtil from "engine/net/NetUtil";
 import Test from "../type/Test";
 
@@ -44,3 +45,6 @@ export default class TestResponse extends ResponseData
         };
     }
 }
+
+/** 注册返回体 */
+netManager.registerResponse(TestResponse);

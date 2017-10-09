@@ -65795,7 +65795,7 @@ define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     })(RenderMode || (RenderMode = {}));
     exports.default = RenderMode;
 });
-/// <reference path="../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../egret/egret-libs/res/res.d.ts"/>
 /// <reference path="../../../dist/Olympus.d.ts"/>
 define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/version/Version", "engine/panel/PanelManager", "engine/platform/PlatformManager"], function (require, exports, Environment_1, Version_1, PanelManager_1, PlatformManager_1) {
     "use strict";
@@ -65922,10 +65922,10 @@ define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "e
     }());
     exports.default = AssetsLoader;
 });
-/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-libs/res/res.d.ts"/>
+/// <reference path="../../egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../../../dist/Olympus.d.ts"/>
 define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediator"], function (require, exports, Mediator_1) {
     "use strict";
@@ -66144,10 +66144,10 @@ define("egret/utils/TweenUtil", ["require", "exports"], function (require, expor
     }
     exports.tweenFrom = tweenFrom;
 });
-/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-libs/res/res.d.ts"/>
+/// <reference path="../../egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../../../dist/Olympus.d.ts"/>
 define("egret/panel/BackPanelPolicy", ["require", "exports", "egret/utils/TweenUtil"], function (require, exports, TweenUtil_1) {
     "use strict";
@@ -66305,10 +66305,10 @@ define("egret/scene/SceneMediator", ["require", "exports", "engine/scene/SceneMe
     }(Mediator_3.default));
     exports.default = SceneMediator;
 });
-/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-libs/res/res.d.ts"/>
+/// <reference path="../../egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../../../dist/Olympus.d.ts"/>
 define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -66385,10 +66385,10 @@ define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require,
     }());
     exports.default = FadeScenePolicy;
 });
-/// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="./egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="./egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="./egret/egret-libs/egret/egret.d.ts"/>
+/// <reference path="./egret/egret-libs/eui/eui.d.ts"/>
+/// <reference path="./egret/egret-libs/res/res.d.ts"/>
+/// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../dist/Olympus.d.ts"/>
 define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
     "use strict";
