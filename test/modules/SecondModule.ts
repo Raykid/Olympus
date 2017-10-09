@@ -17,8 +17,7 @@ export default class SecondModule extends Module
     private _mediator:SecondMediator = new SecondMediator();
 }
 
-@MediatorClass
-@EgretSkin("Fuck2Skin")
+@EgretMediatorClass("Fuck2Skin")
 class SecondMediator extends SceneMediator
 {
     public btn:eui.Button;

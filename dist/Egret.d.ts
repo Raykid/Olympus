@@ -12,6 +12,7 @@
  * egret表现层装饰器的全局声明
 */
 declare function EgretSkin(skin: any): ClassDecorator;
+declare function EgretMediatorClass(skin: any): ClassDecorator;
 declare module "egret/utils/SkinUtil" {
     import IMediator from "engine/mediator/IMediator";
     /**
@@ -35,6 +36,7 @@ declare module "egret/injector/Injector" {
     */
     /** 定义数据模型，支持实例注入，并且自身也会被注入 */
     export function EgretSkin(skin: any): ClassDecorator;
+    export function EgretMediatorClass(skin: any): ClassDecorator;
 }
 declare module "egret/RenderMode" {
     /**

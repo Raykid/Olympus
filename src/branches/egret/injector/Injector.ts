@@ -5,6 +5,7 @@
 
 import { listenConstruct } from "utils/ConstructUtil";
 import { wrapSkin } from "../utils/SkinUtil";
+import { MediatorClass } from "engine/injector/Injector";
 
 /**
  * @author Raykid
@@ -26,3 +27,16 @@ export function EgretSkin(skin:any):ClassDecorator
 }
 // 赋值全局方法
 window["EgretSkin"] = EgretSkin;
+
+export function EgretMediatorClass(skin:any):ClassDecorator
+{
+    return function(cls:IConstructor):any
+    {
+        // 监听类型实例化，转换皮肤格式
+        listenConstruct(cls, mediator=>wrapSkin(mediator, skin));
+        // 调用MediatorClass方法
+        return MediatorClass(cls);
+    } as ClassDecorator;
+}
+// 赋值全局方法
+window["EgretMediatorClass"] = EgretMediatorClass;

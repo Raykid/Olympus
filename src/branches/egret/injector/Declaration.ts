@@ -7,3 +7,4 @@
  * egret表现层装饰器的全局声明
 */
 declare function EgretSkin(skin:any):ClassDecorator;
+declare function EgretMediatorClass(skin:any):ClassDecorator;

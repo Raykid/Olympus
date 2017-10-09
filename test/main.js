@@ -65,8 +65,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             });
         };
         SecondMediator = __decorate([
-            MediatorClass,
-            EgretSkin("Fuck2Skin")
+            EgretMediatorClass("Fuck2Skin")
         ], SecondMediator);
         return SecondMediator;
     }(SceneMediator_1.default));

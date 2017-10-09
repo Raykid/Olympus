@@ -65818,7 +65818,7 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
 /// <reference path="../egret-libs/eui/eui.d.ts"/>
 /// <reference path="./Declaration.ts"/>
 /// <reference path="../../../../dist/Olympus.d.ts"/>
-define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", "egret/utils/SkinUtil"], function (require, exports, ConstructUtil_1, SkinUtil_1) {
+define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", "egret/utils/SkinUtil", "engine/injector/Injector"], function (require, exports, ConstructUtil_1, SkinUtil_1, Injector_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -65839,6 +65839,17 @@ define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", 
     exports.EgretSkin = EgretSkin;
     // 赋值全局方法
     window["EgretSkin"] = EgretSkin;
+    function EgretMediatorClass(skin) {
+        return function (cls) {
+            // 监听类型实例化，转换皮肤格式
+            ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, skin); });
+            // 调用MediatorClass方法
+            return Injector_1.MediatorClass(cls);
+        };
+    }
+    exports.EgretMediatorClass = EgretMediatorClass;
+    // 赋值全局方法
+    window["EgretMediatorClass"] = EgretMediatorClass;
 });
 define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     "use strict";
