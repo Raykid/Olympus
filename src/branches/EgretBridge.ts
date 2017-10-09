@@ -24,7 +24,7 @@ import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
  * @create date 2017-09-18
  * @modify date 2017-09-18
  * 
- * Egret的表现层桥实现
+ * Egret的表现层桥实现，当前Egret版本：5.0.7
 */
 export default class EgretBridge implements IBridge
 {
