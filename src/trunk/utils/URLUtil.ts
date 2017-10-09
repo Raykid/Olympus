@@ -63,7 +63,7 @@ export function validateProtocol(url:string):string
  */
 export function wrapHost(url:string, host:string, forced:boolean = false):string
 {
-    host = host || "/";
+    host = host || window.location.origin;
     var re: RegExp = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
     var arr: string[] = url.match(re);
     if (arr && arr.length > 0)

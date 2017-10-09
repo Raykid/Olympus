@@ -52,7 +52,7 @@ export interface IHTTPRequestParams extends IRequestParams
     timeout?:number;
 }
 
-export default class HTTPRequestPolicy implements IRequestPolicy
+export class HTTPRequestPolicy implements IRequestPolicy
 {
     /**
      * 发送请求逻辑
@@ -68,13 +68,12 @@ export default class HTTPRequestPolicy implements IRequestPolicy
         var method:HTTPMethod = params.method || "GET";
         var timeoutId:number = 0;
         // 取到url
-        var url:string = wrapHost(params.path, params.host, true);
+        var url:string = wrapHost(params.path, params.host);
         // 合法化一下protocol
         url = validateProtocol(url);
         // 生成并初始化xhr
         var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
         xhr.onreadystatechange = onReadyStateChange;
-        xhr.setRequestHeader("withCredentials", "true");
         // 发送
         send();
 
@@ -87,12 +86,14 @@ export default class HTTPRequestPolicy implements IRequestPolicy
                     // POST目前规定为JSON格式发送
                     xhr.open(method, url, true);
                     xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.setRequestHeader("withCredentials", "true");
                     xhr.send(JSON.stringify(params.data));
                     break;
                 case "GET":
                     // 将数据添加到url上
                     url = joinQueryParams(url, params.data);
                     xhr.open(method, url, true);
+                    xhr.setRequestHeader("withCredentials", "true");
                     xhr.send(null);
                     break;
                 default:
@@ -117,7 +118,7 @@ export default class HTTPRequestPolicy implements IRequestPolicy
                         {
                             // 成功回调
                             var result:any = JSON.parse(xhr.responseText);
-                            netManager.__onResponse(result, request);
+                            netManager.__onResponse(request.__params.response.type, result, request);
                         }
                         else if(retryTimes > 0)
                         {
@@ -152,4 +153,4 @@ export default class HTTPRequestPolicy implements IRequestPolicy
 }
 
 /** 再额外导出一个实例 */
-export const httpRequestPolicy:HTTPRequestPolicy = new HTTPRequestPolicy();
+export default new HTTPRequestPolicy();

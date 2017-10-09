@@ -1,3 +1,4 @@
+/// <reference path="../egret/egret-core/build/res/res.d.ts"/>
 /// <reference path="../../../dist/Olympus.d.ts"/>
 
 import { environment } from "engine/env/Environment";

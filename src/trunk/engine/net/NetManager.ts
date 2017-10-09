@@ -5,7 +5,8 @@ import CoreMessage from "../../core/message/CoreMessage";
 import { extendObject } from "../../utils/ObjectUtil";
 import RequestData, { commonData } from "./RequestData";
 import ResponseData, { IResponseDataConstructor } from "./ResponseData";
-import NetMessage from "./NetMessage"
+import NetMessage from "./NetMessage";
+import * as NetUtil from "./NetUtil";
 
 /**
  * @author Raykid
@@ -53,7 +54,7 @@ export default class NetManager
      */
     public registerResponse(cls:IResponseDataConstructor):void
     {
-        this._responseDict[cls.getType()] = cls;
+        this._responseDict[cls.type] = cls;
     }
 
     private _responseListeners:{[type:string]:[ResponseHandler, any, boolean][]} = {};
@@ -68,7 +69,7 @@ export default class NetManager
      */
     public listenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false):void
     {
-        var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
+        var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
         var listeners:[ResponseHandler, any, boolean][] = this._responseListeners[type];
         if(!listeners) this._responseListeners[type] = listeners = [];
         for(var listener of listeners)
@@ -90,7 +91,7 @@ export default class NetManager
      */
     public unlistenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false):void
     {
-        var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
+        var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
         var listeners:[ResponseHandler, any, boolean][] = this._responseListeners[type];
         if(listeners)
         {
@@ -170,6 +171,9 @@ export default class NetManager
         if(cls)
         {
             var response:ResponseData = new cls();
+            // 设置配对请求
+            if(request) response.__params.request = request;
+            // 执行解析
             response.parse(result);
             // 派发事件
             core.dispatch(NetMessage.NET_RESPONSE, response, request);

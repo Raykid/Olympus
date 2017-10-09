@@ -1714,6 +1714,84 @@ define("engine/net/NetMessage", ["require", "exports"], function (require, expor
     }());
     exports.default = NetMessage;
 });
+define("engine/net/NetUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 网络工具集，框架内部使用
+    */
+    function handleObj(obj) {
+        if (obj instanceof Array)
+            return packArray(obj);
+        else if (obj.pack instanceof Function)
+            return obj.pack();
+        else if (typeof obj == "object")
+            return packMap(obj);
+        else
+            obj;
+    }
+    function packArray(arr) {
+        if (arr == null)
+            return null;
+        var result = arr.map(handleObj);
+        return result;
+    }
+    exports.packArray = packArray;
+    function parseArray(arr, cls) {
+        if (arr == null)
+            return [];
+        // 不支持二维数组嵌套
+        var result = [];
+        for (var i = 0, len = arr.length; i < len; i++) {
+            var value = arr[i];
+            if (cls == null) {
+                // 子对象是个基础类型
+                result.push(value);
+            }
+            else {
+                // 子对象是个自定义类型
+                result.push(new cls().parse(value));
+            }
+        }
+        return result;
+    }
+    exports.parseArray = parseArray;
+    function packMap(map) {
+        if (map == null)
+            return null;
+        var result = {};
+        for (var key in map) {
+            var obj = map[key];
+            result[key] = handleObj(obj);
+        }
+        return result;
+    }
+    exports.packMap = packMap;
+    function parseMap(map, cls) {
+        if (map == null)
+            return {};
+        // 不支持二维数组嵌套
+        var result = {};
+        for (var key in map) {
+            var value = map[key];
+            if (cls == null) {
+                // 子对象是个基础类型
+                result[key] = value;
+            }
+            else {
+                // 子对象是个自定义类型
+                result[key] = new cls().parse(value);
+            }
+        }
+        return result;
+    }
+    exports.parseMap = parseMap;
+});
 define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage"], function (require, exports, Core_6, Injector_4, CoreMessage_2, ObjectUtil_3, RequestData_1, NetMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1742,7 +1820,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
          * @memberof NetManager
          */
         NetManager.prototype.registerResponse = function (cls) {
-            this._responseDict[cls.getType()] = cls;
+            this._responseDict[cls.type] = cls;
         };
         /**
          * 添加一个通讯返回监听
@@ -1755,7 +1833,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
          */
         NetManager.prototype.listenResponse = function (clsOrType, handler, thisArg, once) {
             if (once === void 0) { once = false; }
-            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
+            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
             var listeners = this._responseListeners[type];
             if (!listeners)
                 this._responseListeners[type] = listeners = [];
@@ -1777,7 +1855,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
          */
         NetManager.prototype.unlistenResponse = function (clsOrType, handler, thisArg, once) {
             if (once === void 0) { once = false; }
-            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.getType());
+            var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
             var listeners = this._responseListeners[type];
             if (listeners) {
                 for (var i = 0, len = listeners.length; i < len; i++) {
@@ -1841,6 +1919,10 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             var cls = this._responseDict[type];
             if (cls) {
                 var response = new cls();
+                // 设置配对请求
+                if (request)
+                    response.__params.request = request;
+                // 执行解析
                 response.parse(result);
                 // 派发事件
                 Core_6.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
@@ -3025,7 +3107,7 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
      */
     function wrapHost(url, host, forced) {
         if (forced === void 0) { forced = false; }
-        host = host || "/";
+        host = host || window.location.origin;
         var re = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
         var arr = url.match(re);
         if (arr && arr.length > 0) {
@@ -3891,13 +3973,12 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
             var method = params.method || "GET";
             var timeoutId = 0;
             // 取到url
-            var url = URLUtil_3.wrapHost(params.path, params.host, true);
+            var url = URLUtil_3.wrapHost(params.path, params.host);
             // 合法化一下protocol
             url = URLUtil_3.validateProtocol(url);
             // 生成并初始化xhr
             var xhr = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
             xhr.onreadystatechange = onReadyStateChange;
-            xhr.setRequestHeader("withCredentials", "true");
             // 发送
             send();
             function send() {
@@ -3907,12 +3988,14 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
                         // POST目前规定为JSON格式发送
                         xhr.open(method, url, true);
                         xhr.setRequestHeader("Content-Type", "application/json");
+                        xhr.setRequestHeader("withCredentials", "true");
                         xhr.send(JSON.stringify(params.data));
                         break;
                     case "GET":
                         // 将数据添加到url上
                         url = URLUtil_3.joinQueryParams(url, params.data);
                         xhr.open(method, url, true);
+                        xhr.setRequestHeader("withCredentials", "true");
                         xhr.send(null);
                         break;
                     default:
@@ -3932,7 +4015,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
                             if (xhr.status == 200) {
                                 // 成功回调
                                 var result = JSON.parse(xhr.responseText);
-                                NetManager_3.netManager.__onResponse(result, request);
+                                NetManager_3.netManager.__onResponse(request.__params.response.type, result, request);
                             }
                             else if (retryTimes > 0) {
                                 // 没有超过重试上限则重试
@@ -3961,9 +4044,9 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
         };
         return HTTPRequestPolicy;
     }());
-    exports.default = HTTPRequestPolicy;
+    exports.HTTPRequestPolicy = HTTPRequestPolicy;
     /** 再额外导出一个实例 */
-    exports.httpRequestPolicy = new HTTPRequestPolicy();
+    exports.default = new HTTPRequestPolicy();
 });
 define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_1, Version_1, ModuleMessage_2) {
     "use strict";

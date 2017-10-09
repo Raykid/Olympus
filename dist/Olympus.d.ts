@@ -1451,6 +1451,13 @@ declare module "engine/net/RequestData" {
          */
         type: string;
         /**
+         * 消息路径
+         *
+         * @type {string}
+         * @memberof IRequestParams
+         */
+        path: string;
+        /**
          * 消息数据
          *
          * @type {*}
@@ -1490,6 +1497,7 @@ declare module "engine/net/RequestData" {
         /**
          * 请求参数，可以运行时修改
          *
+         * @abstract
          * @type {IRequestParams}
          * @memberof RequestData
          */
@@ -1497,6 +1505,7 @@ declare module "engine/net/RequestData" {
         /**
          * 消息发送接收策略
          *
+         * @abstract
          * @type {IRequestPolicy}
          * @memberof RequestData
          */
@@ -1514,7 +1523,7 @@ declare module "engine/net/RequestData" {
     export var commonData: any;
 }
 declare module "engine/net/ResponseData" {
-    import MessageType from "engine/net/DataType";
+    import DataType from "engine/net/DataType";
     import RequestData from "engine/net/RequestData";
     /**
      * @author Raykid
@@ -1528,11 +1537,10 @@ declare module "engine/net/ResponseData" {
         type: string;
         protocol: string;
         method: null | "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH" | "MOVE" | "COPY" | "LINK" | "UNLINK" | "WRAPPED" | "Extension-mothed";
-        data: any;
         request?: RequestData;
-        error?: Error;
+        [key: string]: any;
     }
-    export default abstract class ResponseData extends MessageType {
+    export default abstract class ResponseData extends DataType {
         /**
          * 返回参数
          *
@@ -1544,7 +1552,7 @@ declare module "engine/net/ResponseData" {
     }
     export interface IResponseDataConstructor {
         new (): ResponseData;
-        getType(): string;
+        readonly type: string;
     }
 }
 declare module "engine/net/NetMessage" {
@@ -1581,6 +1589,24 @@ declare module "engine/net/NetMessage" {
          * @memberof NetMessage
          */
         static NET_ERROR: string;
+    }
+}
+declare module "engine/net/NetUtil" {
+    import DataType from "engine/net/DataType";
+    export function packArray(arr: any[]): any[];
+    export function parseArray(arr: any[], cls?: DataTypeClass): any[];
+    export function packMap(map: {
+        [key: string]: any;
+    }): {
+        [key: string]: any;
+    };
+    export function parseMap(map: {
+        [key: string]: any;
+    }, cls?: DataTypeClass): {
+        [key: string]: any;
+    };
+    export interface DataTypeClass {
+        new (): DataType;
     }
 }
 declare module "engine/net/NetManager" {
@@ -2884,7 +2910,7 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
          */
         timeout?: number;
     }
-    export default class HTTPRequestPolicy implements IRequestPolicy {
+    export class HTTPRequestPolicy implements IRequestPolicy {
         /**
          * 发送请求逻辑
          *
@@ -2893,8 +2919,8 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
          */
         sendRequest(request: RequestData): void;
     }
-    /** 再额外导出一个实例 */
-    export const httpRequestPolicy: HTTPRequestPolicy;
+    const _default: HTTPRequestPolicy;
+    export default _default;
 }
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";

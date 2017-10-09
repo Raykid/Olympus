@@ -127,11 +127,120 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         return FirstMediator;
     }(SceneMediator_2.default));
 });
+define("net/type/Test", ["require", "exports", "engine/net/DataType"], function (require, exports, DataType_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author TemplateGenerator
+     * @email initial_r@qq.com
+     * @modify date 10/9/2017
+     *
+     * 测试
+    */
+    var Test = /** @class */ (function (_super) {
+        __extends(Test, _super);
+        function Test() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Test.prototype.doParse = function (data) {
+            if (data == null)
+                return;
+            this.test = data.test;
+        };
+        Test.prototype.pack = function () {
+            return {
+                test: this.test
+            };
+        };
+        return Test;
+    }(DataType_1.default));
+    exports.default = Test;
+});
+define("net/response/TestResponse", ["require", "exports", "engine/net/ResponseData", "net/type/Test"], function (require, exports, ResponseData_1, Test_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author TemplateGenerator
+     * @email initial_r@qq.com
+     * @modify date 10/9/2017
+     *
+     * 测试
+    */
+    var TestResponse = /** @class */ (function (_super) {
+        __extends(TestResponse, _super);
+        function TestResponse() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(TestResponse.prototype, "__params", {
+            get: function () {
+                return {
+                    type: "Test",
+                    protocol: "http",
+                    method: "GET"
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        TestResponse.prototype.doParse = function (data) {
+            if (data == null)
+                return;
+            this.__params.success = data.success;
+            this.test = new Test_1.default().parse(data.test);
+        };
+        TestResponse.prototype.pack = function () {
+            return {
+                test: this.test.pack()
+            };
+        };
+        TestResponse.type = "Test";
+        return TestResponse;
+    }(ResponseData_1.default));
+    exports.default = TestResponse;
+});
+define("net/request/TestRequest", ["require", "exports", "engine/net/RequestData", "engine/net/policies/HTTPRequestPolicy", "net/response/TestResponse"], function (require, exports, RequestData_1, HTTPRequestPolicy_1, TestResponse_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author TemplateGenerator
+     * @email initial_r@qq.com
+     * @modify date 10/9/2017
+     *
+     * 测试
+    */
+    var TestRequest = /** @class */ (function (_super) {
+        __extends(TestRequest, _super);
+        function TestRequest() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.__policy = HTTPRequestPolicy_1.default;
+            return _this;
+        }
+        Object.defineProperty(TestRequest.prototype, "__params", {
+            get: function () {
+                return {
+                    type: "Test",
+                    path: "/test",
+                    protocol: "http",
+                    response: TestResponse_1.default,
+                    data: {
+                        test: this.test // string - 测试
+                    }
+                };
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ;
+        return TestRequest;
+    }(RequestData_1.default));
+    exports.default = TestRequest;
+});
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1) {
+define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_1, Core_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -172,5 +281,8 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
         }
     });
     console.log(Environment_1.environment.env, Environment_1.environment.getHost(), Environment_1.environment.curCDNHost);
+    var req = new TestRequest_1.default();
+    req.test = "Fuck you";
+    Core_1.core.dispatch(req);
 });
 //# sourceMappingURL=main.js.map

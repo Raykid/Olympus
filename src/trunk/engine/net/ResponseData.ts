@@ -1,4 +1,4 @@
-import MessageType from "./DataType";
+import DataType from "./DataType";
 import RequestData from "./RequestData";
 
 /**
@@ -15,12 +15,11 @@ export interface IResponseParams
     type:string;
     protocol:string;
     method:null|"GET"|"HEAD"|"POST"|"PUT"|"DELETE"|"CONNECT"|"OPTIONS"|"TRACE"|"PATCH"|"MOVE"|"COPY"|"LINK"|"UNLINK"|"WRAPPED"|"Extension-mothed";
-    data:any;
     request?:RequestData;// 如果消息可以配对则有这个对象
-    error?:Error;// 如果请求出错了则有这个对象
+    [key:string]:any;// 其他可能需要的参数
 }
 
-export default abstract class ResponseData extends MessageType
+export default abstract class ResponseData extends DataType
 {
     /**
      * 返回参数
@@ -35,5 +34,5 @@ export default abstract class ResponseData extends MessageType
 export interface IResponseDataConstructor
 {
     new():ResponseData;
-    getType():string;
+    readonly type:string;
 }

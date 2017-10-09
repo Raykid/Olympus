@@ -1,7 +1,7 @@
+/// <reference path="../src/branches/egret/egret-core/build/res/res.d.ts" />
 /// <reference path="Olympus.d.ts" />
 /// <reference path="../src/branches/egret/egret-core/build/egret/egret.d.ts" />
 /// <reference path="../src/branches/egret/egret-core/build/eui/eui.d.ts" />
-/// <reference path="../src/branches/egret/egret-core/build/res/res.d.ts" />
 /// <reference path="../src/branches/egret/egret-core/build/tween/tween.d.ts" />
 declare module "egret/RenderMode" {
     /**

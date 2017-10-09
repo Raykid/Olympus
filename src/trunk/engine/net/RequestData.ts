@@ -21,6 +21,13 @@ export interface IRequestParams
      */
     type:string;
     /**
+     * 消息路径
+     * 
+     * @type {string}
+     * @memberof IRequestParams
+     */
+    path:string;
+    /**
      * 消息数据
      * 
      * @type {*}
@@ -62,6 +69,7 @@ export default abstract class RequestData implements IMessage
     /**
      * 请求参数，可以运行时修改
      * 
+     * @abstract
      * @type {IRequestParams}
      * @memberof RequestData
      */
@@ -69,6 +77,7 @@ export default abstract class RequestData implements IMessage
     /**
      * 消息发送接收策略
      * 
+     * @abstract
      * @type {IRequestPolicy}
      * @memberof RequestData
      */

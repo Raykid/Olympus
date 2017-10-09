@@ -8,1120 +8,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define("egret/RenderMode", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 渲染模式枚举
-    */
-    var RenderMode;
-    (function (RenderMode) {
-        RenderMode[RenderMode["AUTO"] = 0] = "AUTO";
-        RenderMode[RenderMode["CANVAS"] = 1] = "CANVAS";
-        RenderMode[RenderMode["WEBGL"] = 2] = "WEBGL";
-    })(RenderMode || (RenderMode = {}));
-    exports.default = RenderMode;
-});
-/// <reference path="../../../dist/Olympus.d.ts"/>
-define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/version/Version", "engine/panel/PanelManager", "engine/platform/PlatformManager"], function (require, exports, Environment_1, Version_1, PanelManager_1, PlatformManager_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var ResourceVersionController = /** @class */ (function (_super) {
-        __extends(ResourceVersionController, _super);
-        function ResourceVersionController() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        ResourceVersionController.prototype.getVirtualUrl = function (url) {
-            // 添加imgDomain
-            url = Environment_1.environment.toCDNHostURL(url);
-            // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
-            url = Version_1.version.wrapHashUrl(url);
-            // 返回url
-            return url;
-        };
-        return ResourceVersionController;
-    }(RES.VersionController));
-    exports.ResourceVersionController = ResourceVersionController;
-    // 这里直接注册一下
-    RES.registerVersionController(new ResourceVersionController());
-    var AssetsLoader = /** @class */ (function () {
-        function AssetsLoader(handler) {
-            this._retryDict = {};
-            this._handler = handler;
-        }
-        AssetsLoader.prototype.loadGroups = function (groups) {
-            // 调用回调
-            this._handler.start && this._handler.start();
-            // 开始加载
-            var groupDict = {};
-            var pgsDict;
-            var len = groups ? groups.length : 0;
-            if (len == 0) {
-                this._handler.complete && this._handler.complete(groupDict);
-            }
-            else {
-                RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
-                RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
-                RES.addEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
-                groups = groups.concat();
-                pgsDict = {};
-                for (var i in groups) {
-                    var group = groups[i];
-                    if (typeof group == "string") {
-                        pgsDict[group] = 0;
-                        RES.loadGroup(group);
-                    }
-                    else {
-                        pgsDict[group.name] = 0;
-                        RES.loadGroup(group.name, group.priority);
-                    }
-                }
-            }
-            function onProgress(evt) {
-                // 填充资源字典
-                var itemDict = groupDict[evt.groupName];
-                if (!itemDict)
-                    groupDict[evt.groupName] = itemDict = {};
-                itemDict[evt.resItem.name] = evt.resItem;
-                // 计算总进度
-                pgsDict[evt.groupName] = evt.itemsLoaded / evt.itemsTotal;
-                var pgs = 0;
-                for (var key in pgsDict) {
-                    pgs += pgsDict[key];
-                }
-                pgs /= len;
-                // 回调
-                this._handler.progress && this._handler.progress(evt.resItem, pgs);
-            }
-            function onOneComplete(evt) {
-                // 调用单一完毕回调
-                this._handler.oneComplete && this._handler.oneComplete(groupDict[evt.groupName]);
-                // 测试是否全部完毕
-                var index = groups.indexOf(evt.groupName);
-                if (index >= 0) {
-                    // 移除加载组名
-                    groups.splice(index, 1);
-                    // 判断是否全部完成
-                    if (groups.length == 0) {
-                        // 移除事件监听
-                        RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
-                        RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
-                        RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
-                        // 调用回调
-                        this._handler.complete && this._handler.complete(groupDict);
-                    }
-                }
-            }
-            function onOneError(evt) {
-                var groupName = evt.groupName;
-                var retryTimes = this._retryDict[groupName];
-                if (retryTimes == null)
-                    retryTimes = 0;
-                if (retryTimes < 3) {
-                    this._retryDict[groupName] = ++retryTimes;
-                    // 打印日志
-                    console.warn("加载失败，重试第" + retryTimes + "次: " + groupName);
-                    // 没到最大重试次数，将为url添加一个随机时间戳重新加回加载队列
-                    RES.loadGroup(evt.groupName);
-                }
-                else {
-                    // 打印日志
-                    console.warn("加载失败3次，正在尝试切换CDN...");
-                    // 尝试切换CDN
-                    var allDone = Environment_1.environment.nextCDN();
-                    if (!allDone) {
-                        // 重新加载
-                        RES.loadGroup(evt.groupName);
-                    }
-                    else {
-                        // 调用模板方法
-                        this._handler.oneError && this._handler.oneError(evt);
-                        // 切换CDN失败了，弹出提示，使用户可以手动刷新页面
-                        PanelManager_1.panelManager.confirm("资源组加载失败[" + groupName + "]，点击确定刷新页面", function () {
-                            PlatformManager_1.platformManager.reload();
-                        });
-                    }
-                }
-            }
-        };
-        return AssetsLoader;
-    }());
-    exports.default = AssetsLoader;
-});
-/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
-define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediator"], function (require, exports, Mediator_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 由于Egret EUI界面的特殊性，需要一个Mediator的基类来简化业务逻辑
-    */
-    var Mediator = /** @class */ (function (_super) {
-        __extends(Mediator, _super);
-        function Mediator(skin, callProxy) {
-            if (callProxy === void 0) { callProxy = true; }
-            var _this = _super.call(this) || this;
-            callProxy && Mediator_1.default.call(_this, _this);
-            // skinName不能马上设置（考虑到可能需要预加载资源），延迟到添加显示之前设置
-            _this._skinName = skin;
-            return _this;
-        }
-        Object.defineProperty(Mediator.prototype, "disposed", {
-            /**
-             * 获取中介者是否已被销毁
-             *
-             * @readonly
-             * @type {boolean}
-             * @memberof Mediator
-             */
-            get: function () {
-                return this._disposed;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Mediator.prototype.$onAddToStage = function (stage, nestLevel) {
-            this.skinName = this._skinName;
-            _super.prototype.$onAddToStage.call(this, stage, nestLevel);
-        };
-        /**
-         * 列出中介者所需的资源数组，可重写
-         *
-         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-         * @memberof Mediator
-         */
-        Mediator.prototype.listAssets = function () {
-            return Mediator_1.default.prototype.listAssets.call(this);
-        };
-        /**
-         * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
-         *
-         * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
-         * @memberof Mediator
-         */
-        Mediator.prototype.loadAssets = function (handler) {
-            Mediator_1.default.prototype.loadAssets.call(this, handler);
-        };
-        /**
-         * 打开
-         *
-         * @param {*} [data]
-         * @returns {*}
-         * @memberof Mediator
-         */
-        Mediator.prototype.open = function (data) {
-            return Mediator_1.default.prototype.open.call(this, data);
-        };
-        /**
-         * 关闭
-         *
-         * @param {*} [data]
-         * @returns {*}
-         * @memberof Mediator
-         */
-        Mediator.prototype.close = function (data) {
-            return Mediator_1.default.prototype.close.call(this, data);
-        };
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        Mediator.prototype.mapListener = function (target, type, handler, thisArg) {
-            Mediator_1.default.prototype.mapListener.call(this, target, type, handler, thisArg);
-        };
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof Mediator
-         */
-        Mediator.prototype.unmapListener = function (target, type, handler, thisArg) {
-            Mediator_1.default.prototype.unmapListener.call(this, target, type, handler, thisArg);
-        };
-        /**
-         * 注销所有注册在当前中介者上的事件监听
-         *
-         * @memberof Mediator
-         */
-        Mediator.prototype.unmapAllListeners = function () {
-            Mediator_1.default.prototype.unmapAllListeners.call(this);
-        };
-        Mediator.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            (_a = Mediator_1.default.prototype.dispatch).call.apply(_a, [this, typeOrMsg].concat(params));
-            var _a;
-        };
-        /**
-         * 销毁中介者
-         *
-         * @memberof Mediator
-         */
-        Mediator.prototype.dispose = function () {
-            Mediator_1.default.prototype.dispose.call(this);
-        };
-        return Mediator;
-    }(eui.Component));
-    exports.default = Mediator;
-});
-define("egret/panel/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * Egret的弹窗中介者
-    */
-    var PanelMediator = /** @class */ (function (_super) {
-        __extends(PanelMediator, _super);
-        function PanelMediator(skin, policy) {
-            var _this = _super.call(this, skin, false) || this;
-            PanelMediator_1.default.call(_this, _this, policy);
-            return _this;
-        }
-        /**
-         * 弹出当前弹窗（等同于调用PanelManager.pop方法）
-         *
-         * @param {*} [data] 数据
-         * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
-         * @param {{x:number, y:number}} [from] 弹出点坐标
-         * @returns {IPanel} 弹窗本体
-         * @memberof PanelMediator
-         */
-        PanelMediator.prototype.open = function (data, isModel, from) {
-            return PanelMediator_1.default.prototype.open.call(this, data, isModel, from);
-        };
-        /**
-         * 关闭当前弹窗（等同于调用PanelManager.drop方法）
-         *
-         * @param {*} [data] 数据
-         * @param {{x:number, y:number}} [to] 关闭点坐标
-         * @returns {IPanel} 弹窗本体
-         * @memberof PanelMediator
-         */
-        PanelMediator.prototype.close = function (data, to) {
-            return PanelMediator_1.default.prototype.close.call(this, data, to);
-        };
-        /** 在弹出前调用的方法 */
-        PanelMediator.prototype.onBeforePop = function (data, isModel, from) {
-            PanelMediator_1.default.prototype.onBeforePop.call(this, data, isModel, from);
-        };
-        /** 在弹出后调用的方法 */
-        PanelMediator.prototype.onAfterPop = function (data, isModel, from) {
-            PanelMediator_1.default.prototype.onAfterPop.call(this, data, isModel, from);
-        };
-        /** 在关闭前调用的方法 */
-        PanelMediator.prototype.onBeforeDrop = function (data, to) {
-            PanelMediator_1.default.prototype.onBeforeDrop.call(this, data, to);
-        };
-        /** 在关闭后调用的方法 */
-        PanelMediator.prototype.onAfterDrop = function (data, to) {
-            PanelMediator_1.default.prototype.onAfterDrop.call(this, data, to);
-        };
-        return PanelMediator;
-    }(Mediator_2.default));
-    exports.default = PanelMediator;
-});
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-22
- * @modify date 2017-09-22
- *
- * Egret缓动工具集，用来弥补Egret的Tween的不足
-*/
-define("egret/utils/TweenUtil", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    function tweenTo(target, props, duration, ease) {
-        return egret.Tween.get(target).to(props, duration, ease);
-    }
-    exports.tweenTo = tweenTo;
-    function tweenFrom(target, props, duration, ease) {
-        // 对换参数状态
-        var toProps = {};
-        for (var key in props) {
-            toProps[key] = target[key];
-            target[key] = props[key];
-        }
-        // 开始缓动
-        return egret.Tween.get(target).to(toProps, duration, ease);
-    }
-    exports.tweenFrom = tweenFrom;
-});
-/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
-define("egret/panel/BackPanelPolicy", ["require", "exports", "egret/utils/TweenUtil"], function (require, exports, TweenUtil_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-22
-     * @modify date 2017-09-22
-     *
-     * 回弹效果
-    */
-    var BackPanelPolicy = /** @class */ (function () {
-        function BackPanelPolicy() {
-        }
-        /**
-         * 显示时调用
-         * @param panel 弹出框对象
-         * @param callback 完成回调，必须调用
-         * @param from 动画起始点
-         */
-        BackPanelPolicy.prototype.pop = function (panel, callback, from) {
-            // 开始动画弹出
-            var entity = panel.skin;
-            egret.Tween.removeTweens(entity);
-            // 恢复体积
-            entity.scaleX = 1;
-            entity.scaleY = 1;
-            var fromX = 0;
-            var fromY = 0;
-            if (from != null) {
-                fromX = from.x || entity.x;
-                fromY = from.y || entity.y;
-            }
-            else {
-                fromX = entity.x + entity.width * 0.5;
-                fromY = entity.y + entity.height * 0.5;
-            }
-            // 开始缓动
-            TweenUtil_1.tweenFrom(entity, {
-                x: fromX,
-                y: fromY,
-                scaleX: 0,
-                scaleY: 0
-            }, 300, egret.Ease.backOut).call(callback);
-        };
-        /**
-         * 关闭时调用
-         * @param popup 弹出框对象
-         * @param callback 完成回调，必须调用
-         * @param to 动画完结点
-         */
-        BackPanelPolicy.prototype.drop = function (panel, callback, to) {
-            // 开始动画关闭
-            var entity = panel.skin;
-            egret.Tween.removeTweens(entity);
-            var toX = 0;
-            var toY = 0;
-            if (to != null) {
-                toX = to.x || entity.x + entity.width * 0.5;
-                toY = to.y || entity.y + entity.height * 0.5;
-            }
-            else {
-                toX = entity.x + entity.width * 0.5;
-                toY = entity.y + entity.height * 0.5;
-            }
-            TweenUtil_1.tweenTo(entity, {
-                x: toX,
-                y: toY,
-                scaleX: 0,
-                scaleY: 0
-            }, 300, egret.Ease.backIn).call(function () {
-                // 恢复体积
-                entity.scaleX = 1;
-                entity.scaleY = 1;
-                if (callback != null)
-                    callback();
-            });
-        };
-        return BackPanelPolicy;
-    }());
-    exports.default = BackPanelPolicy;
-});
-define("egret/scene/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * Egret的场景中介者
-    */
-    var SceneMediator = /** @class */ (function (_super) {
-        __extends(SceneMediator, _super);
-        function SceneMediator(skin, policy) {
-            var _this = _super.call(this, skin, false) || this;
-            SceneMediator_1.default.call(_this, _this, policy);
-            return _this;
-        }
-        /**
-         * 打开当前场景（相当于调用SceneManager.push方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.open = function (data) {
-            return SceneMediator_1.default.prototype.open.call(this, data);
-        };
-        /**
-         * 关闭当前场景（相当于调用SceneManager.pop方法）
-         *
-         * @param {*} [data] 数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneMediator
-         */
-        SceneMediator.prototype.close = function (data) {
-            return SceneMediator_1.default.prototype.close.call(this, data);
-        };
-        /**
-         * 切入场景开始前调用
-         * @param fromScene 从哪个场景切入
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onBeforeIn = function (fromScene, data) {
-            SceneMediator_1.default.prototype.onBeforeIn.call(this, fromScene, data);
-        };
-        /**
-         * 切入场景开始后调用
-         * @param fromScene 从哪个场景切入
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onAfterIn = function (fromScene, data) {
-            SceneMediator_1.default.prototype.onAfterIn.call(this, fromScene, data);
-        };
-        /**
-         * 切出场景开始前调用
-         * @param toScene 要切入到哪个场景
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onBeforeOut = function (toScene, data) {
-            SceneMediator_1.default.prototype.onBeforeOut.call(this, toScene, data);
-        };
-        /**
-         * 切出场景开始后调用
-         * @param toScene 要切入到哪个场景
-         * @param data 切场景时可能的参数
-         */
-        SceneMediator.prototype.onAfterOut = function (toScene, data) {
-            SceneMediator_1.default.prototype.onAfterOut.call(this, toScene, data);
-        };
-        return SceneMediator;
-    }(Mediator_3.default));
-    exports.default = SceneMediator;
-});
-/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
-define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-22
-     * @modify date 2017-09-22
-     *
-     * 淡入淡出场景切换策略
-    */
-    var FadeScenePolicy = /** @class */ (function () {
-        function FadeScenePolicy() {
-            this._tempSnapshot = new egret.Bitmap();
-        }
-        /**
-         * 准备切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         */
-        FadeScenePolicy.prototype.prepareSwitch = function (from, to) {
-            if (from != null) {
-                var root = from.bridge.root;
-                // 截取当前屏幕
-                var texture = new egret.RenderTexture();
-                texture.drawToTexture(root);
-                this._tempSnapshot.texture = texture;
-                this._tempSnapshot.alpha = 1;
-                root.addChild(this._tempSnapshot);
-                // 移除from
-                var fromDisplay = from.skin;
-                if (fromDisplay.parent != null) {
-                    fromDisplay.parent.removeChild(fromDisplay);
-                }
-            }
-        };
-        /**
-         * 切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         * @param callback 切换完毕的回调方法
-         */
-        FadeScenePolicy.prototype.switch = function (from, to, callback) {
-            if (from != null) {
-                // 开始淡出
-                egret.Tween.removeTweens(this._tempSnapshot);
-                egret.Tween.get(this._tempSnapshot).to({
-                    alpha: 0
-                }, 300).call(function () {
-                    // 移除截屏
-                    if (this._tempSnapshot.parent != null) {
-                        this._tempSnapshot.parent.removeChild(this._tempSnapshot);
-                    }
-                    // 回收资源
-                    if (this._tempSnapshot.texture != null) {
-                        this._tempSnapshot.texture.dispose();
-                        this._tempSnapshot.texture = null;
-                    }
-                    // 调用回调
-                    callback();
-                }, this);
-            }
-            else {
-                // 移除截屏
-                if (this._tempSnapshot.parent != null) {
-                    this._tempSnapshot.parent.removeChild(this._tempSnapshot);
-                }
-                // 调用回调
-                callback();
-            }
-        };
-        return FadeScenePolicy;
-    }());
-    exports.default = FadeScenePolicy;
-});
-/// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
-/// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
-/// <reference path="./egret/egret-core/build/res/res.d.ts"/>
-/// <reference path="./egret/egret-core/build/tween/tween.d.ts"/>
-/// <reference path="../../dist/Olympus.d.ts"/>
-define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-18
-     * @modify date 2017-09-18
-     *
-     * Egret的表现层桥实现
-    */
-    var EgretBridge = /** @class */ (function () {
-        function EgretBridge(params) {
-            this._defaultPanelPolicy = new BackPanelPolicy_1.default();
-            this._defaultScenePolicy = new FadeScenePolicy_1.default();
-            this._initParams = params;
-        }
-        Object.defineProperty(EgretBridge.prototype, "type", {
-            /**
-             * 获取表现层类型名称
-             *
-             * @readonly
-             * @type {string}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return "Egret";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "htmlWrapper", {
-            /**
-             * 获取表现层HTML包装器，可以对其样式进行自定义调整
-             *
-             * @readonly
-             * @type {HTMLElement}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._initParams.container;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "root", {
-            /**
-             * 获取根显示节点
-             *
-             * @readonly
-             * @type {egret.DisplayObjectContainer}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._root;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "bgLayer", {
-            /**
-             * 获取背景容器
-             *
-             * @readonly
-             * @type {egret.DisplayObjectContainer}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._bgLayer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "sceneLayer", {
-            /**
-             * 获取场景容器
-             *
-             * @readonly
-             * @type {egret.DisplayObjectContainer}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._sceneLayer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "panelLayer", {
-            /**
-             * 获取弹窗容器
-             *
-             * @readonly
-             * @type {egret.DisplayObjectContainer}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._panelLayer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "topLayer", {
-            /**
-             * 获取顶级容器
-             *
-             * @readonly
-             * @type {egret.DisplayObjectContainer}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._topLayer;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "promptPanel", {
-            /**
-             * 获取通用提示框
-             *
-             * @readonly
-             * @type {IPromptPanel}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._initParams.promptPanel;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "defaultPanelPolicy", {
-            /**
-             * 获取默认弹窗策略
-             *
-             * @readonly
-             * @type {IPanelPolicy}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._defaultPanelPolicy;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "defaultScenePolicy", {
-            /**
-             * 获取默认场景切换策略
-             *
-             * @readonly
-             * @type {IScenePolicy}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._defaultScenePolicy;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 初始化表现层桥
-         * @param {()=>void} complete 初始化完毕后的回调
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.init = function (complete) {
-            // 生成html和body的样式节点
-            var style = document.createElement("style");
-            style.textContent = "\n            html, body {\n                -ms-touch-action: none;\n                background: " + egret.toColorString(this._initParams.backgroundColor || 0) + ";\n                padding: 0;\n                border: 0;\n                margin: 0;\n                height: 100%;\n            }\n        ";
-            document.head.appendChild(style);
-            // 统一容器
-            if (typeof this._initParams.container == "string") {
-                this._initParams.container = document.getElementById(this._initParams.container);
-            }
-            if (!this._initParams.container) {
-                this._initParams.container = document.createElement("div");
-                document.body.appendChild(this._initParams.container);
-            }
-            var container = this._initParams.container;
-            // 构建容器参数
-            container.style.margin = "auto";
-            container.style.width = "100%";
-            container.style.height = "100%";
-            container.className = "egret-player";
-            container.setAttribute("data-entry-class", "__EgretRoot__");
-            container.setAttribute("data-orientation", "auto");
-            container.setAttribute("data-scale-mode", this._initParams.scaleMode || egret.StageScaleMode.FIXED_NARROW);
-            container.setAttribute("data-frame-rate", (this._initParams.frameRate || 60) + "");
-            container.setAttribute("data-content-width", this._initParams.width + "");
-            container.setAttribute("data-content-height", this._initParams.height + "");
-            container.setAttribute("data-show-paint-rect", (this._initParams.showPaintRect || false) + "");
-            container.setAttribute("data-multi-fingered", (this._initParams.multiFingered || 2) + "");
-            container.setAttribute("data-show-fps", (this._initParams.showFPS || false) + "");
-            container.setAttribute("data-show-fps-style", this._initParams.showFPSStyle || "x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9");
-            container.setAttribute("data-show-log", (this._initParams.showLog || false) + "");
-            // 构建__EgretRoot__类，使得Egret引擎可以通过window寻址的方式找到该类，同时又可以让其将控制权转交给Application
-            var self = this;
-            window["__EgretRoot__"] = function () {
-                egret.Sprite.call(this);
-            };
-            window["__EgretRoot__"].prototype = new egret.Sprite();
-            window["__EgretRoot__"].prototype.$onAddToStage = function (stage, nestLevel) {
-                // 调用父类方法
-                egret.Sprite.prototype.$onAddToStage.call(this, stage, nestLevel);
-                // 移除引用
-                delete window["__EgretRoot__"];
-                // 将控制权移交给Application对象
-                onRootInitialized(this);
-            };
-            // 根据渲染模式初始化Egret引擎
-            switch (this._initParams.renderMode) {
-                case RenderMode_1.default.WEBGL:
-                    initEgret("webgl");
-                    break;
-                case RenderMode_1.default.CANVAS:
-                default:
-                    initEgret("canvas");
-                    break;
-            }
-            function initEgret(renderMode) {
-                // 启动Egret引擎
-                egret.runEgret({
-                    renderMode: renderMode,
-                    audioType: 0
-                });
-            }
-            function onRootInitialized(root) {
-                self._root = root;
-                // 创建背景显示层
-                self._bgLayer = new egret.Sprite();
-                root.addChild(self._bgLayer);
-                // 创建场景显示层
-                self._sceneLayer = new egret.Sprite();
-                root.addChild(self._sceneLayer);
-                // 创建弹出层
-                self._panelLayer = new egret.Sprite();
-                root.addChild(self._panelLayer);
-                // 创建顶级显示层
-                self._topLayer = new egret.Sprite();
-                root.addChild(self._topLayer);
-                // 设置资源和主题适配器
-                egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
-                egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
-                // 加载资源配置
-                RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-                RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
-            }
-            function onConfigComplete(evt) {
-                RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-                // 加载主题配置
-                var theme = new eui.Theme(this._initParams.pathPrefix + "resource/default.thm.json", self._root.stage);
-                theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-            }
-            function onThemeLoadComplete(evt) {
-                evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-                // 调用回调
-                complete(this);
-            }
-        };
-        /**
-         * 判断皮肤是否是Egret显示对象
-         *
-         * @param {*} skin 皮肤对象
-         * @returns {boolean} 是否是Egret显示对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.isMySkin = function (skin) {
-            return (skin instanceof egret.DisplayObject);
-        };
-        /**
-         * 添加显示
-         *
-         * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
-         * @param {egret.DisplayObject} target 被添加的显示对象
-         * @return {egret.DisplayObject} 返回被添加的显示对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.addChild = function (parent, target) {
-            if (parent && target)
-                return parent.addChild(target);
-            else
-                return target;
-        };
-        /**
-         * 按索引添加显示
-         *
-         * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
-         * @param {egret.DisplayObject} target 被添加的显示对象
-         * @param {number} index 要添加到的父级索引
-         * @return {egret.DisplayObject} 返回被添加的显示对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.addChildAt = function (parent, target, index) {
-            if (parent && target)
-                return parent.addChildAt(target, index);
-            else
-                return target;
-        };
-        /**
-         * 移除显示对象
-         *
-         * @param {egret.DisplayObjectContainer} parent 父容器
-         * @param {egret.DisplayObject} target 被移除的显示对象
-         * @return {egret.DisplayObject} 返回被移除的显示对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.removeChild = function (parent, target) {
-            if (parent && target && target.parent == parent)
-                return parent.removeChild(target);
-            else
-                return target;
-        };
-        /**
-         * 按索引移除显示
-         *
-         * @param {egret.DisplayObjectContainer} parent 父容器
-         * @param {number} index 索引
-         * @return {egret.DisplayObject} 返回被移除的显示对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.removeChildAt = function (parent, index) {
-            return parent.removeChildAt(index);
-        };
-        /**
-         * 移除所有显示对象
-         *
-         * @param {egret.DisplayObjectContainer} parent 父容器
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.removeChildren = function (parent) {
-            parent.removeChildren();
-        };
-        /**
-         * 获取父容器
-         *
-         * @param {egret.DisplayObject} target 目标对象
-         * @returns {egret.DisplayObjectContainer} 父容器
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.getParent = function (target) {
-            return target.parent;
-        };
-        /**
-         * 获取指定索引处的显示对象
-         *
-         * @param {egret.DisplayObjectContainer} parent 父容器
-         * @param {number} index 指定父级索引
-         * @return {egret.DisplayObject} 索引处的显示对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.getChildAt = function (parent, index) {
-            return parent.getChildAt(index);
-        };
-        /**
-         * 获取显示索引
-         *
-         * @param {egret.DisplayObjectContainer} parent 父容器
-         * @param {egret.DisplayObject} target 子显示对象
-         * @return {number} target在parent中的索引
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.getChildIndex = function (parent, target) {
-            return parent.getChildIndex(target);
-        };
-        /**
-         * 通过名称获取显示对象
-         *
-         * @param {egret.DisplayObjectContainer} parent 父容器
-         * @param {string} name 对象名称
-         * @return {egret.DisplayObject} 显示对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.getChildByName = function (parent, name) {
-            return parent.getChildByName(name);
-        };
-        /**
-         * 获取子显示对象数量
-         *
-         * @param {egret.DisplayObjectContainer} parent 父容器
-         * @return {number} 子显示对象数量
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.getChildCount = function (parent) {
-            return parent.numChildren;
-        };
-        /**
-         * 加载资源
-         *
-         * @param {string[]} assets 资源列表
-         * @param {(err?:Error)=>void} handler 回调函数
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.loadAssets = function (assets, handler) {
-            var loader = new AssetsLoader_1.default({
-                oneError: function (evt) {
-                    // 调用回调
-                    handler(new Error("资源加载失败"));
-                    // 派发加载错误事件
-                    Core_1.core.dispatch(ModuleMessage_1.default.MODULE_LOAD_ASSETS_ERROR, evt);
-                },
-                complete: function (dict) {
-                    // 调用回调
-                    handler();
-                }
-            });
-            loader.loadGroups(assets);
-        };
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {egret.EventDispatcher} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.mapListener = function (target, type, handler, thisArg) {
-            target.addEventListener(type, handler, thisArg);
-        };
-        /**
-         * 注销监听事件
-         *
-         * @param {egret.EventDispatcher} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.unmapListener = function (target, type, handler, thisArg) {
-            target.removeEventListener(type, handler, thisArg);
-        };
-        return EgretBridge;
-    }());
-    exports.default = EgretBridge;
-    var AssetAdapter = /** @class */ (function () {
-        function AssetAdapter() {
-        }
-        /**
-         * @language zh_CN
-         * 解析素材
-         * @param source 待解析的新素材标识符
-         * @param compFunc 解析完成回调函数，示例：callBack(content:any,source:string):void;
-         * @param thisObject callBack的 this 引用
-         */
-        AssetAdapter.prototype.getAsset = function (source, compFunc, thisObject) {
-            if (RES.hasRes(source)) {
-                var data = RES.getRes(source);
-                if (data)
-                    onGetRes(data);
-                else
-                    RES.getResAsync(source, onGetRes, this);
-            }
-            else {
-                RES.getResByUrl(source, onGetRes, this, RES.ResourceItem.TYPE_IMAGE);
-            }
-            function onGetRes(data) {
-                compFunc.call(thisObject, data, source);
-            }
-        };
-        return AssetAdapter;
-    }());
-    var ThemeAdapter = /** @class */ (function () {
-        function ThemeAdapter(initParams) {
-            this._initParams = initParams;
-        }
-        /**
-         * 解析主题
-         * @param url 待解析的主题url
-         * @param compFunc 解析完成回调函数，示例：compFunc(e:egret.Event):void;
-         * @param errorFunc 解析失败回调函数，示例：errorFunc():void;
-         * @param thisObject 回调的this引用
-         */
-        ThemeAdapter.prototype.getTheme = function (url, compFunc, errorFunc, thisObject) {
-            RES.addEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
-            RES.getResByUrl(url, onGetRes, this, RES.ResourceItem.TYPE_TEXT);
-            function onGetRes(e) {
-                try {
-                    // 需要为所有主题资源添加路径前缀
-                    var data = JSON.parse(e);
-                    for (var key in data.skins)
-                        data.skins[key] = this._initParams.pathPrefix + data.skins[key];
-                    for (var key in data.exmls) {
-                        // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
-                        var exml = data.exmls[key];
-                        if (typeof exml == "string")
-                            data.exmls[key] = this._initParams.pathPrefix + exml;
-                        else
-                            exml.path = this._initParams.pathPrefix + exml.path;
-                    }
-                    e = JSON.stringify(data);
-                }
-                catch (err) { }
-                compFunc.call(thisObject, e);
-            }
-            function onError(e) {
-                if (e.resItem.url == url) {
-                    RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
-                    errorFunc.call(thisObject);
-                }
-            }
-        };
-        return ThemeAdapter;
-    }());
-});
 var __reflect = (this && this.__reflect) || function (p, c, t) {
     p.__class__ = c, t ? t.push(c) : t = [c], p.__types__ = p.__types__ ? t.concat(p.__types__) : t;
 };
@@ -66890,4 +65776,1119 @@ var egret;
         }
     })(tween = egret.tween || (egret.tween = {}));
 })(egret || (egret = {}));
+define("egret/RenderMode", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 渲染模式枚举
+    */
+    var RenderMode;
+    (function (RenderMode) {
+        RenderMode[RenderMode["AUTO"] = 0] = "AUTO";
+        RenderMode[RenderMode["CANVAS"] = 1] = "CANVAS";
+        RenderMode[RenderMode["WEBGL"] = 2] = "WEBGL";
+    })(RenderMode || (RenderMode = {}));
+    exports.default = RenderMode;
+});
+/// <reference path="../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../../../dist/Olympus.d.ts"/>
+define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/version/Version", "engine/panel/PanelManager", "engine/platform/PlatformManager"], function (require, exports, Environment_1, Version_1, PanelManager_1, PlatformManager_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ResourceVersionController = /** @class */ (function (_super) {
+        __extends(ResourceVersionController, _super);
+        function ResourceVersionController() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        ResourceVersionController.prototype.getVirtualUrl = function (url) {
+            // 添加imgDomain
+            url = Environment_1.environment.toCDNHostURL(url);
+            // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
+            url = Version_1.version.wrapHashUrl(url);
+            // 返回url
+            return url;
+        };
+        return ResourceVersionController;
+    }(RES.VersionController));
+    exports.ResourceVersionController = ResourceVersionController;
+    // 这里直接注册一下
+    RES.registerVersionController(new ResourceVersionController());
+    var AssetsLoader = /** @class */ (function () {
+        function AssetsLoader(handler) {
+            this._retryDict = {};
+            this._handler = handler;
+        }
+        AssetsLoader.prototype.loadGroups = function (groups) {
+            // 调用回调
+            this._handler.start && this._handler.start();
+            // 开始加载
+            var groupDict = {};
+            var pgsDict;
+            var len = groups ? groups.length : 0;
+            if (len == 0) {
+                this._handler.complete && this._handler.complete(groupDict);
+            }
+            else {
+                RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
+                RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
+                RES.addEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
+                groups = groups.concat();
+                pgsDict = {};
+                for (var i in groups) {
+                    var group = groups[i];
+                    if (typeof group == "string") {
+                        pgsDict[group] = 0;
+                        RES.loadGroup(group);
+                    }
+                    else {
+                        pgsDict[group.name] = 0;
+                        RES.loadGroup(group.name, group.priority);
+                    }
+                }
+            }
+            function onProgress(evt) {
+                // 填充资源字典
+                var itemDict = groupDict[evt.groupName];
+                if (!itemDict)
+                    groupDict[evt.groupName] = itemDict = {};
+                itemDict[evt.resItem.name] = evt.resItem;
+                // 计算总进度
+                pgsDict[evt.groupName] = evt.itemsLoaded / evt.itemsTotal;
+                var pgs = 0;
+                for (var key in pgsDict) {
+                    pgs += pgsDict[key];
+                }
+                pgs /= len;
+                // 回调
+                this._handler.progress && this._handler.progress(evt.resItem, pgs);
+            }
+            function onOneComplete(evt) {
+                // 调用单一完毕回调
+                this._handler.oneComplete && this._handler.oneComplete(groupDict[evt.groupName]);
+                // 测试是否全部完毕
+                var index = groups.indexOf(evt.groupName);
+                if (index >= 0) {
+                    // 移除加载组名
+                    groups.splice(index, 1);
+                    // 判断是否全部完成
+                    if (groups.length == 0) {
+                        // 移除事件监听
+                        RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
+                        RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
+                        RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
+                        // 调用回调
+                        this._handler.complete && this._handler.complete(groupDict);
+                    }
+                }
+            }
+            function onOneError(evt) {
+                var groupName = evt.groupName;
+                var retryTimes = this._retryDict[groupName];
+                if (retryTimes == null)
+                    retryTimes = 0;
+                if (retryTimes < 3) {
+                    this._retryDict[groupName] = ++retryTimes;
+                    // 打印日志
+                    console.warn("加载失败，重试第" + retryTimes + "次: " + groupName);
+                    // 没到最大重试次数，将为url添加一个随机时间戳重新加回加载队列
+                    RES.loadGroup(evt.groupName);
+                }
+                else {
+                    // 打印日志
+                    console.warn("加载失败3次，正在尝试切换CDN...");
+                    // 尝试切换CDN
+                    var allDone = Environment_1.environment.nextCDN();
+                    if (!allDone) {
+                        // 重新加载
+                        RES.loadGroup(evt.groupName);
+                    }
+                    else {
+                        // 调用模板方法
+                        this._handler.oneError && this._handler.oneError(evt);
+                        // 切换CDN失败了，弹出提示，使用户可以手动刷新页面
+                        PanelManager_1.panelManager.confirm("资源组加载失败[" + groupName + "]，点击确定刷新页面", function () {
+                            PlatformManager_1.platformManager.reload();
+                        });
+                    }
+                }
+            }
+        };
+        return AssetsLoader;
+    }());
+    exports.default = AssetsLoader;
+});
+/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/mediator/Mediator", ["require", "exports", "engine/mediator/Mediator"], function (require, exports, Mediator_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 由于Egret EUI界面的特殊性，需要一个Mediator的基类来简化业务逻辑
+    */
+    var Mediator = /** @class */ (function (_super) {
+        __extends(Mediator, _super);
+        function Mediator(skin, callProxy) {
+            if (callProxy === void 0) { callProxy = true; }
+            var _this = _super.call(this) || this;
+            callProxy && Mediator_1.default.call(_this, _this);
+            // skinName不能马上设置（考虑到可能需要预加载资源），延迟到添加显示之前设置
+            _this._skinName = skin;
+            return _this;
+        }
+        Object.defineProperty(Mediator.prototype, "disposed", {
+            /**
+             * 获取中介者是否已被销毁
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this._disposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Mediator.prototype.$onAddToStage = function (stage, nestLevel) {
+            this.skinName = this._skinName;
+            _super.prototype.$onAddToStage.call(this, stage, nestLevel);
+        };
+        /**
+         * 列出中介者所需的资源数组，可重写
+         *
+         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+         * @memberof Mediator
+         */
+        Mediator.prototype.listAssets = function () {
+            return Mediator_1.default.prototype.listAssets.call(this);
+        };
+        /**
+         * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
+         *
+         * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
+         * @memberof Mediator
+         */
+        Mediator.prototype.loadAssets = function (handler) {
+            Mediator_1.default.prototype.loadAssets.call(this, handler);
+        };
+        /**
+         * 打开
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        Mediator.prototype.open = function (data) {
+            return Mediator_1.default.prototype.open.call(this, data);
+        };
+        /**
+         * 关闭
+         *
+         * @param {*} [data]
+         * @returns {*}
+         * @memberof Mediator
+         */
+        Mediator.prototype.close = function (data) {
+            return Mediator_1.default.prototype.close.call(this, data);
+        };
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.mapListener = function (target, type, handler, thisArg) {
+            Mediator_1.default.prototype.mapListener.call(this, target, type, handler, thisArg);
+        };
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapListener = function (target, type, handler, thisArg) {
+            Mediator_1.default.prototype.unmapListener.call(this, target, type, handler, thisArg);
+        };
+        /**
+         * 注销所有注册在当前中介者上的事件监听
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.unmapAllListeners = function () {
+            Mediator_1.default.prototype.unmapAllListeners.call(this);
+        };
+        Mediator.prototype.dispatch = function (typeOrMsg) {
+            var params = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                params[_i - 1] = arguments[_i];
+            }
+            (_a = Mediator_1.default.prototype.dispatch).call.apply(_a, [this, typeOrMsg].concat(params));
+            var _a;
+        };
+        /**
+         * 销毁中介者
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.dispose = function () {
+            Mediator_1.default.prototype.dispose.call(this);
+        };
+        return Mediator;
+    }(eui.Component));
+    exports.default = Mediator;
+});
+define("egret/panel/PanelMediator", ["require", "exports", "egret/mediator/Mediator", "engine/panel/PanelMediator"], function (require, exports, Mediator_2, PanelMediator_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * Egret的弹窗中介者
+    */
+    var PanelMediator = /** @class */ (function (_super) {
+        __extends(PanelMediator, _super);
+        function PanelMediator(skin, policy) {
+            var _this = _super.call(this, skin, false) || this;
+            PanelMediator_1.default.call(_this, _this, policy);
+            return _this;
+        }
+        /**
+         * 弹出当前弹窗（等同于调用PanelManager.pop方法）
+         *
+         * @param {*} [data] 数据
+         * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
+         * @param {{x:number, y:number}} [from] 弹出点坐标
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
+         */
+        PanelMediator.prototype.open = function (data, isModel, from) {
+            return PanelMediator_1.default.prototype.open.call(this, data, isModel, from);
+        };
+        /**
+         * 关闭当前弹窗（等同于调用PanelManager.drop方法）
+         *
+         * @param {*} [data] 数据
+         * @param {{x:number, y:number}} [to] 关闭点坐标
+         * @returns {IPanel} 弹窗本体
+         * @memberof PanelMediator
+         */
+        PanelMediator.prototype.close = function (data, to) {
+            return PanelMediator_1.default.prototype.close.call(this, data, to);
+        };
+        /** 在弹出前调用的方法 */
+        PanelMediator.prototype.onBeforePop = function (data, isModel, from) {
+            PanelMediator_1.default.prototype.onBeforePop.call(this, data, isModel, from);
+        };
+        /** 在弹出后调用的方法 */
+        PanelMediator.prototype.onAfterPop = function (data, isModel, from) {
+            PanelMediator_1.default.prototype.onAfterPop.call(this, data, isModel, from);
+        };
+        /** 在关闭前调用的方法 */
+        PanelMediator.prototype.onBeforeDrop = function (data, to) {
+            PanelMediator_1.default.prototype.onBeforeDrop.call(this, data, to);
+        };
+        /** 在关闭后调用的方法 */
+        PanelMediator.prototype.onAfterDrop = function (data, to) {
+            PanelMediator_1.default.prototype.onAfterDrop.call(this, data, to);
+        };
+        return PanelMediator;
+    }(Mediator_2.default));
+    exports.default = PanelMediator;
+});
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-22
+ * @modify date 2017-09-22
+ *
+ * Egret缓动工具集，用来弥补Egret的Tween的不足
+*/
+define("egret/utils/TweenUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function tweenTo(target, props, duration, ease) {
+        return egret.Tween.get(target).to(props, duration, ease);
+    }
+    exports.tweenTo = tweenTo;
+    function tweenFrom(target, props, duration, ease) {
+        // 对换参数状态
+        var toProps = {};
+        for (var key in props) {
+            toProps[key] = target[key];
+            target[key] = props[key];
+        }
+        // 开始缓动
+        return egret.Tween.get(target).to(toProps, duration, ease);
+    }
+    exports.tweenFrom = tweenFrom;
+});
+/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/panel/BackPanelPolicy", ["require", "exports", "egret/utils/TweenUtil"], function (require, exports, TweenUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 回弹效果
+    */
+    var BackPanelPolicy = /** @class */ (function () {
+        function BackPanelPolicy() {
+        }
+        /**
+         * 显示时调用
+         * @param panel 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param from 动画起始点
+         */
+        BackPanelPolicy.prototype.pop = function (panel, callback, from) {
+            // 开始动画弹出
+            var entity = panel.skin;
+            egret.Tween.removeTweens(entity);
+            // 恢复体积
+            entity.scaleX = 1;
+            entity.scaleY = 1;
+            var fromX = 0;
+            var fromY = 0;
+            if (from != null) {
+                fromX = from.x || entity.x;
+                fromY = from.y || entity.y;
+            }
+            else {
+                fromX = entity.x + entity.width * 0.5;
+                fromY = entity.y + entity.height * 0.5;
+            }
+            // 开始缓动
+            TweenUtil_1.tweenFrom(entity, {
+                x: fromX,
+                y: fromY,
+                scaleX: 0,
+                scaleY: 0
+            }, 300, egret.Ease.backOut).call(callback);
+        };
+        /**
+         * 关闭时调用
+         * @param popup 弹出框对象
+         * @param callback 完成回调，必须调用
+         * @param to 动画完结点
+         */
+        BackPanelPolicy.prototype.drop = function (panel, callback, to) {
+            // 开始动画关闭
+            var entity = panel.skin;
+            egret.Tween.removeTweens(entity);
+            var toX = 0;
+            var toY = 0;
+            if (to != null) {
+                toX = to.x || entity.x + entity.width * 0.5;
+                toY = to.y || entity.y + entity.height * 0.5;
+            }
+            else {
+                toX = entity.x + entity.width * 0.5;
+                toY = entity.y + entity.height * 0.5;
+            }
+            TweenUtil_1.tweenTo(entity, {
+                x: toX,
+                y: toY,
+                scaleX: 0,
+                scaleY: 0
+            }, 300, egret.Ease.backIn).call(function () {
+                // 恢复体积
+                entity.scaleX = 1;
+                entity.scaleY = 1;
+                if (callback != null)
+                    callback();
+            });
+        };
+        return BackPanelPolicy;
+    }());
+    exports.default = BackPanelPolicy;
+});
+define("egret/scene/SceneMediator", ["require", "exports", "engine/scene/SceneMediator", "egret/mediator/Mediator"], function (require, exports, SceneMediator_1, Mediator_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * Egret的场景中介者
+    */
+    var SceneMediator = /** @class */ (function (_super) {
+        __extends(SceneMediator, _super);
+        function SceneMediator(skin, policy) {
+            var _this = _super.call(this, skin, false) || this;
+            SceneMediator_1.default.call(_this, _this, policy);
+            return _this;
+        }
+        /**
+         * 打开当前场景（相当于调用SceneManager.push方法）
+         *
+         * @param {*} [data] 数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.open = function (data) {
+            return SceneMediator_1.default.prototype.open.call(this, data);
+        };
+        /**
+         * 关闭当前场景（相当于调用SceneManager.pop方法）
+         *
+         * @param {*} [data] 数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.close = function (data) {
+            return SceneMediator_1.default.prototype.close.call(this, data);
+        };
+        /**
+         * 切入场景开始前调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onBeforeIn = function (fromScene, data) {
+            SceneMediator_1.default.prototype.onBeforeIn.call(this, fromScene, data);
+        };
+        /**
+         * 切入场景开始后调用
+         * @param fromScene 从哪个场景切入
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onAfterIn = function (fromScene, data) {
+            SceneMediator_1.default.prototype.onAfterIn.call(this, fromScene, data);
+        };
+        /**
+         * 切出场景开始前调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onBeforeOut = function (toScene, data) {
+            SceneMediator_1.default.prototype.onBeforeOut.call(this, toScene, data);
+        };
+        /**
+         * 切出场景开始后调用
+         * @param toScene 要切入到哪个场景
+         * @param data 切场景时可能的参数
+         */
+        SceneMediator.prototype.onAfterOut = function (toScene, data) {
+            SceneMediator_1.default.prototype.onAfterOut.call(this, toScene, data);
+        };
+        return SceneMediator;
+    }(Mediator_3.default));
+    exports.default = SceneMediator;
+});
+/// <reference path="../../egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="../../egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="../../egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="../../egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../../../dist/Olympus.d.ts"/>
+define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-22
+     * @modify date 2017-09-22
+     *
+     * 淡入淡出场景切换策略
+    */
+    var FadeScenePolicy = /** @class */ (function () {
+        function FadeScenePolicy() {
+            this._tempSnapshot = new egret.Bitmap();
+        }
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        FadeScenePolicy.prototype.prepareSwitch = function (from, to) {
+            if (from != null) {
+                var root = from.bridge.root;
+                // 截取当前屏幕
+                var texture = new egret.RenderTexture();
+                texture.drawToTexture(root);
+                this._tempSnapshot.texture = texture;
+                this._tempSnapshot.alpha = 1;
+                root.addChild(this._tempSnapshot);
+                // 移除from
+                var fromDisplay = from.skin;
+                if (fromDisplay.parent != null) {
+                    fromDisplay.parent.removeChild(fromDisplay);
+                }
+            }
+        };
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        FadeScenePolicy.prototype.switch = function (from, to, callback) {
+            if (from != null) {
+                // 开始淡出
+                egret.Tween.removeTweens(this._tempSnapshot);
+                egret.Tween.get(this._tempSnapshot).to({
+                    alpha: 0
+                }, 300).call(function () {
+                    // 移除截屏
+                    if (this._tempSnapshot.parent != null) {
+                        this._tempSnapshot.parent.removeChild(this._tempSnapshot);
+                    }
+                    // 回收资源
+                    if (this._tempSnapshot.texture != null) {
+                        this._tempSnapshot.texture.dispose();
+                        this._tempSnapshot.texture = null;
+                    }
+                    // 调用回调
+                    callback();
+                }, this);
+            }
+            else {
+                // 移除截屏
+                if (this._tempSnapshot.parent != null) {
+                    this._tempSnapshot.parent.removeChild(this._tempSnapshot);
+                }
+                // 调用回调
+                callback();
+            }
+        };
+        return FadeScenePolicy;
+    }());
+    exports.default = FadeScenePolicy;
+});
+/// <reference path="./egret/egret-core/build/egret/egret.d.ts"/>
+/// <reference path="./egret/egret-core/build/eui/eui.d.ts"/>
+/// <reference path="./egret/egret-core/build/res/res.d.ts"/>
+/// <reference path="./egret/egret-core/build/tween/tween.d.ts"/>
+/// <reference path="../../dist/Olympus.d.ts"/>
+define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * Egret的表现层桥实现
+    */
+    var EgretBridge = /** @class */ (function () {
+        function EgretBridge(params) {
+            this._defaultPanelPolicy = new BackPanelPolicy_1.default();
+            this._defaultScenePolicy = new FadeScenePolicy_1.default();
+            this._initParams = params;
+        }
+        Object.defineProperty(EgretBridge.prototype, "type", {
+            /**
+             * 获取表现层类型名称
+             *
+             * @readonly
+             * @type {string}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return "Egret";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "htmlWrapper", {
+            /**
+             * 获取表现层HTML包装器，可以对其样式进行自定义调整
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._initParams.container;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "root", {
+            /**
+             * 获取根显示节点
+             *
+             * @readonly
+             * @type {egret.DisplayObjectContainer}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._root;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "bgLayer", {
+            /**
+             * 获取背景容器
+             *
+             * @readonly
+             * @type {egret.DisplayObjectContainer}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._bgLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "sceneLayer", {
+            /**
+             * 获取场景容器
+             *
+             * @readonly
+             * @type {egret.DisplayObjectContainer}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._sceneLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "panelLayer", {
+            /**
+             * 获取弹窗容器
+             *
+             * @readonly
+             * @type {egret.DisplayObjectContainer}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._panelLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "topLayer", {
+            /**
+             * 获取顶级容器
+             *
+             * @readonly
+             * @type {egret.DisplayObjectContainer}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._topLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "promptPanel", {
+            /**
+             * 获取通用提示框
+             *
+             * @readonly
+             * @type {IPromptPanel}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._initParams.promptPanel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "defaultPanelPolicy", {
+            /**
+             * 获取默认弹窗策略
+             *
+             * @readonly
+             * @type {IPanelPolicy}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._defaultPanelPolicy;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(EgretBridge.prototype, "defaultScenePolicy", {
+            /**
+             * 获取默认场景切换策略
+             *
+             * @readonly
+             * @type {IScenePolicy}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._defaultScenePolicy;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 初始化表现层桥
+         * @param {()=>void} complete 初始化完毕后的回调
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.init = function (complete) {
+            // 生成html和body的样式节点
+            var style = document.createElement("style");
+            style.textContent = "\n            html, body {\n                -ms-touch-action: none;\n                background: " + egret.toColorString(this._initParams.backgroundColor || 0) + ";\n                padding: 0;\n                border: 0;\n                margin: 0;\n                height: 100%;\n            }\n        ";
+            document.head.appendChild(style);
+            // 统一容器
+            if (typeof this._initParams.container == "string") {
+                this._initParams.container = document.getElementById(this._initParams.container);
+            }
+            if (!this._initParams.container) {
+                this._initParams.container = document.createElement("div");
+                document.body.appendChild(this._initParams.container);
+            }
+            var container = this._initParams.container;
+            // 构建容器参数
+            container.style.margin = "auto";
+            container.style.width = "100%";
+            container.style.height = "100%";
+            container.className = "egret-player";
+            container.setAttribute("data-entry-class", "__EgretRoot__");
+            container.setAttribute("data-orientation", "auto");
+            container.setAttribute("data-scale-mode", this._initParams.scaleMode || egret.StageScaleMode.FIXED_NARROW);
+            container.setAttribute("data-frame-rate", (this._initParams.frameRate || 60) + "");
+            container.setAttribute("data-content-width", this._initParams.width + "");
+            container.setAttribute("data-content-height", this._initParams.height + "");
+            container.setAttribute("data-show-paint-rect", (this._initParams.showPaintRect || false) + "");
+            container.setAttribute("data-multi-fingered", (this._initParams.multiFingered || 2) + "");
+            container.setAttribute("data-show-fps", (this._initParams.showFPS || false) + "");
+            container.setAttribute("data-show-fps-style", this._initParams.showFPSStyle || "x:0,y:0,size:12,textColor:0xffffff,bgAlpha:0.9");
+            container.setAttribute("data-show-log", (this._initParams.showLog || false) + "");
+            // 构建__EgretRoot__类，使得Egret引擎可以通过window寻址的方式找到该类，同时又可以让其将控制权转交给Application
+            var self = this;
+            window["__EgretRoot__"] = function () {
+                egret.Sprite.call(this);
+            };
+            window["__EgretRoot__"].prototype = new egret.Sprite();
+            window["__EgretRoot__"].prototype.$onAddToStage = function (stage, nestLevel) {
+                // 调用父类方法
+                egret.Sprite.prototype.$onAddToStage.call(this, stage, nestLevel);
+                // 移除引用
+                delete window["__EgretRoot__"];
+                // 将控制权移交给Application对象
+                onRootInitialized(this);
+            };
+            // 根据渲染模式初始化Egret引擎
+            switch (this._initParams.renderMode) {
+                case RenderMode_1.default.WEBGL:
+                    initEgret("webgl");
+                    break;
+                case RenderMode_1.default.CANVAS:
+                default:
+                    initEgret("canvas");
+                    break;
+            }
+            function initEgret(renderMode) {
+                // 启动Egret引擎
+                egret.runEgret({
+                    renderMode: renderMode,
+                    audioType: 0
+                });
+            }
+            function onRootInitialized(root) {
+                self._root = root;
+                // 创建背景显示层
+                self._bgLayer = new egret.Sprite();
+                root.addChild(self._bgLayer);
+                // 创建场景显示层
+                self._sceneLayer = new egret.Sprite();
+                root.addChild(self._sceneLayer);
+                // 创建弹出层
+                self._panelLayer = new egret.Sprite();
+                root.addChild(self._panelLayer);
+                // 创建顶级显示层
+                self._topLayer = new egret.Sprite();
+                root.addChild(self._topLayer);
+                // 设置资源和主题适配器
+                egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
+                egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
+                // 加载资源配置
+                RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
+                RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
+            }
+            function onConfigComplete(evt) {
+                RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
+                // 加载主题配置
+                var theme = new eui.Theme(this._initParams.pathPrefix + "resource/default.thm.json", self._root.stage);
+                theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+            }
+            function onThemeLoadComplete(evt) {
+                evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+                // 调用回调
+                complete(this);
+            }
+        };
+        /**
+         * 判断皮肤是否是Egret显示对象
+         *
+         * @param {*} skin 皮肤对象
+         * @returns {boolean} 是否是Egret显示对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.isMySkin = function (skin) {
+            return (skin instanceof egret.DisplayObject);
+        };
+        /**
+         * 添加显示
+         *
+         * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
+         * @param {egret.DisplayObject} target 被添加的显示对象
+         * @return {egret.DisplayObject} 返回被添加的显示对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.addChild = function (parent, target) {
+            if (parent && target)
+                return parent.addChild(target);
+            else
+                return target;
+        };
+        /**
+         * 按索引添加显示
+         *
+         * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
+         * @param {egret.DisplayObject} target 被添加的显示对象
+         * @param {number} index 要添加到的父级索引
+         * @return {egret.DisplayObject} 返回被添加的显示对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.addChildAt = function (parent, target, index) {
+            if (parent && target)
+                return parent.addChildAt(target, index);
+            else
+                return target;
+        };
+        /**
+         * 移除显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {egret.DisplayObject} target 被移除的显示对象
+         * @return {egret.DisplayObject} 返回被移除的显示对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.removeChild = function (parent, target) {
+            if (parent && target && target.parent == parent)
+                return parent.removeChild(target);
+            else
+                return target;
+        };
+        /**
+         * 按索引移除显示
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {number} index 索引
+         * @return {egret.DisplayObject} 返回被移除的显示对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.removeChildAt = function (parent, index) {
+            return parent.removeChildAt(index);
+        };
+        /**
+         * 移除所有显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.removeChildren = function (parent) {
+            parent.removeChildren();
+        };
+        /**
+         * 获取父容器
+         *
+         * @param {egret.DisplayObject} target 目标对象
+         * @returns {egret.DisplayObjectContainer} 父容器
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.getParent = function (target) {
+            return target.parent;
+        };
+        /**
+         * 获取指定索引处的显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {number} index 指定父级索引
+         * @return {egret.DisplayObject} 索引处的显示对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.getChildAt = function (parent, index) {
+            return parent.getChildAt(index);
+        };
+        /**
+         * 获取显示索引
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {egret.DisplayObject} target 子显示对象
+         * @return {number} target在parent中的索引
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.getChildIndex = function (parent, target) {
+            return parent.getChildIndex(target);
+        };
+        /**
+         * 通过名称获取显示对象
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @param {string} name 对象名称
+         * @return {egret.DisplayObject} 显示对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.getChildByName = function (parent, name) {
+            return parent.getChildByName(name);
+        };
+        /**
+         * 获取子显示对象数量
+         *
+         * @param {egret.DisplayObjectContainer} parent 父容器
+         * @return {number} 子显示对象数量
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.getChildCount = function (parent) {
+            return parent.numChildren;
+        };
+        /**
+         * 加载资源
+         *
+         * @param {string[]} assets 资源列表
+         * @param {(err?:Error)=>void} handler 回调函数
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.loadAssets = function (assets, handler) {
+            var loader = new AssetsLoader_1.default({
+                oneError: function (evt) {
+                    // 调用回调
+                    handler(new Error("资源加载失败"));
+                    // 派发加载错误事件
+                    Core_1.core.dispatch(ModuleMessage_1.default.MODULE_LOAD_ASSETS_ERROR, evt);
+                },
+                complete: function (dict) {
+                    // 调用回调
+                    handler();
+                }
+            });
+            loader.loadGroups(assets);
+        };
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {egret.EventDispatcher} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.mapListener = function (target, type, handler, thisArg) {
+            target.addEventListener(type, handler, thisArg);
+        };
+        /**
+         * 注销监听事件
+         *
+         * @param {egret.EventDispatcher} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.unmapListener = function (target, type, handler, thisArg) {
+            target.removeEventListener(type, handler, thisArg);
+        };
+        return EgretBridge;
+    }());
+    exports.default = EgretBridge;
+    var AssetAdapter = /** @class */ (function () {
+        function AssetAdapter() {
+        }
+        /**
+         * @language zh_CN
+         * 解析素材
+         * @param source 待解析的新素材标识符
+         * @param compFunc 解析完成回调函数，示例：callBack(content:any,source:string):void;
+         * @param thisObject callBack的 this 引用
+         */
+        AssetAdapter.prototype.getAsset = function (source, compFunc, thisObject) {
+            if (RES.hasRes(source)) {
+                var data = RES.getRes(source);
+                if (data)
+                    onGetRes(data);
+                else
+                    RES.getResAsync(source, onGetRes, this);
+            }
+            else {
+                RES.getResByUrl(source, onGetRes, this, RES.ResourceItem.TYPE_IMAGE);
+            }
+            function onGetRes(data) {
+                compFunc.call(thisObject, data, source);
+            }
+        };
+        return AssetAdapter;
+    }());
+    var ThemeAdapter = /** @class */ (function () {
+        function ThemeAdapter(initParams) {
+            this._initParams = initParams;
+        }
+        /**
+         * 解析主题
+         * @param url 待解析的主题url
+         * @param compFunc 解析完成回调函数，示例：compFunc(e:egret.Event):void;
+         * @param errorFunc 解析失败回调函数，示例：errorFunc():void;
+         * @param thisObject 回调的this引用
+         */
+        ThemeAdapter.prototype.getTheme = function (url, compFunc, errorFunc, thisObject) {
+            RES.addEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
+            RES.getResByUrl(url, onGetRes, this, RES.ResourceItem.TYPE_TEXT);
+            function onGetRes(e) {
+                try {
+                    // 需要为所有主题资源添加路径前缀
+                    var data = JSON.parse(e);
+                    for (var key in data.skins)
+                        data.skins[key] = this._initParams.pathPrefix + data.skins[key];
+                    for (var key in data.exmls) {
+                        // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
+                        var exml = data.exmls[key];
+                        if (typeof exml == "string")
+                            data.exmls[key] = this._initParams.pathPrefix + exml;
+                        else
+                            exml.path = this._initParams.pathPrefix + exml.path;
+                    }
+                    e = JSON.stringify(data);
+                }
+                catch (err) { }
+                compFunc.call(thisObject, e);
+            }
+            function onError(e) {
+                if (e.resItem.url == url) {
+                    RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
+                    errorFunc.call(thisObject);
+                }
+            }
+        };
+        return ThemeAdapter;
+    }());
+});
 //# sourceMappingURL=Egret.js.map
