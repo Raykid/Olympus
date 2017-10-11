@@ -26,6 +26,7 @@ declare function Injectable(params: {
 declare function Inject(prototype: any, propertyKey: string): void;
 declare function Inject(name: string): PropertyDecorator;
 declare function Inject(cls: IConstructor): PropertyDecorator;
+declare function MessageHandler(prototype: any, propertyKey: string): void;
 declare function MessageHandler(type: string): MethodDecorator;
 declare module "utils/ObjectUtil" {
     /**
@@ -355,7 +356,7 @@ declare module "core/Core" {
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
-        listen(type: string, handler: Function, thisArg?: any): void;
+        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
         /**
          * 移除内核消息监听
          *
@@ -364,7 +365,7 @@ declare module "core/Core" {
          * @param {*} [thisArg] 消息this指向
          * @memberof Core
          */
-        unlisten(type: string, handler: Function, thisArg?: any): void;
+        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
         /*********************** 下面是依赖注入系统 ***********************/
         /**
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
@@ -479,6 +480,7 @@ declare module "core/injector/Injector" {
     export function Inject(name: string): PropertyDecorator;
     export function Inject(cls: IConstructor): PropertyDecorator;
     /** 处理内核消息 */
+    export function MessageHandler(prototype: any, propertyKey: string): void;
     export function MessageHandler(type: string): MethodDecorator;
 }
 /**

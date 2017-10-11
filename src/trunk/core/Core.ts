@@ -64,7 +64,9 @@ export default class Core implements IDispatcher
 
     private handleMessages(msg:IMessage):void
     {
-        var listeners:IMessageData[] = this._listenerDict[msg.type];
+        var listeners1:IMessageData[] = this._listenerDict[msg.type];
+        var listeners2:IMessageData[] = this._listenerDict[msg.constructor.toString()];
+        var listeners:IMessageData[] = (listeners1 && listeners2 ? listeners1.concat(listeners2) : listeners1 || listeners2);
         if(listeners)
         {
             listeners = listeners.concat();
@@ -132,8 +134,9 @@ export default class Core implements IDispatcher
      * @param {*} [thisArg] 消息this指向
      * @memberof Core
      */
-    public listen(type:string, handler:Function, thisArg?:any):void
+    public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
+        type = (typeof type == "string" ? type : type.toString());
         var listeners:IMessageData[] = this._listenerDict[type];
         if(!listeners) this._listenerDict[type] = listeners = [];
         // 检查存在性
@@ -155,8 +158,9 @@ export default class Core implements IDispatcher
      * @param {*} [thisArg] 消息this指向
      * @memberof Core
      */
-    public unlisten(type:string, handler:Function, thisArg?:any):void
+    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
+        type = (typeof type == "string" ? type : type.toString());
         var listeners:IMessageData[] = this._listenerDict[type];
         // 检查存在性
         if(listeners)

@@ -1547,7 +1547,9 @@ define("core/Core", ["require", "exports", "core/injector/Injector", "core/messa
             this.mapInjectValue(this);
         }
         Core.prototype.handleMessages = function (msg) {
-            var listeners = this._listenerDict[msg.type];
+            var listeners1 = this._listenerDict[msg.type];
+            var listeners2 = this._listenerDict[msg.constructor.toString()];
+            var listeners = (listeners1 && listeners2 ? listeners1.concat(listeners2) : listeners1 || listeners2);
             if (listeners) {
                 listeners = listeners.concat();
                 for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
@@ -1600,6 +1602,7 @@ define("core/Core", ["require", "exports", "core/injector/Injector", "core/messa
          * @memberof Core
          */
         Core.prototype.listen = function (type, handler, thisArg) {
+            type = (typeof type == "string" ? type : type.toString());
             var listeners = this._listenerDict[type];
             if (!listeners)
                 this._listenerDict[type] = listeners = [];
@@ -1622,6 +1625,7 @@ define("core/Core", ["require", "exports", "core/injector/Injector", "core/messa
          * @memberof Core
          */
         Core.prototype.unlisten = function (type, handler, thisArg) {
+            type = (typeof type == "string" ? type : type.toString());
             var listeners = this._listenerDict[type];
             // 检查存在性
             if (listeners) {
@@ -1839,7 +1843,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
     exports.listenDispose = listenDispose;
 });
 /// <reference path="./Declaration.ts"/>
-define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil"], function (require, exports, Core_2, ConstructUtil_1) {
+define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "core/message/Message"], function (require, exports, Core_2, ConstructUtil_1, Message_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function Injectable(cls) {
@@ -1885,18 +1889,29 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     }
     // 赋值全局方法
     window["Inject"] = Inject;
-    /** 处理内核消息 */
-    function MessageHandler(type) {
-        return function (prototype, propertyKey, descriptor) {
+    function MessageHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof Message_2.default))
+                throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
             // 监听实例化
-            ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
-                Core_2.core.listen(type, instance[propertyKey], instance);
+            ConstructUtil_1.listenConstruct(target.constructor, function (instance) {
+                Core_2.core.listen(resClass, instance[key], instance);
             });
-            // 监听销毁
-            ConstructUtil_1.listenDispose(prototype.constructor, function (instance) {
-                Core_2.core.unlisten(type, instance[propertyKey], instance);
-            });
-        };
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                // 监听实例化
+                ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
+                    Core_2.core.listen(target, instance[propertyKey], instance);
+                });
+                // 监听销毁
+                ConstructUtil_1.listenDispose(prototype.constructor, function (instance) {
+                    Core_2.core.unlisten(target, instance[propertyKey], instance);
+                });
+            };
+        }
     }
     exports.MessageHandler = MessageHandler;
     ;

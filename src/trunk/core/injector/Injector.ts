@@ -2,6 +2,7 @@
 
 import { core } from "../Core";
 import { listenConstruct, listenDispose } from "../../utils/ConstructUtil";
+import Message from "../message/Message";
 
 /**
  * @author Raykid
@@ -72,21 +73,38 @@ function doInject(cls:IConstructor, key:string, type:IConstructor|string):void
 window["Inject"] = Inject;
 
 /** 处理内核消息 */
-export function MessageHandler(type:string):MethodDecorator
+export function MessageHandler(prototype:any, propertyKey:string):void;
+export function MessageHandler(type:string):MethodDecorator;
+export function MessageHandler(target:string|any, key?:string):MethodDecorator
 {
-    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    if(key)
     {
+        var defs:[IConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
+        var resClass:IConstructor = defs[0];
+        if(!(resClass.prototype instanceof Message))
+            throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
         // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:any):void
+        listenConstruct(target.constructor, function(instance:any):void
         {
-            core.listen(type, instance[propertyKey], instance);
+            core.listen(resClass, instance[key], instance);
         });
-        // 监听销毁
-        listenDispose(prototype.constructor, function(instance:any):void
+    }
+    else
+    {
+        return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
         {
-            core.unlisten(type, instance[propertyKey], instance);
-        });
-    };
+            // 监听实例化
+            listenConstruct(prototype.constructor, function(instance:any):void
+            {
+                core.listen(target, instance[propertyKey], instance);
+            });
+            // 监听销毁
+            listenDispose(prototype.constructor, function(instance:any):void
+            {
+                core.unlisten(target, instance[propertyKey], instance);
+            });
+        };
+    }
 };
 // 赋值全局方法
 window["MessageHandler"] = MessageHandler;
