@@ -2,7 +2,7 @@
 
 import { core } from "../../core/Core";
 import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
-import { IResponseDataConstructor } from "../net/ResponseData";
+import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IModule from "../module/IModule";
 import { bridgeManager } from "../bridge/BridgeManager";
@@ -73,6 +73,9 @@ window["ModuleClass"] = ModuleClass;
 export function ResponseHandler(prototype:any, propertyKey:string):void
 {
     var defs:[IResponseDataConstructor] = Reflect.getMetadata("design:paramtypes", prototype, propertyKey);
+    var resClass:IResponseDataConstructor = defs[0];
+    if(!(resClass.prototype instanceof ResponseData))
+        throw new Error("@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
     // 监听实例化
     listenConstruct(prototype.constructor, function(instance:any):void
     {

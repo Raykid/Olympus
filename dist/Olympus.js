@@ -3108,7 +3108,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
     exports.bridgeManager = Core_6.core.getInject(BridgeManager);
 });
 /// <reference path="./Declaration.ts"/>
-define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_7, ConstructUtil_2, NetManager_1, BridgeManager_1) {
+define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_7, ConstructUtil_2, ResponseData_1, NetManager_1, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3169,6 +3169,9 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     /** 处理通讯消息返回 */
     function ResponseHandler(prototype, propertyKey) {
         var defs = Reflect.getMetadata("design:paramtypes", prototype, propertyKey);
+        var resClass = defs[0];
+        if (!(resClass.prototype instanceof ResponseData_1.default))
+            throw new Error("@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
         // 监听实例化
         ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
             NetManager_1.netManager.listenResponse(defs[0], instance[propertyKey], instance);
