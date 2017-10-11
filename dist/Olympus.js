@@ -1860,25 +1860,26 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     // 赋值全局方法
     window["Injectable"] = Injectable;
     function Inject(target, key) {
-        if ((typeof target == "string" || target instanceof Function) && !key) {
+        if (key) {
+            var cls = Reflect.getMetadata("design:type", target, key);
+            doInject(target.constructor, key, cls);
+        }
+        else {
             return function (prototype, propertyKey) {
                 doInject(prototype.constructor, propertyKey, target);
             };
-        }
-        else {
-            var cls = Reflect.getMetadata("design:type", target, key);
-            doInject(target.constructor, key, cls);
         }
     }
     exports.Inject = Inject;
     ;
     function doInject(cls, key, type) {
         // 监听实例化
+        var target;
         ConstructUtil_1.listenConstruct(cls, function (instance) {
             Object.defineProperty(instance, key, {
                 configurable: true,
                 enumerable: true,
-                get: function () { return Core_2.core.getInject(type); }
+                get: function () { return target || (target = Core_2.core.getInject(type)); }
             });
         });
     }
@@ -3166,17 +3167,16 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     // 赋值全局方法
     window["ModuleClass"] = ModuleClass;
     /** 处理通讯消息返回 */
-    function ResponseHandler(clsOrType) {
-        return function (prototype, propertyKey, descriptor) {
-            // 监听实例化
-            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
-                NetManager_1.netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-                NetManager_1.netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-            });
-        };
+    function ResponseHandler(prototype, propertyKey) {
+        var defs = Reflect.getMetadata("design:paramtypes", prototype, propertyKey);
+        // 监听实例化
+        ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
+            NetManager_1.netManager.listenResponse(defs[0], instance[propertyKey], instance);
+        });
+        // 监听销毁
+        ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+            NetManager_1.netManager.unlistenResponse(defs[0], instance[propertyKey], instance);
+        });
     }
     exports.ResponseHandler = ResponseHandler;
     // 赋值全局方法

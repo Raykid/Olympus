@@ -42,28 +42,29 @@ export function Inject(name:string):PropertyDecorator;
 export function Inject(cls:IConstructor):PropertyDecorator;
 export function Inject(target:IConstructor|string|any, key?:string):PropertyDecorator|void
 {
-    if((typeof target == "string" || target instanceof Function) && !key)
+    if(key)
+    {
+        var cls:IConstructor = Reflect.getMetadata("design:type", target, key);
+        doInject(target.constructor, key, cls);
+    }
+    else
     {
         return function(prototype:any, propertyKey:string):void
         {
             doInject(prototype.constructor, propertyKey, target);
         };
     }
-    else
-    {
-        var cls:IConstructor = Reflect.getMetadata("design:type", target, key);
-        doInject(target.constructor, key, cls);
-    }
 };
 function doInject(cls:IConstructor, key:string, type:IConstructor|string):void
 {
     // 监听实例化
+    var target:any;
     listenConstruct(cls, function(instance:any):void
     {
         Object.defineProperty(instance, key, {
             configurable: true,
             enumerable: true,
-            get: ()=>core.getInject(type)
+            get: ()=>target || (target = core.getInject(type))
         });
     });
 }

@@ -4,6 +4,8 @@ import ResponseData from "engine/net/ResponseData";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
 import SceneMediator from "engine/scene/SceneMediator";
+import TestResponse from "../net/response/TestResponse";
+import TestRequest from "../net/request/TestRequest";
 
 /**
  * @author Raykid
@@ -47,5 +49,11 @@ class FirstMediator extends SceneMediator
     {
         if(to == FirstModule) console.log("change to first module!");
         else if(to == SecondModule) console.log("change to second module!");
+    }
+
+    @ResponseHandler
+    private onResponse(res:TestResponse, req:TestRequest):void
+    {
+        alert("123");
     }
 }

@@ -492,7 +492,7 @@ declare module "core/injector/Injector" {
 declare function ModelClass(cls: IConstructor): any;
 declare function MediatorClass(cls: IConstructor): any;
 declare function ModuleClass(cls: IConstructor): any;
-declare function ResponseHandler(clsOrType: IConstructor | string): MethodDecorator;
+declare function ResponseHandler(prototype: any, propertyKey: string): void;
 declare function DelegateMediator(prototype: any, propertyKey: string): any;
 declare module "engine/net/DataType" {
     /**
@@ -1800,7 +1800,6 @@ declare module "engine/bridge/BridgeManager" {
     export const bridgeManager: BridgeManager;
 }
 declare module "engine/injector/Injector" {
-    import { IResponseDataConstructor } from "engine/net/ResponseData";
     import IModule from "engine/module/IModule";
     /**
      * @author Raykid
@@ -1817,7 +1816,7 @@ declare module "engine/injector/Injector" {
     /** 定义模块，支持实例注入 */
     export function ModuleClass(cls: IConstructor): any;
     /** 处理通讯消息返回 */
-    export function ResponseHandler(clsOrType: IResponseDataConstructor | string): MethodDecorator;
+    export function ResponseHandler(prototype: any, propertyKey: string): void;
     /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: IModule, propertyKey: string): any;
 }

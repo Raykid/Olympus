@@ -74,69 +74,6 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
         return SecondMediator;
     }(SceneMediator_1.default));
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, SceneMediator_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-18
-     * @modify date 2017-09-18
-     *
-     * 测试首个模块
-    */
-    var FirstModule = /** @class */ (function (_super) {
-        __extends(FirstModule, _super);
-        function FirstModule() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._mediator = new FirstMediator();
-            return _this;
-        }
-        __decorate([
-            DelegateMediator,
-            __metadata("design:type", FirstMediator)
-        ], FirstModule.prototype, "_mediator", void 0);
-        return FirstModule;
-    }(Module_2.default));
-    exports.default = FirstModule;
-    var FirstMediator = /** @class */ (function (_super) {
-        __extends(FirstMediator, _super);
-        function FirstMediator() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        FirstMediator.prototype.listAssets = function () {
-            return ["preload"];
-        };
-        FirstMediator.prototype.onBeforeIn = function () {
-            var _this = this;
-            this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
-                _this.txt.text = "Fuck you!!!";
-                _this.moduleManager.open(SecondModule_1.default);
-            }, this);
-        };
-        FirstMediator.prototype.onModuleChange = function (from, to) {
-            if (to == FirstModule)
-                console.log("change to first module!");
-            else if (to == SecondModule_1.default)
-                console.log("change to second module!");
-        };
-        __decorate([
-            Inject,
-            __metadata("design:type", ModuleManager_2.default)
-        ], FirstMediator.prototype, "moduleManager", void 0);
-        __decorate([
-            MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
-            __metadata("design:type", Function),
-            __metadata("design:paramtypes", [Object, Object]),
-            __metadata("design:returntype", void 0)
-        ], FirstMediator.prototype, "onModuleChange", null);
-        FirstMediator = __decorate([
-            MediatorClass,
-            EgretSkin("FuckSkin")
-        ], FirstMediator);
-        return FirstMediator;
-    }(SceneMediator_2.default));
-});
 define("net/type/Test", ["require", "exports", "engine/net/DataType"], function (require, exports, DataType_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -248,11 +185,83 @@ define("net/request/TestRequest", ["require", "exports", "engine/net/RequestData
     }(RequestData_1.default));
     exports.default = TestRequest;
 });
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 测试首个模块
+    */
+    var FirstModule = /** @class */ (function (_super) {
+        __extends(FirstModule, _super);
+        function FirstModule() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this._mediator = new FirstMediator();
+            return _this;
+        }
+        __decorate([
+            DelegateMediator,
+            __metadata("design:type", FirstMediator)
+        ], FirstModule.prototype, "_mediator", void 0);
+        return FirstModule;
+    }(Module_2.default));
+    exports.default = FirstModule;
+    var FirstMediator = /** @class */ (function (_super) {
+        __extends(FirstMediator, _super);
+        function FirstMediator() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        FirstMediator.prototype.listAssets = function () {
+            return ["preload"];
+        };
+        FirstMediator.prototype.onBeforeIn = function () {
+            var _this = this;
+            this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
+                _this.txt.text = "Fuck you!!!";
+                _this.moduleManager.open(SecondModule_1.default);
+            }, this);
+        };
+        FirstMediator.prototype.onModuleChange = function (from, to) {
+            if (to == FirstModule)
+                console.log("change to first module!");
+            else if (to == SecondModule_1.default)
+                console.log("change to second module!");
+        };
+        FirstMediator.prototype.onResponse = function (res, req) {
+            alert("123");
+        };
+        __decorate([
+            Inject,
+            __metadata("design:type", ModuleManager_2.default)
+        ], FirstMediator.prototype, "moduleManager", void 0);
+        __decorate([
+            MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
+            __metadata("design:type", Function),
+            __metadata("design:paramtypes", [Object, Object]),
+            __metadata("design:returntype", void 0)
+        ], FirstMediator.prototype, "onModuleChange", null);
+        __decorate([
+            ResponseHandler,
+            __metadata("design:type", Function),
+            __metadata("design:paramtypes", [TestResponse_2.default, TestRequest_1.default]),
+            __metadata("design:returntype", void 0)
+        ], FirstMediator.prototype, "onResponse", null);
+        FirstMediator = __decorate([
+            MediatorClass,
+            EgretSkin("FuckSkin")
+        ], FirstMediator);
+        return FirstMediator;
+    }(SceneMediator_2.default));
+});
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_1, Core_1) {
+define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_2, Core_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -293,7 +302,7 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
         }
     });
     console.log(Environment_1.environment.env, Environment_1.environment.getHost(), Environment_1.environment.curCDNHost);
-    var req = new TestRequest_1.default();
+    var req = new TestRequest_2.default();
     req.test = "Fuck you";
     Core_1.core.dispatch(req);
 });

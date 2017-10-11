@@ -11,5 +11,5 @@
 declare function ModelClass(cls:IConstructor):any;
 declare function MediatorClass(cls:IConstructor):any;
 declare function ModuleClass(cls:IConstructor):any;
-declare function ResponseHandler(clsOrType:IConstructor|string):MethodDecorator;
+declare function ResponseHandler(prototype:any, propertyKey:string):void;
 declare function DelegateMediator(prototype:any, propertyKey:string):any;

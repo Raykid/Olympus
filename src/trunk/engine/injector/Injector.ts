@@ -70,21 +70,19 @@ export function ModuleClass(cls:IConstructor):any
 window["ModuleClass"] = ModuleClass;
 
 /** 处理通讯消息返回 */
-export function ResponseHandler(clsOrType:IResponseDataConstructor|string):MethodDecorator
+export function ResponseHandler(prototype:any, propertyKey:string):void
 {
-    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    var defs:[IResponseDataConstructor] = Reflect.getMetadata("design:paramtypes", prototype, propertyKey);
+    // 监听实例化
+    listenConstruct(prototype.constructor, function(instance:any):void
     {
-        // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:any):void
-        {
-            netManager.listenResponse(clsOrType, instance[propertyKey], instance);
-        });
-        // 监听销毁
-        listenDispose(prototype.constructor, function(instance:any):void
-        {
-            netManager.unlistenResponse(clsOrType, instance[propertyKey], instance);
-        });
-    };
+        netManager.listenResponse(defs[0], instance[propertyKey], instance);
+    });
+    // 监听销毁
+    listenDispose(prototype.constructor, function(instance:any):void
+    {
+        netManager.unlistenResponse(defs[0], instance[propertyKey], instance);
+    });
 }
 // 赋值全局方法
 window["ResponseHandler"] = ResponseHandler;
