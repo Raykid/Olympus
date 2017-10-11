@@ -1895,30 +1895,31 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
             var resClass = defs[0];
             if (!(resClass.prototype instanceof Message_2.default))
                 throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
-            // 监听实例化
-            ConstructUtil_1.listenConstruct(target.constructor, function (instance) {
-                Core_2.core.listen(resClass, instance[key], instance);
-            });
+            doMessageHandler(target.constructor, key, resClass);
         }
         else {
             return function (prototype, propertyKey, descriptor) {
-                // 监听实例化
-                ConstructUtil_1.listenConstruct(prototype.constructor, function (instance) {
-                    Core_2.core.listen(target, instance[propertyKey], instance);
-                });
-                // 监听销毁
-                ConstructUtil_1.listenDispose(prototype.constructor, function (instance) {
-                    Core_2.core.unlisten(target, instance[propertyKey], instance);
-                });
+                doMessageHandler(prototype.constructor, propertyKey, target);
             };
         }
     }
     exports.MessageHandler = MessageHandler;
     ;
+    function doMessageHandler(cls, key, type) {
+        // 监听实例化
+        ConstructUtil_1.listenConstruct(cls, function (instance) {
+            Core_2.core.listen(type, instance[key], instance);
+        });
+        // 监听销毁
+        ConstructUtil_1.listenDispose(cls, function (instance) {
+            Core_2.core.unlisten(type, instance[key], instance);
+        });
+    }
     // 赋值全局方法
     window["MessageHandler"] = MessageHandler;
 });
 /// <reference path="../../core/global/IConstructor.ts"/>
+/// <reference path="../../core/global/IResponseDataConstructor.ts"/>
 define("engine/net/DataType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -3181,22 +3182,31 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     exports.ModuleClass = ModuleClass;
     // 赋值全局方法
     window["ModuleClass"] = ModuleClass;
-    /** 处理通讯消息返回 */
-    function ResponseHandler(prototype, propertyKey) {
-        var defs = Reflect.getMetadata("design:paramtypes", prototype, propertyKey);
-        var resClass = defs[0];
-        if (!(resClass.prototype instanceof ResponseData_1.default))
-            throw new Error("@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-        // 监听实例化
-        ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
-            NetManager_1.netManager.listenResponse(defs[0], instance[propertyKey], instance);
-        });
-        // 监听销毁
-        ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-            NetManager_1.netManager.unlistenResponse(defs[0], instance[propertyKey], instance);
-        });
+    function ResponseHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof ResponseData_1.default))
+                throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
+            doResponseHandler(target.constructor, key, defs[0]);
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                doResponseHandler(prototype.constructor, propertyKey, target);
+            };
+        }
     }
     exports.ResponseHandler = ResponseHandler;
+    function doResponseHandler(cls, key, type) {
+        // 监听实例化
+        ConstructUtil_2.listenConstruct(cls, function (instance) {
+            NetManager_1.netManager.listenResponse(type, instance[key], instance);
+        });
+        // 监听销毁
+        ConstructUtil_2.listenDispose(cls, function (instance) {
+            NetManager_1.netManager.unlistenResponse(type, instance[key], instance);
+        });
+    }
     // 赋值全局方法
     window["ResponseHandler"] = ResponseHandler;
     /** 在Module内托管Mediator */

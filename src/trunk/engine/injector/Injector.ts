@@ -70,21 +70,37 @@ export function ModuleClass(cls:IConstructor):any
 window["ModuleClass"] = ModuleClass;
 
 /** 处理通讯消息返回 */
-export function ResponseHandler(prototype:any, propertyKey:string):void
+export function ResponseHandler(prototype:any, propertyKey:string):void;
+export function ResponseHandler(cls:IResponseDataConstructor):MethodDecorator;
+export function ResponseHandler(target:any, key?:string):MethodDecorator|void
 {
-    var defs:[IResponseDataConstructor] = Reflect.getMetadata("design:paramtypes", prototype, propertyKey);
-    var resClass:IResponseDataConstructor = defs[0];
-    if(!(resClass.prototype instanceof ResponseData))
-        throw new Error("@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-    // 监听实例化
-    listenConstruct(prototype.constructor, function(instance:any):void
+    if(key)
     {
-        netManager.listenResponse(defs[0], instance[propertyKey], instance);
+        var defs:[IResponseDataConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
+        var resClass:IResponseDataConstructor = defs[0];
+        if(!(resClass.prototype instanceof ResponseData))
+            throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
+        doResponseHandler(target.constructor, key, defs[0]);
+    }
+    else
+    {
+        return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+        {
+            doResponseHandler(prototype.constructor, propertyKey, target);
+        };
+    }
+}
+function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConstructor):void
+{
+    // 监听实例化
+    listenConstruct(cls, function(instance:any):void
+    {
+        netManager.listenResponse(type, instance[key], instance);
     });
     // 监听销毁
-    listenDispose(prototype.constructor, function(instance:any):void
+    listenDispose(cls, function(instance:any):void
     {
-        netManager.unlistenResponse(defs[0], instance[propertyKey], instance);
+        netManager.unlistenResponse(type, instance[key], instance);
     });
 }
 // 赋值全局方法

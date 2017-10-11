@@ -486,6 +486,17 @@ declare module "core/injector/Injector" {
 /**
  * @author Raykid
  * @email initial_r@qq.com
+ * @create date 2017-10-11
+ * @modify date 2017-10-11
+ *
+ * 这个文件是给全局设置一个IConstructor接口而设计的
+*/
+interface IResponseDataConstructor extends Function {
+    new (...args: any[]): any;
+}
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
  * @create date 2017-09-22
  * @modify date 2017-09-22
  *
@@ -495,6 +506,7 @@ declare function ModelClass(cls: IConstructor): any;
 declare function MediatorClass(cls: IConstructor): any;
 declare function ModuleClass(cls: IConstructor): any;
 declare function ResponseHandler(prototype: any, propertyKey: string): void;
+declare function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
 declare function DelegateMediator(prototype: any, propertyKey: string): any;
 declare module "engine/net/DataType" {
     /**
@@ -556,7 +568,6 @@ declare module "engine/net/IRequestPolicy" {
 declare module "engine/net/RequestData" {
     import IMessage from "core/message/IMessage";
     import IRequestPolicy from "engine/net/IRequestPolicy";
-    import { IResponseDataConstructor } from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -673,10 +684,7 @@ declare module "engine/net/ResponseData" {
          */
         abstract __params: IResponseParams;
     }
-    export interface IResponseDataConstructor {
-        new (): ResponseData;
-        readonly type: string;
-    }
+    export var IResponseDataConstructor: any;
 }
 declare module "engine/net/NetMessage" {
     /**
@@ -734,7 +742,7 @@ declare module "engine/net/NetUtil" {
 }
 declare module "engine/net/NetManager" {
     import RequestData from "engine/net/RequestData";
-    import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
+    import ResponseData from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1819,6 +1827,7 @@ declare module "engine/injector/Injector" {
     export function ModuleClass(cls: IConstructor): any;
     /** 处理通讯消息返回 */
     export function ResponseHandler(prototype: any, propertyKey: string): void;
+    export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
     /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: IModule, propertyKey: string): any;
 }

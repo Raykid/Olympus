@@ -83,28 +83,28 @@ export function MessageHandler(target:string|any, key?:string):MethodDecorator
         var resClass:IConstructor = defs[0];
         if(!(resClass.prototype instanceof Message))
             throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
-        // 监听实例化
-        listenConstruct(target.constructor, function(instance:any):void
-        {
-            core.listen(resClass, instance[key], instance);
-        });
+        doMessageHandler(target.constructor, key, resClass);
     }
     else
     {
         return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
         {
-            // 监听实例化
-            listenConstruct(prototype.constructor, function(instance:any):void
-            {
-                core.listen(target, instance[propertyKey], instance);
-            });
-            // 监听销毁
-            listenDispose(prototype.constructor, function(instance:any):void
-            {
-                core.unlisten(target, instance[propertyKey], instance);
-            });
+            doMessageHandler(prototype.constructor, propertyKey, target);
         };
     }
 };
+function doMessageHandler(cls:IConstructor, key:string, type:IConstructor):void
+{
+    // 监听实例化
+    listenConstruct(cls, function(instance:any):void
+    {
+        core.listen(type, instance[key], instance);
+    });
+    // 监听销毁
+    listenDispose(cls, function(instance:any):void
+    {
+        core.unlisten(type, instance[key], instance);
+    });
+}
 // 赋值全局方法
 window["MessageHandler"] = MessageHandler;
