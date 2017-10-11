@@ -21,20 +21,9 @@ export function wrapSkin(mediator:IMediator, skin:any):eui.Component
         comp.removeEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
         comp.skinName = skin;
         // 转发ui引用
-        for(var key in comp)
+        for(var name of comp.skin.skinParts)
         {
-            var target:any = comp[key];
-            if(
-                target instanceof eui.Component ||
-                target instanceof eui.Image ||
-                target instanceof eui.Label ||
-                target instanceof eui.EditableText ||
-                target instanceof eui.BitmapLabel ||
-                target instanceof eui.sys.UIComponentImpl
-            )
-            {
-                mediator[key] = target;
-            }
+            mediator[name] = comp[name];
         }
     }
 }

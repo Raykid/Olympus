@@ -65797,16 +65797,9 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
             comp.removeEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
             comp.skinName = skin;
             // 转发ui引用
-            for (var key in comp) {
-                var target = comp[key];
-                if (target instanceof eui.Component ||
-                    target instanceof eui.Image ||
-                    target instanceof eui.Label ||
-                    target instanceof eui.EditableText ||
-                    target instanceof eui.BitmapLabel ||
-                    target instanceof eui.sys.UIComponentImpl) {
-                    mediator[key] = target;
-                }
+            for (var _i = 0, _a = comp.skin.skinParts; _i < _a.length; _i++) {
+                var name = _a[_i];
+                mediator[name] = comp[name];
             }
         }
     }
