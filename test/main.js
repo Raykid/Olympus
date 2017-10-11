@@ -14,6 +14,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal", "engine/env/Query"], function (require, exports, WindowExternal_1, Query_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -49,7 +52,8 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             return _this;
         }
         __decorate([
-            DelegateMediator
+            DelegateMediator,
+            __metadata("design:type", SecondMediator)
         ], SecondModule.prototype, "_mediator", void 0);
         return SecondModule;
     }(Module_1.default));
@@ -89,7 +93,8 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             return _this;
         }
         __decorate([
-            DelegateMediator
+            DelegateMediator,
+            __metadata("design:type", FirstMediator)
         ], FirstModule.prototype, "_mediator", void 0);
         return FirstModule;
     }(Module_2.default));
@@ -116,10 +121,14 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 console.log("change to second module!");
         };
         __decorate([
-            Inject(ModuleManager_2.default)
+            Inject,
+            __metadata("design:type", ModuleManager_2.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
-            MessageHandler(ModuleMessage_1.default.MODULE_CHANGE)
+            MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
+            __metadata("design:type", Function),
+            __metadata("design:paramtypes", [Object, Object]),
+            __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onModuleChange", null);
         FirstMediator = __decorate([
             MediatorClass,

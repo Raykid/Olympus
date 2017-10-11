@@ -5,6 +5,7 @@
     "sourceMap": true,
     "declaration": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "outFile": "../../../dist/DOM.js"
   },
   "files": [

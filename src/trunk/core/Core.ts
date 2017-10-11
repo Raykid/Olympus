@@ -1,3 +1,4 @@
+/// <reference path="../libs/Reflect.d.ts"/>
 /// <reference path="./global/Patch.ts"/>
 
 import Dictionary from "../utils/Dictionary";
@@ -46,7 +47,7 @@ export interface IInjectableParams
 export default class Core implements IDispatcher
 {
     private static _instance:Core;
-    
+
     public constructor()
     {
         // 进行单例判断
@@ -174,7 +175,6 @@ export default class Core implements IDispatcher
     }
     
     /*********************** 下面是依赖注入系统 ***********************/
-    private _injectDict:Dictionary<IConstructor|string, any> = new Dictionary();
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      * 
@@ -197,7 +197,7 @@ export default class Core implements IDispatcher
      */
     public mapInjectValue(value:any, type?:IConstructor|string):void
     {
-        this._injectDict.set(type || value.constructor, value);
+        Reflect.defineMetadata("design:type", value, type || value.constructor);
     }
 
     /**
@@ -208,7 +208,7 @@ export default class Core implements IDispatcher
      */
     public unmapInject(target:IConstructor|string):void
     {
-        this._injectDict.delete(target);
+        Reflect.deleteMetadata("design:type", target);
     }
 
     /**
@@ -222,7 +222,7 @@ export default class Core implements IDispatcher
     {
         // 需要用原始的构造函数取
         type = type["__ori_constructor__"] || type;
-        return this._injectDict.get(type);
+        return Reflect.getMetadata("design:type", type);
     }
 
     /*********************** 下面是内核命令系统 ***********************/

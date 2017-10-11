@@ -3,13 +3,12 @@
     "module": "amd",
     "target": "es5",
     "sourceMap": true,
-    "allowJs": true,
+    "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "outFile": "../../dist/Olympus.js"
   },
   "files": [
-    "libs/Reflect.js",
     "Injector.ts",
     "Olympus.ts",
     "core/Core.ts",

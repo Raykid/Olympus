@@ -1,3 +1,32 @@
+/// <reference path="../src/trunk/libs/Reflect.d.ts" />
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-18
+ * @modify date 2017-09-18
+ *
+ * 这个文件是给全局设置一个IConstructor接口而设计的
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-22
+ * @modify date 2017-09-22
+ *
+ * core模组内所有装饰器的全局声明
+*/
+declare function Injectable(cls: IConstructor): void;
+declare function Injectable(name: string): ClassDecorator;
+declare function Injectable(params: {
+    type: IConstructor;
+}): ClassDecorator;
+declare function Inject(prototype: any, propertyKey: string): void;
+declare function Inject(name: string): PropertyDecorator;
+declare function Inject(cls: IConstructor): PropertyDecorator;
+declare function MessageHandler(type: string): MethodDecorator;
 declare module "utils/ObjectUtil" {
     /**
      * @author Raykid
@@ -106,90 +135,6 @@ declare module "utils/Dictionary" {
          */
         delete(key: K): void;
     }
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-18
- * @modify date 2017-09-18
- *
- * 这个文件是给全局设置一个IConstructor接口而设计的
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-22
- * @modify date 2017-09-22
- *
- * core模组内所有装饰器的全局声明
-*/
-declare function Injectable(cls: IConstructor): void;
-declare function Injectable(name: string): ClassDecorator;
-declare function Injectable(params: {
-    type: IConstructor;
-}): ClassDecorator;
-declare function Inject(cls: IConstructor | string): PropertyDecorator;
-declare function MessageHandler(type: string): MethodDecorator;
-declare module "core/interfaces/IConstructor" {
-    export default IConstructor;
-}
-declare module "utils/ConstructUtil" {
-    import IConstructor from "core/interfaces/IConstructor";
-    /**
-     * 包装一个类型，监听类型的实例化操作
-     *
-     * @export
-     * @param {IConstructor} cls 要监听构造的类型构造器
-     * @returns {IConstructor} 新的构造函数
-     */
-    export function wrapConstruct(cls: IConstructor): IConstructor;
-    /**
-     * 监听类型的实例化
-     *
-     * @export
-     * @param {IConstructor} cls 要监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 移除实例化监听
-     *
-     * @export
-     * @param {IConstructor} cls 要移除监听实例化的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
-    /**
-     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
-     *
-     * @export
-     * @param {IConstructor} cls 要监听销毁的类
-     * @param {(instance?:any)=>void} handler 处理函数
-     */
-    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
-}
-declare module "core/injector/Injector" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * Core模组的装饰器注入模块
-    */
-    /** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
-    export function Injectable(cls: IConstructor): void;
-    export function Injectable(name: string): ClassDecorator;
-    export function Injectable(params: {
-        type: IConstructor;
-    }): ClassDecorator;
-    /** 赋值注入的实例 */
-    export function Inject(cls: IConstructor | string): PropertyDecorator;
-    /** 处理内核消息 */
-    export function MessageHandler(type: string): MethodDecorator;
 }
 declare module "core/message/IMessage" {
     /**
@@ -421,7 +366,6 @@ declare module "core/Core" {
          */
         unlisten(type: string, handler: Function, thisArg?: any): void;
         /*********************** 下面是依赖注入系统 ***********************/
-        private _injectDict;
         /**
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
@@ -476,6 +420,66 @@ declare module "core/Core" {
     }
     /** 再额外导出一个单例 */
     export const core: Core;
+}
+declare module "core/interfaces/IConstructor" {
+    export default IConstructor;
+}
+declare module "utils/ConstructUtil" {
+    import IConstructor from "core/interfaces/IConstructor";
+    /**
+     * 包装一个类型，监听类型的实例化操作
+     *
+     * @export
+     * @param {IConstructor} cls 要监听构造的类型构造器
+     * @returns {IConstructor} 新的构造函数
+     */
+    export function wrapConstruct(cls: IConstructor): IConstructor;
+    /**
+     * 监听类型的实例化
+     *
+     * @export
+     * @param {IConstructor} cls 要监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 移除实例化监听
+     *
+     * @export
+     * @param {IConstructor} cls 要移除监听实例化的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function unlistenConstruct(cls: IConstructor, handler: (instance?: any) => void): void;
+    /**
+     * 监听类型销毁（如果能够销毁的话，需要类型具有dispose方法），该监听不需要移除
+     *
+     * @export
+     * @param {IConstructor} cls 要监听销毁的类
+     * @param {(instance?:any)=>void} handler 处理函数
+     */
+    export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
+}
+declare module "core/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * Core模组的装饰器注入模块
+    */
+    /** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
+    export function Injectable(cls: IConstructor): void;
+    export function Injectable(name: string): ClassDecorator;
+    export function Injectable(params: {
+        type: IConstructor;
+    }): ClassDecorator;
+    /** 赋值注入的实例 */
+    export function Inject(prototype: any, propertyKey: string): void;
+    export function Inject(name: string): PropertyDecorator;
+    export function Inject(cls: IConstructor): PropertyDecorator;
+    /** 处理内核消息 */
+    export function MessageHandler(type: string): MethodDecorator;
 }
 /**
  * @author Raykid

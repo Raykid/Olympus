@@ -37,21 +37,36 @@ export function Injectable(cls:{type:IConstructor}|IConstructor|string):ClassDec
 window["Injectable"] = Injectable;
 
 /** 赋值注入的实例 */
-export function Inject(cls:IConstructor|string):PropertyDecorator
+export function Inject(prototype:any, propertyKey:string):void;
+export function Inject(name:string):PropertyDecorator;
+export function Inject(cls:IConstructor):PropertyDecorator;
+export function Inject(target:IConstructor|string|any, key?:string):PropertyDecorator|void
 {
-    return function(prototype:any, propertyKey:string):void
+    if((typeof target == "string" || target instanceof Function) && !key)
     {
-        // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:any):void
+        return function(prototype:any, propertyKey:string):void
         {
-            Object.defineProperty(instance, propertyKey, {
-                configurable: true,
-                enumerable: true,
-                get: ()=>core.getInject(cls)
-            });
-        });
-    };
+            doInject(prototype.constructor, propertyKey, target);
+        };
+    }
+    else
+    {
+        var cls:IConstructor = Reflect.getMetadata("design:type", target, key);
+        doInject(target.constructor, key, cls);
+    }
 };
+function doInject(cls:IConstructor, key:string, type:IConstructor|string):void
+{
+    // 监听实例化
+    listenConstruct(cls, function(instance:any):void
+    {
+        Object.defineProperty(instance, key, {
+            configurable: true,
+            enumerable: true,
+            get: ()=>core.getInject(type)
+        });
+    });
+}
 // 赋值全局方法
 window["Inject"] = Inject;
 

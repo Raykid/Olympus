@@ -23,7 +23,7 @@ export default class FirstModule extends Module
 @EgretSkin("FuckSkin")
 class FirstMediator extends SceneMediator
 {
-    @Inject(ModuleManager)
+    @Inject
     private moduleManager:ModuleManager;
 
     public btn:eui.Button;

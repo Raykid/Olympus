@@ -11,5 +11,7 @@
 declare function Injectable(cls:IConstructor):void;
 declare function Injectable(name:string):ClassDecorator;
 declare function Injectable(params:{type:IConstructor}):ClassDecorator;
-declare function Inject(cls:IConstructor|string):PropertyDecorator;
+declare function Inject(prototype:any, propertyKey:string):void;
+declare function Inject(name:string):PropertyDecorator;
+declare function Inject(cls:IConstructor):PropertyDecorator;
 declare function MessageHandler(type:string):MethodDecorator;
