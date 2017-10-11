@@ -486,17 +486,6 @@ declare module "core/injector/Injector" {
 /**
  * @author Raykid
  * @email initial_r@qq.com
- * @create date 2017-10-11
- * @modify date 2017-10-11
- *
- * 这个文件是给全局设置一个IConstructor接口而设计的
-*/
-interface IResponseDataConstructor extends Function {
-    new (...args: any[]): any;
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
  * @create date 2017-09-22
  * @modify date 2017-09-22
  *
@@ -506,7 +495,7 @@ declare function ModelClass(cls: IConstructor): any;
 declare function MediatorClass(cls: IConstructor): any;
 declare function ModuleClass(cls: IConstructor): any;
 declare function ResponseHandler(prototype: any, propertyKey: string): void;
-declare function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
+declare function ResponseHandler(cls: IConstructor): MethodDecorator;
 declare function DelegateMediator(prototype: any, propertyKey: string): any;
 declare module "engine/net/DataType" {
     /**
@@ -568,6 +557,7 @@ declare module "engine/net/IRequestPolicy" {
 declare module "engine/net/RequestData" {
     import IMessage from "core/message/IMessage";
     import IRequestPolicy from "engine/net/IRequestPolicy";
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -684,7 +674,10 @@ declare module "engine/net/ResponseData" {
          */
         abstract __params: IResponseParams;
     }
-    export var IResponseDataConstructor: any;
+    export interface IResponseDataConstructor {
+        new (): ResponseData;
+        readonly type: string;
+    }
 }
 declare module "engine/net/NetMessage" {
     /**
@@ -742,7 +735,7 @@ declare module "engine/net/NetUtil" {
 }
 declare module "engine/net/NetManager" {
     import RequestData from "engine/net/RequestData";
-    import ResponseData from "engine/net/ResponseData";
+    import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1341,6 +1334,13 @@ declare module "engine/mediator/IMediator" {
          */
         loadAssets(handler: (err?: Error) => void): void;
         /**
+         * 当所需资源加载完毕后调用
+         *
+         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+         * @memberof IMediator
+         */
+        onLoadAssets(err?: Error): void;
+        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
          * @param {*} target 事件目标对象
@@ -1409,6 +1409,8 @@ declare module "engine/module/IModule" {
         undelegateMediator(mediator: IMediator): void;
         /** 获取所有已托管的中介者 */
         getDelegatedMediators(): IMediator[];
+        /** 当模块资源加载完毕后调用 */
+        onLoadAssets(err?: Error): void;
         /** 当获取到所有消息返回后调用 */
         onGetResponses(responses: ResponseData[]): void;
         /** 打开模块时调用 */
@@ -1810,6 +1812,7 @@ declare module "engine/bridge/BridgeManager" {
     export const bridgeManager: BridgeManager;
 }
 declare module "engine/injector/Injector" {
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
     import IModule from "engine/module/IModule";
     /**
      * @author Raykid
@@ -2046,6 +2049,13 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         loadAssets(handler: (err?: Error) => void): void;
+        /**
+         * 当所需资源加载完毕后调用
+         *
+         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+         * @memberof Mediator
+         */
+        onLoadAssets(err?: Error): void;
         /**
          * 打开，为了实现IOpenClose接口
          *
@@ -2402,6 +2412,13 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         getDelegatedMediators(): IMediator[];
+        /**
+         * 当模块资源加载完毕后调用
+         *
+         * @param {Error} [err] 任何一个Mediator资源加载出错会给出该错误对象，没错则不给
+         * @memberof Module
+         */
+        onLoadAssets(err?: Error): void;
         /**
          * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
          *

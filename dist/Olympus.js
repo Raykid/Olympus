@@ -1919,7 +1919,6 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     window["MessageHandler"] = MessageHandler;
 });
 /// <reference path="../../core/global/IConstructor.ts"/>
-/// <reference path="../../core/global/IResponseDataConstructor.ts"/>
 define("engine/net/DataType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -3548,7 +3547,21 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          * @memberof Mediator
          */
         Mediator.prototype.loadAssets = function (handler) {
-            this.bridge.loadAssets(this.listAssets(), handler);
+            var self = this;
+            this.bridge.loadAssets(this.listAssets(), function (err) {
+                // 调用onLoadAssets接口
+                self.onLoadAssets(err);
+                // 调用回调
+                handler.call(this, err);
+            });
+        };
+        /**
+         * 当所需资源加载完毕后调用
+         *
+         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+         * @memberof Mediator
+         */
+        Mediator.prototype.onLoadAssets = function (err) {
         };
         /**
          * 打开，为了实现IOpenClose接口
@@ -3922,13 +3935,17 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 var target = new cls();
                 // 加载所有已托管中介者的资源
                 var mediators = target.getDelegatedMediators().concat();
-                var loadMediatorAssets = function () {
-                    if (mediators.length > 0) {
+                var loadMediatorAssets = function (err) {
+                    if (err) {
+                        // 停止加载，调用模块加载失败接口
+                        target.onLoadAssets(err);
+                    }
+                    else if (mediators.length > 0) {
                         mediators.shift().loadAssets(loadMediatorAssets);
                     }
                     else {
-                        // 调用onOpen接口
-                        target.onOpen(data);
+                        // 调用onLoadAssets接口
+                        target.onLoadAssets();
                         // 发送所有模块消息
                         var requests = target.listInitRequests();
                         NetManager_2.netManager.sendMultiRequests(requests, function (responses) {
@@ -3936,6 +3953,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                             var fromModule = from && from[1];
                             // 调用onGetResponses接口
                             target.onGetResponses(responses);
+                            // 调用onOpen接口
+                            target.onOpen(data);
                             // 调用onDeactivate接口
                             fromModule && fromModule.onDeactivate(cls, data);
                             // 插入模块
@@ -4123,6 +4142,14 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
          */
         Module.prototype.getDelegatedMediators = function () {
             return this._mediators;
+        };
+        /**
+         * 当模块资源加载完毕后调用
+         *
+         * @param {Error} [err] 任何一个Mediator资源加载出错会给出该错误对象，没错则不给
+         * @memberof Module
+         */
+        Module.prototype.onLoadAssets = function (err) {
         };
         /**
          * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写

@@ -46,6 +46,14 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
     loadAssets(handler:(err?:Error)=>void):void;
 
     /**
+     * 当所需资源加载完毕后调用
+     * 
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof IMediator
+     */
+    onLoadAssets(err?:Error):void;
+
+    /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
      * @param {*} target 事件目标对象

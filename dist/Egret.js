@@ -65790,18 +65790,23 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
     function wrapSkin(mediator, skin) {
         var comp = new eui.Component();
         mediator.skin = comp;
-        // 监听添加舞台事件，将皮肤贴上去
-        comp.addEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
-        return comp;
-        function onAddedToStage(event) {
-            comp.removeEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
-            comp.skinName = skin;
-            // 转发ui引用
-            for (var _i = 0, _a = comp.skin.skinParts; _i < _a.length; _i++) {
-                var name = _a[_i];
-                mediator[name] = comp[name];
+        // 篡改mediator的onLoadAssets方法，在资源加载完毕时将皮肤附上去
+        var oriFunc = mediator.onLoadAssets;
+        mediator.onLoadAssets = function (err) {
+            if (!err) {
+                comp.skinName = skin;
+                // 转发ui引用
+                for (var _i = 0, _a = comp.skin.skinParts; _i < _a.length; _i++) {
+                    var name = _a[_i];
+                    mediator[name] = comp[name];
+                }
             }
-        }
+            // 恢复onLoadAssets方法
+            mediator.onLoadAssets = oriFunc;
+            // 调用原始方法
+            mediator.onLoadAssets(err);
+        };
+        return comp;
     }
     exports.wrapSkin = wrapSkin;
 });

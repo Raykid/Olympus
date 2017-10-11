@@ -26,6 +26,8 @@ export default interface IModule extends IDisposable
     undelegateMediator(mediator:IMediator):void;
     /** 获取所有已托管的中介者 */
     getDelegatedMediators():IMediator[];
+    /** 当模块资源加载完毕后调用 */
+    onLoadAssets(err?:Error):void;
     /** 当获取到所有消息返回后调用 */
     onGetResponses(responses:ResponseData[]):void;
     /** 打开模块时调用 */

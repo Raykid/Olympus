@@ -67,7 +67,24 @@ export default class Mediator implements IMediator, IDispatcher
      */
     public loadAssets(handler:(err?:Error)=>void):void
     {
-        this.bridge.loadAssets(this.listAssets(), handler);
+        var self:Mediator = this;
+        this.bridge.loadAssets(this.listAssets(), function(err?:Error):void
+        {
+            // 调用onLoadAssets接口
+            self.onLoadAssets(err);
+            // 调用回调
+            handler.call(this, err);
+        });
+    }
+
+    /**
+     * 当所需资源加载完毕后调用
+     * 
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof Mediator
+     */
+    public onLoadAssets(err?:Error):void
+    {
     }
 
     /**

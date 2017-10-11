@@ -103,15 +103,20 @@ export default class ModuleManager
             var target:IModule = new cls();
             // 加载所有已托管中介者的资源
             var mediators:IMediator[] = target.getDelegatedMediators().concat();
-            var loadMediatorAssets:()=>void = ()=>{
-                if(mediators.length > 0)
+            var loadMediatorAssets:(err?:Error)=>void = (err?:Error)=>{
+                if(err)
+                {
+                    // 停止加载，调用模块加载失败接口
+                    target.onLoadAssets(err);
+                }
+                else if(mediators.length > 0)
                 {
                     mediators.shift().loadAssets(loadMediatorAssets);
                 }
                 else
                 {
-                    // 调用onOpen接口
-                    target.onOpen(data);
+                    // 调用onLoadAssets接口
+                    target.onLoadAssets();
                     // 发送所有模块消息
                     var requests:RequestData[] = target.listInitRequests();
                     netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
@@ -120,6 +125,8 @@ export default class ModuleManager
                         var fromModule:IModule = from && from[1];
                         // 调用onGetResponses接口
                         target.onGetResponses(responses);
+                        // 调用onOpen接口
+                        target.onOpen(data);
                         // 调用onDeactivate接口
                         fromModule && fromModule.onDeactivate(cls, data);
                         // 插入模块

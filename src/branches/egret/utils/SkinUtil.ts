@@ -12,18 +12,23 @@ export function wrapSkin(mediator:IMediator, skin:any):eui.Component
 {
     var comp:eui.Component = new eui.Component();
     mediator.skin = comp;
-    // 监听添加舞台事件，将皮肤贴上去
-    comp.addEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
-    return comp;
-
-    function onAddedToStage(event:egret.Event):void
+    // 篡改mediator的onLoadAssets方法，在资源加载完毕时将皮肤附上去
+    var oriFunc:(err?: Error)=>void = mediator.onLoadAssets;
+    mediator.onLoadAssets = function(err?:Error):void
     {
-        comp.removeEventListener(egret.Event.ADDED_TO_STAGE, onAddedToStage, this);
-        comp.skinName = skin;
-        // 转发ui引用
-        for(var name of comp.skin.skinParts)
+        if(!err)
         {
-            mediator[name] = comp[name];
+            comp.skinName = skin;
+            // 转发ui引用
+            for(var name of comp.skin.skinParts)
+            {
+                mediator[name] = comp[name];
+            }
         }
-    }
+        // 恢复onLoadAssets方法
+        mediator.onLoadAssets = oriFunc;
+        // 调用原始方法
+        mediator.onLoadAssets(err);
+    };
+    return comp;
 }

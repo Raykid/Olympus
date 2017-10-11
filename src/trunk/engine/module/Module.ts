@@ -126,6 +126,16 @@ export default abstract class Module implements IModule, IDispatcher
     }
 
     /**
+     * 当模块资源加载完毕后调用
+     * 
+     * @param {Error} [err] 任何一个Mediator资源加载出错会给出该错误对象，没错则不给
+     * @memberof Module
+     */
+    public onLoadAssets(err?:Error):void
+    {
+    }
+
+    /**
      * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
      * 
      * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）
