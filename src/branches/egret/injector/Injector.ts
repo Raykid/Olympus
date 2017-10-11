@@ -1,7 +1,4 @@
-/// <reference path="../egret-libs/egret/egret.d.ts"/>
-/// <reference path="../egret-libs/eui/eui.d.ts"/>
 /// <reference path="./Declaration.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
 
 import { listenConstruct } from "utils/ConstructUtil";
 import { wrapSkin } from "../utils/SkinUtil";

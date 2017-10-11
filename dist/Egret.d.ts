@@ -1,8 +1,8 @@
-/// <reference path="../src/branches/egret/egret-libs/eui/eui.d.ts" />
-/// <reference path="Olympus.d.ts" />
 /// <reference path="../src/branches/egret/egret-libs/egret/egret.d.ts" />
+/// <reference path="../src/branches/egret/egret-libs/eui/eui.d.ts" />
 /// <reference path="../src/branches/egret/egret-libs/res/res.d.ts" />
 /// <reference path="../src/branches/egret/egret-libs/tween/tween.d.ts" />
+/// <reference path="Olympus.d.ts" />
 /**
  * @author Raykid
  * @email initial_r@qq.com

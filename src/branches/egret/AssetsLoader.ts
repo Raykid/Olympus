@@ -1,6 +1,3 @@
-/// <reference path="../egret/egret-libs/res/res.d.ts"/>
-/// <reference path="../../../dist/Olympus.d.ts"/>
-
 import { environment } from "engine/env/Environment";
 import { version } from "engine/version/Version";
 import { panelManager } from "engine/panel/PanelManager";

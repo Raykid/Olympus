@@ -1,6 +1,3 @@
-/// <reference path="../egret-libs/eui/eui.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
-
 import IMediator from "engine/mediator/IMediator";
 
 /**

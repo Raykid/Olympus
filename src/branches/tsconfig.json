@@ -2,12 +2,14 @@
   "compilerOptions": {
     "module": "amd",
     "target": "es5",
-    "declaration": true,
+    "sourceMap": true,
     "experimentalDecorators": true,
-    "outFile": "../../../dist/Egret.js"
+    "outFile": "../../../dist/Egret.js",
+    "allowJs": true
   },
   "files": [
-    "../EgretBridge.ts"
+    "./DOMBridge.ts",
+    "./EgretBridge.ts"
   ],
   "exclude": [
     "../../trunk"

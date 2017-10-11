@@ -65776,8 +65776,6 @@ var egret;
         }
     })(tween = egret.tween || (egret.tween = {}));
 })(egret || (egret = {}));
-/// <reference path="../egret-libs/eui/eui.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
 define("egret/utils/SkinUtil", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -65814,10 +65812,7 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
     }
     exports.wrapSkin = wrapSkin;
 });
-/// <reference path="../egret-libs/egret/egret.d.ts"/>
-/// <reference path="../egret-libs/eui/eui.d.ts"/>
 /// <reference path="./Declaration.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
 define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", "egret/utils/SkinUtil", "engine/injector/Injector"], function (require, exports, ConstructUtil_1, SkinUtil_1, Injector_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -65870,8 +65865,6 @@ define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     })(RenderMode || (RenderMode = {}));
     exports.default = RenderMode;
 });
-/// <reference path="../egret/egret-libs/res/res.d.ts"/>
-/// <reference path="../../../dist/Olympus.d.ts"/>
 define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/version/Version", "engine/panel/PanelManager", "engine/platform/PlatformManager"], function (require, exports, Environment_1, Version_1, PanelManager_1, PlatformManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -66024,11 +66017,6 @@ define("egret/utils/TweenUtil", ["require", "exports"], function (require, expor
     }
     exports.tweenFrom = tweenFrom;
 });
-/// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-libs/res/res.d.ts"/>
-/// <reference path="../../egret/egret-libs/tween/tween.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
 define("egret/panel/BackPanelPolicy", ["require", "exports", "egret/utils/TweenUtil"], function (require, exports, TweenUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -66111,11 +66099,6 @@ define("egret/panel/BackPanelPolicy", ["require", "exports", "egret/utils/TweenU
     }());
     exports.default = BackPanelPolicy;
 });
-/// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-libs/res/res.d.ts"/>
-/// <reference path="../../egret/egret-libs/tween/tween.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
 define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

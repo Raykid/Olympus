@@ -1,9 +1,3 @@
-/// <reference path="../../egret/egret-libs/egret/egret.d.ts"/>
-/// <reference path="../../egret/egret-libs/eui/eui.d.ts"/>
-/// <reference path="../../egret/egret-libs/res/res.d.ts"/>
-/// <reference path="../../egret/egret-libs/tween/tween.d.ts"/>
-/// <reference path="../../../../dist/Olympus.d.ts"/>
-
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IPanel from "engine/panel/IPanel";
 import { tweenFrom, tweenTo } from "../utils/TweenUtil";

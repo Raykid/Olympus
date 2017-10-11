@@ -13,7 +13,6 @@
     "egret-libs/eui/eui.js",
     "egret-libs/res/res.js",
     "egret-libs/tween/tween.js",
-    "./injector/Injector.ts",
     "../EgretBridge.ts"
   ],
   "exclude": [
