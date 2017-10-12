@@ -3548,7 +3548,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          */
         Mediator.prototype.loadAssets = function (handler) {
             var self = this;
-            this.bridge.loadAssets(this.listAssets(), function (err) {
+            this.bridge.loadAssets(this, function (err) {
                 // 调用onLoadAssets接口
                 self.onLoadAssets(err);
                 // 调用回调
@@ -4247,6 +4247,11 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
         url = url.replace(/([^:/])(\/)+/g, "$1/");
         if (url.charAt(0) == "/")
             url = url.substr(1);
+        // 处理"/./"
+        var index;
+        while ((index = url.indexOf("/./")) >= 0) {
+            url = url.replace("/./", "/");
+        }
         // 处理"/xx/../"
         var reg = /\/[^\/\.]+?\/\.\.\//;
         while (reg.test(url)) {
@@ -5148,97 +5153,125 @@ define("engine/version/Version", ["require", "exports", "core/Core", "Injector",
     /** 再额外导出一个单例 */
     exports.version = Core_19.core.getInject(Version);
 });
-define("engine/net/HTTPMethod", ["require", "exports"], function (require, exports) {
+define("utils/HTTPUtil", ["require", "exports", "utils/URLUtil"], function (require, exports, URLUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * 发送一个HTTP请求
+     *
+     * @export
+     * @param {IHTTPRequestParams} params 请求参数
+     */
+    function send(params) {
+        var retryTimes = params.retryTimes || 2;
+        var timeout = params.timeout || 10000;
+        var method = params.method || "GET";
+        var timeoutId = 0;
+        var data = params.data || {};
+        // 取到url
+        var url = params.url;
+        // 合法化一下protocol
+        url = URLUtil_3.validateProtocol(url);
+        // 生成并初始化xhr
+        var xhr = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+        xhr.onreadystatechange = onReadyStateChange;
+        // 发送
+        send();
+        function send() {
+            // 根据发送方式组织数据格式
+            switch (method) {
+                case "POST":
+                    // POST目前规定为JSON格式发送
+                    xhr.open(method, url, true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.setRequestHeader("withCredentials", "true");
+                    xhr.send(JSON.stringify(data));
+                    break;
+                case "GET":
+                    // 将数据添加到url上
+                    url = URLUtil_3.joinQueryParams(url, data);
+                    xhr.open(method, url, true);
+                    xhr.setRequestHeader("withCredentials", "true");
+                    xhr.send(null);
+                    break;
+                default:
+                    throw new Error("暂不支持的HTTP Method：" + method);
+            }
+        }
+        function onReadyStateChange() {
+            switch (xhr.readyState) {
+                case 2:// 已经发送，开始计时
+                    timeoutId = setTimeout(abortAndRetry, timeout);
+                    break;
+                case 4:// 接收完毕
+                    // 停止计时
+                    timeoutId && clearTimeout(timeoutId);
+                    timeoutId = 0;
+                    try {
+                        if (xhr.status == 200) {
+                            // 成功回调
+                            params.onResponse && params.onResponse(xhr.responseText);
+                        }
+                        else if (retryTimes > 0) {
+                            // 没有超过重试上限则重试
+                            abortAndRetry();
+                        }
+                        else {
+                            // 出错回调
+                            var err = new Error(xhr.status + " " + xhr.statusText);
+                            params.onError && params.onError(err);
+                        }
+                    }
+                    catch (err) {
+                        console.error(err.message);
+                    }
+                    break;
+            }
+        }
+        function abortAndRetry() {
+            // 重试次数递减
+            retryTimes--;
+            // 中止xhr
+            xhr.abort();
+            // 重新发送
+            send();
+        }
+    }
+    exports.send = send;
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/URLUtil", "engine/net/NetManager"], function (require, exports, URLUtil_3, NetManager_3) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager"], function (require, exports, HTTPUtil_1, Environment_1, NetManager_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * HTTP请求策略
+    */
     var HTTPRequestPolicy = /** @class */ (function () {
         function HTTPRequestPolicy() {
         }
         /**
          * 发送请求逻辑
          *
-         * @param {IHTTPRequestParams} params HTTP请求数据
+         * @param {RequestData} request 请求数据
          * @memberof HTTPRequestPolicy
          */
         HTTPRequestPolicy.prototype.sendRequest = function (request) {
+            // 取到参数
             var params = request.__params;
-            var retryTimes = params.retryTimes || 2;
-            var timeout = params.timeout || 10000;
-            var method = params.method || "GET";
-            var timeoutId = 0;
-            // 取到url
-            var url = URLUtil_3.wrapHost(params.path, params.host);
-            // 合法化一下protocol
-            url = URLUtil_3.validateProtocol(url);
-            // 生成并初始化xhr
-            var xhr = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
-            xhr.onreadystatechange = onReadyStateChange;
             // 发送
-            send();
-            function send() {
-                // 根据发送方式组织数据格式
-                switch (method) {
-                    case "POST":
-                        // POST目前规定为JSON格式发送
-                        xhr.open(method, url, true);
-                        xhr.setRequestHeader("Content-Type", "application/json");
-                        xhr.setRequestHeader("withCredentials", "true");
-                        xhr.send(JSON.stringify(params.data));
-                        break;
-                    case "GET":
-                        // 将数据添加到url上
-                        url = URLUtil_3.joinQueryParams(url, params.data);
-                        xhr.open(method, url, true);
-                        xhr.setRequestHeader("withCredentials", "true");
-                        xhr.send(null);
-                        break;
-                    default:
-                        throw new Error("暂不支持的HTTP Method：" + method);
-                }
-            }
-            function onReadyStateChange() {
-                switch (xhr.readyState) {
-                    case 2:// 已经发送，开始计时
-                        timeoutId = setTimeout(abortAndRetry, timeout);
-                        break;
-                    case 4:// 接收完毕
-                        // 停止计时
-                        timeoutId && clearTimeout(timeoutId);
-                        timeoutId = 0;
-                        try {
-                            if (xhr.status == 200) {
-                                // 成功回调
-                                var result = JSON.parse(xhr.responseText);
-                                NetManager_3.netManager.__onResponse(request.__params.response.type, result, request);
-                            }
-                            else if (retryTimes > 0) {
-                                // 没有超过重试上限则重试
-                                abortAndRetry();
-                            }
-                            else {
-                                // 出错回调
-                                var err = new Error(xhr.status + " " + xhr.statusText);
-                                NetManager_3.netManager.__onError(err, request);
-                            }
-                        }
-                        catch (err) {
-                            console.error(err.message);
-                        }
-                        break;
-                }
-            }
-            function abortAndRetry() {
-                // 重试次数递减
-                retryTimes--;
-                // 中止xhr
-                xhr.abort();
-                // 重新发送
-                send();
-            }
+            HTTPUtil_1.send({
+                url: Environment_1.environment.toHostURL(params.path, params.hostIndex),
+                data: params.data,
+                method: params.method,
+                retryTimes: params.retryTimes,
+                timeout: params.timeout,
+                onResponse: function (result) { return NetManager_3.netManager.__onResponse(request.__params.response.type, result, request); },
+                onError: function (err) { return NetManager_3.netManager.__onError(err, request); }
+            });
         };
         return HTTPRequestPolicy;
     }());
@@ -5246,7 +5279,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/UR
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, Injector, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_1, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, Injector, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_2, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     Injector;
@@ -5281,7 +5314,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             // 加载页
             this._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
             // 初始化环境参数
-            Environment_1.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
+            Environment_2.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 初始化版本号管理器
             Version_1.version.initialize(function () {
                 // 监听Bridge初始化完毕事件，显示第一个模块

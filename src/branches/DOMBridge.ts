@@ -5,6 +5,12 @@ import { getObjectHashs } from "utils/ObjectUtil";
 import IPromptPanel from "engine/panel/IPromptPanel";
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
+import * as Injector from "./dom/injector/Injector";
+import IMediator from "engine/mediator/IMediator";
+import { environment } from "engine/env/Environment";
+import { send } from "utils/HTTPUtil";
+
+Injector;
 
 /**
  * @author Raykid
@@ -320,14 +326,45 @@ export default class DOMBridge implements IBridge
     /**
      * 加载资源
      * 
-     * @param {string[]} assets 资源列表
+     * @param {IMediator} mediator 资源列表
      * @param {(err?:Error)=>void} handler 回调函数
      * @memberof DOMBridge
      */
-    public loadAssets(assets:string[], handler:(err?:Error)=>void):void
+    public loadAssets(mediator:IMediator, handler:(err?:Error)=>void):void
     {
-        // DOM暂时不支持加载资源
-        handler();
+        var skins:string[] = mediator.listAssets().concat();
+        loadNext();
+        
+        function loadNext():void
+        {
+            if(skins.length <= 0)
+            {
+                handler();
+            }
+            else
+            {
+                var skin:string = skins.shift();
+                mediator.skin = document.createElement("div");
+                if(skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0)
+                {
+                    // 是皮肤字符串
+                    mediator.skin.innerHTML = skin;
+                    loadNext();
+                }
+                else
+                {
+                    // 是皮肤地址
+                    send({
+                        url: environment.toCDNHostURL(skin),
+                        onResponse: result=>{
+                            mediator.skin.innerHTML = result;
+                            loadNext();
+                        },
+                        onError: err=>handler(err)
+                    });
+                }
+            }
+        }
     }
     
     private _listenerDict:{[key:string]:(evt:Event)=>void} = {};

@@ -1053,6 +1053,7 @@ declare module "engine/bridge/IBridge" {
     import IPromptPanel from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
+    import IMediator from "engine/mediator/IMediator";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1240,11 +1241,11 @@ declare module "engine/bridge/IBridge" {
         /**
          * 加载资源
          *
-         * @param {string[]} assets 资源列表
+         * @param {IMediator} mediator 要加载资源的中介者
          * @param {(err?:Error)=>void} handler 回调函数
          * @memberof IBridge
          */
-        loadAssets(assets: string[], handler: (err?: Error) => void): void;
+        loadAssets(mediator: IMediator, handler: (err?: Error) => void): void;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
@@ -2880,45 +2881,31 @@ declare module "engine/version/Version" {
     /** 再额外导出一个单例 */
     export const version: Version;
 }
-declare module "engine/net/HTTPMethod" {
+declare module "utils/HTTPUtil" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-12
-     * @modify date 2017-09-12
+     * @create date 2017-10-12
+     * @modify date 2017-10-12
      *
-     * 定义HTTP发送接收方式目前支持的method值的枚举
+     * HTTP请求工具
     */
-    type HTTPMethod = "GET" | "POST";
-    export default HTTPMethod;
-}
-declare module "engine/net/policies/HTTPRequestPolicy" {
-    import IRequestPolicy from "engine/net/IRequestPolicy";
-    import RequestData, { IRequestParams } from "engine/net/RequestData";
-    import HTTPMethod from "engine/net/HTTPMethod";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * HTTP请求策略
-    */
-    export interface IHTTPRequestParams extends IRequestParams {
+    export type HTTPMethod = "GET" | "POST";
+    export interface IHTTPRequestParams {
         /**
-         * 消息域名
+         * url地址
          *
          * @type {string}
          * @memberof HTTPRequestPolicy
          */
-        host: string;
+        url: string;
         /**
-         * 消息地址
+         * 要发送的数据
          *
-         * @type {string}
-         * @memberof HTTPRequestPolicy
+         * @type {*}
+         * @memberof IHTTPRequestParams
          */
-        path: string;
+        data?: any;
         /**
          * HTTP方法类型，默认是GET
          *
@@ -2940,12 +2927,43 @@ declare module "engine/net/policies/HTTPRequestPolicy" {
          * @memberof HTTPRequestPolicy
          */
         timeout?: number;
+        /**
+         * 成功回调
+         *
+         * @memberof IHTTPRequestParams
+         */
+        onResponse?: (result: any) => void;
+        /**
+         * 失败回调
+         *
+         * @memberof IHTTPRequestParams
+         */
+        onError?: (err: Error) => void;
     }
+    /**
+     * 发送一个HTTP请求
+     *
+     * @export
+     * @param {IHTTPRequestParams} params 请求参数
+     */
+    export function send(params: IHTTPRequestParams): void;
+}
+declare module "engine/net/policies/HTTPRequestPolicy" {
+    import IRequestPolicy from "engine/net/IRequestPolicy";
+    import RequestData from "engine/net/RequestData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * HTTP请求策略
+    */
     export class HTTPRequestPolicy implements IRequestPolicy {
         /**
          * 发送请求逻辑
          *
-         * @param {IHTTPRequestParams} params HTTP请求数据
+         * @param {RequestData} request 请求数据
          * @memberof HTTPRequestPolicy
          */
         sendRequest(request: RequestData): void;

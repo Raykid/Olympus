@@ -1,7 +1,30 @@
-/// <reference path="../../dist/Olympus.d.ts"/>
-define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_1) {
+/// <reference path="./Declaration.ts"/>
+define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    function DOMMediatorClass(cls) {
+        // 监听类型实例化，转换皮肤格式
+        ConstructUtil_1.listenConstruct(cls, function (mediator) { return mediator.bridge = BridgeManager_1.bridgeManager.getBridge("DOM"); });
+        // 调用MediatorClass方法
+        return Injector_1.MediatorClass(cls);
+    }
+    exports.DOMMediatorClass = DOMMediatorClass;
+    // 赋值全局方法
+    window["DOMMediatorClass"] = DOMMediatorClass;
+});
+/// <reference path="../../dist/Olympus.d.ts"/>
+define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Injector", "engine/env/Environment", "utils/HTTPUtil"], function (require, exports, ObjectUtil_1, Injector, Environment_1, HTTPUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -304,13 +327,38 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
         /**
          * 加载资源
          *
-         * @param {string[]} assets 资源列表
+         * @param {IMediator} mediator 资源列表
          * @param {(err?:Error)=>void} handler 回调函数
          * @memberof DOMBridge
          */
-        DOMBridge.prototype.loadAssets = function (assets, handler) {
-            // DOM暂时不支持加载资源
-            handler();
+        DOMBridge.prototype.loadAssets = function (mediator, handler) {
+            var skins = mediator.listAssets().concat();
+            loadNext();
+            function loadNext() {
+                if (skins.length <= 0) {
+                    handler();
+                }
+                else {
+                    var skin = skins.shift();
+                    mediator.skin = document.createElement("div");
+                    if (skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0) {
+                        // 是皮肤字符串
+                        mediator.skin.innerHTML = skin;
+                        loadNext();
+                    }
+                    else {
+                        // 是皮肤地址
+                        HTTPUtil_1.send({
+                            url: Environment_1.environment.toCDNHostURL(skin),
+                            onResponse: function (result) {
+                                mediator.skin.innerHTML = result;
+                                loadNext();
+                            },
+                            onError: function (err) { return handler(err); }
+                        });
+                    }
+                }
+            }
         };
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

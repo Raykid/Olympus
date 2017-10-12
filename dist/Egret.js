@@ -66566,11 +66566,11 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
         /**
          * 加载资源
          *
-         * @param {string[]} assets 资源列表
+         * @param {IMediator} mediator 资源列表
          * @param {(err?:Error)=>void} handler 回调函数
          * @memberof EgretBridge
          */
-        EgretBridge.prototype.loadAssets = function (assets, handler) {
+        EgretBridge.prototype.loadAssets = function (mediator, handler) {
             var loader = new AssetsLoader_1.default({
                 oneError: function (evt) {
                     // 调用回调
@@ -66583,7 +66583,7 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
                     handler();
                 }
             });
-            loader.loadGroups(assets);
+            loader.loadGroups(mediator.listAssets());
         };
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

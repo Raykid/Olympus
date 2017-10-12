@@ -9,6 +9,12 @@ export function trimURL(url:string):string
     // 去除多余的"/"
     url = url.replace(/([^:/])(\/)+/g, "$1/");
     if(url.charAt(0) == "/") url = url.substr(1);
+    // 处理"/./"
+    var index:number;
+    while((index = url.indexOf("/./")) >= 0)
+    {
+        url = url.replace("/./", "/");
+    }
     // 处理"/xx/../"
     var reg:RegExp = /\/[^\/\.]+?\/\.\.\//;
     while(reg.test(url))

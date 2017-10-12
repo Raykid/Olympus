@@ -6,6 +6,7 @@ import ModuleMessage from "engine/module/ModuleMessage";
 import SceneMediator from "engine/scene/SceneMediator";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
+import { bridgeManager } from "engine/bridge/BridgeManager";
 
 /**
  * @author Raykid
@@ -21,27 +22,26 @@ export default class FirstModule extends Module
     private _mediator:FirstMediator = new FirstMediator();
 }
 
-@MediatorClass
-@EgretSkin("FuckSkin")
+@DOMMediatorClass
 class FirstMediator extends SceneMediator
 {
     @Inject
     private moduleManager:ModuleManager;
 
-    public btn:eui.Button;
-    public txt:eui.Label;
+    // public btn:eui.Button;
+    // public txt:eui.Label;
 
     public listAssets():string[]
     {
-        return ["preload"];
+        return ["./modules/test.html"];
     }
 
     public onBeforeIn():void
     {
-        this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
-            this.txt.text = "Fuck you!!!";
-            this.moduleManager.open(SecondModule);
-        }, this);
+        // this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
+        //     this.txt.text = "Fuck you!!!";
+        //     this.moduleManager.open(SecondModule);
+        // }, this);
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)

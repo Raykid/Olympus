@@ -1,9 +1,30 @@
 /// <reference path="Olympus.d.ts" />
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-10-12
+ * @modify date 2017-10-12
+ *
+ * DOM表现层装饰器的全局声明
+*/
+declare function DOMMediatorClass(cls: IConstructor): any;
+declare module "dom/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    export function DOMMediatorClass(cls: IConstructor): any;
+}
 declare module "DOMBridge" {
     import IBridge from "engine/bridge/IBridge";
     import IPromptPanel from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
+    import IMediator from "engine/mediator/IMediator";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -199,11 +220,11 @@ declare module "DOMBridge" {
         /**
          * 加载资源
          *
-         * @param {string[]} assets 资源列表
+         * @param {IMediator} mediator 资源列表
          * @param {(err?:Error)=>void} handler 回调函数
          * @memberof DOMBridge
          */
-        loadAssets(assets: string[], handler: (err?: Error) => void): void;
+        loadAssets(mediator: IMediator, handler: (err?: Error) => void): void;
         private _listenerDict;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

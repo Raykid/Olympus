@@ -15,6 +15,7 @@ import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
+import IMediator from "engine/mediator/IMediator";
 
 Injector;
 
@@ -436,11 +437,11 @@ export default class EgretBridge implements IBridge
     /**
      * 加载资源
      * 
-     * @param {string[]} assets 资源列表
+     * @param {IMediator} mediator 资源列表
      * @param {(err?:Error)=>void} handler 回调函数
      * @memberof EgretBridge
      */
-    public loadAssets(assets:string[], handler:(err?:Error)=>void):void
+    public loadAssets(mediator:IMediator, handler:(err?:Error)=>void):void
     {
         var loader:AssetsLoader = new AssetsLoader({
             oneError: (evt:RES.ResourceEvent)=>{
@@ -454,7 +455,7 @@ export default class EgretBridge implements IBridge
                 handler();
             }
         });
-        loader.loadGroups(assets);
+        loader.loadGroups(mediator.listAssets());
     }
     
     /**

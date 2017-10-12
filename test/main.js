@@ -215,15 +215,16 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         function FirstMediator() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        // public btn:eui.Button;
+        // public txt:eui.Label;
         FirstMediator.prototype.listAssets = function () {
-            return ["preload"];
+            return ["./modules/test.html"];
         };
         FirstMediator.prototype.onBeforeIn = function () {
-            var _this = this;
-            this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
-                _this.txt.text = "Fuck you!!!";
-                _this.moduleManager.open(SecondModule_1.default);
-            }, this);
+            // this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
+            //     this.txt.text = "Fuck you!!!";
+            //     this.moduleManager.open(SecondModule);
+            // }, this);
         };
         FirstMediator.prototype.onModuleChange = function (from, to) {
             if (to == FirstModule)
@@ -251,8 +252,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onResponse", null);
         FirstMediator = __decorate([
-            MediatorClass,
-            EgretSkin("FuckSkin")
+            DOMMediatorClass
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));
