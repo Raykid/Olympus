@@ -16,11 +16,6 @@ import { bridgeManager } from "engine/bridge/BridgeManager";
  * 
  * 测试首个模块
 */
-export default class FirstModule extends Module
-{
-    @DelegateMediator
-    private _mediator:FirstMediator = new FirstMediator();
-}
 
 @DOMMediatorClass
 class FirstMediator extends SceneMediator
@@ -56,4 +51,11 @@ class FirstMediator extends SceneMediator
     {
         alert("123");
     }
+}
+
+@ModuleClass
+export default class FirstModule extends Module
+{
+    @DelegateMediator
+    private _mediator:FirstMediator;
 }

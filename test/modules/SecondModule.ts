@@ -11,11 +11,6 @@ import SceneMediator from "engine/scene/SceneMediator";
  * 
  * 测试第二个模块
 */
-export default class SecondModule extends Module
-{
-    @DelegateMediator
-    private _mediator:SecondMediator = new SecondMediator();
-}
 
 @EgretMediatorClass("Fuck2Skin")
 class SecondMediator extends SceneMediator
@@ -28,4 +23,11 @@ class SecondMediator extends SceneMediator
             moduleManager.close(SecondModule);
         });
     }
+}
+
+@ModuleClass
+export default class SecondModule extends Module
+{
+    @DelegateMediator
+    private _mediator:SecondMediator;
 }

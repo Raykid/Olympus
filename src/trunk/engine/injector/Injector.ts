@@ -107,10 +107,21 @@ function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConst
 window["ResponseHandler"] = ResponseHandler;
 
 /** 在Module内托管Mediator */
-export function DelegateMediator(prototype:IModule, propertyKey:string):any
+export function DelegateMediator(prototype:any, propertyKey:string):any
 {
     if(prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function)
     {
+        // 监听实例化
+        listenConstruct(prototype.constructor, function(instance:IModule):void
+        {
+            // 实例化
+            if(!instance[propertyKey])
+            {
+                var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
+                instance[propertyKey] = new cls();
+            }
+        });
+        // 篡改属性
         var mediator:IMediator;
         return {
             configurable: true,

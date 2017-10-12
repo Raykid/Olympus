@@ -44,20 +44,6 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
      *
      * 测试第二个模块
     */
-    var SecondModule = /** @class */ (function (_super) {
-        __extends(SecondModule, _super);
-        function SecondModule() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._mediator = new SecondMediator();
-            return _this;
-        }
-        __decorate([
-            DelegateMediator,
-            __metadata("design:type", SecondMediator)
-        ], SecondModule.prototype, "_mediator", void 0);
-        return SecondModule;
-    }(Module_1.default));
-    exports.default = SecondModule;
     var SecondMediator = /** @class */ (function (_super) {
         __extends(SecondMediator, _super);
         function SecondMediator() {
@@ -73,6 +59,21 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
         ], SecondMediator);
         return SecondMediator;
     }(SceneMediator_1.default));
+    var SecondModule = /** @class */ (function (_super) {
+        __extends(SecondModule, _super);
+        function SecondModule() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        __decorate([
+            DelegateMediator,
+            __metadata("design:type", SecondMediator)
+        ], SecondModule.prototype, "_mediator", void 0);
+        SecondModule = __decorate([
+            ModuleClass
+        ], SecondModule);
+        return SecondModule;
+    }(Module_1.default));
+    exports.default = SecondModule;
 });
 define("net/type/Test", ["require", "exports", "engine/net/DataType"], function (require, exports, DataType_1) {
     "use strict";
@@ -196,20 +197,6 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
      *
      * 测试首个模块
     */
-    var FirstModule = /** @class */ (function (_super) {
-        __extends(FirstModule, _super);
-        function FirstModule() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this._mediator = new FirstMediator();
-            return _this;
-        }
-        __decorate([
-            DelegateMediator,
-            __metadata("design:type", FirstMediator)
-        ], FirstModule.prototype, "_mediator", void 0);
-        return FirstModule;
-    }(Module_2.default));
-    exports.default = FirstModule;
     var FirstMediator = /** @class */ (function (_super) {
         __extends(FirstMediator, _super);
         function FirstMediator() {
@@ -256,6 +243,21 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));
+    var FirstModule = /** @class */ (function (_super) {
+        __extends(FirstModule, _super);
+        function FirstModule() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        __decorate([
+            DelegateMediator,
+            __metadata("design:type", FirstMediator)
+        ], FirstModule.prototype, "_mediator", void 0);
+        FirstModule = __decorate([
+            ModuleClass
+        ], FirstModule);
+        return FirstModule;
+    }(Module_2.default));
+    exports.default = FirstModule;
 });
 /// <reference path="../dist/Olympus.d.ts"/>
 /// <reference path="../dist/DOM.d.ts"/>

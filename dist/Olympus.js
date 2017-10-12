@@ -3211,6 +3211,15 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     /** 在Module内托管Mediator */
     function DelegateMediator(prototype, propertyKey) {
         if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
+            // 监听实例化
+            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
+                // 实例化
+                if (!instance[propertyKey]) {
+                    var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
+                    instance[propertyKey] = new cls();
+                }
+            });
+            // 篡改属性
             var mediator;
             return {
                 configurable: true,

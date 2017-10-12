@@ -1814,7 +1814,6 @@ declare module "engine/bridge/BridgeManager" {
 }
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
-    import IModule from "engine/module/IModule";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1833,7 +1832,7 @@ declare module "engine/injector/Injector" {
     export function ResponseHandler(prototype: any, propertyKey: string): void;
     export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
     /** 在Module内托管Mediator */
-    export function DelegateMediator(prototype: IModule, propertyKey: string): any;
+    export function DelegateMediator(prototype: any, propertyKey: string): any;
 }
 declare module "Injector" {
     /**
