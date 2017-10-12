@@ -275,19 +275,19 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
     Olympus_1.default.startup({
         bridges: [
             new DOMBridge_1.default({
-                container: "rootDOM"
+                container: "#rootDOM"
             }),
             new EgretBridge_1.default({
                 width: 720,
                 height: 1280,
                 pathPrefix: "egret/",
-                container: "rootEgret",
+                container: "#rootEgret",
                 backgroundColor: 0,
                 scaleMode: egret.StageScaleMode.SHOW_ALL
             })
         ],
         firstModule: FirstModule_1.default,
-        loadElement: "loading",
+        loadElement: "#loading",
         env: InitParamsUtil_1.default("server_type"),
         hostsDict: {
             dev: ["http://www.test.17zuoye.net/"],

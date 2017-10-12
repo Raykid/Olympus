@@ -185,7 +185,7 @@ export default class EgretBridge implements IBridge
         // 统一容器
         if(typeof this._initParams.container == "string")
         {
-            this._initParams.container = document.getElementById(this._initParams.container);
+            this._initParams.container = <HTMLElement>document.querySelector(this._initParams.container);
         }
         if(!this._initParams.container)
         {

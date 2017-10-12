@@ -26,19 +26,19 @@ import { core } from "core/Core";
 Olympus.startup({
     bridges: [
         new DOMBridge({
-            container: "rootDOM"
+            container: "#rootDOM"
         }),
         new EgretBridge({
             width: 720,
             height: 1280,
             pathPrefix: "egret/",
-            container: "rootEgret",
+            container: "#rootEgret",
             backgroundColor: 0,
             scaleMode: egret.StageScaleMode.SHOW_ALL
         })
     ],
     firstModule: FirstModule,
-    loadElement: "loading",
+    loadElement: "#loading",
     env: getParam("server_type"),
     hostsDict: {
         dev: ["http://www.test.17zuoye.net/"],

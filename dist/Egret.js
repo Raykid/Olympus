@@ -66350,7 +66350,7 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             document.head.appendChild(style);
             // 统一容器
             if (typeof this._initParams.container == "string") {
-                this._initParams.container = document.getElementById(this._initParams.container);
+                this._initParams.container = document.querySelector(this._initParams.container);
             }
             if (!this._initParams.container) {
                 this._initParams.container = document.createElement("div");

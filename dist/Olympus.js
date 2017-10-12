@@ -5279,7 +5279,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             var _this = this;
             this._firstModule = params.firstModule;
             // 加载页
-            this._loadElement = (typeof params.loadElement == "string" ? document.getElementById(params.loadElement) : params.loadElement);
+            this._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
             // 初始化环境参数
             Environment_1.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 初始化版本号管理器

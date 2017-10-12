@@ -163,12 +163,17 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil"], function (requir
         DOMBridge.prototype.init = function (complete) {
             // 如果是名称，则转变成引用
             if (typeof this._initParams.container == "string") {
-                this._initParams.container = document.getElementById(this._initParams.container);
+                this._initParams.container = document.querySelector(this._initParams.container);
             }
             // 如果是空，则生成一个
             if (!this._initParams.container) {
                 this._initParams.container = document.createElement("div");
                 document.body.appendChild(this._initParams.container);
+            }
+            // 如果通用提示框有父级容器，则先移除显示以备用
+            var promptPanel = this._initParams.promptPanel;
+            if (promptPanel instanceof Element && promptPanel.parentElement) {
+                promptPanel.parentElement.removeChild(promptPanel);
             }
             // 调用回调
             complete(this);
