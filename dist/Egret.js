@@ -65791,7 +65791,7 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
         var comp = new eui.Component();
         mediator.skin = comp;
         // 篡改mediator的onLoadAssets方法，在资源加载完毕时将皮肤附上去
-        var oriFunc = mediator.onLoadAssets;
+        var oriFunc = mediator.hasOwnProperty("onLoadAssets") ? mediator.onLoadAssets : void 0;
         mediator.onLoadAssets = function (err) {
             if (!err) {
                 comp.skinName = skin;
@@ -65802,7 +65802,10 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
                 }
             }
             // 恢复onLoadAssets方法
-            mediator.onLoadAssets = oriFunc;
+            if (oriFunc)
+                mediator.onLoadAssets = oriFunc;
+            else
+                delete mediator.onLoadAssets;
             // 调用原始方法
             mediator.onLoadAssets(err);
         };
