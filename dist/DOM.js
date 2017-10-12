@@ -332,18 +332,25 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Inj
          * @memberof DOMBridge
          */
         DOMBridge.prototype.loadAssets = function (mediator, handler) {
+            // 声明一个皮肤文本，用于记录所有皮肤模板后一次性生成显示
+            var skinStr = "";
+            // 开始加载皮肤列表
             var skins = mediator.listAssets().concat();
             loadNext();
             function loadNext() {
                 if (skins.length <= 0) {
+                    // 设置一个外壳容器
+                    mediator.skin = document.createElement("div");
+                    // 赋值显示
+                    mediator.skin.innerHTML = skinStr;
+                    // 调用回调
                     handler();
                 }
                 else {
                     var skin = skins.shift();
-                    mediator.skin = document.createElement("div");
                     if (skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0) {
                         // 是皮肤字符串
-                        mediator.skin.innerHTML = skin;
+                        skinStr += skin;
                         loadNext();
                     }
                     else {
@@ -351,7 +358,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Inj
                         HTTPUtil_1.send({
                             url: Environment_1.environment.toCDNHostURL(skin),
                             onResponse: function (result) {
-                                mediator.skin.innerHTML = result;
+                                skinStr += result;
                                 loadNext();
                             },
                             onError: function (err) { return handler(err); }
