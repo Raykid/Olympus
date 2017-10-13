@@ -9,6 +9,7 @@
     "outFile": "../../../dist/DOM.js"
   },
   "files": [
+    "./injector/Injector.ts",
     "../DOMBridge.ts"
   ],
   "exclude": [

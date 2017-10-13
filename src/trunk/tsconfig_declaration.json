@@ -9,10 +9,11 @@
     "outFile": "../../dist/Olympus.js"
   },
   "files": [
-    "Injector.ts",
-    "Olympus.ts",
+    "core/injector/Injector.ts",
+    "engine/injector/Injector.ts",
     "core/Core.ts",
-    "engine/Engine.ts"
+    "engine/Engine.ts",
+    "Olympus.ts"
   ],
   "exclude": [
     "node_modules"

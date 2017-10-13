@@ -1,5 +1,5 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../Injector";
+import { Injectable } from "../../core/injector/Injector";
 import { wrapHost, validateProtocol, trimURL } from "../../utils/URLUtil";
 
 /**

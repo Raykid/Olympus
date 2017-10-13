@@ -1,33 +1,4 @@
 /// <reference path="../src/trunk/libs/Reflect.d.ts" />
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-18
- * @modify date 2017-09-18
- *
- * 这个文件是给全局设置一个IConstructor接口而设计的
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-22
- * @modify date 2017-09-22
- *
- * core模组内所有装饰器的全局声明
-*/
-declare function Injectable(cls: IConstructor): void;
-declare function Injectable(name: string): ClassDecorator;
-declare function Injectable(params: {
-    type: IConstructor;
-}): ClassDecorator;
-declare function Inject(prototype: any, propertyKey: string): void;
-declare function Inject(name: string): PropertyDecorator;
-declare function Inject(cls: IConstructor): PropertyDecorator;
-declare function MessageHandler(prototype: any, propertyKey: string): void;
-declare function MessageHandler(type: string): MethodDecorator;
 declare module "utils/ObjectUtil" {
     /**
      * @author Raykid
@@ -422,6 +393,17 @@ declare module "core/Core" {
     /** 再额外导出一个单例 */
     export const core: Core;
 }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-18
+ * @modify date 2017-09-18
+ *
+ * 这个文件是给全局设置一个IConstructor接口而设计的
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
 declare module "core/interfaces/IConstructor" {
     export default IConstructor;
 }
@@ -491,20 +473,6 @@ declare module "core/injector/Injector" {
     export function MessageHandler(prototype: any, propertyKey: string): void;
     export function MessageHandler(type: string): MethodDecorator;
 }
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-22
- * @modify date 2017-09-22
- *
- * engine模组内所有装饰器的全局声明
-*/
-declare function ModelClass(cls: IConstructor): any;
-declare function MediatorClass(cls: IConstructor): any;
-declare function ModuleClass(cls: IConstructor): any;
-declare function ResponseHandler(prototype: any, propertyKey: string): void;
-declare function ResponseHandler(cls: IConstructor): MethodDecorator;
-declare function DelegateMediator(prototype: any, propertyKey: string): any;
 declare module "engine/net/DataType" {
     /**
      * @author Raykid
@@ -1860,20 +1828,6 @@ declare module "engine/injector/Injector" {
     export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
     /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: any, propertyKey: string): any;
-}
-declare module "Injector" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 统一的Injector输出口，所有框架内的装饰器注入方法都可以从这个模块找到
-    */
-    /** 导出core模组的注入方法 */
-    export * from "core/injector/Injector";
-    /** 导出engine模组的注入方法 */
-    export * from "engine/injector/Injector";
 }
 declare module "engine/platform/IPlatform" {
     /**

@@ -1,5 +1,3 @@
-/// <reference path="./Declaration.ts"/>
-
 import { core } from "../Core";
 import { listenConstruct, listenDispose } from "../../utils/ConstructUtil";
 import Message from "../message/Message";

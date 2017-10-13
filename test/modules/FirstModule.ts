@@ -1,12 +1,19 @@
 import Module from "engine/module/Module";
 import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
+import { EgretMediatorClass } from "egret/injector/Injector";
+import { Inject, MessageHandler } from "core/injector/Injector";
+import { ResponseHandler, ModuleClass, DelegateMediator } from "engine/injector/Injector";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
 import SceneMediator from "engine/scene/SceneMediator";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import { bridgeManager } from "engine/bridge/BridgeManager";
+import * as Injector from "engine/injector/Injector";
+import FuckModel from "../models/FuckModel";
+
+Injector;
 
 /**
  * @author Raykid
@@ -22,6 +29,8 @@ class FirstMediator extends SceneMediator
 {
     @Inject
     private moduleManager:ModuleManager;
+    @Inject
+    private fuckModel:FuckModel;
 
     public btn:eui.Button;
     public txt:eui.Label;

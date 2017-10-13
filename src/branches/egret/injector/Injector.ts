@@ -1,5 +1,3 @@
-/// <reference path="./Declaration.ts"/>
-
 import { listenConstruct } from "utils/ConstructUtil";
 import { wrapSkin } from "../utils/SkinUtil";
 import { MediatorClass } from "engine/injector/Injector";

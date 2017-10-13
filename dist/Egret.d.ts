@@ -3,16 +3,6 @@
 /// <reference path="../src/branches/egret/egret-libs/res/res.d.ts" />
 /// <reference path="../src/branches/egret/egret-libs/tween/tween.d.ts" />
 /// <reference path="Olympus.d.ts" />
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-22
- * @modify date 2017-09-22
- *
- * egret表现层装饰器的全局声明
-*/
-declare function EgretSkin(skin: any): ClassDecorator;
-declare function EgretMediatorClass(skin: any): ClassDecorator;
 declare module "egret/utils/SkinUtil" {
     import IMediator from "engine/mediator/IMediator";
     /**

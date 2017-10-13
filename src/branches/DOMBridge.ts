@@ -5,12 +5,9 @@ import { getObjectHashs } from "utils/ObjectUtil";
 import IPromptPanel from "engine/panel/IPromptPanel";
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
-import * as Injector from "./dom/injector/Injector";
 import IMediator from "engine/mediator/IMediator";
 import { environment } from "engine/env/Environment";
 import { send } from "utils/HTTPUtil";
-
-Injector;
 
 /**
  * @author Raykid

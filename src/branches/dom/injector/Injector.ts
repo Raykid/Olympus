@@ -1,5 +1,3 @@
-/// <reference path="./Declaration.ts"/>
-
 import { listenConstruct } from "utils/ConstructUtil";
 import { MediatorClass } from "engine/injector/Injector";
 import { bridgeManager } from "engine/bridge/BridgeManager";

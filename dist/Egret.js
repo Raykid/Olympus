@@ -65813,7 +65813,6 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
     }
     exports.wrapSkin = wrapSkin;
 });
-/// <reference path="./Declaration.ts"/>
 define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", "egret/utils/SkinUtil", "engine/injector/Injector"], function (require, exports, ConstructUtil_1, SkinUtil_1, Injector_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -66179,10 +66178,9 @@ define("egret/scene/FadeScenePolicy", ["require", "exports"], function (require,
 /// <reference path="./egret/egret-libs/res/res.d.ts"/>
 /// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
 /// <reference path="../../dist/Olympus.d.ts"/>
-define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/injector/Injector", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, Injector, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
+define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com

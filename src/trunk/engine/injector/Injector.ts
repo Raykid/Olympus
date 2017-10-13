@@ -1,5 +1,3 @@
-/// <reference path="./Declaration.ts"/>
-
 import { core } from "../../core/Core";
 import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";

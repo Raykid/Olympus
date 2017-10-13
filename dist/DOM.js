@@ -1,4 +1,3 @@
-/// <reference path="./Declaration.ts"/>
 define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -21,10 +20,9 @@ define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "e
     window["DOMMediatorClass"] = DOMMediatorClass;
 });
 /// <reference path="../../dist/Olympus.d.ts"/>
-define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Injector", "engine/env/Environment", "utils/HTTPUtil"], function (require, exports, ObjectUtil_1, Injector, Environment_1, HTTPUtil_1) {
+define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/env/Environment", "utils/HTTPUtil"], function (require, exports, ObjectUtil_1, Environment_1, HTTPUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com

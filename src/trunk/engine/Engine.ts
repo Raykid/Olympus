@@ -1,6 +1,5 @@
 import { core } from "../core/Core";
 import { Injectable } from "../core/injector/Injector";
-import * as Injector from "./injector/Injector";
 import BridgeManager, { bridgeManager } from "./bridge/BridgeManager";
 import BridgeMessage from "./bridge/BridgeMessage";
 import PlatformManager from "./platform/PlatformManager"
@@ -25,8 +24,6 @@ import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
 import { IResponseDataConstructor } from "./net/ResponseData";
 import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
-
-Injector;
 
 /**
  * @author Raykid

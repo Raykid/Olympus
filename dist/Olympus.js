@@ -1142,7 +1142,6 @@ var Reflect;
             Function("return this;")());
 })(Reflect || (Reflect = {}));
 //# sourceMappingURL=Reflect.js.map 
-/// <reference path="../global/IConstructor.ts"/>
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -1522,10 +1521,9 @@ define("core/interfaces/IDispatcher", ["require", "exports"], function (require,
 });
 /// <reference path="../libs/Reflect.d.ts"/>
 /// <reference path="./global/Patch.ts"/>
-define("core/Core", ["require", "exports", "core/injector/Injector", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, Injector, CommonMessage_1, CoreMessage_1) {
+define("core/Core", ["require", "exports", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, CommonMessage_1, CoreMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    Injector;
     /**
      * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
      *
@@ -1855,7 +1853,6 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
     }
     exports.listenDispose = listenDispose;
 });
-/// <reference path="./Declaration.ts"/>
 define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "core/message/Message"], function (require, exports, Core_2, ConstructUtil_1, Message_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1931,7 +1928,6 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     // 赋值全局方法
     window["MessageHandler"] = MessageHandler;
 });
-/// <reference path="../../core/global/IConstructor.ts"/>
 define("engine/net/DataType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -3135,7 +3131,6 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.bridgeManager = Core_6.core.getInject(BridgeManager);
 });
-/// <reference path="./Declaration.ts"/>
 define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_7, ConstructUtil_2, ResponseData_1, NetManager_1, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -3268,25 +3263,6 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     // 赋值全局方法
     window["DelegateMediator"] = DelegateMediator;
 });
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-19
- * @modify date 2017-09-19
- *
- * 统一的Injector输出口，所有框架内的装饰器注入方法都可以从这个模块找到
-*/
-define("Injector", ["require", "exports", "core/injector/Injector", "engine/injector/Injector"], function (require, exports, Injector_5, Injector_6) {
-    "use strict";
-    function __export(m) {
-        for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /** 导出core模组的注入方法 */
-    __export(Injector_5);
-    /** 导出engine模组的注入方法 */
-    __export(Injector_6);
-});
 define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -3312,7 +3288,7 @@ define("engine/platform/WebPlatform", ["require", "exports"], function (require,
     }());
     exports.default = WebPlatform;
 });
-define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "Injector", "engine/platform/WebPlatform"], function (require, exports, Core_8, Injector_7, WebPlatform_1) {
+define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_8, Injector_5, WebPlatform_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3342,7 +3318,7 @@ define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "I
             this.platform.reload();
         };
         PlatformManager = __decorate([
-            Injector_7.Injectable
+            Injector_5.Injectable
         ], PlatformManager);
         return PlatformManager;
     }());
@@ -3350,7 +3326,7 @@ define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "I
     /** 再额外导出一个单例 */
     exports.platformManager = Core_8.core.getInject(PlatformManager);
 });
-define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_9, Injector_8) {
+define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_9, Injector_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3496,7 +3472,7 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
             };
         };
         System = __decorate([
-            Injector_8.Injectable,
+            Injector_6.Injectable,
             __metadata("design:paramtypes", [])
         ], System);
         return System;
@@ -3896,7 +3872,7 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
     }());
     exports.default = ModuleMessage;
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_12, Injector_9, NetManager_2, ModuleMessage_1) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_12, Injector_7, NetManager_2, ModuleMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4078,7 +4054,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             }
         };
         ModuleManager = __decorate([
-            Injector_9.Injectable
+            Injector_7.Injectable
         ], ModuleManager);
         return ModuleManager;
     }());
@@ -4538,7 +4514,7 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
     }
     exports.joinHashParams = joinHashParams;
 });
-define("engine/env/Environment", ["require", "exports", "core/Core", "Injector", "utils/URLUtil"], function (require, exports, Core_14, Injector_10, URLUtil_1) {
+define("engine/env/Environment", ["require", "exports", "core/Core", "core/injector/Injector", "utils/URLUtil"], function (require, exports, Core_14, Injector_8, URLUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4665,7 +4641,7 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "Injector",
             return url;
         };
         Environment = __decorate([
-            Injector_10.Injectable
+            Injector_8.Injectable
         ], Environment);
         return Environment;
     }());
@@ -4673,7 +4649,7 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "Injector",
     /** 再额外导出一个单例 */
     exports.environment = Core_14.core.getInject(Environment);
 });
-define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_15, Injector_11) {
+define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_15, Injector_9) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4831,7 +4807,7 @@ define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector
             configurable: true
         });
         Explorer = __decorate([
-            Injector_11.Injectable,
+            Injector_9.Injectable,
             __metadata("design:paramtypes", [])
         ], Explorer);
         return Explorer;
@@ -4840,7 +4816,7 @@ define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector
     /** 再额外导出一个单例 */
     exports.explorer = Core_15.core.getInject(Explorer);
 });
-define("engine/env/WindowExternal", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_16, Injector_12) {
+define("engine/env/WindowExternal", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_16, Injector_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4876,7 +4852,7 @@ define("engine/env/WindowExternal", ["require", "exports", "core/Core", "core/in
             return this._params[key];
         };
         WindowExternal = __decorate([
-            Injector_12.Injectable,
+            Injector_10.Injectable,
             __metadata("design:paramtypes", [])
         ], WindowExternal);
         return WindowExternal;
@@ -4885,7 +4861,7 @@ define("engine/env/WindowExternal", ["require", "exports", "core/Core", "core/in
     /** 再额外导出一个单例 */
     exports.windowExternal = Core_16.core.getInject(WindowExternal);
 });
-define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_17, Injector_13) {
+define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_17, Injector_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5015,7 +4991,7 @@ define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Inj
             return this._params[key];
         };
         Hash = __decorate([
-            Injector_13.Injectable,
+            Injector_11.Injectable,
             __metadata("design:paramtypes", [])
         ], Hash);
         return Hash;
@@ -5024,7 +5000,7 @@ define("engine/env/Hash", ["require", "exports", "core/Core", "core/injector/Inj
     /** 再额外导出一个单例 */
     exports.hash = Core_17.core.getInject(Hash);
 });
-define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_18, Injector_14) {
+define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_18, Injector_12) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5065,7 +5041,7 @@ define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/In
             return this._params[key];
         };
         Query = __decorate([
-            Injector_14.Injectable,
+            Injector_12.Injectable,
             __metadata("design:paramtypes", [])
         ], Query);
         return Query;
@@ -5074,7 +5050,7 @@ define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/In
     /** 再额外导出一个单例 */
     exports.query = Core_18.core.getInject(Query);
 });
-define("engine/version/Version", ["require", "exports", "core/Core", "Injector", "utils/URLUtil"], function (require, exports, Core_19, Injector_15, URLUtil_2) {
+define("engine/version/Version", ["require", "exports", "core/Core", "core/injector/Injector", "utils/URLUtil"], function (require, exports, Core_19, Injector_13, URLUtil_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5201,7 +5177,7 @@ define("engine/version/Version", ["require", "exports", "core/Core", "Injector",
             return url;
         };
         Version = __decorate([
-            Injector_15.Injectable
+            Injector_13.Injectable
         ], Version);
         return Version;
     }());
@@ -5335,10 +5311,9 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, Injector, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_2, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_14, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_2, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -5392,7 +5367,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             }
         };
         Engine = __decorate([
-            Injector_16.Injectable
+            Injector_14.Injectable
         ], Engine);
         return Engine;
     }());

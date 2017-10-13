@@ -33,7 +33,7 @@ define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal
     }
     exports.default = getParam;
 });
-define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "engine/scene/SceneMediator"], function (require, exports, Module_1, ModuleManager_1, SceneMediator_1) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "engine/scene/SceneMediator", "egret/injector/Injector", "engine/injector/Injector"], function (require, exports, Module_1, ModuleManager_1, SceneMediator_1, Injector_1, Injector_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -55,7 +55,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             });
         };
         SecondMediator = __decorate([
-            EgretMediatorClass("Fuck2Skin")
+            Injector_1.EgretMediatorClass("Fuck2Skin")
         ], SecondMediator);
         return SecondMediator;
     }(SceneMediator_1.default));
@@ -65,11 +65,11 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             return _super !== null && _super.apply(this, arguments) || this;
         }
         __decorate([
-            DelegateMediator,
+            Injector_2.DelegateMediator,
             __metadata("design:type", SecondMediator)
         ], SecondModule.prototype, "_mediator", void 0);
         SecondModule = __decorate([
-            ModuleClass
+            Injector_2.ModuleClass
         ], SecondModule);
         return SecondModule;
     }(Module_1.default));
@@ -186,9 +186,24 @@ define("net/request/TestRequest", ["require", "exports", "engine/net/RequestData
     }(RequestData_1.default));
     exports.default = TestRequest;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest"], function (require, exports, Module_2, ModuleManager_2, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1) {
+define("models/FuckModel", ["require", "exports", "engine/injector/Injector"], function (require, exports, Injector_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var FuckModel = /** @class */ (function () {
+        function FuckModel() {
+        }
+        FuckModel = __decorate([
+            Injector_3.ModelClass,
+            __metadata("design:paramtypes", [])
+        ], FuckModel);
+        return FuckModel;
+    }());
+    exports.default = FuckModel;
+});
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "egret/injector/Injector", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "engine/injector/Injector", "models/FuckModel"], function (require, exports, Module_2, ModuleManager_2, Injector_4, Injector_5, Injector_6, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, Injector, FuckModel_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -221,23 +236,27 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             alert("123");
         };
         __decorate([
-            Inject,
+            Injector_5.Inject,
             __metadata("design:type", ModuleManager_2.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
-            MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
+            Injector_5.Inject,
+            __metadata("design:type", FuckModel_1.default)
+        ], FirstMediator.prototype, "fuckModel", void 0);
+        __decorate([
+            Injector_5.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
             __metadata("design:type", Function),
             __metadata("design:paramtypes", [Object, Object]),
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onModuleChange", null);
         __decorate([
-            ResponseHandler,
+            Injector_6.ResponseHandler,
             __metadata("design:type", Function),
             __metadata("design:paramtypes", [TestResponse_2.default, TestRequest_1.default]),
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onResponse", null);
         FirstMediator = __decorate([
-            EgretMediatorClass("FuckSkin")
+            Injector_4.EgretMediatorClass("FuckSkin")
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));
@@ -247,11 +266,11 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             return _super !== null && _super.apply(this, arguments) || this;
         }
         __decorate([
-            DelegateMediator,
+            Injector_6.DelegateMediator,
             __metadata("design:type", FirstMediator)
         ], FirstModule.prototype, "_mediator", void 0);
         FirstModule = __decorate([
-            ModuleClass
+            Injector_6.ModuleClass
         ], FirstModule);
         return FirstModule;
     }(Module_2.default));
@@ -309,4 +328,3 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
     req.test = "Fuck you";
     Core_1.core.dispatch(req);
 });
-//# sourceMappingURL=main.js.map
