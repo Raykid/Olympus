@@ -1772,23 +1772,36 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
     function wrapConstruct(cls) {
         // 创建一个新的构造函数
         var func;
-        eval('func = function ' + cls["name"] + '(){onConstruct.call(this)}');
+        eval('func = function ' + cls["name"] + '(){onConstruct.call(this, arguments)}');
         // 动态设置继承
         ObjectUtil_2.extendsClass(func, cls);
         // 为新的构造函数打一个标签，用以记录原始的构造函数
         func["__ori_constructor__"] = cls;
+        // 为原始构造函数也打一个标签，用以记录新构造函数
+        cls["__wrap_constructor__"] = func;
         // 返回新的构造函数
         return func;
-        function onConstruct() {
+        function onConstruct(args) {
             // 恢复__proto__
             this["__proto__"] = cls.prototype;
             // 调用父类构造函数构造实例
-            cls.apply(this, arguments);
+            cls.apply(this, args);
             // 调用回调
             handleInstance(this);
         }
     }
     exports.wrapConstruct = wrapConstruct;
+    /**
+     * 如果传入的类有包装类，则返回包装类，否则返回其本身
+     *
+     * @export
+     * @param {IConstructor} cls 要获取包装类的类构造函数
+     * @returns {IConstructor}
+     */
+    function getConstructor(cls) {
+        return (cls["__wrap_constructor__"] || cls);
+    }
+    exports.getConstructor = getConstructor;
     /**
      * 监听类型的实例化
      *
@@ -3216,10 +3229,15 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
             // 监听实例化
             ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
                 // 实例化
-                if (!instance[propertyKey]) {
+                if (instance[propertyKey] === undefined) {
                     var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
                     instance[propertyKey] = new cls();
                 }
+            });
+            // 监听销毁
+            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+                // 移除实例
+                instance[propertyKey] = undefined;
             });
             // 篡改属性
             var mediator;
@@ -3230,6 +3248,8 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
                     return mediator;
                 },
                 set: function (value) {
+                    if (value == mediator)
+                        return;
                     // 取消托管中介者
                     if (mediator) {
                         this.undelegateMediator(mediator);
@@ -3582,7 +3602,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          * @memberof Mediator
          */
         Mediator.prototype.open = function (data) {
-            // 暂时啥也不干
+            this.onOpen(data);
+            return this;
         };
         /**
          * 关闭，为了实现IOpenClose接口
@@ -3592,7 +3613,26 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          * @memberof Mediator
          */
         Mediator.prototype.close = function (data) {
-            // 暂时啥也不干
+            this.onClose(data);
+            return this;
+        };
+        /**
+         * 当打开时调用
+         *
+         * @param {*} [data] 可能的打开参数
+         * @memberof Mediator
+         */
+        Mediator.prototype.onOpen = function (data) {
+            // 可重写
+        };
+        /**
+         * 当关闭时调用
+         *
+         * @param {*} [data] 可能的关闭参数
+         * @memberof Mediator
+         */
+        Mediator.prototype.onClose = function (data) {
+            // 可重写
         };
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
@@ -3711,6 +3751,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.open = function (data, isModel, from) {
+            _super.prototype.open.call(this, data);
             return PanelManager_2.panelManager.pop(this, data, isModel, from);
         };
         /**
@@ -3722,6 +3763,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.close = function (data, to) {
+            _super.prototype.close.call(this, data);
             return PanelManager_2.panelManager.drop(this, data, to);
         };
         /** 在弹出前调用的方法 */
@@ -3770,6 +3812,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.open = function (data) {
+            _super.prototype.open.call(this, data);
             return SceneManager_2.sceneManager.push(this, data);
         };
         /**
@@ -3780,6 +3823,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.close = function (data) {
+            _super.prototype.close.call(this, data);
             return SceneManager_2.sceneManager.pop(this, data);
         };
         /**
@@ -4042,7 +4086,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.moduleManager = Core_12.core.getInject(ModuleManager);
 });
-define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager"], function (require, exports, Core_13, Dictionary_2, ModuleManager_1) {
+define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_13, Dictionary_2, ModuleManager_1, ConstructUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4101,14 +4145,10 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
             return null;
         };
         Module.prototype.disposeMediator = function (mediator) {
-            var args = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                args[_i - 1] = arguments[_i];
-            }
-            // 调用原始销毁方法
-            this._disposeDict.get(mediator).apply(mediator, args);
             // 取消托管
             this.undelegateMediator(mediator);
+            // 调用原始销毁方法
+            mediator.dispose();
             // 如果所有已托管的中介者都已经被销毁，则销毁当前模块
             if (this._mediators.length <= 0)
                 this.dispose();
@@ -4125,7 +4165,8 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
                 // 托管新的中介者
                 this._mediators.push(mediator);
                 // 篡改dispose方法，以监听其dispose
-                this._disposeDict.set(mediator, mediator.dispose);
+                if (mediator.hasOwnProperty("dispose"))
+                    this._disposeDict.set(mediator, mediator.dispose);
                 mediator.dispose = this.disposeMediator.bind(this, mediator);
             }
         };
@@ -4141,7 +4182,11 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
                 // 取消托管中介者
                 this._mediators.splice(index, 1);
                 // 恢复dispose方法，取消监听dispose
-                mediator.dispose = this._disposeDict.get(mediator);
+                var oriDispose = this._disposeDict.get(mediator);
+                if (oriDispose)
+                    mediator.dispose = oriDispose;
+                else
+                    delete mediator.dispose;
                 this._disposeDict.delete(mediator);
             }
         };
@@ -4228,7 +4273,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
          */
         Module.prototype.dispose = function () {
             // 关闭自身
-            var cls = this.constructor;
+            var cls = ConstructUtil_3.getConstructor(this.constructor);
             ModuleManager_1.moduleManager.close(cls);
             // 如果没关上则不销毁
             if (ModuleManager_1.moduleManager.isOpened(cls))

@@ -49,7 +49,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
         function SecondMediator() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        SecondMediator.prototype.onBeforeIn = function () {
+        SecondMediator.prototype.onOpen = function () {
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
                 ModuleManager_1.moduleManager.close(SecondModule);
             });
@@ -205,7 +205,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         FirstMediator.prototype.listAssets = function () {
             return ["./modules/test.html"];
         };
-        FirstMediator.prototype.onBeforeIn = function () {
+        FirstMediator.prototype.onOpen = function () {
             this.mapListener(this.btn, "click", function () {
                 this.txt.textContent = "Fuck you!!!";
                 this.moduleManager.open(SecondModule_1.default);

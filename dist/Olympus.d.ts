@@ -436,6 +436,14 @@ declare module "utils/ConstructUtil" {
      */
     export function wrapConstruct(cls: IConstructor): IConstructor;
     /**
+     * 如果传入的类有包装类，则返回包装类，否则返回其本身
+     *
+     * @export
+     * @param {IConstructor} cls 要获取包装类的类构造函数
+     * @returns {IConstructor}
+     */
+    export function getConstructor(cls: IConstructor): IConstructor;
+    /**
      * 监听类型的实例化
      *
      * @export
@@ -1349,6 +1357,20 @@ declare module "engine/mediator/IMediator" {
          */
         onLoadAssets(err?: Error): void;
         /**
+         * 当打开时调用
+         *
+         * @param {*} [data] 可能的打开参数
+         * @memberof IMediator
+         */
+        onOpen(data?: any): void;
+        /**
+         * 当关闭时调用
+         *
+         * @param {*} [data] 可能的关闭参数
+         * @memberof IMediator
+         */
+        onClose(data?: any): void;
+        /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
          * @param {*} target 事件目标对象
@@ -2079,6 +2101,20 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         close(data?: any): any;
+        /**
+         * 当打开时调用
+         *
+         * @param {*} [data] 可能的打开参数
+         * @memberof Mediator
+         */
+        onOpen(data?: any): void;
+        /**
+         * 当关闭时调用
+         *
+         * @param {*} [data] 可能的关闭参数
+         * @memberof Mediator
+         */
+        onClose(data?: any): void;
         private _listeners;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
@@ -2397,7 +2433,7 @@ declare module "engine/module/Module" {
         listInitRequests(): RequestData[];
         private _mediators;
         private _disposeDict;
-        private disposeMediator(mediator, ...args);
+        private disposeMediator(mediator);
         /**
          * 托管中介者
          *

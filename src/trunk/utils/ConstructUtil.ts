@@ -31,23 +31,37 @@ export function wrapConstruct(cls:IConstructor):IConstructor
 {
     // 创建一个新的构造函数
     var func:IConstructor;
-    eval('func = function ' + cls["name"] + '(){onConstruct.call(this)}');
+    eval('func = function ' + cls["name"] + '(){onConstruct.call(this, arguments)}');
     // 动态设置继承
     extendsClass(func, cls);
     // 为新的构造函数打一个标签，用以记录原始的构造函数
     func["__ori_constructor__"] = cls;
+    // 为原始构造函数也打一个标签，用以记录新构造函数
+    cls["__wrap_constructor__"] = func;
     // 返回新的构造函数
     return func;
 
-    function onConstruct():void
+    function onConstruct(args:any[]):void
     {
         // 恢复__proto__
         this["__proto__"] = cls.prototype;
         // 调用父类构造函数构造实例
-        cls.apply(this, arguments);
+        cls.apply(this, args);
         // 调用回调
         handleInstance(this);
     }
+}
+
+/**
+ * 如果传入的类有包装类，则返回包装类，否则返回其本身
+ * 
+ * @export
+ * @param {IConstructor} cls 要获取包装类的类构造函数
+ * @returns {IConstructor} 
+ */
+export function getConstructor(cls:IConstructor):IConstructor
+{
+    return (cls["__wrap_constructor__"] || cls);
 }
 
 /**

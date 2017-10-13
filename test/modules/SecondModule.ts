@@ -17,7 +17,7 @@ class SecondMediator extends SceneMediator
 {
     public btn:eui.Button;
 
-    public onBeforeIn():void
+    public onOpen():void
     {
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
             moduleManager.close(SecondModule);

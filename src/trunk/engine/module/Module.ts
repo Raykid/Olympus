@@ -8,6 +8,7 @@ import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 import Dictionary from "../../utils/Dictionary";
 import { moduleManager } from "./ModuleManager";
+import { getConstructor } from "../../utils/ConstructUtil";
 
 /**
  * @author Raykid
@@ -68,12 +69,12 @@ export default abstract class Module implements IModule, IDispatcher
     private _mediators:IMediator[] = [];
 
     private _disposeDict:Dictionary<IMediator, ()=>void> = new Dictionary();
-    private disposeMediator(mediator:IMediator, ...args:any[]):void
+    private disposeMediator(mediator:IMediator):void
     {
-        // 调用原始销毁方法
-        this._disposeDict.get(mediator).apply(mediator, args);
         // 取消托管
         this.undelegateMediator(mediator);
+        // 调用原始销毁方法
+        mediator.dispose();
         // 如果所有已托管的中介者都已经被销毁，则销毁当前模块
         if(this._mediators.length <= 0) this.dispose();
     };
@@ -90,7 +91,8 @@ export default abstract class Module implements IModule, IDispatcher
             // 托管新的中介者
             this._mediators.push(mediator);
             // 篡改dispose方法，以监听其dispose
-            this._disposeDict.set(mediator, mediator.dispose);
+            if(mediator.hasOwnProperty("dispose"))
+                this._disposeDict.set(mediator, mediator.dispose);
             mediator.dispose = this.disposeMediator.bind(this, mediator);
         }
     }
@@ -109,7 +111,9 @@ export default abstract class Module implements IModule, IDispatcher
             // 取消托管中介者
             this._mediators.splice(index, 1);
             // 恢复dispose方法，取消监听dispose
-            mediator.dispose = this._disposeDict.get(mediator);
+            var oriDispose:()=>void = this._disposeDict.get(mediator);
+            if(oriDispose) mediator.dispose = oriDispose;
+            else delete mediator.dispose;
             this._disposeDict.delete(mediator);
         }
     }
@@ -225,7 +229,7 @@ export default abstract class Module implements IModule, IDispatcher
     public dispose():void
     {
         // 关闭自身
-        var cls:IModuleConstructor = <IModuleConstructor>this.constructor;
+        var cls:IModuleConstructor = <IModuleConstructor>getConstructor(<IModuleConstructor>this.constructor);
         moduleManager.close(cls);
         // 如果没关上则不销毁
         if(moduleManager.isOpened(cls)) return;

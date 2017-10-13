@@ -117,11 +117,17 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
         listenConstruct(prototype.constructor, function(instance:IModule):void
         {
             // 实例化
-            if(!instance[propertyKey])
+            if(instance[propertyKey] === undefined)
             {
                 var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
                 instance[propertyKey] = new cls();
             }
+        });
+        // 监听销毁
+        listenDispose(prototype.constructor, function(instance:IMediator):void
+        {
+            // 移除实例
+            instance[propertyKey] = undefined;
         });
         // 篡改属性
         var mediator:IMediator;
@@ -134,6 +140,7 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
             },
             set: function(value:IMediator):void
             {
+                if(value == mediator) return;
                 // 取消托管中介者
                 if(mediator)
                 {

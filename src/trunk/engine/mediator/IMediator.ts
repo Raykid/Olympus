@@ -54,6 +54,22 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
     onLoadAssets(err?:Error):void;
 
     /**
+     * 当打开时调用
+     * 
+     * @param {*} [data] 可能的打开参数
+     * @memberof IMediator
+     */
+    onOpen(data?:any):void;
+
+    /**
+     * 当关闭时调用
+     * 
+     * @param {*} [data] 可能的关闭参数
+     * @memberof IMediator
+     */
+    onClose(data?:any):void;
+
+    /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
      * @param {*} target 事件目标对象

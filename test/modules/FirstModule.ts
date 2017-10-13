@@ -31,7 +31,7 @@ class FirstMediator extends SceneMediator
         return ["./modules/test.html"];
     }
 
-    public onBeforeIn():void
+    public onOpen():void
     {
         this.mapListener(this.btn, "click", function():void
         {

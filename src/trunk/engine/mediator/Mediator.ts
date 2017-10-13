@@ -96,7 +96,8 @@ export default class Mediator implements IMediator, IDispatcher
      */
     public open(data?:any):any
     {
-        // 暂时啥也不干
+        this.onOpen(data);
+        return this;
     }
 
     /**
@@ -108,7 +109,30 @@ export default class Mediator implements IMediator, IDispatcher
      */
     public close(data?:any):any
     {
-        // 暂时啥也不干
+        this.onClose(data);
+        return this;
+    }
+    
+    /**
+     * 当打开时调用
+     * 
+     * @param {*} [data] 可能的打开参数
+     * @memberof Mediator
+     */
+    public onOpen(data?:any):void
+    {
+        // 可重写
+    }
+
+    /**
+     * 当关闭时调用
+     * 
+     * @param {*} [data] 可能的关闭参数
+     * @memberof Mediator
+     */
+    public onClose(data?:any):void
+    {
+        // 可重写
     }
 
     private _listeners:ListenerData[] = [];
