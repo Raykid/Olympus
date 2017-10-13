@@ -40,16 +40,9 @@ Injector;
 @Injectable
 export default class Engine
 {
-    private _firstModule:IModuleConstructor;
+    private _initParams:IInitParams;
     private _loadElement:Element;
 
-    /**
-     * 
-     * 
-     * @param {IModuleConstructor} firstModule 首个模块
-     * @param {(Element|string)} loadElement 程序启动前的Loading DOM节点，当首个模块显示出来后会移除该DOM节点
-     * @memberof Engine
-     */
     /**
      * 初始化Engine
      * 
@@ -58,7 +51,7 @@ export default class Engine
      */
     public initialize(params:IInitParams):void
     {
-        this._firstModule = params.firstModule;
+        this._initParams = params;
         // 加载页
         this._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
         // 初始化环境参数
@@ -74,12 +67,14 @@ export default class Engine
 
     private onAllBridgesInit():void
     {
+        // 调用回调
+        this._initParams.onInited && this._initParams.onInited();
         // 注销监听
         core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
-        moduleManager.open(this._firstModule);
+        moduleManager.open(this._initParams.firstModule);
     }
 
     private onModuleChange(from:IModuleConstructor):void
@@ -141,4 +136,11 @@ export interface IInitParams
      * @memberof IInitParams
      */
     cdnsDict?:{[env:string]:string[]};
+    /**
+     * 框架初始化完毕时调用
+     * 
+     * @type {()=>void}
+     * @memberof IInitParams
+     */
+    onInited?:()=>void;
 }

@@ -35,6 +35,20 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Inj
     */
     var DOMBridge = /** @class */ (function () {
         function DOMBridge(params) {
+            /**
+             * 获取默认弹窗策略
+             *
+             * @type {IPanelPolicy}
+             * @memberof EgretBridge
+             */
+            this.defaultPanelPolicy = null;
+            /**
+             * 获取默认场景切换策略
+             *
+             * @type {IScenePolicy}
+             * @memberof EgretBridge
+             */
+            this.defaultScenePolicy = null;
             this._listenerDict = {};
             this._initParams = params;
         }
@@ -146,34 +160,6 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Inj
              */
             get: function () {
                 return this._initParams.promptPanel;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DOMBridge.prototype, "defaultPanelPolicy", {
-            /**
-             * 获取默认弹窗策略
-             *
-             * @readonly
-             * @type {IPanelPolicy}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(DOMBridge.prototype, "defaultScenePolicy", {
-            /**
-             * 获取默认场景切换策略
-             *
-             * @readonly
-             * @type {IScenePolicy}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return null;
             },
             enumerable: true,
             configurable: true

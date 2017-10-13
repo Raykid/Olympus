@@ -14,6 +14,8 @@ import FirstModule from "./modules/FirstModule";
 
 import TestRequest from "./net/request/TestRequest";
 import { core } from "core/Core";
+import { bridgeManager } from "engine/bridge/BridgeManager";
+import none from "engine/scene/NoneScenePolicy";
 
 /**
  * @author Raykid
@@ -50,6 +52,10 @@ Olympus.startup({
         test: ["https://cdn-cnc.test.17zuoye.net/"],
         staging: ["https://cdn-cnc.staging.17zuoye.net/"],
         prod: ["https://cdn-cnc.17zuoye.com/"]
+    },
+    onInited: function():void
+    {
+        bridgeManager.getBridge("Egret").defaultScenePolicy = none;
     }
 });
 

@@ -66193,8 +66193,20 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
     */
     var EgretBridge = /** @class */ (function () {
         function EgretBridge(params) {
-            this._defaultPanelPolicy = new BackPanelPolicy_1.default();
-            this._defaultScenePolicy = new FadeScenePolicy_1.default();
+            /**
+             * 默认弹窗策略
+             *
+             * @type {IPanelPolicy}
+             * @memberof EgretBridge
+             */
+            this.defaultPanelPolicy = new BackPanelPolicy_1.default();
+            /**
+             * 默认场景切换策略
+             *
+             * @type {IScenePolicy}
+             * @memberof EgretBridge
+             */
+            this.defaultScenePolicy = new FadeScenePolicy_1.default();
             this._initParams = params;
         }
         Object.defineProperty(EgretBridge.prototype, "type", {
@@ -66305,34 +66317,6 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
              */
             get: function () {
                 return this._initParams.promptPanel;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "defaultPanelPolicy", {
-            /**
-             * 获取默认弹窗策略
-             *
-             * @readonly
-             * @type {IPanelPolicy}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._defaultPanelPolicy;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(EgretBridge.prototype, "defaultScenePolicy", {
-            /**
-             * 获取默认场景切换策略
-             *
-             * @readonly
-             * @type {IScenePolicy}
-             * @memberof EgretBridge
-             */
-            get: function () {
-                return this._defaultScenePolicy;
             },
             enumerable: true,
             configurable: true

@@ -255,24 +255,20 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         readonly promptPanel: IPromptPanel;
-        private _defaultPanelPolicy;
         /**
-         * 获取默认弹窗策略
+         * 默认弹窗策略
          *
-         * @readonly
          * @type {IPanelPolicy}
          * @memberof EgretBridge
          */
-        readonly defaultPanelPolicy: IPanelPolicy;
-        private _defaultScenePolicy;
+        defaultPanelPolicy: IPanelPolicy;
         /**
-         * 获取默认场景切换策略
+         * 默认场景切换策略
          *
-         * @readonly
          * @type {IScenePolicy}
          * @memberof EgretBridge
          */
-        readonly defaultScenePolicy: IScenePolicy;
+        defaultScenePolicy: IScenePolicy;
         constructor(params: IInitParams);
         /**
          * 初始化表现层桥

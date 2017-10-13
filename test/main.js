@@ -203,11 +203,11 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             return _super !== null && _super.apply(this, arguments) || this;
         }
         FirstMediator.prototype.listAssets = function () {
-            return ["./modules/test.html"];
+            return ["preload"];
         };
         FirstMediator.prototype.onOpen = function () {
-            this.mapListener(this.btn, "click", function () {
-                this.txt.textContent = "Fuck you!!!";
+            this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
+                this.txt.test = "Fuck you!!!";
                 this.moduleManager.open(SecondModule_1.default);
             }, this);
         };
@@ -237,7 +237,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onResponse", null);
         FirstMediator = __decorate([
-            DOMMediatorClass
+            EgretMediatorClass("FuckSkin")
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));
@@ -261,7 +261,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_2, Core_1) {
+define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core", "engine/bridge/BridgeManager", "engine/scene/NoneScenePolicy"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_2, Core_1, BridgeManager_1, NoneScenePolicy_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -299,6 +299,9 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
             test: ["https://cdn-cnc.test.17zuoye.net/"],
             staging: ["https://cdn-cnc.staging.17zuoye.net/"],
             prod: ["https://cdn-cnc.17zuoye.com/"]
+        },
+        onInited: function () {
+            BridgeManager_1.bridgeManager.getBridge("Egret").defaultScenePolicy = NoneScenePolicy_1.default;
         }
     });
     console.log(Environment_1.environment.env, Environment_1.environment.getHost(), Environment_1.environment.curCDNHost);

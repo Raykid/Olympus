@@ -17,25 +17,25 @@ import { bridgeManager } from "engine/bridge/BridgeManager";
  * 测试首个模块
 */
 
-@DOMMediatorClass
+@EgretMediatorClass("FuckSkin")
 class FirstMediator extends SceneMediator
 {
     @Inject
     private moduleManager:ModuleManager;
 
-    public btn:HTMLDivElement;
-    public txt:HTMLSpanElement;
+    public btn:eui.Button;
+    public txt:eui.Label;
 
     public listAssets():string[]
     {
-        return ["./modules/test.html"];
+        return ["preload"];
     }
 
     public onOpen():void
     {
-        this.mapListener(this.btn, "click", function():void
+        this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function():void
         {
-            this.txt.textContent = "Fuck you!!!";
+            this.txt.test = "Fuck you!!!";
             this.moduleManager.open(SecondModule);
         }, this);
     }

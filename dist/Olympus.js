@@ -5352,13 +5352,6 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         function Engine() {
         }
         /**
-         *
-         *
-         * @param {IModuleConstructor} firstModule 首个模块
-         * @param {(Element|string)} loadElement 程序启动前的Loading DOM节点，当首个模块显示出来后会移除该DOM节点
-         * @memberof Engine
-         */
-        /**
          * 初始化Engine
          *
          * @param {IInitParams} params 初始化参数
@@ -5366,7 +5359,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
          */
         Engine.prototype.initialize = function (params) {
             var _this = this;
-            this._firstModule = params.firstModule;
+            this._initParams = params;
             // 加载页
             this._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
             // 初始化环境参数
@@ -5380,12 +5373,14 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             });
         };
         Engine.prototype.onAllBridgesInit = function () {
+            // 调用回调
+            this._initParams.onInited && this._initParams.onInited();
             // 注销监听
             Core_20.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
             // 监听首个模块开启
             Core_20.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
-            ModuleManager_2.moduleManager.open(this._firstModule);
+            ModuleManager_2.moduleManager.open(this._initParams.firstModule);
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听

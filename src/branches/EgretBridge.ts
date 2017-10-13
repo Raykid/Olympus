@@ -132,31 +132,21 @@ export default class EgretBridge implements IBridge
         return this._initParams.promptPanel;
     }
 
-    private _defaultPanelPolicy:IPanelPolicy = new BackPanelPolicy();
     /**
-     * 获取默认弹窗策略
+     * 默认弹窗策略
      * 
-     * @readonly
      * @type {IPanelPolicy}
      * @memberof EgretBridge
      */
-    public get defaultPanelPolicy():IPanelPolicy
-    {
-        return this._defaultPanelPolicy;
-    }
+    public defaultPanelPolicy:IPanelPolicy = new BackPanelPolicy();
 
-    private _defaultScenePolicy:IScenePolicy = new FadeScenePolicy();
     /**
-     * 获取默认场景切换策略
+     * 默认场景切换策略
      * 
-     * @readonly
      * @type {IScenePolicy}
      * @memberof EgretBridge
      */
-    public get defaultScenePolicy():IScenePolicy
-    {
-        return this._defaultScenePolicy;
-    }
+    public defaultScenePolicy:IScenePolicy = new FadeScenePolicy();
     
     public constructor(params:IInitParams)
     {

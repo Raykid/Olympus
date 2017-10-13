@@ -102,19 +102,17 @@ declare module "DOMBridge" {
         /**
          * 获取默认弹窗策略
          *
-         * @readonly
          * @type {IPanelPolicy}
          * @memberof EgretBridge
          */
-        readonly defaultPanelPolicy: IPanelPolicy;
+        defaultPanelPolicy: IPanelPolicy;
         /**
          * 获取默认场景切换策略
          *
-         * @readonly
          * @type {IScenePolicy}
          * @memberof EgretBridge
          */
-        readonly defaultScenePolicy: IScenePolicy;
+        defaultScenePolicy: IScenePolicy;
         constructor(params: IInitParams);
         /**
          * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化

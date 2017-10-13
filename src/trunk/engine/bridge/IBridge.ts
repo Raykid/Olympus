@@ -78,21 +78,19 @@ export default interface IBridge
      */
     readonly promptPanel:IPromptPanel;
     /**
-     * 获取默认弹窗策略
+     * 获取或设置默认弹窗策略
      * 
-     * @readonly
      * @type {HTMLElement}
      * @memberof IBridge
      */
-    readonly defaultPanelPolicy:IPanelPolicy;
+    defaultPanelPolicy:IPanelPolicy;
     /**
-     * 获取场景切换策略
+     * 获取或设置场景切换策略
      * 
-     * @readonly
      * @type {HTMLElement}
      * @memberof IBridge
      */
-    readonly defaultScenePolicy:IScenePolicy;
+    defaultScenePolicy:IScenePolicy;
     /**
      * 判断传入的skin是否是属于该表现层桥的
      * 

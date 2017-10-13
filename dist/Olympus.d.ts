@@ -1136,21 +1136,19 @@ declare module "engine/bridge/IBridge" {
          */
         readonly promptPanel: IPromptPanel;
         /**
-         * 获取默认弹窗策略
+         * 获取或设置默认弹窗策略
          *
-         * @readonly
          * @type {HTMLElement}
          * @memberof IBridge
          */
-        readonly defaultPanelPolicy: IPanelPolicy;
+        defaultPanelPolicy: IPanelPolicy;
         /**
-         * 获取场景切换策略
+         * 获取或设置场景切换策略
          *
-         * @readonly
          * @type {HTMLElement}
          * @memberof IBridge
          */
-        readonly defaultScenePolicy: IScenePolicy;
+        defaultScenePolicy: IScenePolicy;
         /**
          * 判断传入的skin是否是属于该表现层桥的
          *
@@ -3026,15 +3024,8 @@ declare module "engine/Engine" {
      * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
     */
     export default class Engine {
-        private _firstModule;
+        private _initParams;
         private _loadElement;
-        /**
-         *
-         *
-         * @param {IModuleConstructor} firstModule 首个模块
-         * @param {(Element|string)} loadElement 程序启动前的Loading DOM节点，当首个模块显示出来后会移除该DOM节点
-         * @memberof Engine
-         */
         /**
          * 初始化Engine
          *
@@ -3094,6 +3085,13 @@ declare module "engine/Engine" {
         cdnsDict?: {
             [env: string]: string[];
         };
+        /**
+         * 框架初始化完毕时调用
+         *
+         * @type {()=>void}
+         * @memberof IInitParams
+         */
+        onInited?: () => void;
     }
 }
 declare module "Olympus" {

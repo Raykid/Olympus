@@ -123,26 +123,18 @@ export default class DOMBridge implements IBridge
     /**
      * 获取默认弹窗策略
      * 
-     * @readonly
      * @type {IPanelPolicy}
      * @memberof EgretBridge
      */
-    public get defaultPanelPolicy():IPanelPolicy
-    {
-        return null;
-    }
+    public defaultPanelPolicy:IPanelPolicy = null;
 
     /**
      * 获取默认场景切换策略
      * 
-     * @readonly
      * @type {IScenePolicy}
      * @memberof EgretBridge
      */
-    public get defaultScenePolicy():IScenePolicy
-    {
-        return null;
-    }
+    public defaultScenePolicy:IScenePolicy = null;
     
     public constructor(params:IInitParams)
     {
