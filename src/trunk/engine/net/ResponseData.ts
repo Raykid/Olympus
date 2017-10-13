@@ -13,8 +13,6 @@ import RequestData from "./RequestData";
 export interface IResponseParams
 {
     type:string;
-    protocol:string;
-    method:null|"GET"|"HEAD"|"POST"|"PUT"|"DELETE"|"CONNECT"|"OPTIONS"|"TRACE"|"PATCH"|"MOVE"|"COPY"|"LINK"|"UNLINK"|"WRAPPED"|"Extension-mothed";
     request?:RequestData;// 如果消息可以配对则有这个对象
     [key:string]:any;// 其他可能需要的参数
 }

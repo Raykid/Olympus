@@ -635,8 +635,6 @@ declare module "engine/net/ResponseData" {
     */
     export interface IResponseParams {
         type: string;
-        protocol: string;
-        method: null | "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "CONNECT" | "OPTIONS" | "TRACE" | "PATCH" | "MOVE" | "COPY" | "LINK" | "UNLINK" | "WRAPPED" | "Extension-mothed";
         request?: RequestData;
         [key: string]: any;
     }
