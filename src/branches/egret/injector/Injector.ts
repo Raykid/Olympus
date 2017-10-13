@@ -13,7 +13,6 @@ import { MediatorClass } from "engine/injector/Injector";
  * 负责注入的模块
 */
 
-/** 定义数据模型，支持实例注入，并且自身也会被注入 */
 export function EgretSkin(skin:any):ClassDecorator
 {
     return function(cls:IConstructor):void

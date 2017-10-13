@@ -65825,7 +65825,6 @@ define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", 
      *
      * 负责注入的模块
     */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
     function EgretSkin(skin) {
         return function (cls) {
             // 监听类型实例化，转换皮肤格式
@@ -66446,6 +66445,15 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
          */
         EgretBridge.prototype.isMySkin = function (skin) {
             return (skin instanceof egret.DisplayObject);
+        };
+        /**
+         * 当皮肤被设置时处理皮肤的方法
+         *
+         * @param {IMediator} mediator 中介者实例
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.handleSkin = function (mediator) {
+            // Egret暂不需要对皮肤进行特殊处理
         };
         /**
          * 添加显示

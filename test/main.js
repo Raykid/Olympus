@@ -202,16 +202,14 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         function FirstMediator() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        // public btn:eui.Button;
-        // public txt:eui.Label;
         FirstMediator.prototype.listAssets = function () {
             return ["./modules/test.html"];
         };
         FirstMediator.prototype.onBeforeIn = function () {
-            // this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
-            //     this.txt.text = "Fuck you!!!";
-            //     this.moduleManager.open(SecondModule);
-            // }, this);
+            this.mapListener(this.btn, "click", function () {
+                this.txt.textContent = "Fuck you!!!";
+                this.moduleManager.open(SecondModule_1.default);
+            }, this);
         };
         FirstMediator.prototype.onModuleChange = function (from, to) {
             if (to == FirstModule)

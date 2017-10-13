@@ -1772,20 +1772,20 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
     function wrapConstruct(cls) {
         // 创建一个新的构造函数
         var func;
-        eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
+        eval('func = function ' + cls["name"] + '(){onConstruct.call(this)}');
         // 动态设置继承
         ObjectUtil_2.extendsClass(func, cls);
         // 为新的构造函数打一个标签，用以记录原始的构造函数
         func["__ori_constructor__"] = cls;
         // 返回新的构造函数
         return func;
-        function onConstruct(instance) {
+        function onConstruct() {
             // 恢复__proto__
-            instance["__proto__"] = cls.prototype;
+            this["__proto__"] = cls.prototype;
             // 调用父类构造函数构造实例
-            cls.apply(instance, arguments);
+            cls.apply(this, arguments);
             // 调用回调
-            handleInstance(instance);
+            handleInstance(this);
         }
     }
     exports.wrapConstruct = wrapConstruct;
@@ -3160,10 +3160,12 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
                 return $skin;
             },
             set: function (value) {
-                // 根据skin类型选取表现层桥
-                this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
                 // 记录值
                 $skin = value;
+                // 根据skin类型选取表现层桥
+                this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
+                // 调用处理皮肤接口
+                this.bridge && this.bridge.handleSkin(this);
             }
         });
         return ConstructUtil_2.wrapConstruct(cls);

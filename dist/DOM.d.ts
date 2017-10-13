@@ -131,6 +131,13 @@ declare module "DOMBridge" {
          */
         isMySkin(skin: any): boolean;
         /**
+         * 当皮肤被设置时处理皮肤的方法
+         *
+         * @param {IMediator} mediator 中介者实例
+         * @memberof DOMBridge
+         */
+        handleSkin(mediator: IMediator): void;
+        /**
          * 添加显示
          *
          * @param {Element} parent 要添加到的父容器

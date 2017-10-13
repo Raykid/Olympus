@@ -34,7 +34,6 @@ declare module "egret/injector/Injector" {
      *
      * 负责注入的模块
     */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
     export function EgretSkin(skin: any): ClassDecorator;
     export function EgretMediatorClass(skin: any): ClassDecorator;
 }
@@ -289,6 +288,13 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         isMySkin(skin: any): boolean;
+        /**
+         * 当皮肤被设置时处理皮肤的方法
+         *
+         * @param {IMediator} mediator 中介者实例
+         * @memberof EgretBridge
+         */
+        handleSkin(mediator: IMediator): void;
         /**
          * 添加显示
          *

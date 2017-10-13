@@ -190,6 +190,28 @@ export default class DOMBridge implements IBridge
     }
 
     /**
+     * 当皮肤被设置时处理皮肤的方法
+     * 
+     * @param {IMediator} mediator 中介者实例
+     * @memberof DOMBridge
+     */
+    public handleSkin(mediator:IMediator):void
+    {
+        // 当皮肤被赋值时将拥有id的节点赋值给mediator
+        var skin:HTMLElement = mediator.skin;
+        if(!skin) return;
+        // 使用正则表达式从皮肤字符串中查找所有id
+        var reg:RegExp = /id="([^"]+)"/g;
+        var skinStr:string = skin.innerHTML;
+        var result:RegExpExecArray;
+        while(result = reg.exec(skinStr))
+        {
+            var id:string = result[1];
+            mediator[id] = skin.querySelector("#" + id);
+        }
+    }
+
+    /**
      * 添加显示
      * 
      * @param {Element} parent 要添加到的父容器
@@ -343,9 +365,9 @@ export default class DOMBridge implements IBridge
             if(skins.length <= 0)
             {
                 // 设置一个外壳容器
-                mediator.skin = document.createElement("div");
-                // 赋值显示
-                mediator.skin.innerHTML = skinStr;
+                var div:HTMLElement = document.createElement("div");
+                div.innerHTML = skinStr;
+                mediator.skin = div;
                 // 调用回调
                 handler();
             }

@@ -11,7 +11,7 @@ define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "e
      * 负责注入的模块
     */
     function DOMMediatorClass(cls) {
-        // 监听类型实例化，转换皮肤格式
+        // 监听类型实例化，赋值表现层桥
         ConstructUtil_1.listenConstruct(cls, function (mediator) { return mediator.bridge = BridgeManager_1.bridgeManager.getBridge("DOM"); });
         // 调用MediatorClass方法
         return Injector_1.MediatorClass(cls);
@@ -212,6 +212,26 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Inj
             return (skin instanceof HTMLElement);
         };
         /**
+         * 当皮肤被设置时处理皮肤的方法
+         *
+         * @param {IMediator} mediator 中介者实例
+         * @memberof DOMBridge
+         */
+        DOMBridge.prototype.handleSkin = function (mediator) {
+            // 当皮肤被赋值时将拥有id的节点赋值给mediator
+            var skin = mediator.skin;
+            if (!skin)
+                return;
+            // 使用正则表达式从皮肤字符串中查找所有id
+            var reg = /id="([^"]+)"/g;
+            var skinStr = skin.innerHTML;
+            var result;
+            while (result = reg.exec(skinStr)) {
+                var id = result[1];
+                mediator[id] = skin.querySelector("#" + id);
+            }
+        };
+        /**
          * 添加显示
          *
          * @param {Element} parent 要添加到的父容器
@@ -340,9 +360,9 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/injector/Inj
             function loadNext() {
                 if (skins.length <= 0) {
                     // 设置一个外壳容器
-                    mediator.skin = document.createElement("div");
-                    // 赋值显示
-                    mediator.skin.innerHTML = skinStr;
+                    var div = document.createElement("div");
+                    div.innerHTML = skinStr;
+                    mediator.skin = div;
                     // 调用回调
                     handler();
                 }

@@ -23,8 +23,8 @@ class FirstMediator extends SceneMediator
     @Inject
     private moduleManager:ModuleManager;
 
-    // public btn:eui.Button;
-    // public txt:eui.Label;
+    public btn:HTMLDivElement;
+    public txt:HTMLSpanElement;
 
     public listAssets():string[]
     {
@@ -33,10 +33,11 @@ class FirstMediator extends SceneMediator
 
     public onBeforeIn():void
     {
-        // this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
-        //     this.txt.text = "Fuck you!!!";
-        //     this.moduleManager.open(SecondModule);
-        // }, this);
+        this.mapListener(this.btn, "click", function():void
+        {
+            this.txt.textContent = "Fuck you!!!";
+            this.moduleManager.open(SecondModule);
+        }, this);
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)

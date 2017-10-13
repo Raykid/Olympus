@@ -31,7 +31,7 @@ export function wrapConstruct(cls:IConstructor):IConstructor
 {
     // 创建一个新的构造函数
     var func:IConstructor;
-    eval('func = function ' + cls["name"] + '(){onConstruct(this)}');
+    eval('func = function ' + cls["name"] + '(){onConstruct.call(this)}');
     // 动态设置继承
     extendsClass(func, cls);
     // 为新的构造函数打一个标签，用以记录原始的构造函数
@@ -39,14 +39,14 @@ export function wrapConstruct(cls:IConstructor):IConstructor
     // 返回新的构造函数
     return func;
 
-    function onConstruct(instance:any):void
+    function onConstruct():void
     {
         // 恢复__proto__
-        instance["__proto__"] = cls.prototype;
+        this["__proto__"] = cls.prototype;
         // 调用父类构造函数构造实例
-        cls.apply(instance, arguments);
+        cls.apply(this, arguments);
         // 调用回调
-        handleInstance(instance);
+        handleInstance(this);
     }
 }
 
