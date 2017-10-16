@@ -798,6 +798,11 @@ declare module "engine/panel/IPanelPolicy" {
     */
     export default interface IPanelPolicy {
         /**
+         * 添加显示前准备阶段调用
+         * @param panel 弹出框对象
+         */
+        prepare?(panel: IPanel): void;
+        /**
          * 显示时调用
          * @param panel 弹出框对象
          * @param callback 完成回调，必须调用
@@ -987,7 +992,7 @@ declare module "engine/scene/IScenePolicy" {
          * @param from 切出的场景
          * @param to 切入的场景
          */
-        prepareSwitch(from: IScene, to: IScene): void;
+        prepareSwitch?(from: IScene, to: IScene): void;
         /**
          * 切换场景时调度
          * @param from 切出的场景

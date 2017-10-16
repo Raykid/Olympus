@@ -11,6 +11,11 @@ import IPanel from "./IPanel";
 export default interface IPanelPolicy
 {
     /**
+     * 添加显示前准备阶段调用
+     * @param panel 弹出框对象
+     */
+    prepare?(panel:IPanel):void;
+    /**
      * 显示时调用
      * @param panel 弹出框对象
      * @param callback 完成回调，必须调用

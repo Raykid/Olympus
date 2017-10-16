@@ -2768,7 +2768,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                     break;
             }
             // 调用准备接口
-            prepareFunc.call(policy, from, to);
+            prepareFunc && prepareFunc.call(policy, from, to);
             // 添加显示
             to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 前置处理
@@ -2844,6 +2844,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             if (isModel === void 0) { isModel = true; }
             if (this._panels.indexOf(panel) < 0) {
                 var policy = panel.policy || panel.bridge.defaultPanelPolicy || NonePanelPolicy_1.default;
+                // 调用准备接口
+                policy.prepare && policy.prepare(panel);
                 // 添加显示
                 var bridge = panel.bridge;
                 bridge.addChild(bridge.panelLayer, panel.skin);

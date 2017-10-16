@@ -202,7 +202,7 @@ export default class SceneManager
                 break;
         }
         // 调用准备接口
-        prepareFunc.call(policy, from, to);
+        prepareFunc && prepareFunc.call(policy, from, to);
         // 添加显示
         to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 前置处理

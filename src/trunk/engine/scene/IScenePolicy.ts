@@ -15,7 +15,7 @@ export default interface IScenePolicy
      * @param from 切出的场景
      * @param to 切入的场景
      */
-    prepareSwitch(from:IScene, to:IScene):void;
+    prepareSwitch?(from:IScene, to:IScene):void;
     /**
      * 切换场景时调度
      * @param from 切出的场景

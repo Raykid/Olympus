@@ -50,6 +50,8 @@ export default class PanelManager
         if(this._panels.indexOf(panel) < 0)
         {
             var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
+            // 调用准备接口
+            policy.prepare && policy.prepare(panel);
             // 添加显示
             var bridge:IBridge = panel.bridge;
             bridge.addChild(bridge.panelLayer, panel.skin);
