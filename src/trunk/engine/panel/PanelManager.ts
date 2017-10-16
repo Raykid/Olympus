@@ -50,15 +50,15 @@ export default class PanelManager
         if(this._panels.indexOf(panel) < 0)
         {
             var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
+            // 调用回调
+            panel.onBeforePop(data, isModel, from);
+            // 派发消息
+            core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModel, from);
             // 调用准备接口
             policy.prepare && policy.prepare(panel);
             // 添加显示
             var bridge:IBridge = panel.bridge;
             bridge.addChild(bridge.panelLayer, panel.skin);
-            // 调用回调
-            panel.onBeforePop(data, isModel, from);
-            // 派发消息
-            core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModel, from);
             // 调用策略接口
             policy.pop(panel, ()=>{
                 // 调用回调

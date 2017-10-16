@@ -2767,15 +2767,15 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                     doFunc = policy.pop || policy.switch;
                     break;
             }
-            // 调用准备接口
-            prepareFunc && prepareFunc.call(policy, from, to);
-            // 添加显示
-            to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 前置处理
             from && from.onBeforeOut(to, data);
             to && to.onBeforeIn(from, data);
             // 派发事件
             Core_4.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
+            // 调用准备接口
+            prepareFunc && prepareFunc.call(policy, from, to);
+            // 添加显示
+            to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
             // 调用切换接口
             doFunc.call(policy, from, to, function () {
                 // 移除显示
@@ -2844,15 +2844,15 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             if (isModel === void 0) { isModel = true; }
             if (this._panels.indexOf(panel) < 0) {
                 var policy = panel.policy || panel.bridge.defaultPanelPolicy || NonePanelPolicy_1.default;
+                // 调用回调
+                panel.onBeforePop(data, isModel, from);
+                // 派发消息
+                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
                 // 调用准备接口
                 policy.prepare && policy.prepare(panel);
                 // 添加显示
                 var bridge = panel.bridge;
                 bridge.addChild(bridge.panelLayer, panel.skin);
-                // 调用回调
-                panel.onBeforePop(data, isModel, from);
-                // 派发消息
-                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
                 // 调用策略接口
                 policy.pop(panel, function () {
                     // 调用回调
