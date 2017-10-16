@@ -1654,7 +1654,7 @@ declare module "engine/scene/SceneManager" {
          */
         pop(scene: IScene, data?: any): IScene;
         private doPop(scene, data);
-        private doChange(from, to, data, policy, type, complete);
+        private doChange(from, to, data, policy, type, begin?, complete?);
     }
     /** 再额外导出一个单例 */
     export const sceneManager: SceneManager;
@@ -1805,8 +1805,109 @@ declare module "engine/bridge/BridgeManager" {
     /** 再额外导出一个单例 */
     export const bridgeManager: BridgeManager;
 }
+declare module "engine/module/ModuleMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 模块消息
+    */
+    export default class ModuleMessage {
+        /**
+         * 切换模块消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        static MODULE_CHANGE: string;
+        /**
+         * 加载模块失败消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        static MODULE_LOAD_ASSETS_ERROR: string;
+    }
+}
+declare module "engine/module/ModuleManager" {
+    import IModuleConstructor from "engine/module/IModuleConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-15
+     *
+     * 模块管理器，管理模块相关的所有操作。模块具有唯一性，同一时间不可以打开两个相同模块，如果打开则会退回到先前的模块处
+    */
+    export default class ModuleManager {
+        private _moduleDict;
+        private _moduleStack;
+        private _openCache;
+        private _opening;
+        /**
+         * 获取是否有模块正在打开中
+         *
+         * @readonly
+         * @type {boolean}
+         * @memberof ModuleManager
+         */
+        readonly opening: boolean;
+        /**
+         * 获取当前模块
+         *
+         * @readonly
+         * @type {IModuleConstructor}
+         * @memberof ModuleManager
+         */
+        readonly currentModule: IModuleConstructor | undefined;
+        /**
+         * 获取活动模块数量
+         *
+         * @readonly
+         * @type {number}
+         * @memberof ModuleManager
+         */
+        readonly activeCount: number;
+        private getIndex(cls);
+        private getAfter(cls);
+        private getCurrent();
+        registerModule(cls: IModuleConstructor): void;
+        /**
+         * 获取模块是否开启中
+         *
+         * @param {IModuleConstructor} cls 要判断的模块类型
+         * @returns {boolean} 是否开启
+         * @memberof ModuleManager
+         */
+        isOpened(cls: IModuleConstructor): boolean;
+        /**
+         * 打开模块
+         *
+         * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+         * @param {*} [data] 参数
+         * @param {boolean} [replace=false] 是否替换当前模块
+         * @memberof ModuleManager
+         */
+        open(clsOrName: IModuleConstructor | string, data?: any, replace?: boolean): void;
+        /**
+         * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
+         *
+         * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+         * @param {*} [data] 参数
+         * @memberof ModuleManager
+         */
+        close(clsOrName: IModuleConstructor | string, data?: any): void;
+    }
+    /** 再额外导出一个单例 */
+    export const moduleManager: ModuleManager;
+}
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1820,7 +1921,7 @@ declare module "engine/injector/Injector" {
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
     export function MediatorClass(cls: IConstructor): any;
     /** 定义模块，支持实例注入 */
-    export function ModuleClass(cls: IConstructor): any;
+    export function ModuleClass(cls: IModuleConstructor): any;
     /** 处理通讯消息返回 */
     export function ResponseHandler(prototype: any, propertyKey: string): void;
     export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
@@ -2245,94 +2346,6 @@ declare module "engine/scene/SceneMediator" {
          */
         onAfterOut(toScene: IScene, data?: any): void;
     }
-}
-declare module "engine/module/ModuleMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-18
-     * @modify date 2017-09-18
-     *
-     * 模块消息
-    */
-    export default class ModuleMessage {
-        /**
-         * 切换模块消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ModuleMessage
-         */
-        static MODULE_CHANGE: string;
-        /**
-         * 加载模块失败消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ModuleMessage
-         */
-        static MODULE_LOAD_ASSETS_ERROR: string;
-    }
-}
-declare module "engine/module/ModuleManager" {
-    import IModuleConstructor from "engine/module/IModuleConstructor";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-15
-     *
-     * 模块管理器，管理模块相关的所有操作。模块具有唯一性，同一时间不可以打开两个相同模块，如果打开则会退回到先前的模块处
-    */
-    export default class ModuleManager {
-        private _moduleStack;
-        /**
-         * 获取当前模块
-         *
-         * @readonly
-         * @type {IModuleConstructor}
-         * @memberof ModuleManager
-         */
-        readonly currentModule: IModuleConstructor | undefined;
-        /**
-         * 获取活动模块数量
-         *
-         * @readonly
-         * @type {number}
-         * @memberof ModuleManager
-         */
-        readonly activeCount: number;
-        private getIndex(cls);
-        private getAfter(cls);
-        private getCurrent();
-        /**
-         * 获取模块是否开启中
-         *
-         * @param {IModuleConstructor} cls 要判断的模块类型
-         * @returns {boolean} 是否开启
-         * @memberof ModuleManager
-         */
-        isOpened(cls: IModuleConstructor): boolean;
-        /**
-         * 打开模块
-         *
-         * @param {IModuleConstructor} cls 模块类型
-         * @param {*} [data] 参数
-         * @param {boolean} [replace=false] 是否替换当前模块
-         * @memberof ModuleManager
-         */
-        open(cls: IModuleConstructor, data?: any, replace?: boolean): void;
-        /**
-         * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
-         *
-         * @param {IModuleConstructor} cls 模块类型
-         * @param {*} [data] 参数
-         * @memberof ModuleManager
-         */
-        close(cls: IModuleConstructor, data?: any): void;
-    }
-    /** 再额外导出一个单例 */
-    export const moduleManager: ModuleManager;
 }
 declare module "engine/module/Module" {
     import IDispatcher from "core/interfaces/IDispatcher";

@@ -328,3 +328,4 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
     req.test = "Fuck you";
     Core_1.core.dispatch(req);
 });
+//# sourceMappingURL=main.js.map

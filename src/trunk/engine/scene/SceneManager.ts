@@ -147,8 +147,7 @@ export default class SceneManager
         // 验证是否是当前场景，不是则直接移除，不使用Policy
         var to:IScene = this._sceneStack[1];
         var policy:IScenePolicy = scene.policy || scene.bridge.defaultScenePolicy || none;
-        var index:number = this._sceneStack.indexOf(scene);
-        if(index != 0)
+        if(this._sceneStack.indexOf(scene) != 0)
         {
             to = null;
             policy = none;
@@ -160,24 +159,28 @@ export default class SceneManager
             data,
             policy,
             ChangeType.Pop,
+            null,
             ()=>{
                 // 移除记录
-                this._sceneStack.splice(index, 1);
+                this._sceneStack.splice(this._sceneStack.indexOf(scene), 1);
                 // 销毁场景
                 scene.dispose();
             }
         );
     }
     
-    private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, complete:()=>void):void
+    private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, begin?:()=>void, complete?:()=>void):void
     {
         // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-        if(!from || !to || to.bridge.type != from.bridge.type)
+        if(from && to && to.bridge.type != from.bridge.type)
         {
-            from && (from.bridge.htmlWrapper.style.display = "none");
-            to && (to.bridge.htmlWrapper.style.display = "");
+            from.bridge.htmlWrapper.style.display = "none";
             policy = none;
         }
+        // to指定的场景必须要显示
+        if(to) to.bridge.htmlWrapper.style.display = "";
+        // 调用回调
+        begin && begin();
         // 获取接口引用
         var prepareFunc:(from:IScene, to:IScene)=>void;
         var doFunc:(from:IScene, to:IScene, callback:()=>void)=>void;
@@ -215,7 +218,7 @@ export default class SceneManager
             // 派发事件
             core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, from, to);
             // 调用回调
-            complete();
+            complete && complete();
             // 完成步骤
             notify(SYNC_NAME);
         });

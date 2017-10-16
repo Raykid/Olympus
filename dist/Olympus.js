@@ -1871,8 +1871,6 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     }
     exports.Injectable = Injectable;
     ;
-    // 赋值全局方法
-    window["Injectable"] = Injectable;
     function Inject(target, key) {
         if (key) {
             var cls = Reflect.getMetadata("design:type", target, key);
@@ -1897,8 +1895,6 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
             });
         });
     }
-    // 赋值全局方法
-    window["Inject"] = Inject;
     function MessageHandler(target, key) {
         if (key) {
             var defs = Reflect.getMetadata("design:paramtypes", target, key);
@@ -1925,8 +1921,6 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
             Core_2.core.unlisten(type, instance[key], instance);
         });
     }
-    // 赋值全局方法
-    window["MessageHandler"] = MessageHandler;
 });
 define("engine/net/DataType", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -2730,26 +2724,29 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             // 验证是否是当前场景，不是则直接移除，不使用Policy
             var to = this._sceneStack[1];
             var policy = scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default;
-            var index = this._sceneStack.indexOf(scene);
-            if (index != 0) {
+            if (this._sceneStack.indexOf(scene) != 0) {
                 to = null;
                 policy = NoneScenePolicy_1.default;
             }
             // 执行切换
-            this.doChange(scene, to, data, policy, ChangeType.Pop, function () {
+            this.doChange(scene, to, data, policy, ChangeType.Pop, null, function () {
                 // 移除记录
-                _this._sceneStack.splice(index, 1);
+                _this._sceneStack.splice(_this._sceneStack.indexOf(scene), 1);
                 // 销毁场景
                 scene.dispose();
             });
         };
-        SceneManager.prototype.doChange = function (from, to, data, policy, type, complete) {
+        SceneManager.prototype.doChange = function (from, to, data, policy, type, begin, complete) {
             // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-            if (!from || !to || to.bridge.type != from.bridge.type) {
-                from && (from.bridge.htmlWrapper.style.display = "none");
-                to && (to.bridge.htmlWrapper.style.display = "");
+            if (from && to && to.bridge.type != from.bridge.type) {
+                from.bridge.htmlWrapper.style.display = "none";
                 policy = NoneScenePolicy_1.default;
             }
+            // to指定的场景必须要显示
+            if (to)
+                to.bridge.htmlWrapper.style.display = "";
+            // 调用回调
+            begin && begin();
             // 获取接口引用
             var prepareFunc;
             var doFunc;
@@ -2786,7 +2783,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                 // 派发事件
                 Core_4.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
                 // 调用回调
-                complete();
+                complete && complete();
                 // 完成步骤
                 SyncUtil_1.notify(SYNC_NAME);
             });
@@ -3104,6 +3101,8 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                 this.testAllInit();
             }
             function afterInitBridge(bridge) {
+                // 先隐藏表现层桥的htmlWrapper
+                bridge.htmlWrapper.style.display = "none";
                 // 派发消息
                 Core_6.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
                 // 设置初始化完毕属性
@@ -3131,7 +3130,265 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.bridgeManager = Core_6.core.getInject(BridgeManager);
 });
-define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager"], function (require, exports, Core_7, ConstructUtil_2, ResponseData_1, NetManager_1, BridgeManager_1) {
+define("engine/module/ModuleMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 模块消息
+    */
+    var ModuleMessage = /** @class */ (function () {
+        function ModuleMessage() {
+        }
+        /**
+         * 切换模块消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        ModuleMessage.MODULE_CHANGE = "moduleChange";
+        /**
+         * 加载模块失败消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        ModuleMessage.MODULE_LOAD_ASSETS_ERROR = "moduleLoadAssetsError";
+        return ModuleMessage;
+    }());
+    exports.default = ModuleMessage;
+});
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_7, Injector_5, NetManager_1, ModuleMessage_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-15
+     *
+     * 模块管理器，管理模块相关的所有操作。模块具有唯一性，同一时间不可以打开两个相同模块，如果打开则会退回到先前的模块处
+    */
+    var ModuleManager = /** @class */ (function () {
+        function ModuleManager() {
+            this._moduleDict = {};
+            this._moduleStack = [];
+            this._openCache = [];
+            this._opening = false;
+        }
+        Object.defineProperty(ModuleManager.prototype, "opening", {
+            /**
+             * 获取是否有模块正在打开中
+             *
+             * @readonly
+             * @type {boolean}
+             * @memberof ModuleManager
+             */
+            get: function () {
+                return this._opening;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ModuleManager.prototype, "currentModule", {
+            /**
+             * 获取当前模块
+             *
+             * @readonly
+             * @type {IModuleConstructor}
+             * @memberof ModuleManager
+             */
+            get: function () {
+                var curData = this.getCurrent();
+                return (curData && curData[0]);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ModuleManager.prototype, "activeCount", {
+            /**
+             * 获取活动模块数量
+             *
+             * @readonly
+             * @type {number}
+             * @memberof ModuleManager
+             */
+            get: function () {
+                return this._moduleStack.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ModuleManager.prototype.getIndex = function (cls) {
+            for (var i = 0, len = this._moduleStack.length; i < len; i++) {
+                if (this._moduleStack[i][0] == cls)
+                    return i;
+            }
+            return -1;
+        };
+        ModuleManager.prototype.getAfter = function (cls) {
+            var result = [];
+            for (var _i = 0, _a = this._moduleStack; _i < _a.length; _i++) {
+                var module = _a[_i];
+                if (module[0] == cls)
+                    return result;
+                result.push(module);
+            }
+            return null;
+        };
+        ModuleManager.prototype.getCurrent = function () {
+            return this._moduleStack[0];
+        };
+        ModuleManager.prototype.registerModule = function (cls) {
+            this._moduleDict[cls["name"]] = cls;
+        };
+        /**
+         * 获取模块是否开启中
+         *
+         * @param {IModuleConstructor} cls 要判断的模块类型
+         * @returns {boolean} 是否开启
+         * @memberof ModuleManager
+         */
+        ModuleManager.prototype.isOpened = function (cls) {
+            return (this._moduleStack.filter(function (temp) { return temp[0] == cls; }).length > 0);
+        };
+        /**
+         * 打开模块
+         *
+         * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+         * @param {*} [data] 参数
+         * @param {boolean} [replace=false] 是否替换当前模块
+         * @memberof ModuleManager
+         */
+        ModuleManager.prototype.open = function (clsOrName, data, replace) {
+            var _this = this;
+            if (replace === void 0) { replace = false; }
+            // 如果是字符串则获取引用
+            var cls = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName);
+            // 非空判断
+            if (!cls)
+                return;
+            // 判断是否正在打开模块
+            if (this._opening) {
+                this._openCache.push([cls, data, replace]);
+                return;
+            }
+            this._opening = true;
+            var after = this.getAfter(cls);
+            if (!after) {
+                // 尚未打开过，正常开启模块
+                var target = new cls();
+                // 加载所有已托管中介者的资源
+                var mediators = target.getDelegatedMediators().concat();
+                var loadMediatorAssets = function (err) {
+                    if (err) {
+                        // 停止加载，调用模块加载失败接口
+                        target.onLoadAssets(err);
+                    }
+                    else if (mediators.length > 0) {
+                        mediators.shift().loadAssets(loadMediatorAssets);
+                    }
+                    else {
+                        // 调用onLoadAssets接口
+                        target.onLoadAssets();
+                        // 发送所有模块消息
+                        var requests = target.listInitRequests();
+                        NetManager_1.netManager.sendMultiRequests(requests, function (responses) {
+                            var from = this.getCurrent();
+                            var fromModule = from && from[1];
+                            // 调用onGetResponses接口
+                            target.onGetResponses(responses);
+                            // 调用onOpen接口
+                            target.onOpen(data);
+                            // 调用onDeactivate接口
+                            fromModule && fromModule.onDeactivate(cls, data);
+                            // 插入模块
+                            this._moduleStack.unshift([cls, target]);
+                            // 调用onActivate接口
+                            target.onActivate(from && from[0], data);
+                            // 如果replace是true，则关掉上一个模块
+                            if (replace)
+                                this.close(from && from[0], data);
+                            // 派发消息
+                            Core_7.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
+                            // 如果有缓存的模块需要打开则打开之
+                            this._opening = false;
+                            if (this._openCache.length > 0)
+                                this.open.apply(this, this._openCache.shift());
+                        }, _this);
+                    }
+                };
+                loadMediatorAssets();
+            }
+            else if (after.length > 0) {
+                // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
+                for (var i = 1, len = after.length; i < len; i++) {
+                    this.close(after[i][0], data);
+                }
+                // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
+                this.close(after[0][0], data);
+            }
+        };
+        /**
+         * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
+         *
+         * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+         * @param {*} [data] 参数
+         * @memberof ModuleManager
+         */
+        ModuleManager.prototype.close = function (clsOrName, data) {
+            // 如果是字符串则获取引用
+            var cls = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName);
+            // 非空判断
+            if (!cls)
+                return;
+            // 数量判断，不足一个模块时不关闭
+            if (this.activeCount <= 1)
+                return;
+            // 存在性判断
+            var index = this.getIndex(cls);
+            if (index < 0)
+                return;
+            // 取到目标模块
+            var target = this._moduleStack[index][1];
+            // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
+            if (index == 0) {
+                var to = this._moduleStack[1];
+                var toModule = to && to[1];
+                // 调用onDeactivate接口
+                target.onDeactivate(to && to[0], data);
+                // 移除当前模块
+                this._moduleStack.shift();
+                // 调用onClose接口
+                target.onClose(data);
+                // 调用onActivate接口
+                toModule && toModule.onActivate(cls, data);
+                // 派发消息
+                Core_7.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, to && to[0]);
+            }
+            else {
+                // 移除模块
+                this._moduleStack.splice(index, 1);
+                // 调用onClose接口
+                target.onClose(data);
+            }
+        };
+        ModuleManager = __decorate([
+            Injector_5.Injectable
+        ], ModuleManager);
+        return ModuleManager;
+    }());
+    exports.default = ModuleManager;
+    /** 再额外导出一个单例 */
+    exports.moduleManager = Core_7.core.getInject(ModuleManager);
+});
+define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Core_8, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_1, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3147,13 +3404,11 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         // Model先进行托管
         var result = ConstructUtil_2.wrapConstruct(cls);
         // 然后要注入新生成的类
-        Core_7.core.mapInject(result);
+        Core_8.core.mapInject(result);
         // 返回结果
         return result;
     }
     exports.ModelClass = ModelClass;
-    // 赋值全局方法
-    window["ModelClass"] = ModelClass;
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
     function MediatorClass(cls) {
         // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
@@ -3179,18 +3434,19 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         return ConstructUtil_2.wrapConstruct(cls);
     }
     exports.MediatorClass = MediatorClass;
-    // 赋值全局方法
-    window["MediatorClass"] = MediatorClass;
     /** 定义模块，支持实例注入 */
     function ModuleClass(cls) {
         // 判断一下Module是否有dispose方法，没有的话弹一个警告
         if (!cls.prototype.dispose)
             console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-        return ConstructUtil_2.wrapConstruct(cls);
+        // 包装类
+        var wrapperCls = ConstructUtil_2.wrapConstruct(cls);
+        // 注册模块
+        ModuleManager_1.moduleManager.registerModule(wrapperCls);
+        // 返回包装类
+        return wrapperCls;
     }
     exports.ModuleClass = ModuleClass;
-    // 赋值全局方法
-    window["ModuleClass"] = ModuleClass;
     function ResponseHandler(target, key) {
         if (key) {
             var defs = Reflect.getMetadata("design:paramtypes", target, key);
@@ -3209,15 +3465,13 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
     function doResponseHandler(cls, key, type) {
         // 监听实例化
         ConstructUtil_2.listenConstruct(cls, function (instance) {
-            NetManager_1.netManager.listenResponse(type, instance[key], instance);
+            NetManager_2.netManager.listenResponse(type, instance[key], instance);
         });
         // 监听销毁
         ConstructUtil_2.listenDispose(cls, function (instance) {
-            NetManager_1.netManager.unlistenResponse(type, instance[key], instance);
+            NetManager_2.netManager.unlistenResponse(type, instance[key], instance);
         });
     }
-    // 赋值全局方法
-    window["ResponseHandler"] = ResponseHandler;
     /** 在Module内托管Mediator */
     function DelegateMediator(prototype, propertyKey) {
         if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
@@ -3260,8 +3514,6 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
         }
     }
     exports.DelegateMediator = DelegateMediator;
-    // 赋值全局方法
-    window["DelegateMediator"] = DelegateMediator;
 });
 define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -3288,7 +3540,7 @@ define("engine/platform/WebPlatform", ["require", "exports"], function (require,
     }());
     exports.default = WebPlatform;
 });
-define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_8, Injector_5, WebPlatform_1) {
+define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_9, Injector_6, WebPlatform_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3318,15 +3570,15 @@ define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "c
             this.platform.reload();
         };
         PlatformManager = __decorate([
-            Injector_5.Injectable
+            Injector_6.Injectable
         ], PlatformManager);
         return PlatformManager;
     }());
     exports.default = PlatformManager;
     /** 再额外导出一个单例 */
-    exports.platformManager = Core_8.core.getInject(PlatformManager);
+    exports.platformManager = Core_9.core.getInject(PlatformManager);
 });
-define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_9, Injector_6) {
+define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_10, Injector_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3472,16 +3724,16 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
             };
         };
         System = __decorate([
-            Injector_6.Injectable,
+            Injector_7.Injectable,
             __metadata("design:paramtypes", [])
         ], System);
         return System;
     }());
     exports.default = System;
     /** 再额外导出一个单例 */
-    exports.system = Core_9.core.getInject(System);
+    exports.system = Core_10.core.getInject(System);
 });
-define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_10) {
+define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3500,13 +3752,13 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_10.core.dispatch.apply(Core_10.core, [typeOrMsg].concat(params));
+            Core_11.core.dispatch.apply(Core_11.core, [typeOrMsg].concat(params));
         };
         return Model;
     }());
     exports.default = Model;
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_11) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3670,7 +3922,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_11.core.dispatch.apply(Core_11.core, [typeOrMsg].concat(params));
+            Core_12.core.dispatch.apply(Core_12.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁中介者
@@ -3838,231 +4090,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-define("engine/module/ModuleMessage", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-18
-     * @modify date 2017-09-18
-     *
-     * 模块消息
-    */
-    var ModuleMessage = /** @class */ (function () {
-        function ModuleMessage() {
-        }
-        /**
-         * 切换模块消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ModuleMessage
-         */
-        ModuleMessage.MODULE_CHANGE = "moduleChange";
-        /**
-         * 加载模块失败消息
-         *
-         * @static
-         * @type {string}
-         * @memberof ModuleMessage
-         */
-        ModuleMessage.MODULE_LOAD_ASSETS_ERROR = "moduleLoadAssetsError";
-        return ModuleMessage;
-    }());
-    exports.default = ModuleMessage;
-});
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage"], function (require, exports, Core_12, Injector_7, NetManager_2, ModuleMessage_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-15
-     *
-     * 模块管理器，管理模块相关的所有操作。模块具有唯一性，同一时间不可以打开两个相同模块，如果打开则会退回到先前的模块处
-    */
-    var ModuleManager = /** @class */ (function () {
-        function ModuleManager() {
-            this._moduleStack = [];
-        }
-        Object.defineProperty(ModuleManager.prototype, "currentModule", {
-            /**
-             * 获取当前模块
-             *
-             * @readonly
-             * @type {IModuleConstructor}
-             * @memberof ModuleManager
-             */
-            get: function () {
-                var curData = this.getCurrent();
-                return (curData && curData[0]);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ModuleManager.prototype, "activeCount", {
-            /**
-             * 获取活动模块数量
-             *
-             * @readonly
-             * @type {number}
-             * @memberof ModuleManager
-             */
-            get: function () {
-                return this._moduleStack.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ModuleManager.prototype.getIndex = function (cls) {
-            for (var i = 0, len = this._moduleStack.length; i < len; i++) {
-                if (this._moduleStack[i][0] == cls)
-                    return i;
-            }
-            return -1;
-        };
-        ModuleManager.prototype.getAfter = function (cls) {
-            var result = [];
-            for (var _i = 0, _a = this._moduleStack; _i < _a.length; _i++) {
-                var module = _a[_i];
-                if (module[0] == cls)
-                    return result;
-                result.push(module);
-            }
-            return null;
-        };
-        ModuleManager.prototype.getCurrent = function () {
-            return this._moduleStack[0];
-        };
-        /**
-         * 获取模块是否开启中
-         *
-         * @param {IModuleConstructor} cls 要判断的模块类型
-         * @returns {boolean} 是否开启
-         * @memberof ModuleManager
-         */
-        ModuleManager.prototype.isOpened = function (cls) {
-            return (this._moduleStack.filter(function (temp) { return temp[0] == cls; }).length > 0);
-        };
-        /**
-         * 打开模块
-         *
-         * @param {IModuleConstructor} cls 模块类型
-         * @param {*} [data] 参数
-         * @param {boolean} [replace=false] 是否替换当前模块
-         * @memberof ModuleManager
-         */
-        ModuleManager.prototype.open = function (cls, data, replace) {
-            var _this = this;
-            if (replace === void 0) { replace = false; }
-            // 非空判断
-            if (!cls)
-                return;
-            var after = this.getAfter(cls);
-            if (!after) {
-                // 尚未打开过，正常开启模块
-                var target = new cls();
-                // 加载所有已托管中介者的资源
-                var mediators = target.getDelegatedMediators().concat();
-                var loadMediatorAssets = function (err) {
-                    if (err) {
-                        // 停止加载，调用模块加载失败接口
-                        target.onLoadAssets(err);
-                    }
-                    else if (mediators.length > 0) {
-                        mediators.shift().loadAssets(loadMediatorAssets);
-                    }
-                    else {
-                        // 调用onLoadAssets接口
-                        target.onLoadAssets();
-                        // 发送所有模块消息
-                        var requests = target.listInitRequests();
-                        NetManager_2.netManager.sendMultiRequests(requests, function (responses) {
-                            var from = this.getCurrent();
-                            var fromModule = from && from[1];
-                            // 调用onGetResponses接口
-                            target.onGetResponses(responses);
-                            // 调用onOpen接口
-                            target.onOpen(data);
-                            // 调用onDeactivate接口
-                            fromModule && fromModule.onDeactivate(cls, data);
-                            // 插入模块
-                            this._moduleStack.unshift([cls, target]);
-                            // 调用onActivate接口
-                            target.onActivate(from && from[0], data);
-                            // 如果replace是true，则关掉上一个模块
-                            if (replace)
-                                this.close(from && from[0]);
-                            // 派发消息
-                            Core_12.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
-                        }, _this);
-                    }
-                };
-                loadMediatorAssets();
-            }
-            else if (after.length > 0) {
-                // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
-                for (var i = 1, len = after.length; i < len; i++) {
-                    this.close(after[i][0], data);
-                }
-                // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
-                this.close(after[0][0], data);
-            }
-        };
-        /**
-         * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
-         *
-         * @param {IModuleConstructor} cls 模块类型
-         * @param {*} [data] 参数
-         * @memberof ModuleManager
-         */
-        ModuleManager.prototype.close = function (cls, data) {
-            // 非空判断
-            if (!cls)
-                return;
-            // 数量判断，不足一个模块时不关闭
-            if (this.activeCount <= 1)
-                return;
-            // 存在性判断
-            var index = this.getIndex(cls);
-            if (index < 0)
-                return;
-            // 取到目标模块
-            var target = this._moduleStack[index][1];
-            // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
-            if (index == 0) {
-                var to = this._moduleStack[1];
-                var toModule = to && to[1];
-                // 调用onDeactivate接口
-                target.onDeactivate(to && to[0], data);
-                // 移除当前模块
-                this._moduleStack.shift();
-                // 调用onClose接口
-                target.onClose(data);
-                // 调用onActivate接口
-                toModule && toModule.onActivate(cls, data);
-                // 派发消息
-                Core_12.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, to && to[0]);
-            }
-            else {
-                // 移除模块
-                this._moduleStack.splice(index, 1);
-                // 调用onClose接口
-                target.onClose(data);
-            }
-        };
-        ModuleManager = __decorate([
-            Injector_7.Injectable
-        ], ModuleManager);
-        return ModuleManager;
-    }());
-    exports.default = ModuleManager;
-    /** 再额外导出一个单例 */
-    exports.moduleManager = Core_12.core.getInject(ModuleManager);
-});
-define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_13, Dictionary_2, ModuleManager_1, ConstructUtil_3) {
+define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_13, Dictionary_2, ModuleManager_2, ConstructUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4250,9 +4278,9 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         Module.prototype.dispose = function () {
             // 关闭自身
             var cls = ConstructUtil_3.getConstructor(this.constructor);
-            ModuleManager_1.moduleManager.close(cls);
+            ModuleManager_2.moduleManager.close(cls);
             // 如果没关上则不销毁
-            if (ModuleManager_1.moduleManager.isOpened(cls))
+            if (ModuleManager_2.moduleManager.isOpened(cls))
                 return;
             // 将所有已托管的中介者销毁
             for (var i = 0, len = this._mediators.length; i < len; i++) {
@@ -5311,7 +5339,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_14, BridgeManager_2, BridgeMessage_2, ModuleManager_2, Environment_2, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_14, BridgeManager_2, BridgeMessage_2, ModuleManager_3, Environment_2, Hash_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5355,7 +5383,10 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             // 监听首个模块开启
             Core_20.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
-            ModuleManager_2.moduleManager.open(this._initParams.firstModule);
+            ModuleManager_3.moduleManager.open(this._initParams.firstModule);
+            // 如果有哈希模块则打开之
+            if (Hash_1.hash.moduleName)
+                ModuleManager_3.moduleManager.open(Hash_1.hash.moduleName, Hash_1.hash.params, Hash_1.hash.direct);
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听

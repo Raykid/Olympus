@@ -32,8 +32,6 @@ export function Injectable(cls:{type:IConstructor}|IConstructor|string):ClassDec
         core.mapInject(cls as IConstructor);
     }
 };
-// 赋值全局方法
-window["Injectable"] = Injectable;
 
 /** 赋值注入的实例 */
 export function Inject(prototype:any, propertyKey:string):void;
@@ -67,8 +65,6 @@ function doInject(cls:IConstructor, key:string, type:IConstructor|string):void
         });
     });
 }
-// 赋值全局方法
-window["Inject"] = Inject;
 
 /** 处理内核消息 */
 export function MessageHandler(prototype:any, propertyKey:string):void;
@@ -104,5 +100,3 @@ function doMessageHandler(cls:IConstructor, key:string, type:IConstructor):void
         core.unlisten(type, instance[key], instance);
     });
 }
-// 赋值全局方法
-window["MessageHandler"] = MessageHandler;

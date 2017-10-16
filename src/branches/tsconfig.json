@@ -9,7 +9,9 @@
     "allowJs": true
   },
   "files": [
+    "./dom/injector/Injector.ts",
     "./DOMBridge.ts",
+    "./egret/injector/Injector.ts",
     "./EgretBridge.ts"
   ],
   "exclude": [

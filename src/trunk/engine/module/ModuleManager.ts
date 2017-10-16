@@ -20,7 +20,22 @@ import IMediator from "../mediator/IMediator";
 @Injectable
 export default class ModuleManager
 {
+    private _moduleDict:{[name:string]:IModuleConstructor} = {};
     private _moduleStack:[IModuleConstructor, IModule][] = [];
+
+    private _openCache:[IModuleConstructor, any, boolean][] = [];
+    private _opening:boolean = false;
+    /**
+     * 获取是否有模块正在打开中
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberof ModuleManager
+     */
+    public get opening():boolean
+    {
+        return this._opening;
+    }
     
     /**
      * 获取当前模块
@@ -33,7 +48,7 @@ export default class ModuleManager
     {
         var curData:[IModuleConstructor, IModule] = this.getCurrent();
         return (curData && curData[0]);
-    }    
+    }
 
     /**
      * 获取活动模块数量
@@ -45,7 +60,7 @@ export default class ModuleManager
     public get activeCount():number
     {
         return this._moduleStack.length;
-    }    
+    }
 
     private getIndex(cls:IModuleConstructor):number
     {
@@ -72,6 +87,11 @@ export default class ModuleManager
         return this._moduleStack[0];
     }
 
+    public registerModule(cls:IModuleConstructor):void
+    {
+        this._moduleDict[cls["name"]] = cls;
+    }
+
     /**
      * 获取模块是否开启中
      * 
@@ -87,15 +107,24 @@ export default class ModuleManager
     /**
      * 打开模块
      * 
-     * @param {IModuleConstructor} cls 模块类型
+     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
      * @memberof ModuleManager
      */
-    public open(cls:IModuleConstructor, data?:any, replace:boolean=false):void
+    public open(clsOrName:IModuleConstructor|string, data?:any, replace:boolean=false):void
     {
+        // 如果是字符串则获取引用
+        var cls:IModuleConstructor = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName) ;
         // 非空判断
         if(!cls) return;
+        // 判断是否正在打开模块
+        if(this._opening)
+        {
+            this._openCache.push([cls, data, replace]);
+            return;
+        }
+        this._opening = true;
         var after:[IModuleConstructor, IModule][] = this.getAfter(cls);
         if(!after)
         {
@@ -134,9 +163,13 @@ export default class ModuleManager
                         // 调用onActivate接口
                         target.onActivate(from && from[0], data);
                         // 如果replace是true，则关掉上一个模块
-                        if(replace) this.close(from && from[0]);
+                        if(replace) this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
+                        // 如果有缓存的模块需要打开则打开之
+                        this._opening = false;
+                        if(this._openCache.length > 0)
+                            this.open.apply(this, this._openCache.shift());
                     }, this);
                 }
             };
@@ -157,12 +190,14 @@ export default class ModuleManager
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
      * 
-     * @param {IModuleConstructor} cls 模块类型
+     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @memberof ModuleManager
      */
-    public close(cls:IModuleConstructor, data?:any):void
+    public close(clsOrName:IModuleConstructor|string, data?:any):void
     {
+        // 如果是字符串则获取引用
+        var cls:IModuleConstructor = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName) ;
         // 非空判断
         if(!cls) return;
         // 数量判断，不足一个模块时不关闭

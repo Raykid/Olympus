@@ -16,7 +16,7 @@ import Module from "./module/Module";
 import Environment, { environment } from "./env/Environment";
 import Explorer from "./env/Explorer";
 import WindowExternal from "./env/WindowExternal";
-import Hash from "./env/Hash";
+import Hash, { hash } from "./env/Hash";
 import Query from "./env/Query";
 import Version, { version } from "./version/Version";
 import NetManager, { netManager } from "./net/NetManager";
@@ -72,6 +72,9 @@ export default class Engine
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
         moduleManager.open(this._initParams.firstModule);
+        // 如果有哈希模块则打开之
+        if(hash.moduleName)
+            moduleManager.open(hash.moduleName, hash.params, hash.direct);
     }
 
     private onModuleChange(from:IModuleConstructor):void

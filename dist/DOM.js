@@ -16,8 +16,6 @@ define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "e
         return Injector_1.MediatorClass(cls);
     }
     exports.DOMMediatorClass = DOMMediatorClass;
-    // 赋值全局方法
-    window["DOMMediatorClass"] = DOMMediatorClass;
 });
 /// <reference path="../../dist/Olympus.d.ts"/>
 define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/env/Environment", "utils/HTTPUtil"], function (require, exports, ObjectUtil_1, Environment_1, HTTPUtil_1) {

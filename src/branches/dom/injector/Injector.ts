@@ -17,5 +17,3 @@ export function DOMMediatorClass(cls:IConstructor):any
     // 调用MediatorClass方法
     return MediatorClass(cls);
 }
-// 赋值全局方法
-window["DOMMediatorClass"] = DOMMediatorClass;
