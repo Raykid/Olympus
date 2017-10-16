@@ -171,14 +171,16 @@ export default class SceneManager
     
     private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, begin?:()=>void, complete?:()=>void):void
     {
+        // 如果from和to有一个为null则policy为none
+        if(!from || !to) policy = none;
+        // to指定的场景必须要显示
+        if(to) to.bridge.htmlWrapper.style.display = "";
         // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
         if(from && to && to.bridge.type != from.bridge.type)
         {
             from.bridge.htmlWrapper.style.display = "none";
             policy = none;
         }
-        // to指定的场景必须要显示
-        if(to) to.bridge.htmlWrapper.style.display = "";
         // 调用回调
         begin && begin();
         // 获取接口引用

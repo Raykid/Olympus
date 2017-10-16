@@ -280,7 +280,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core", "engine/bridge/BridgeManager", "engine/scene/NoneScenePolicy"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_2, Core_1, BridgeManager_1, NoneScenePolicy_1) {
+define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_2, Core_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -320,7 +320,7 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
             prod: ["https://cdn-cnc.17zuoye.com/"]
         },
         onInited: function () {
-            BridgeManager_1.bridgeManager.getBridge("Egret").defaultScenePolicy = NoneScenePolicy_1.default;
+            // bridgeManager.getBridge("Egret").defaultScenePolicy = none;
         }
     });
     console.log(Environment_1.environment.env, Environment_1.environment.getHost(), Environment_1.environment.curCDNHost);

@@ -55,7 +55,7 @@ Olympus.startup({
     },
     onInited: function():void
     {
-        bridgeManager.getBridge("Egret").defaultScenePolicy = none;
+        // bridgeManager.getBridge("Egret").defaultScenePolicy = none;
     }
 });
 
