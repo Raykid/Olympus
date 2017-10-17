@@ -159,13 +159,31 @@ declare module "egret/scene/FadeScenePolicy" {
         switch(from: IScene, to: IScene, callback: () => void): void;
     }
 }
+declare module "egret/utils/UIUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-17
+     * @modify date 2017-10-17
+     *
+     * UI工具集
+    */
+    /**
+     * 包装EUI的List组件，使用传入的处理函数处理每个渲染器更新的逻辑
+     *
+     * @export
+     * @param {eui.List} list 被包装的List组件
+     * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器处理函数，每次数据更新时会被调用
+     */
+    export function wrapEUIList(list: eui.List, rendererHandler: (data?: any, renderer?: any) => void): void;
+}
 declare module "EgretBridge" {
     import IBridge from "engine/bridge/IBridge";
     import IPromptPanel from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
-    import RenderMode from "egret/RenderMode";
     import IMediator from "engine/mediator/IMediator";
+    import RenderMode from "egret/RenderMode";
     /**
      * @author Raykid
      * @email initial_r@qq.com

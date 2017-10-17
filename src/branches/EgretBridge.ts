@@ -10,11 +10,12 @@ import ModuleMessage from "engine/module/ModuleMessage";
 import IPromptPanel from "engine/panel/IPromptPanel";
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
+import IMediator from "engine/mediator/IMediator";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
-import IMediator from "engine/mediator/IMediator";
+import * as UIUtil from "./egret/utils/UIUtil";
 
 /**
  * @author Raykid
