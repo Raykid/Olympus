@@ -65776,7 +65776,7 @@ var egret;
         }
     })(tween = egret.tween || (egret.tween = {}));
 })(egret || (egret = {}));
-define("egret/utils/SkinUtil", ["require", "exports"], function (require, exports) {
+define("egret/utils/SkinUtil", ["require", "exports", "engine/scene/SceneMediator"], function (require, exports, SceneMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -65795,6 +65795,11 @@ define("egret/utils/SkinUtil", ["require", "exports"], function (require, export
         mediator.onLoadAssets = function (err) {
             if (!err) {
                 comp.skinName = skin;
+                // 场景需要拉伸到与stage同宽高
+                if (mediator instanceof SceneMediator_1.default) {
+                    comp.width = mediator.bridge.root.stage.stageWidth;
+                    comp.height = mediator.bridge.root.stage.stageHeight;
+                }
                 // 转发ui引用
                 for (var _i = 0, _a = comp.skin.skinParts; _i < _a.length; _i++) {
                     var name = _a[_i];

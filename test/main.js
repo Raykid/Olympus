@@ -302,7 +302,6 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
                 pathPrefix: "egret/",
                 container: "#rootEgret",
                 backgroundColor: 0,
-                scaleMode: egret.StageScaleMode.SHOW_ALL
             })
         ],
         firstModule: FirstModule_1.default,

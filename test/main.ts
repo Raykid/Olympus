@@ -36,7 +36,7 @@ Olympus.startup({
             pathPrefix: "egret/",
             container: "#rootEgret",
             backgroundColor: 0,
-            scaleMode: egret.StageScaleMode.SHOW_ALL
+            // scaleMode: egret.StageScaleMode.SHOW_ALL
         })
     ],
     firstModule: FirstModule,

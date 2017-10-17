@@ -1,4 +1,5 @@
 import IMediator from "engine/mediator/IMediator";
+import SceneMediator from "engine/scene/SceneMediator";
 
 /**
  * @author Raykid
@@ -19,6 +20,12 @@ export function wrapSkin(mediator:IMediator, skin:any):eui.Component
         if(!err)
         {
             comp.skinName = skin;
+            // 场景需要拉伸到与stage同宽高
+            if(mediator instanceof SceneMediator)
+            {
+                comp.width = mediator.bridge.root.stage.stageWidth;
+                comp.height = mediator.bridge.root.stage.stageHeight;
+            }
             // 转发ui引用
             for(var name of comp.skin.skinParts)
             {
