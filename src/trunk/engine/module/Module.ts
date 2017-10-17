@@ -20,6 +20,14 @@ import { getConstructor } from "../../utils/ConstructUtil";
 */
 export default abstract class Module implements IModule, IDispatcher
 {
+    /**
+     * 打开时传入的参数
+     * 
+     * @type {*}
+     * @memberof Module
+     */
+    public data:any;
+
     private _disposed:boolean = false;
     /**
      * 获取是否已被销毁

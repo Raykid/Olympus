@@ -1396,6 +1396,8 @@ declare module "engine/module/IModule" {
      * 业务模块接口
     */
     export default interface IModule extends IDisposable {
+        /** 模块打开时的参数 */
+        data: any;
         /** 列出模块所需CSS资源URL */
         listStyleFiles(): string[];
         /** 列出模块所需JS资源URL */
@@ -2369,6 +2371,13 @@ declare module "engine/module/Module" {
      * 模块基类
     */
     export default abstract class Module implements IModule, IDispatcher {
+        /**
+         * 打开时传入的参数
+         *
+         * @type {*}
+         * @memberof Module
+         */
+        data: any;
         private _disposed;
         /**
          * 获取是否已被销毁

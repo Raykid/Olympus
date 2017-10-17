@@ -3289,6 +3289,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             if (!after) {
                 // 尚未打开过，正常开启模块
                 var target = new cls();
+                // 赋值打开参数
+                target.data = data;
                 // 加载所有已托管中介者的资源
                 var mediators = target.getDelegatedMediators().concat();
                 var loadMediatorAssets = function (err) {

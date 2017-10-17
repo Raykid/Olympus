@@ -14,6 +14,8 @@ import IModuleConstructor from "./IModuleConstructor";
 */
 export default interface IModule extends IDisposable
 {
+    /** 模块打开时的参数 */
+    data:any;
     /** 列出模块所需CSS资源URL */
     listStyleFiles():string[];
     /** 列出模块所需JS资源URL */
