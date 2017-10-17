@@ -8,15 +8,15 @@
 */
 
 /**
- * 包装EUI的List组件，使用传入的处理函数处理每个渲染器更新的逻辑
+ * 包装EUI的DataGroup组件，使用传入的处理函数处理每个渲染器更新的逻辑
  * 
  * @export
- * @param {eui.List} list 被包装的List组件
+ * @param {eui.DataGroup} group 被包装的DataGroup组件
  * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器处理函数，每次数据更新时会被调用
  */
-export function wrapEUIList(list:eui.List, rendererHandler:(data?:any, renderer?:any)=>void):void
+export function wrapEUIList(group:eui.DataGroup, rendererHandler:(data?:any, renderer?:any)=>void):void
 {
-    list.itemRenderer = ItemRenderer.bind(null, list.itemRendererSkinName, rendererHandler);
+    group.itemRenderer = ItemRenderer.bind(null, group.itemRendererSkinName, rendererHandler);
 }
 
 class ItemRenderer extends eui.ItemRenderer

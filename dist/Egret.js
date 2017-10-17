@@ -66186,14 +66186,14 @@ define("egret/utils/UIUtil", ["require", "exports"], function (require, exports)
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
-     * 包装EUI的List组件，使用传入的处理函数处理每个渲染器更新的逻辑
+     * 包装EUI的DataGroup组件，使用传入的处理函数处理每个渲染器更新的逻辑
      *
      * @export
-     * @param {eui.List} list 被包装的List组件
+     * @param {eui.DataGroup} group 被包装的DataGroup组件
      * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器处理函数，每次数据更新时会被调用
      */
-    function wrapEUIList(list, rendererHandler) {
-        list.itemRenderer = ItemRenderer.bind(null, list.itemRendererSkinName, rendererHandler);
+    function wrapEUIList(group, rendererHandler) {
+        group.itemRenderer = ItemRenderer.bind(null, group.itemRendererSkinName, rendererHandler);
     }
     exports.wrapEUIList = wrapEUIList;
     var ItemRenderer = /** @class */ (function (_super) {
