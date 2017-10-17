@@ -28,6 +28,14 @@ export default abstract class Module implements IModule, IDispatcher
      */
     public data:any;
 
+    /**
+     * 模块初始消息的返回数据
+     * 
+     * @type {ResponseData[]}
+     * @memberof Module
+     */
+    public responses:ResponseData[];
+
     private _disposed:boolean = false;
     /**
      * 获取是否已被销毁
@@ -144,16 +152,6 @@ export default abstract class Module implements IModule, IDispatcher
      * @memberof Module
      */
     public onLoadAssets(err?:Error):void
-    {
-    }
-
-    /**
-     * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
-     * 
-     * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）
-     * @memberof Module
-     */
-    public onGetResponses(responses:ResponseData[]):void
     {
     }
 

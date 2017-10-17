@@ -16,6 +16,8 @@ export default interface IModule extends IDisposable
 {
     /** 模块打开时的参数 */
     data:any;
+    /** 模块初始消息的返回数据 */
+    responses:ResponseData[];
     /** 列出模块所需CSS资源URL */
     listStyleFiles():string[];
     /** 列出模块所需JS资源URL */
@@ -30,8 +32,6 @@ export default interface IModule extends IDisposable
     getDelegatedMediators():IMediator[];
     /** 当模块资源加载完毕后调用 */
     onLoadAssets(err?:Error):void;
-    /** 当获取到所有消息返回后调用 */
-    onGetResponses(responses:ResponseData[]):void;
     /** 打开模块时调用 */
     onOpen(data?:any):void;
     /** 关闭模块时调用 */

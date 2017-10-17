@@ -3309,8 +3309,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                         NetManager_1.netManager.sendMultiRequests(requests, function (responses) {
                             var from = this.getCurrent();
                             var fromModule = from && from[1];
-                            // 调用onGetResponses接口
-                            target.onGetResponses(responses);
+                            // 赋值responses
+                            target.responses = responses;
                             // 调用onOpen接口
                             target.onOpen(data);
                             // 调用onDeactivate接口
@@ -4217,14 +4217,6 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
          * @memberof Module
          */
         Module.prototype.onLoadAssets = function (err) {
-        };
-        /**
-         * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
-         *
-         * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）
-         * @memberof Module
-         */
-        Module.prototype.onGetResponses = function (responses) {
         };
         /**
          * 打开模块时调用，可以重写

@@ -154,8 +154,8 @@ export default class ModuleManager
                     {
                         var from:[IModuleConstructor, IModule] = this.getCurrent();
                         var fromModule:IModule = from && from[1];
-                        // 调用onGetResponses接口
-                        target.onGetResponses(responses);
+                        // 赋值responses
+                        target.responses = responses;
                         // 调用onOpen接口
                         target.onOpen(data);
                         // 调用onDeactivate接口

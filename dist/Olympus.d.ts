@@ -1398,6 +1398,8 @@ declare module "engine/module/IModule" {
     export default interface IModule extends IDisposable {
         /** 模块打开时的参数 */
         data: any;
+        /** 模块初始消息的返回数据 */
+        responses: ResponseData[];
         /** 列出模块所需CSS资源URL */
         listStyleFiles(): string[];
         /** 列出模块所需JS资源URL */
@@ -1412,8 +1414,6 @@ declare module "engine/module/IModule" {
         getDelegatedMediators(): IMediator[];
         /** 当模块资源加载完毕后调用 */
         onLoadAssets(err?: Error): void;
-        /** 当获取到所有消息返回后调用 */
-        onGetResponses(responses: ResponseData[]): void;
         /** 打开模块时调用 */
         onOpen(data?: any): void;
         /** 关闭模块时调用 */
@@ -2378,6 +2378,13 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         data: any;
+        /**
+         * 模块初始消息的返回数据
+         *
+         * @type {ResponseData[]}
+         * @memberof Module
+         */
+        responses: ResponseData[];
         private _disposed;
         /**
          * 获取是否已被销毁
@@ -2439,13 +2446,6 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         onLoadAssets(err?: Error): void;
-        /**
-         * 当获取到所有消息返回（如果有的话）后调用，建议使用@Handler处理消息返回，可以重写
-         *
-         * @param {ResponseData[]} responses 收到的所有返回体（如果请求有返回的话）
-         * @memberof Module
-         */
-        onGetResponses(responses: ResponseData[]): void;
         /**
          * 打开模块时调用，可以重写
          *
