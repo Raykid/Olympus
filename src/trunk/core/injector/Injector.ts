@@ -12,9 +12,14 @@ import Message from "../message/Message";
 */
 
 /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
-export function Injectable(cls:IConstructor|string):any
+export function Injectable(cls:any):any
 {
-    if(typeof cls == "string" || this !== undefined)
+    if(cls.prototype && this === undefined)
+    {
+        // 不需要转换注册类型，直接注册
+        core.mapInject(cls);
+    }
+    else
     {
         // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):void
@@ -23,17 +28,12 @@ export function Injectable(cls:IConstructor|string):any
             core.mapInject(realCls, cls);
         };
     }
-    else
-    {
-        // 不需要转换注册类型，直接注册
-        core.mapInject(cls);
-    }
 };
 
 /** 赋值注入的实例 */
 export function Inject(prototype:any, propertyKey:string):void;
-export function Inject(cls:IConstructor|string):PropertyDecorator;
-export function Inject(target:IConstructor|any, key?:string):PropertyDecorator|void
+export function Inject(cls:any):PropertyDecorator;
+export function Inject(target:any, key?:string):PropertyDecorator|void
 {
     if(key)
     {
@@ -48,7 +48,7 @@ export function Inject(target:IConstructor|any, key?:string):PropertyDecorator|v
         };
     }
 };
-function doInject(cls:IConstructor, key:string, type:IConstructor|string):void
+function doInject(cls:IConstructor, key:string, type:any):void
 {
     // 监听实例化
     var target:any;

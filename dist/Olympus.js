@@ -1521,7 +1521,7 @@ define("core/interfaces/IDispatcher", ["require", "exports"], function (require,
 });
 /// <reference path="../libs/Reflect.d.ts"/>
 /// <reference path="./global/Patch.ts"/>
-define("core/Core", ["require", "exports", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, CommonMessage_1, CoreMessage_1) {
+define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, Dictionary_1, CommonMessage_1, CoreMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1532,8 +1532,22 @@ define("core/Core", ["require", "exports", "core/message/CommonMessage", "core/m
      */
     var Core = /** @class */ (function () {
         function Core() {
-            /** 注入字符串类型字典，记录注入字符串和类型构造函数的映射 */
-            this._injectStrDict = {};
+            /**
+             * 记录已经注入过的对象单例
+             *
+             * @private
+             * @type {Dictionary<Function, any>}
+             * @memberof Core
+             */
+            this._injectDict = new Dictionary_1.default();
+            /**
+             * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
+             *
+             * @private
+             * @type {Dictionary<any, IConstructor>}
+             * @memberof Core
+             */
+            this._injectStrDict = new Dictionary_1.default();
             /*********************** 下面是内核消息系统 ***********************/
             this._listenerDict = {};
             /*********************** 下面是内核命令系统 ***********************/
@@ -1644,48 +1658,57 @@ define("core/Core", ["require", "exports", "core/message/CommonMessage", "core/m
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
          * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
          * @memberof Core
          */
         Core.prototype.mapInject = function (target, type) {
-            var value = new target();
+            // 如果已经注入过了，则使用已经注入的单例再次注入
+            var value = this._injectDict.get(target) || new target();
             this.mapInjectValue(value, type);
         };
         /**
          * 注入一个对象实例
          *
          * @param {*} value 要注入的对象实例
-         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
          * @memberof Core
          */
         Core.prototype.mapInjectValue = function (value, type) {
             // 如果是字符串则记录类型构造函数映射
-            if (typeof type == "string")
+            if (!(type instanceof Function) || !type.prototype)
                 type = this._injectStrDict[type] = value.constructor;
+            // 记录已注入的单例
+            this._injectDict.set(value.constructor, value);
+            // 开始注入
             Reflect.defineMetadata("design:type", value, type || value.constructor);
         };
         /**
          * 移除类型注入
          *
-         * @param {IConstructor|string} target 要移除注入的类型
+         * @param {*} type 要移除注入的类型
          * @memberof Core
          */
-        Core.prototype.unmapInject = function (target) {
-            Reflect.deleteMetadata("design:type", target);
+        Core.prototype.unmapInject = function (type) {
+            // 如果是字符串则记录类型构造函数映射
+            if (!(type instanceof Function) || !type.prototype)
+                type = this._injectStrDict[type];
+            Reflect.deleteMetadata("design:type", type);
         };
         /**
          * 获取注入的对象实例
          *
-         * @param {IConstructor|string} type 注入对象的类型
+         * @param {*} type 注入对象的类型
          * @returns {*} 注入的对象实例
          * @memberof Core
          */
         Core.prototype.getInject = function (type) {
-            if (typeof type == "string")
+            if (!(type instanceof Function) || !type.prototype)
                 type = this._injectStrDict[type];
-            // 需要用原始的构造函数取
-            type = type["__ori_constructor__"] || type;
-            return Reflect.getMetadata("design:type", type);
+            if (type) {
+                // 需要用原始的构造函数取
+                type = type["__ori_constructor__"] || type;
+                return Reflect.getMetadata("design:type", type);
+            }
         };
         Core.prototype.handleCommands = function (msg) {
             var commands = this._commandDict[msg.type];
@@ -1746,7 +1769,7 @@ define("core/interfaces/IConstructor", ["require", "exports"], function (require
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_1) {
+define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1757,7 +1780,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
      *
      * 装饰器工具集
     */
-    var instanceDict = new Dictionary_1.default();
+    var instanceDict = new Dictionary_2.default();
     function handleInstance(instance) {
         var cls = instance.constructor;
         var funcs = instanceDict.get(cls);
@@ -1873,16 +1896,16 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     */
     /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
     function Injectable(cls) {
-        if (typeof cls == "string" || this !== undefined) {
+        if (cls.prototype && this === undefined) {
+            // 不需要转换注册类型，直接注册
+            Core_2.core.mapInject(cls);
+        }
+        else {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
                 // 注入类型
                 Core_2.core.mapInject(realCls, cls);
             };
-        }
-        else {
-            // 不需要转换注册类型，直接注册
-            Core_2.core.mapInject(cls);
         }
     }
     exports.Injectable = Injectable;
@@ -4139,7 +4162,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_12, Dictionary_2, ModuleManager_2, ConstructUtil_3) {
+define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_12, Dictionary_3, ModuleManager_2, ConstructUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4154,7 +4177,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         function Module() {
             this._disposed = false;
             this._mediators = [];
-            this._disposeDict = new Dictionary_2.default();
+            this._disposeDict = new Dictionary_3.default();
         }
         Object.defineProperty(Module.prototype, "disposed", {
             /**

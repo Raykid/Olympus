@@ -299,7 +299,21 @@ declare module "core/Core" {
      */
     export default class Core implements IDispatcher {
         private static _instance;
-        /** 注入字符串类型字典，记录注入字符串和类型构造函数的映射 */
+        /**
+         * 记录已经注入过的对象单例
+         *
+         * @private
+         * @type {Dictionary<Function, any>}
+         * @memberof Core
+         */
+        private _injectDict;
+        /**
+         * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
+         *
+         * @private
+         * @type {Dictionary<any, IConstructor>}
+         * @memberof Core
+         */
         private _injectStrDict;
         constructor();
         /*********************** 下面是内核消息系统 ***********************/
@@ -344,33 +358,33 @@ declare module "core/Core" {
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
          * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
          * @memberof Core
          */
-        mapInject(target: IConstructor, type?: IConstructor | string): void;
+        mapInject(target: IConstructor, type?: any): void;
         /**
          * 注入一个对象实例
          *
          * @param {*} value 要注入的对象实例
-         * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
          * @memberof Core
          */
-        mapInjectValue(value: any, type?: IConstructor | string): void;
+        mapInjectValue(value: any, type?: any): void;
         /**
          * 移除类型注入
          *
-         * @param {IConstructor|string} target 要移除注入的类型
+         * @param {*} type 要移除注入的类型
          * @memberof Core
          */
-        unmapInject(target: IConstructor | string): void;
+        unmapInject(type: any): void;
         /**
          * 获取注入的对象实例
          *
-         * @param {IConstructor|string} type 注入对象的类型
+         * @param {*} type 注入对象的类型
          * @returns {*} 注入的对象实例
          * @memberof Core
          */
-        getInject(type: IConstructor | string): any;
+        getInject(type: any): any;
         /*********************** 下面是内核命令系统 ***********************/
         private _commandDict;
         private handleCommands(msg);
@@ -462,10 +476,10 @@ declare module "core/injector/Injector" {
      * Core模组的装饰器注入模块
     */
     /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
-    export function Injectable(cls: IConstructor | string): any;
+    export function Injectable(cls: any): any;
     /** 赋值注入的实例 */
     export function Inject(prototype: any, propertyKey: string): void;
-    export function Inject(cls: IConstructor | string): PropertyDecorator;
+    export function Inject(cls: any): PropertyDecorator;
     /** 处理内核消息 */
     export function MessageHandler(prototype: any, propertyKey: string): void;
     export function MessageHandler(type: string): MethodDecorator;
@@ -1936,7 +1950,7 @@ declare module "engine/injector/Injector" {
      * 负责注入的模块
     */
     /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    export function ModelClass(cls: IConstructor | string): any;
+    export function ModelClass(cls: any): any;
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
     export function MediatorClass(cls: IConstructor): IConstructor;
     /** 定义模块，支持实例注入 */

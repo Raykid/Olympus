@@ -45,8 +45,22 @@ export default class Core implements IDispatcher
 {
     private static _instance:Core;
 
-    /** 注入字符串类型字典，记录注入字符串和类型构造函数的映射 */
-    private _injectStrDict:{[key:string]:IConstructor} = {};
+    /**
+     * 记录已经注入过的对象单例
+     * 
+     * @private
+     * @type {Dictionary<Function, any>}
+     * @memberof Core
+     */
+    private _injectDict:Dictionary<Function, any> = new Dictionary();
+    /**
+     * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
+     * 
+     * @private
+     * @type {Dictionary<any, IConstructor>}
+     * @memberof Core
+     */
+    private _injectStrDict:Dictionary<any, IConstructor> = new Dictionary();
 
     public constructor()
     {
@@ -184,12 +198,13 @@ export default class Core implements IDispatcher
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      * 
      * @param {IConstructor} target 要注入的类型（注意不是实例）
-     * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+     * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
      * @memberof Core
      */
-    public mapInject(target:IConstructor, type?:IConstructor|string):void
+    public mapInject(target:IConstructor, type?:any):void
     {
-        var value:any = new target();
+        // 如果已经注入过了，则使用已经注入的单例再次注入
+        var value:any = this._injectDict.get(target) || new target();
         this.mapInjectValue(value, type);
     }
 
@@ -197,41 +212,50 @@ export default class Core implements IDispatcher
      * 注入一个对象实例
      * 
      * @param {*} value 要注入的对象实例
-     * @param {IConstructor|string} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+     * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
      * @memberof Core
      */
-    public mapInjectValue(value:any, type?:IConstructor|string):void
+    public mapInjectValue(value:any, type?:any):void
     {
         // 如果是字符串则记录类型构造函数映射
-        if(typeof type == "string")
+        if(!(type instanceof Function) || !type.prototype)
             type = this._injectStrDict[type] = value.constructor;
+        // 记录已注入的单例
+        this._injectDict.set(value.constructor, value);
+        // 开始注入
         Reflect.defineMetadata("design:type", value, type || value.constructor);
     }
 
     /**
      * 移除类型注入
      * 
-     * @param {IConstructor|string} target 要移除注入的类型
+     * @param {*} type 要移除注入的类型
      * @memberof Core
      */
-    public unmapInject(target:IConstructor|string):void
+    public unmapInject(type:any):void
     {
-        Reflect.deleteMetadata("design:type", target);
+        // 如果是字符串则记录类型构造函数映射
+        if(!(type instanceof Function) || !type.prototype) type = this._injectStrDict[type];
+        Reflect.deleteMetadata("design:type", type);
     }
 
     /**
      * 获取注入的对象实例
      * 
-     * @param {IConstructor|string} type 注入对象的类型
+     * @param {*} type 注入对象的类型
      * @returns {*} 注入的对象实例
      * @memberof Core
      */
-    public getInject(type:IConstructor|string):any
+    public getInject(type:any):any
     {
-        if(typeof type == "string") type = this._injectStrDict[type];
-        // 需要用原始的构造函数取
-        type = type["__ori_constructor__"] || type;
-        return Reflect.getMetadata("design:type", type);
+        if(!(type instanceof Function) || !type.prototype)
+            type = this._injectStrDict[type];
+        if(type)
+        {
+            // 需要用原始的构造函数取
+            type = type["__ori_constructor__"] || type;
+            return Reflect.getMetadata("design:type", type);
+        }
     }
 
     /*********************** 下面是内核命令系统 ***********************/
