@@ -13,17 +13,16 @@ import Message from "../message/Message";
 
 /** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
 export function Injectable(cls:IConstructor):void;
-export function Injectable(name:string):ClassDecorator;
 export function Injectable(params:{type:IConstructor}):ClassDecorator;
-export function Injectable(cls:{type:IConstructor}|IConstructor|string):ClassDecorator|void
+export function Injectable(cls:{type:IConstructor}|IConstructor):ClassDecorator|void
 {
     var params:{type:IConstructor} = cls as {type:IConstructor};
-    if(typeof cls == "string" || params.type instanceof Function)
+    if(params.type instanceof Function)
     {
         // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):void
         {
-            core.mapInject(realCls, typeof cls == "string" ? cls : params.type);
+            core.mapInject(realCls, params.type);
         } as ClassDecorator;
     }
     else
@@ -35,9 +34,8 @@ export function Injectable(cls:{type:IConstructor}|IConstructor|string):ClassDec
 
 /** 赋值注入的实例 */
 export function Inject(prototype:any, propertyKey:string):void;
-export function Inject(name:string):PropertyDecorator;
 export function Inject(cls:IConstructor):PropertyDecorator;
-export function Inject(target:IConstructor|string|any, key?:string):PropertyDecorator|void
+export function Inject(target:IConstructor|any, key?:string):PropertyDecorator|void
 {
     if(key)
     {

@@ -186,21 +186,46 @@ define("net/request/TestRequest", ["require", "exports", "engine/net/RequestData
     }(RequestData_1.default));
     exports.default = TestRequest;
 });
-define("models/FuckModel", ["require", "exports", "engine/injector/Injector"], function (require, exports, Injector_3) {
+define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "core/injector/Injector", "engine/env/Hash"], function (require, exports, Injector_3, Injector_4, Hash_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var FuckModel = /** @class */ (function () {
-        function FuckModel() {
+    var IFuckModel = /** @class */ (function () {
+        function IFuckModel() {
         }
+        Object.defineProperty(IFuckModel.prototype, "fuck", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return IFuckModel;
+    }());
+    exports.IFuckModel = IFuckModel;
+    var FuckModel = /** @class */ (function (_super) {
+        __extends(FuckModel, _super);
+        function FuckModel() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Object.defineProperty(FuckModel.prototype, "fuck", {
+            get: function () {
+                return "Fuck you";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        __decorate([
+            Injector_4.Inject,
+            __metadata("design:type", Hash_1.default)
+        ], FuckModel.prototype, "hash", void 0);
         FuckModel = __decorate([
-            Injector_3.ModelClass,
-            __metadata("design:paramtypes", [])
+            Injector_3.ModelClass({ type: IFuckModel })
         ], FuckModel);
         return FuckModel;
-    }());
+    }(IFuckModel));
     exports.default = FuckModel;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "egret/injector/Injector", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel"], function (require, exports, Module_2, ModuleManager_2, Injector_4, Injector_5, Injector_6, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, FuckModel_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "egret/injector/Injector", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel"], function (require, exports, Module_2, ModuleManager_2, Injector_5, Injector_6, Injector_7, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, FuckModel_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -224,6 +249,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                 this.txt.test = "Fuck you!!!";
                 this.moduleManager.open(SecondModule_1.default);
             }, this);
+            console.log(this.fuckModel.fuck);
         };
         FirstMediator.prototype.onModuleChange = function (from, to) {
             if (to == FirstModule)
@@ -235,27 +261,27 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             alert("123");
         };
         __decorate([
-            Injector_5.Inject,
+            Injector_6.Inject,
             __metadata("design:type", ModuleManager_2.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
-            Injector_5.Inject,
-            __metadata("design:type", FuckModel_1.default)
+            Injector_6.Inject,
+            __metadata("design:type", FuckModel_1.IFuckModel)
         ], FirstMediator.prototype, "fuckModel", void 0);
         __decorate([
-            Injector_5.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
+            Injector_6.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
             __metadata("design:type", Function),
             __metadata("design:paramtypes", [Object, Object]),
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onModuleChange", null);
         __decorate([
-            Injector_6.ResponseHandler,
+            Injector_7.ResponseHandler,
             __metadata("design:type", Function),
             __metadata("design:paramtypes", [TestResponse_2.default, TestRequest_1.default]),
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onResponse", null);
         FirstMediator = __decorate([
-            Injector_4.EgretMediatorClass("FuckSkin")
+            Injector_5.EgretMediatorClass("FuckSkin")
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));
@@ -265,11 +291,11 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             return _super !== null && _super.apply(this, arguments) || this;
         }
         __decorate([
-            Injector_6.DelegateMediator,
+            Injector_7.DelegateMediator,
             __metadata("design:type", FirstMediator)
         ], FirstModule.prototype, "_mediator", void 0);
         FirstModule = __decorate([
-            Injector_6.ModuleClass
+            Injector_7.ModuleClass
         ], FirstModule);
         return FirstModule;
     }(Module_2.default));

@@ -1858,10 +1858,10 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
     Object.defineProperty(exports, "__esModule", { value: true });
     function Injectable(cls) {
         var params = cls;
-        if (typeof cls == "string" || params.type instanceof Function) {
+        if (params.type instanceof Function) {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
-                Core_2.core.mapInject(realCls, typeof cls == "string" ? cls : params.type);
+                Core_2.core.mapInject(realCls, params.type);
             };
         }
         else {
@@ -3397,22 +3397,27 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
 define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Core_8, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_1, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 负责注入的模块
-    */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
     function ModelClass(cls) {
-        // Model先进行托管
-        var result = ConstructUtil_2.wrapConstruct(cls);
-        // 然后要注入新生成的类
-        Core_8.core.mapInject(result);
-        // 返回结果
-        return result;
+        var params = cls;
+        if (params.type instanceof Function) {
+            // 需要转换注册类型，需要返回一个ClassDecorator
+            return function (realCls) {
+                // Model先进行托管
+                var result = ConstructUtil_2.wrapConstruct(realCls);
+                // 然后要注入新生成的类
+                Core_8.core.mapInject(result, params.type);
+                // 返回结果
+                return result;
+            };
+        }
+        else {
+            // Model先进行托管
+            var result = ConstructUtil_2.wrapConstruct(cls);
+            // 然后要注入新生成的类
+            Core_8.core.mapInject(result);
+            // 返回结果
+            return result;
+        }
     }
     exports.ModelClass = ModelClass;
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */

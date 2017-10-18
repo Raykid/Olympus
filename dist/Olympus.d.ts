@@ -461,13 +461,11 @@ declare module "core/injector/Injector" {
     */
     /** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
     export function Injectable(cls: IConstructor): void;
-    export function Injectable(name: string): ClassDecorator;
     export function Injectable(params: {
         type: IConstructor;
     }): ClassDecorator;
     /** 赋值注入的实例 */
     export function Inject(prototype: any, propertyKey: string): void;
-    export function Inject(name: string): PropertyDecorator;
     export function Inject(cls: IConstructor): PropertyDecorator;
     /** 处理内核消息 */
     export function MessageHandler(prototype: any, propertyKey: string): void;
@@ -1939,11 +1937,14 @@ declare module "engine/injector/Injector" {
      * 负责注入的模块
     */
     /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    export function ModelClass(cls: IConstructor): any;
+    export function ModelClass(cls: IConstructor): IConstructor;
+    export function ModelClass(params: {
+        type: IConstructor;
+    }): ClassDecorator;
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    export function MediatorClass(cls: IConstructor): any;
+    export function MediatorClass(cls: IConstructor): IConstructor;
     /** 定义模块，支持实例注入 */
-    export function ModuleClass(cls: IModuleConstructor): any;
+    export function ModuleClass(cls: IModuleConstructor): IConstructor;
     /** 处理通讯消息返回 */
     export function ResponseHandler(prototype: any, propertyKey: string): void;
     export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;

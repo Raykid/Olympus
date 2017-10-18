@@ -18,18 +18,37 @@ import IModuleConstructor from "../module/IModuleConstructor";
 */
 
 /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-export function ModelClass(cls:IConstructor):any
+export function ModelClass(cls:IConstructor):IConstructor;
+export function ModelClass(params:{type:IConstructor}):ClassDecorator;
+export function ModelClass(cls:{type:IConstructor}|IConstructor):ClassDecorator|IConstructor
 {
-    // Model先进行托管
-    var result:IConstructor = wrapConstruct(cls);
-    // 然后要注入新生成的类
-    core.mapInject(result);
-    // 返回结果
-    return result;
+    var params:{type:IConstructor} = cls as {type:IConstructor};
+    if(params.type instanceof Function)
+    {
+        // 需要转换注册类型，需要返回一个ClassDecorator
+        return function(realCls:IConstructor):IConstructor
+        {
+            // Model先进行托管
+            var result:IConstructor = wrapConstruct(realCls);
+            // 然后要注入新生成的类
+            core.mapInject(result, params.type);
+            // 返回结果
+            return result;
+        } as ClassDecorator;
+    }
+    else
+    {
+        // Model先进行托管
+        var result:IConstructor = wrapConstruct(<IConstructor>cls);
+        // 然后要注入新生成的类
+        core.mapInject(result);
+        // 返回结果
+        return result;
+    }
 }
 
 /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-export function MediatorClass(cls:IConstructor):any
+export function MediatorClass(cls:IConstructor):IConstructor
 {
     // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)
@@ -57,7 +76,7 @@ export function MediatorClass(cls:IConstructor):any
 }
 
 /** 定义模块，支持实例注入 */
-export function ModuleClass(cls:IModuleConstructor):any
+export function ModuleClass(cls:IModuleConstructor):IConstructor
 {
     // 判断一下Module是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)

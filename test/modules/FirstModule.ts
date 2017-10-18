@@ -10,7 +10,7 @@ import SceneMediator from "engine/scene/SceneMediator";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import { bridgeManager } from "engine/bridge/BridgeManager";
-import FuckModel from "../models/FuckModel";
+import { IFuckModel } from "../models/FuckModel";
 
 /**
  * @author Raykid
@@ -27,7 +27,7 @@ class FirstMediator extends SceneMediator
     @Inject
     private moduleManager:ModuleManager;
     @Inject
-    private fuckModel:FuckModel;
+    private fuckModel:IFuckModel;
 
     public btn:eui.Button;
     public txt:eui.Label;
@@ -44,6 +44,7 @@ class FirstMediator extends SceneMediator
             this.txt.test = "Fuck you!!!";
             this.moduleManager.open(SecondModule);
         }, this);
+        console.log(this.fuckModel.fuck);
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)

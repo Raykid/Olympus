@@ -1,9 +1,23 @@
 import { ModelClass } from "engine/injector/Injector";
+import { Inject } from "core/injector/Injector";
+import Hash from "engine/env/Hash";
 
-@ModelClass
-export default class FuckModel
+export class IFuckModel
 {
-    public constructor()
+    public get fuck():string
     {
+        return null;
+    }
+}
+
+@ModelClass({type: IFuckModel})
+export default class FuckModel extends IFuckModel
+{
+    @Inject
+    private hash:Hash;
+
+    public get fuck():string
+    {
+        return "Fuck you";
     }
 }
