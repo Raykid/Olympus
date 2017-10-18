@@ -45,6 +45,9 @@ export default class Core implements IDispatcher
 {
     private static _instance:Core;
 
+    /** 注入字符串类型字典，记录注入字符串和类型构造函数的映射 */
+    private _injectStrDict:{[key:string]:IConstructor} = {};
+
     public constructor()
     {
         // 进行单例判断
@@ -176,6 +179,7 @@ export default class Core implements IDispatcher
     }
     
     /*********************** 下面是依赖注入系统 ***********************/
+
     /**
      * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
      * 
@@ -198,6 +202,9 @@ export default class Core implements IDispatcher
      */
     public mapInjectValue(value:any, type?:IConstructor|string):void
     {
+        // 如果是字符串则记录类型构造函数映射
+        if(typeof type == "string")
+            type = this._injectStrDict[type] = value.constructor;
         Reflect.defineMetadata("design:type", value, type || value.constructor);
     }
 
@@ -221,6 +228,7 @@ export default class Core implements IDispatcher
      */
     public getInject(type:IConstructor|string):any
     {
+        if(typeof type == "string") type = this._injectStrDict[type];
         // 需要用原始的构造函数取
         type = type["__ori_constructor__"] || type;
         return Reflect.getMetadata("design:type", type);

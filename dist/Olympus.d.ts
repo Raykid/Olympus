@@ -299,6 +299,8 @@ declare module "core/Core" {
      */
     export default class Core implements IDispatcher {
         private static _instance;
+        /** 注入字符串类型字典，记录注入字符串和类型构造函数的映射 */
+        private _injectStrDict;
         constructor();
         /*********************** 下面是内核消息系统 ***********************/
         private _listenerDict;
@@ -451,11 +453,19 @@ declare module "utils/ConstructUtil" {
     export function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
 }
 declare module "core/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * Core模组的装饰器注入模块
+    */
     /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
-    export function Injectable(cls: IConstructor): any;
+    export function Injectable(cls: IConstructor | string): any;
     /** 赋值注入的实例 */
     export function Inject(prototype: any, propertyKey: string): void;
-    export function Inject(cls: IConstructor): PropertyDecorator;
+    export function Inject(cls: IConstructor | string): PropertyDecorator;
     /** 处理内核消息 */
     export function MessageHandler(prototype: any, propertyKey: string): void;
     export function MessageHandler(type: string): MethodDecorator;
@@ -1917,8 +1927,16 @@ declare module "engine/module/ModuleManager" {
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
     import IModuleConstructor from "engine/module/IModuleConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 负责注入的模块
+    */
     /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    export function ModelClass(cls: IConstructor): any;
+    export function ModelClass(cls: IConstructor | string): any;
     /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
     export function MediatorClass(cls: IConstructor): IConstructor;
     /** 定义模块，支持实例注入 */

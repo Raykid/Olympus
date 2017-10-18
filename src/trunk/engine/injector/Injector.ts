@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector";
 import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
@@ -17,33 +18,23 @@ import IModuleConstructor from "../module/IModuleConstructor";
  * 负责注入的模块
 */
 
-/** 这里保存一个模块本身的引用，用来区别装饰器是裸着调用的还是执行方法方式调用的 */
-var self:any = this;
-
 /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-export function ModelClass(cls:IConstructor):any
+export function ModelClass(cls:IConstructor|string):any
 {
-    if(this === self)
+    // 转调Injectable方法
+    var result:ClassDecorator = Injectable.call(this, cls);
+    if(result)
     {
-        // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):IConstructor
         {
-            // Model先进行托管
-            var result:IConstructor = wrapConstruct(realCls);
-            // 然后要注入新生成的类
-            core.mapInject(result, cls);
-            // 返回结果
-            return result;
-        } as ClassDecorator;
+            realCls = wrapConstruct(realCls);
+            result.call(this, realCls);
+            return realCls;
+        };
     }
     else
     {
-        // Model先进行托管
-        var result:IConstructor = wrapConstruct(<IConstructor>cls);
-        // 然后要注入新生成的类
-        core.mapInject(result);
-        // 返回结果
-        return result;
+        return wrapConstruct(<IConstructor>cls);
     }
 }
 
