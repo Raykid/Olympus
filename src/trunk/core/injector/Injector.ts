@@ -12,20 +12,25 @@ import Message from "../message/Message";
 */
 
 /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
-export function Injectable(cls:any):any
+export function Injectable(...args:any[]):any
 {
-    if(cls.prototype && this === undefined)
+    if(this === undefined)
     {
         // 不需要转换注册类型，直接注册
-        core.mapInject(cls);
+        core.mapInject(args[0]);
     }
     else
     {
         // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):void
         {
-            // 注入类型
-            core.mapInject(realCls, cls);
+            for(var cls of args)
+            {
+                // 注入类型
+                core.mapInject(realCls, cls);
+            }
+            // 需要转换的也要额外将自身注入一个
+            core.mapInject(realCls);
         };
     }
 };

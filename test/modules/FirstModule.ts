@@ -10,7 +10,7 @@ import SceneMediator from "engine/scene/SceneMediator";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import { bridgeManager } from "engine/bridge/BridgeManager";
-import { IFuckModel } from "../models/FuckModel";
+import FuckModel, { IFuckModel } from "../models/FuckModel";
 
 /**
  * @author Raykid
@@ -27,7 +27,11 @@ class FirstMediator extends SceneMediator
     @Inject
     private moduleManager:ModuleManager;
     @Inject
-    private fuckModel:IFuckModel;
+    private fuckModel1:FuckModel;
+    @Inject
+    private fuckModel2:IFuckModel;
+    @Inject(1)
+    private fuckModel3:IFuckModel;
 
     public btn:eui.Button;
     public txt:eui.Label;
@@ -41,10 +45,10 @@ class FirstMediator extends SceneMediator
     {
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function():void
         {
-            this.txt.test = "Fuck you!!!";
+            this.txt.text = "Fuck you!!!";
             this.moduleManager.open(SecondModule);
         }, this);
-        console.log(this.fuckModel.fuck);
+        console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)

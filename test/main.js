@@ -205,7 +205,9 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
     var FuckModel = /** @class */ (function (_super) {
         __extends(FuckModel, _super);
         function FuckModel() {
-            return _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super.call(this) || this;
+            console.log("Fuck Model Constructed!");
+            return _this;
         }
         Object.defineProperty(FuckModel.prototype, "fuck", {
             get: function () {
@@ -219,7 +221,8 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
             __metadata("design:type", Hash_1.default)
         ], FuckModel.prototype, "hash", void 0);
         FuckModel = __decorate([
-            Injector_3.ModelClass(IFuckModel)
+            Injector_3.ModelClass(1, IFuckModel),
+            __metadata("design:paramtypes", [])
         ], FuckModel);
         return FuckModel;
     }(IFuckModel));
@@ -246,10 +249,10 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         };
         FirstMediator.prototype.onOpen = function () {
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
-                this.txt.test = "Fuck you!!!";
+                this.txt.text = "Fuck you!!!";
                 this.moduleManager.open(SecondModule_1.default);
             }, this);
-            console.log(this.fuckModel.fuck);
+            console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
         };
         FirstMediator.prototype.onModuleChange = function (from, to) {
             if (to == FirstModule)
@@ -266,8 +269,16 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
             Injector_6.Inject,
+            __metadata("design:type", FuckModel_1.default)
+        ], FirstMediator.prototype, "fuckModel1", void 0);
+        __decorate([
+            Injector_6.Inject,
             __metadata("design:type", FuckModel_1.IFuckModel)
-        ], FirstMediator.prototype, "fuckModel", void 0);
+        ], FirstMediator.prototype, "fuckModel2", void 0);
+        __decorate([
+            Injector_6.Inject(1),
+            __metadata("design:type", FuckModel_1.IFuckModel)
+        ], FirstMediator.prototype, "fuckModel3", void 0);
         __decorate([
             Injector_6.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
             __metadata("design:type", Function),

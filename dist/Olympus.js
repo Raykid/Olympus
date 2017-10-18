@@ -1895,16 +1895,25 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
      * Core模组的装饰器注入模块
     */
     /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
-    function Injectable(cls) {
-        if (cls.prototype && this === undefined) {
+    function Injectable() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        if (this === undefined) {
             // 不需要转换注册类型，直接注册
-            Core_2.core.mapInject(cls);
+            Core_2.core.mapInject(args[0]);
         }
         else {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
-                // 注入类型
-                Core_2.core.mapInject(realCls, cls);
+                for (var _i = 0, args_1 = args; _i < args_1.length; _i++) {
+                    var cls = args_1[_i];
+                    // 注入类型
+                    Core_2.core.mapInject(realCls, cls);
+                }
+                // 需要转换的也要额外将自身注入一个
+                Core_2.core.mapInject(realCls);
             };
         }
     }
@@ -3445,9 +3454,13 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
      * 负责注入的模块
     */
     /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    function ModelClass(cls) {
+    function ModelClass() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
         // 转调Injectable方法
-        var result = Injector_6.Injectable.call(this, cls);
+        var result = Injector_6.Injectable.apply(this, args);
         if (result) {
             return function (realCls) {
                 realCls = ConstructUtil_2.wrapConstruct(realCls);
@@ -3456,7 +3469,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
             };
         }
         else {
-            return ConstructUtil_2.wrapConstruct(cls);
+            return ConstructUtil_2.wrapConstruct(args[0]);
         }
     }
     exports.ModelClass = ModelClass;

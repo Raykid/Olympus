@@ -10,11 +10,17 @@ export class IFuckModel
     }
 }
 
-@ModelClass(IFuckModel)
+@ModelClass(1, IFuckModel)
 export default class FuckModel extends IFuckModel
 {
     @Inject
     private hash:Hash;
+
+    public constructor()
+    {
+        super();
+        console.log("Fuck Model Constructed!");
+    }
 
     public get fuck():string
     {

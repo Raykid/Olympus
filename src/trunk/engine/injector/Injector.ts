@@ -19,10 +19,10 @@ import IModuleConstructor from "../module/IModuleConstructor";
 */
 
 /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-export function ModelClass(cls:any):any
+export function ModelClass(...args:any[]):any
 {
     // 转调Injectable方法
-    var result:ClassDecorator = Injectable.call(this, cls);
+    var result:ClassDecorator = Injectable.apply(this, args);
     if(result)
     {
         return function(realCls:IConstructor):IConstructor
@@ -34,7 +34,7 @@ export function ModelClass(cls:any):any
     }
     else
     {
-        return wrapConstruct(cls);
+        return wrapConstruct(args[0]);
     }
 }
 
