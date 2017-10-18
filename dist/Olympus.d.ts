@@ -1287,6 +1287,7 @@ declare module "engine/mediator/IMediator" {
     import IHasBridge from "engine/bridge/IHasBridge";
     import IOpenClose from "core/interfaces/IOpenClose";
     import IDisposable from "core/interfaces/IDisposable";
+    import IModule from "engine/module/IModule";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1303,6 +1304,13 @@ declare module "engine/mediator/IMediator" {
          * @memberof IMediator
          */
         readonly disposed: boolean;
+        /**
+         * 所属的模块引用，需要配合@DelegateMediator使用
+         *
+         * @returns {IModule} 所属的模块引用
+         * @memberof IMediator
+         */
+        readonly dependModule: IModule;
         /**
          * 皮肤
          *
@@ -2096,6 +2104,7 @@ declare module "engine/mediator/Mediator" {
     import IMessage from "core/message/IMessage";
     import IMediator from "engine/mediator/IMediator";
     import IBridge from "engine/bridge/IBridge";
+    import IModule from "engine/module/IModule";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -2128,6 +2137,14 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         readonly disposed: boolean;
+        private _dependModule;
+        /**
+         * 所属的模块引用，需要配合@DelegateMediator使用
+         *
+         * @returns {IModule} 所属的模块引用
+         * @memberof IMediator
+         */
+        readonly dependModule: IModule;
         constructor(skin?: any);
         /**
          * 列出中介者所需的资源数组，可重写

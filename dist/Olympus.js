@@ -3484,15 +3484,23 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/Co
             // 监听实例化
             ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
                 // 实例化
-                if (instance[propertyKey] === undefined) {
+                var mediator = instance[propertyKey];
+                if (mediator === undefined) {
                     var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
-                    instance[propertyKey] = new cls();
+                    instance[propertyKey] = mediator = new cls();
                 }
+                // 赋值所属模块
+                mediator["_dependModule"] = instance;
             });
             // 监听销毁
             ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-                // 移除实例
-                instance[propertyKey] = undefined;
+                var mediator = instance[propertyKey];
+                if (mediator) {
+                    // 移除所属模块
+                    mediator["_dependModule"] = undefined;
+                    // 移除实例
+                    instance[propertyKey] = undefined;
+                }
             });
             // 篡改属性
             var mediator;
@@ -3792,6 +3800,19 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
              */
             get: function () {
                 return this._disposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mediator.prototype, "dependModule", {
+            /**
+             * 所属的模块引用，需要配合@DelegateMediator使用
+             *
+             * @returns {IModule} 所属的模块引用
+             * @memberof IMediator
+             */
+            get: function () {
+                return this._dependModule;
             },
             enumerable: true,
             configurable: true

@@ -114,17 +114,26 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
         listenConstruct(prototype.constructor, function(instance:IModule):void
         {
             // 实例化
-            if(instance[propertyKey] === undefined)
+            var mediator:IMediator = instance[propertyKey];
+            if(mediator === undefined)
             {
                 var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
-                instance[propertyKey] = new cls();
+                instance[propertyKey] = mediator = new cls();
             }
+            // 赋值所属模块
+            mediator["_dependModule"] = instance;
         });
         // 监听销毁
         listenDispose(prototype.constructor, function(instance:IMediator):void
         {
-            // 移除实例
-            instance[propertyKey] = undefined;
+            var mediator:IMediator = instance[propertyKey];
+            if(mediator)
+            {
+                // 移除所属模块
+                mediator["_dependModule"] = undefined;
+                // 移除实例
+                instance[propertyKey] = undefined;
+            }
         });
         // 篡改属性
         var mediator:IMediator;

@@ -3,6 +3,7 @@ import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
 import IMediator from "./IMediator";
 import IBridge from "../bridge/IBridge";
+import IModule from "../module/IModule";
 
 /**
  * @author Raykid
@@ -41,6 +42,18 @@ export default class Mediator implements IMediator, IDispatcher
     public get disposed():boolean
     {
         return this._disposed;
+    }
+    
+    private _dependModule:IModule;
+    /**
+     * 所属的模块引用，需要配合@DelegateMediator使用
+     * 
+     * @returns {IModule} 所属的模块引用
+     * @memberof IMediator
+     */
+    public get dependModule():IModule
+    {
+        return this._dependModule;
     }
 
     public constructor(skin?:any)
