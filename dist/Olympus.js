@@ -1856,12 +1856,22 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
 define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "core/message/Message"], function (require, exports, Core_2, ConstructUtil_1, Message_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * Core模组的装饰器注入模块
+    */
+    /** 这里保存一个模块本身的引用，用来区别装饰器是裸着调用的还是执行方法方式调用的 */
+    var self = this;
+    /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
     function Injectable(cls) {
-        var params = cls;
-        if (params.type instanceof Function) {
+        if (this === self) {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
-                Core_2.core.mapInject(realCls, params.type);
+                Core_2.core.mapInject(realCls, cls);
             };
         }
         else {
@@ -3397,15 +3407,25 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
 define("engine/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Core_8, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_1, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 负责注入的模块
+    */
+    /** 这里保存一个模块本身的引用，用来区别装饰器是裸着调用的还是执行方法方式调用的 */
+    var self = this;
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
     function ModelClass(cls) {
-        var params = cls;
-        if (params.type instanceof Function) {
+        if (this === self) {
             // 需要转换注册类型，需要返回一个ClassDecorator
             return function (realCls) {
                 // Model先进行托管
                 var result = ConstructUtil_2.wrapConstruct(realCls);
                 // 然后要注入新生成的类
-                Core_8.core.mapInject(result, params.type);
+                Core_8.core.mapInject(result, cls);
                 // 返回结果
                 return result;
             };

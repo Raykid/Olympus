@@ -17,13 +17,13 @@ import IModuleConstructor from "../module/IModuleConstructor";
  * 负责注入的模块
 */
 
+/** 这里保存一个模块本身的引用，用来区别装饰器是裸着调用的还是执行方法方式调用的 */
+var self:any = this;
+
 /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-export function ModelClass(cls:IConstructor):IConstructor;
-export function ModelClass(params:{type:IConstructor}):ClassDecorator;
-export function ModelClass(cls:{type:IConstructor}|IConstructor):ClassDecorator|IConstructor
+export function ModelClass(cls:IConstructor):any
 {
-    var params:{type:IConstructor} = cls as {type:IConstructor};
-    if(params.type instanceof Function)
+    if(this === self)
     {
         // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):IConstructor
@@ -31,7 +31,7 @@ export function ModelClass(cls:{type:IConstructor}|IConstructor):ClassDecorator|
             // Model先进行托管
             var result:IConstructor = wrapConstruct(realCls);
             // 然后要注入新生成的类
-            core.mapInject(result, params.type);
+            core.mapInject(result, cls);
             // 返回结果
             return result;
         } as ClassDecorator;

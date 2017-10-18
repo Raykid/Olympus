@@ -219,7 +219,7 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
             __metadata("design:type", Hash_1.default)
         ], FuckModel.prototype, "hash", void 0);
         FuckModel = __decorate([
-            Injector_3.ModelClass({ type: IFuckModel })
+            Injector_3.ModelClass(IFuckModel)
         ], FuckModel);
         return FuckModel;
     }(IFuckModel));

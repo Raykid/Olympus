@@ -10,7 +10,7 @@ export class IFuckModel
     }
 }
 
-@ModelClass({type: IFuckModel})
+@ModelClass(IFuckModel)
 export default class FuckModel extends IFuckModel
 {
     @Inject

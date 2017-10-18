@@ -11,18 +11,18 @@ import Message from "../message/Message";
  * Core模组的装饰器注入模块
 */
 
-/** 生成类型实例并注入，可以进行类型转换注入（既注入类型可以和注册类型不一致，采用@Injectable({type: AnotherClass})的形式即可） */
-export function Injectable(cls:IConstructor):void;
-export function Injectable(params:{type:IConstructor}):ClassDecorator;
-export function Injectable(cls:{type:IConstructor}|IConstructor):ClassDecorator|void
+/** 这里保存一个模块本身的引用，用来区别装饰器是裸着调用的还是执行方法方式调用的 */
+var self:any = this;
+
+/** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
+export function Injectable(cls:IConstructor):any
 {
-    var params:{type:IConstructor} = cls as {type:IConstructor};
-    if(params.type instanceof Function)
+    if(this === self)
     {
         // 需要转换注册类型，需要返回一个ClassDecorator
         return function(realCls:IConstructor):void
         {
-            core.mapInject(realCls, params.type);
+            core.mapInject(realCls, cls);
         } as ClassDecorator;
     }
     else
