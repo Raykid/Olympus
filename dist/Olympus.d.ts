@@ -483,7 +483,13 @@ declare module "engine/net/DataType" {
      * 请求或返回数据结构体
     */
     export default abstract class DataType {
-        private __rawData;
+        /**
+         * 原始数据
+         *
+         * @type {*}
+         * @memberof DataType
+         */
+        __rawData: any;
         /**
          * 解析后端返回的JSON对象，生成结构体
          *
@@ -498,9 +504,10 @@ declare module "engine/net/DataType" {
          * @protected
          * @abstract
          * @param {*} data JSON对象
+         * @return {*} 处理过后的原始数据要还给框架记录
          * @memberof DataType
          */
-        protected abstract doParse(data: any): void;
+        protected abstract doParse(data: any): any;
         /**
          * 打包数据成为一个Object，需要子类实现
          *

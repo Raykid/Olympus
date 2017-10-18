@@ -1944,8 +1944,7 @@ define("engine/net/DataType", ["require", "exports"], function (require, exports
          * @memberof DataType
          */
         DataType.prototype.parse = function (data) {
-            this.__rawData = data;
-            this.doParse(data);
+            this.__rawData = this.doParse(data);
             return this;
         };
         return DataType;
