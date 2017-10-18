@@ -10,10 +10,7 @@ import SceneMediator from "engine/scene/SceneMediator";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import { bridgeManager } from "engine/bridge/BridgeManager";
-import * as Injector from "engine/injector/Injector";
 import FuckModel from "../models/FuckModel";
-
-Injector;
 
 /**
  * @author Raykid

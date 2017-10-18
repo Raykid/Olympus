@@ -200,10 +200,9 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector"], f
     }());
     exports.default = FuckModel;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "egret/injector/Injector", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "engine/injector/Injector", "models/FuckModel"], function (require, exports, Module_2, ModuleManager_2, Injector_4, Injector_5, Injector_6, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, Injector, FuckModel_1) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "egret/injector/Injector", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel"], function (require, exports, Module_2, ModuleManager_2, Injector_4, Injector_5, Injector_6, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, FuckModel_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    Injector;
     /**
      * @author Raykid
      * @email initial_r@qq.com
