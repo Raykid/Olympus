@@ -66254,7 +66254,7 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
              * @memberof EgretBridge
              */
             get: function () {
-                return "Egret";
+                return EgretBridge.TYPE;
             },
             enumerable: true,
             configurable: true
@@ -66637,6 +66637,8 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
         EgretBridge.prototype.unmapListener = function (target, type, handler, thisArg) {
             target.removeEventListener(type, handler, thisArg);
         };
+        /** 提供静态类型常量 */
+        EgretBridge.TYPE = "Egret";
         return EgretBridge;
     }());
     exports.default = EgretBridge;

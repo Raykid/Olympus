@@ -193,6 +193,8 @@ declare module "EgretBridge" {
      * Egret的表现层桥实现，当前Egret版本：5.0.7
     */
     export default class EgretBridge implements IBridge {
+        /** 提供静态类型常量 */
+        static TYPE: string;
         private _initParams;
         /**
          * 获取表现层类型名称

@@ -27,6 +27,9 @@ import * as UIUtil from "./egret/utils/UIUtil";
 */
 export default class EgretBridge implements IBridge
 {
+    /** 提供静态类型常量 */
+    public static TYPE:string = "Egret";
+
     private _initParams:IInitParams;
 
     /**
@@ -38,7 +41,7 @@ export default class EgretBridge implements IBridge
      */
     public get type():string
     {
-        return "Egret";
+        return EgretBridge.TYPE;
     }
 
     /**

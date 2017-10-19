@@ -57,7 +57,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/env/Envir
              * @memberof DOMBridge
              */
             get: function () {
-                return "DOM";
+                return DOMBridge.TYPE;
             },
             enumerable: true,
             configurable: true
@@ -412,6 +412,8 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/env/Envir
                 delete this._listenerDict[key];
             }
         };
+        /** 提供静态类型常量 */
+        DOMBridge.TYPE = "DOM";
         return DOMBridge;
     }());
     exports.default = DOMBridge;

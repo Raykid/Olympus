@@ -25,6 +25,8 @@ declare module "DOMBridge" {
      * 基于DOM的表现层桥实现
     */
     export default class DOMBridge implements IBridge {
+        /** 提供静态类型常量 */
+        static TYPE: string;
         private _initParams;
         /**
          * 获取表现层类型名称

@@ -19,6 +19,9 @@ import { load } from "utils/HTTPUtil";
 */
 export default class DOMBridge implements IBridge
 {
+    /** 提供静态类型常量 */
+    public static TYPE:string = "DOM";
+
     private _initParams:IInitParams;
 
     /**
@@ -30,7 +33,7 @@ export default class DOMBridge implements IBridge
      */
     public get type():string
     {
-        return "DOM";
+        return DOMBridge.TYPE;
     }
 
     /**
