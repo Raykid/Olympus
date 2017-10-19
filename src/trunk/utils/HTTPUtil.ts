@@ -166,37 +166,30 @@ export function load(params:IHTTPRequestParams):void
                 // 停止计时
                 timeoutId && clearTimeout(timeoutId);
                 timeoutId = 0;
-                try
+                if(xhr.status == 200)
                 {
-                    if(xhr.status == 200)
+                    // 成功回调
+                    params.onResponse && params.onResponse(xhr.responseText);
+                }
+                else if(retryTimes > 0)
+                {
+                    // 没有超过重试上限则重试
+                    abortAndRetry();
+                }
+                else
+                {
+                    // 出错，如果使用CDN功能则尝试切换
+                    if(params.useCDN && !environment.nextCDN())
                     {
-                        // 成功回调
-                        params.onResponse && params.onResponse(xhr.responseText);
-                    }
-                    else if(retryTimes > 0)
-                    {
-                        // 没有超过重试上限则重试
-                        abortAndRetry();
+                        // 还没切换完，重新加载
+                        load(params);
                     }
                     else
                     {
-                        // 出错，如果使用CDN功能则尝试切换
-                        if(params.useCDN && !environment.nextCDN())
-                        {
-                            // 还没切换完，重新加载
-                            load(params);
-                        }
-                        else
-                        {
-                            // 切换完了还失败，则汇报错误
-                            var err:Error = new Error(xhr.status + " " + xhr.statusText);
-                            params.onError && params.onError(err);
-                        }
+                        // 切换完了还失败，则汇报错误
+                        var err:Error = new Error(xhr.status + " " + xhr.statusText);
+                        params.onError && params.onError(err);
                     }
-                }
-                catch(err)
-                {
-                    console.error(err.message);
                 }
                 break;
         }

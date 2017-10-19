@@ -1568,18 +1568,13 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
                 listeners = listeners.concat();
                 for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
                     var temp = listeners_1[_i];
-                    try {
-                        // 调用处理函数
-                        if (msg instanceof CommonMessage_1.default)
-                            // 如果是通用消息，则将参数结构后调用回调
-                            (_a = temp.handler).call.apply(_a, [temp.thisArg].concat(msg.params));
-                        else
-                            // 如果是其他消息，则直接将消息体传给回调
-                            temp.handler.call(temp.thisArg, msg);
-                    }
-                    catch (error) {
-                        console.error(error);
-                    }
+                    // 调用处理函数
+                    if (msg instanceof CommonMessage_1.default)
+                        // 如果是通用消息，则将参数结构后调用回调
+                        (_a = temp.handler).call.apply(_a, [temp.thisArg].concat(msg.params));
+                    else
+                        // 如果是其他消息，则直接将消息体传给回调
+                        temp.handler.call(temp.thisArg, msg);
                 }
             }
             var _a;
@@ -1716,14 +1711,8 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
                 commands = commands.concat();
                 for (var _i = 0, commands_1 = commands; _i < commands_1.length; _i++) {
                     var cls = commands_1[_i];
-                    try {
-                        // 执行命令
-                        var cmd = new cls(msg);
-                        cmd.exec();
-                    }
-                    catch (error) {
-                        console.error(error);
-                    }
+                    // 执行命令
+                    new cls(msg).exec();
                 }
             }
         };
@@ -3650,30 +3639,25 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
                     // 停止计时
                     timeoutId && clearTimeout(timeoutId);
                     timeoutId = 0;
-                    try {
-                        if (xhr.status == 200) {
-                            // 成功回调
-                            params.onResponse && params.onResponse(xhr.responseText);
-                        }
-                        else if (retryTimes > 0) {
-                            // 没有超过重试上限则重试
-                            abortAndRetry();
+                    if (xhr.status == 200) {
+                        // 成功回调
+                        params.onResponse && params.onResponse(xhr.responseText);
+                    }
+                    else if (retryTimes > 0) {
+                        // 没有超过重试上限则重试
+                        abortAndRetry();
+                    }
+                    else {
+                        // 出错，如果使用CDN功能则尝试切换
+                        if (params.useCDN && !Environment_1.environment.nextCDN()) {
+                            // 还没切换完，重新加载
+                            load(params);
                         }
                         else {
-                            // 出错，如果使用CDN功能则尝试切换
-                            if (params.useCDN && !Environment_1.environment.nextCDN()) {
-                                // 还没切换完，重新加载
-                                load(params);
-                            }
-                            else {
-                                // 切换完了还失败，则汇报错误
-                                var err = new Error(xhr.status + " " + xhr.statusText);
-                                params.onError && params.onError(err);
-                            }
+                            // 切换完了还失败，则汇报错误
+                            var err = new Error(xhr.status + " " + xhr.statusText);
+                            params.onError && params.onError(err);
                         }
-                    }
-                    catch (err) {
-                        console.error(err.message);
                     }
                     break;
             }

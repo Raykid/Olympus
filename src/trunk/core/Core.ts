@@ -86,17 +86,13 @@ export default class Core implements IDispatcher
             listeners = listeners.concat();
             for(var temp of listeners)
             {
-                try {
-                    // 调用处理函数
-                    if(msg instanceof CommonMessage)
-                        // 如果是通用消息，则将参数结构后调用回调
-                        temp.handler.call(temp.thisArg, ...msg.params);
-                    else
-                        // 如果是其他消息，则直接将消息体传给回调
-                        temp.handler.call(temp.thisArg, msg);
-                } catch (error) {
-                    console.error(error);
-                }
+                // 调用处理函数
+                if(msg instanceof CommonMessage)
+                    // 如果是通用消息，则将参数结构后调用回调
+                    temp.handler.call(temp.thisArg, ...msg.params);
+                else
+                    // 如果是其他消息，则直接将消息体传给回调
+                    temp.handler.call(temp.thisArg, msg);
             }
         }
     }
@@ -270,13 +266,8 @@ export default class Core implements IDispatcher
             commands = commands.concat();
             for(var cls of commands)
             {
-                try {
-                    // 执行命令
-                    var cmd:Command = new cls(msg);
-                    cmd.exec();
-                } catch(error) {
-                    console.error(error);
-                }
+                // 执行命令
+                new cls(msg).exec();
             }
         }
     }
