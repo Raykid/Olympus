@@ -1,5 +1,6 @@
 import { environment } from "../engine/env/Environment";
 import { validateProtocol, joinQueryParams } from "./URLUtil";
+import { cloneObject } from "./ObjectUtil";
 
 /**
  * @author Raykid
@@ -16,12 +17,12 @@ export type HTTPMethod = "GET"|"POST";
 export interface IHTTPRequestParams
 {
     /**
-     * url地址
+     * url地址或者url地址数组
      * 
-     * @type {string}
+     * @type {string|string[]}
      * @memberof HTTPRequestPolicy
      */
-    url:string;
+    url:string|string[];
     /**
      * 要发送的数据
      * 
@@ -58,11 +59,11 @@ export interface IHTTPRequestParams
      */
     timeout?:number;
     /**
-     * 成功回调
+     * 成功回调，只加一个地址时返回结果，一次加载多个地址时返回结果数组
      * 
      * @memberof IHTTPRequestParams
      */
-    onResponse?:(result:any)=>void;
+    onResponse?:(result:any|any[])=>void;
     /**
      * 失败回调
      * 
@@ -72,13 +73,39 @@ export interface IHTTPRequestParams
 }
 
 /**
- * 发送一个HTTP请求，无视CDN，不进行CDN切换
+ * 发送一个或多个HTTP请求
  * 
  * @export
  * @param {IHTTPRequestParams} params 请求参数
  */
 export function load(params:IHTTPRequestParams):void
 {
+    if(params.url instanceof Array)
+    {
+        // 一次请求多个地址，需要做一个队列加载，然后一次性回调
+        var urls:string[] = params.url;
+        var results:any[] = [];
+        var newParams:IHTTPRequestParams = cloneObject(params);
+        newParams.onResponse = function(result:any):void
+        {
+            results.push(result);
+            loadNext();
+        };
+        var loadNext:()=>void = function():void
+        {
+            if(urls.length <= 0)
+            {
+                // 成功回调
+                params.onResponse && params.onResponse(results);
+                return;
+            }
+            newParams.url = urls.shift();
+            load(newParams);
+        };
+        loadNext();
+        return;
+    }
+    // 一次请求一个地址
     var retryTimes:number = params.retryTimes || 2;
     var timeout:number = params.timeout || 10000;
     var method:HTTPMethod = params.method || "GET";

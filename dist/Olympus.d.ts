@@ -1838,6 +1838,243 @@ declare module "engine/bridge/BridgeManager" {
     /** 再额外导出一个单例 */
     export const bridgeManager: BridgeManager;
 }
+declare module "utils/URLUtil" {
+    /**
+     * 规整url
+     * @param url
+     */
+    export function trimURL(url: string): string;
+    /**
+     * 检查URL是否是绝对路径（具有协议头）
+     * @param url 要判断的URL
+     * @returns {any} 是否是绝对路径
+     */
+    export function isAbsolutePath(url: string): boolean;
+    /**
+     * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
+     * @param url 要统一protocol的url
+     */
+    export function validateProtocol(url: string): string;
+    /**
+     * 替换url中的host
+     * @param url       url
+     * @param host      要替换的host
+     * @param forced    是否强制替换（默认false）
+     */
+    export function wrapHost(url: string, host: string, forced?: boolean): string;
+    /**
+     * 将相对于当前页面的相对路径包装成绝对路径
+     * @param relativePath 相对于当前页面的相对路径
+     * @param host 传递该参数会用该host替换当前host
+     */
+    export function wrapAbsolutePath(relativePath: string, host?: string): string;
+    /**
+     * 获取URL的host+pathname部分，即问号(?)以前的部分
+     *
+     */
+    export function getHostAndPathname(url: string): string;
+    /**
+     * 获取URL路径（文件名前的部分）
+     * @param url 要分析的URL
+     */
+    export function getPath(url: string): string;
+    /**
+     * 获取URL的文件名
+     * @param url 要分析的URL
+     */
+    export function getName(url: string): string;
+    /**
+     * 解析URL
+     * @param url 要被解析的URL字符串
+     * @returns {any} 解析后的URLLocation结构体
+     */
+    export function parseUrl(url: string): URLLocation;
+    /**
+     * 解析url查询参数
+     * @TODO 添加对jquery编码方式的支持
+     * @param url url
+     */
+    export function getQueryParams(url: string): {
+        [key: string]: string;
+    };
+    /**
+     * 将参数连接到指定URL后面
+     * @param url url
+     * @param params 一个map，包含要连接的参数
+     * @return string 连接后的URL地址
+     */
+    export function joinQueryParams(url: string, params: Object): string;
+    /**
+     * 将参数链接到URL的hash后面
+     * @param url 如果传入的url没有注明hash模块，则不会进行操作
+     * @param params 一个map，包含要连接的参数
+     */
+    export function joinHashParams(url: string, params: Object): string;
+    export interface URLLocation {
+        href: string;
+        origin: string;
+        protocol: string;
+        host: string;
+        hostname: string;
+        port: string;
+        pathname: string;
+        search: string;
+        hash: string;
+    }
+}
+declare module "engine/env/Environment" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 环境参数
+    */
+    export default class Environment {
+        private _env;
+        /**
+         * 获取当前环境字符串
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Environment
+         */
+        readonly env: string;
+        private _hostsDict;
+        /**
+         * 获取当前环境下某索引处的消息域名
+         *
+         * @param {number} [index=0] 域名字典索引，默认是0
+         * @returns {string} 域名字符串，如果取不到则使用当前域名
+         * @memberof Environment
+         */
+        getHost(index?: number): string;
+        private _cdnsDict;
+        private _curCDNIndex;
+        /**
+         * 获取当前使用的CDN域名
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Environment
+         */
+        readonly curCDNHost: string;
+        /**
+         * 切换下一个CDN
+         *
+         * @returns {boolean} 是否已经到达CDN列表的终点，回到了起点
+         * @memberof Environment
+         */
+        nextCDN(): boolean;
+        /**
+         * 初始化Environment对象，因为该对象保存的数据基本来自项目初始参数，所以必须有initialize方法
+         *
+         * @param {string} [env] 当前所属环境字符串
+         * @param {{[env:string]:string[]}} [hostsDict] host数组字典
+         * @param {{[env:string]:string[]}} [cdnsDict] cdn数组字典
+         * @memberof Environment
+         */
+        initialize(env?: string, hostsDict?: {
+            [env: string]: string[];
+        }, cdnsDict?: {
+            [env: string]: string[];
+        }): void;
+        /**
+         * 让url的域名变成消息域名
+         *
+         * @param {string} url 要转变的url
+         * @param {number} [index=0] host索引，默认0
+         * @returns {string} 转变后的url
+         * @memberof Environment
+         */
+        toHostURL(url: string, index?: number): string;
+        /**
+         * 让url的域名变成CDN域名
+         *
+         * @param {string} url 要转变的url
+         * @returns {string} 转变后的url
+         * @memberof Environment
+         */
+        toCDNHostURL(url: string): string;
+    }
+    /** 再额外导出一个单例 */
+    export const environment: Environment;
+}
+declare module "utils/HTTPUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-12
+     * @modify date 2017-10-12
+     *
+     * HTTP请求工具
+    */
+    export type HTTPMethod = "GET" | "POST";
+    export interface IHTTPRequestParams {
+        /**
+         * url地址或者url地址数组
+         *
+         * @type {string|string[]}
+         * @memberof HTTPRequestPolicy
+         */
+        url: string | string[];
+        /**
+         * 要发送的数据
+         *
+         * @type {*}
+         * @memberof IHTTPRequestParams
+         */
+        data?: any;
+        /**
+         * 是否使用CDN域名和CDN切换机制，默认是false
+         *
+         * @type {boolean}
+         * @memberof IHTTPRequestParams
+         */
+        useCDN?: boolean;
+        /**
+         * HTTP方法类型，默认是GET
+         *
+         * @type {HTTPMethod}
+         * @memberof HTTPRequestPolicy
+         */
+        method?: HTTPMethod;
+        /**
+         * 失败重试次数，默认重试2次
+         *
+         * @type {number}
+         * @memberof HTTPRequestPolicy
+         */
+        retryTimes?: number;
+        /**
+         * 超时时间，毫秒，默认10000，即10秒
+         *
+         * @type {number}
+         * @memberof HTTPRequestPolicy
+         */
+        timeout?: number;
+        /**
+         * 成功回调，只加一个地址时返回结果，一次加载多个地址时返回结果数组
+         *
+         * @memberof IHTTPRequestParams
+         */
+        onResponse?: (result: any | any[]) => void;
+        /**
+         * 失败回调
+         *
+         * @memberof IHTTPRequestParams
+         */
+        onError?: (err: Error) => void;
+    }
+    /**
+     * 发送一个或多个HTTP请求
+     *
+     * @export
+     * @param {IHTTPRequestParams} params 请求参数
+     */
+    export function load(params: IHTTPRequestParams): void;
+}
 declare module "engine/module/ModuleMessage" {
     /**
      * @author Raykid
@@ -2534,169 +2771,6 @@ declare module "engine/module/Module" {
         dispose(): void;
     }
 }
-declare module "utils/URLUtil" {
-    /**
-     * 规整url
-     * @param url
-     */
-    export function trimURL(url: string): string;
-    /**
-     * 检查URL是否是绝对路径（具有协议头）
-     * @param url 要判断的URL
-     * @returns {any} 是否是绝对路径
-     */
-    export function isAbsolutePath(url: string): boolean;
-    /**
-     * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
-     * @param url 要统一protocol的url
-     */
-    export function validateProtocol(url: string): string;
-    /**
-     * 替换url中的host
-     * @param url       url
-     * @param host      要替换的host
-     * @param forced    是否强制替换（默认false）
-     */
-    export function wrapHost(url: string, host: string, forced?: boolean): string;
-    /**
-     * 将相对于当前页面的相对路径包装成绝对路径
-     * @param relativePath 相对于当前页面的相对路径
-     * @param host 传递该参数会用该host替换当前host
-     */
-    export function wrapAbsolutePath(relativePath: string, host?: string): string;
-    /**
-     * 获取URL的host+pathname部分，即问号(?)以前的部分
-     *
-     */
-    export function getHostAndPathname(url: string): string;
-    /**
-     * 获取URL路径（文件名前的部分）
-     * @param url 要分析的URL
-     */
-    export function getPath(url: string): string;
-    /**
-     * 获取URL的文件名
-     * @param url 要分析的URL
-     */
-    export function getName(url: string): string;
-    /**
-     * 解析URL
-     * @param url 要被解析的URL字符串
-     * @returns {any} 解析后的URLLocation结构体
-     */
-    export function parseUrl(url: string): URLLocation;
-    /**
-     * 解析url查询参数
-     * @TODO 添加对jquery编码方式的支持
-     * @param url url
-     */
-    export function getQueryParams(url: string): {
-        [key: string]: string;
-    };
-    /**
-     * 将参数连接到指定URL后面
-     * @param url url
-     * @param params 一个map，包含要连接的参数
-     * @return string 连接后的URL地址
-     */
-    export function joinQueryParams(url: string, params: Object): string;
-    /**
-     * 将参数链接到URL的hash后面
-     * @param url 如果传入的url没有注明hash模块，则不会进行操作
-     * @param params 一个map，包含要连接的参数
-     */
-    export function joinHashParams(url: string, params: Object): string;
-    export interface URLLocation {
-        href: string;
-        origin: string;
-        protocol: string;
-        host: string;
-        hostname: string;
-        port: string;
-        pathname: string;
-        search: string;
-        hash: string;
-    }
-}
-declare module "engine/env/Environment" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 环境参数
-    */
-    export default class Environment {
-        private _env;
-        /**
-         * 获取当前环境字符串
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Environment
-         */
-        readonly env: string;
-        private _hostsDict;
-        /**
-         * 获取当前环境下某索引处的消息域名
-         *
-         * @param {number} [index=0] 域名字典索引，默认是0
-         * @returns {string} 域名字符串，如果取不到则使用当前域名
-         * @memberof Environment
-         */
-        getHost(index?: number): string;
-        private _cdnsDict;
-        private _curCDNIndex;
-        /**
-         * 获取当前使用的CDN域名
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Environment
-         */
-        readonly curCDNHost: string;
-        /**
-         * 切换下一个CDN
-         *
-         * @returns {boolean} 是否已经到达CDN列表的终点，回到了起点
-         * @memberof Environment
-         */
-        nextCDN(): boolean;
-        /**
-         * 初始化Environment对象，因为该对象保存的数据基本来自项目初始参数，所以必须有initialize方法
-         *
-         * @param {string} [env] 当前所属环境字符串
-         * @param {{[env:string]:string[]}} [hostsDict] host数组字典
-         * @param {{[env:string]:string[]}} [cdnsDict] cdn数组字典
-         * @memberof Environment
-         */
-        initialize(env?: string, hostsDict?: {
-            [env: string]: string[];
-        }, cdnsDict?: {
-            [env: string]: string[];
-        }): void;
-        /**
-         * 让url的域名变成消息域名
-         *
-         * @param {string} url 要转变的url
-         * @param {number} [index=0] host索引，默认0
-         * @returns {string} 转变后的url
-         * @memberof Environment
-         */
-        toHostURL(url: string, index?: number): string;
-        /**
-         * 让url的域名变成CDN域名
-         *
-         * @param {string} url 要转变的url
-         * @returns {string} 转变后的url
-         * @memberof Environment
-         */
-        toCDNHostURL(url: string): string;
-    }
-    /** 再额外导出一个单例 */
-    export const environment: Environment;
-}
 declare module "engine/env/Explorer" {
     /**
      * @author Raykid
@@ -2934,80 +3008,6 @@ declare module "engine/version/Version" {
     }
     /** 再额外导出一个单例 */
     export const version: Version;
-}
-declare module "utils/HTTPUtil" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-12
-     * @modify date 2017-10-12
-     *
-     * HTTP请求工具
-    */
-    export type HTTPMethod = "GET" | "POST";
-    export interface IHTTPRequestParams {
-        /**
-         * url地址
-         *
-         * @type {string}
-         * @memberof HTTPRequestPolicy
-         */
-        url: string;
-        /**
-         * 要发送的数据
-         *
-         * @type {*}
-         * @memberof IHTTPRequestParams
-         */
-        data?: any;
-        /**
-         * 是否使用CDN域名和CDN切换机制，默认是false
-         *
-         * @type {boolean}
-         * @memberof IHTTPRequestParams
-         */
-        useCDN?: boolean;
-        /**
-         * HTTP方法类型，默认是GET
-         *
-         * @type {HTTPMethod}
-         * @memberof HTTPRequestPolicy
-         */
-        method?: HTTPMethod;
-        /**
-         * 失败重试次数，默认重试2次
-         *
-         * @type {number}
-         * @memberof HTTPRequestPolicy
-         */
-        retryTimes?: number;
-        /**
-         * 超时时间，毫秒，默认10000，即10秒
-         *
-         * @type {number}
-         * @memberof HTTPRequestPolicy
-         */
-        timeout?: number;
-        /**
-         * 成功回调
-         *
-         * @memberof IHTTPRequestParams
-         */
-        onResponse?: (result: any) => void;
-        /**
-         * 失败回调
-         *
-         * @memberof IHTTPRequestParams
-         */
-        onError?: (err: Error) => void;
-    }
-    /**
-     * 发送一个HTTP请求，无视CDN，不进行CDN切换
-     *
-     * @export
-     * @param {IHTTPRequestParams} params 请求参数
-     */
-    export function load(params: IHTTPRequestParams): void;
 }
 declare module "engine/net/policies/HTTPRequestPolicy" {
     import IRequestPolicy from "engine/net/IRequestPolicy";

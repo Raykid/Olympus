@@ -18,7 +18,7 @@ define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "e
     exports.DOMMediatorClass = DOMMediatorClass;
 });
 /// <reference path="../../dist/Olympus.d.ts"/>
-define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/env/Environment", "utils/HTTPUtil"], function (require, exports, ObjectUtil_1, Environment_1, HTTPUtil_1) {
+define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"], function (require, exports, ObjectUtil_1, HTTPUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -358,7 +358,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/env/Envir
                     else {
                         // 是皮肤地址
                         HTTPUtil_1.load({
-                            url: Environment_1.environment.toCDNHostURL(skin),
+                            url: skin,
                             useCDN: true,
                             onResponse: function (result) {
                                 skinStr += result;

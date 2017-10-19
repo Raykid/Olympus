@@ -6,7 +6,6 @@ import IPromptPanel from "engine/panel/IPromptPanel";
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
-import { environment } from "engine/env/Environment";
 import { load } from "utils/HTTPUtil";
 
 /**
@@ -376,7 +375,7 @@ export default class DOMBridge implements IBridge
                 {
                     // 是皮肤地址
                     load({
-                        url: environment.toCDNHostURL(skin),
+                        url: skin,
                         useCDN: true,
                         onResponse: result=>{
                             skinStr += result;

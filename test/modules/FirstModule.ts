@@ -11,6 +11,7 @@ import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
+import { DOMMediatorClass } from "dom/injector/Injector";
 
 /**
  * @author Raykid
@@ -21,7 +22,7 @@ import FuckModel, { IFuckModel } from "../models/FuckModel";
  * 测试首个模块
 */
 
-@EgretMediatorClass("FuckSkin")
+@DOMMediatorClass
 class FirstMediator extends SceneMediator
 {
     @Inject
@@ -38,14 +39,14 @@ class FirstMediator extends SceneMediator
 
     public listAssets():string[]
     {
-        return ["preload"];
+        return ["./modules/test.html"];
     }
 
     public onOpen():void
     {
-        this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function():void
+        this.mapListener(this.btn, "click", function():void
         {
-            this.txt.text = "Fuck you!!!";
+            this.txt.textContent = "Fuck you!!!";
             this.moduleManager.open(SecondModule);
         }, this);
         console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
@@ -70,4 +71,9 @@ export default class FirstModule extends Module
 {
     @DelegateMediator
     private _mediator:FirstMediator;
+
+    public listJsFiles():string[]
+    {
+        return ["test1.js", "./test2.js"];
+    }
 }
