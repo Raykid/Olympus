@@ -168,8 +168,9 @@ export default class ModuleManager
                         if(replace) this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
-                        // 如果有缓存的模块需要打开则打开之
+                        // 关闭标识符
                         this._opening = false;
+                        // 如果有缓存的模块需要打开则打开之
                         if(this._openCache.length > 0)
                             this.open.apply(this, this._openCache.shift());
                     }, this);
@@ -186,6 +187,8 @@ export default class ModuleManager
             }
             // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
             this.close(after[0][0], data);
+            // 关闭标识符
+            this._opening = false;
         }
     }
 
