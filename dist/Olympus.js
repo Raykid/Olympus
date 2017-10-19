@@ -3982,16 +3982,18 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
             args[_i] = arguments[_i];
         }
         // 转调Injectable方法
-        var result = Injector_7.Injectable.apply(this, args);
-        if (result) {
+        if (this === undefined) {
+            var cls = ConstructUtil_2.wrapConstruct(args[0]);
+            Injector_7.Injectable.call(this, cls);
+            return cls;
+        }
+        else {
+            var result = Injector_7.Injectable.apply(this, args);
             return function (realCls) {
                 realCls = ConstructUtil_2.wrapConstruct(realCls);
                 result.call(this, realCls);
                 return realCls;
             };
-        }
-        else {
-            return ConstructUtil_2.wrapConstruct(args[0]);
         }
     }
     exports.ModelClass = ModelClass;

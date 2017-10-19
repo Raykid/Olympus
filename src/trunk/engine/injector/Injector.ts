@@ -22,19 +22,21 @@ import IModuleConstructor from "../module/IModuleConstructor";
 export function ModelClass(...args:any[]):any
 {
     // 转调Injectable方法
-    var result:ClassDecorator = Injectable.apply(this, args);
-    if(result)
+    if(this === undefined)
     {
+        var cls:IConstructor = wrapConstruct(args[0]);
+        Injectable.call(this, cls);
+        return cls;
+    }
+    else
+    {
+        var result:ClassDecorator = Injectable.apply(this, args);
         return function(realCls:IConstructor):IConstructor
         {
             realCls = wrapConstruct(realCls);
             result.call(this, realCls);
             return realCls;
         };
-    }
-    else
-    {
-        return wrapConstruct(args[0]);
     }
 }
 
