@@ -357,8 +357,9 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/env/Envir
                     }
                     else {
                         // 是皮肤地址
-                        HTTPUtil_1.send({
+                        HTTPUtil_1.load({
                             url: Environment_1.environment.toCDNHostURL(skin),
+                            useCDN: true,
                             onResponse: function (result) {
                                 skinStr += result;
                                 loadNext();

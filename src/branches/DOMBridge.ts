@@ -7,7 +7,7 @@ import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
 import { environment } from "engine/env/Environment";
-import { send } from "utils/HTTPUtil";
+import { load } from "utils/HTTPUtil";
 
 /**
  * @author Raykid
@@ -372,8 +372,9 @@ export default class DOMBridge implements IBridge
                 else
                 {
                     // 是皮肤地址
-                    send({
+                    load({
                         url: environment.toCDNHostURL(skin),
+                        useCDN: true,
                         onResponse: result=>{
                             skinStr += result;
                             loadNext();
