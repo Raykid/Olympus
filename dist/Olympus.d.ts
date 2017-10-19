@@ -2059,7 +2059,7 @@ declare module "utils/HTTPUtil" {
          *
          * @memberof IHTTPRequestParams
          */
-        onResponse?: (result: any | any[]) => void;
+        onResponse?: (result?: any | any[]) => void;
         /**
          * 失败回调
          *

@@ -63,7 +63,7 @@ export interface IHTTPRequestParams
      * 
      * @memberof IHTTPRequestParams
      */
-    onResponse?:(result:any|any[])=>void;
+    onResponse?:(result?:any|any[])=>void;
     /**
      * 失败回调
      * 
@@ -80,6 +80,14 @@ export interface IHTTPRequestParams
  */
 export function load(params:IHTTPRequestParams):void
 {
+    // 非空判断
+    if(!params.url)
+    {
+        // 成功回调
+        params.onResponse && params.onResponse();
+        return;
+    }
+    // 数组判断
     if(params.url instanceof Array)
     {
         // 一次请求多个地址，需要做一个队列加载，然后一次性回调

@@ -3574,6 +3574,13 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
      * @param {IHTTPRequestParams} params 请求参数
      */
     function load(params) {
+        // 非空判断
+        if (!params.url) {
+            // 成功回调
+            params.onResponse && params.onResponse();
+            return;
+        }
+        // 数组判断
         if (params.url instanceof Array) {
             // 一次请求多个地址，需要做一个队列加载，然后一次性回调
             var urls = params.url;
