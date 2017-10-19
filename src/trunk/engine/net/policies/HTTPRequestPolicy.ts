@@ -1,4 +1,4 @@
-import { send } from "../../../utils/HTTPUtil";
+import { load } from "../../../utils/HTTPUtil";
 import IRequestPolicy from "../IRequestPolicy";
 import RequestData, { IRequestParams } from "../RequestData";
 import { environment } from "../../env/Environment";
@@ -25,7 +25,7 @@ export class HTTPRequestPolicy implements IRequestPolicy
         // 取到参数
         var params:IRequestParams = request.__params;
         // 发送
-        send({
+        load({
             url: environment.toHostURL(params.path, params.hostIndex),
             data: params.data,
             method: params.method,

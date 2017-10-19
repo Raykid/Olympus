@@ -5290,16 +5290,16 @@ define("engine/version/Version", ["require", "exports", "core/Core", "core/injec
     /** 再额外导出一个单例 */
     exports.version = Core_18.core.getInject(Version);
 });
-define("utils/HTTPUtil", ["require", "exports", "utils/URLUtil"], function (require, exports, URLUtil_3) {
+define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils/URLUtil"], function (require, exports, Environment_1, URLUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
-     * 发送一个HTTP请求
+     * 发送一个HTTP请求，无视CDN，不进行CDN切换
      *
      * @export
      * @param {IHTTPRequestParams} params 请求参数
      */
-    function send(params) {
+    function load(params) {
         var retryTimes = params.retryTimes || 2;
         var timeout = params.timeout || 10000;
         var method = params.method || "GET";
@@ -5307,6 +5307,9 @@ define("utils/HTTPUtil", ["require", "exports", "utils/URLUtil"], function (requ
         var data = params.data || {};
         // 取到url
         var url = params.url;
+        // 如果使用CDN则改用cdn域名
+        if (params.useCDN)
+            url = Environment_1.environment.toCDNHostURL(url);
         // 合法化一下protocol
         url = URLUtil_3.validateProtocol(url);
         // 生成并初始化xhr
@@ -5354,9 +5357,16 @@ define("utils/HTTPUtil", ["require", "exports", "utils/URLUtil"], function (requ
                             abortAndRetry();
                         }
                         else {
-                            // 出错回调
-                            var err = new Error(xhr.status + " " + xhr.statusText);
-                            params.onError && params.onError(err);
+                            // 出错，如果使用CDN功能则尝试切换
+                            if (params.useCDN && !Environment_1.environment.nextCDN()) {
+                                // 还没切换完，重新加载
+                                load(params);
+                            }
+                            else {
+                                // 切换完了还失败，则汇报错误
+                                var err = new Error(xhr.status + " " + xhr.statusText);
+                                params.onError && params.onError(err);
+                            }
                         }
                     }
                     catch (err) {
@@ -5374,9 +5384,9 @@ define("utils/HTTPUtil", ["require", "exports", "utils/URLUtil"], function (requ
             send();
         }
     }
-    exports.send = send;
+    exports.load = load;
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager"], function (require, exports, HTTPUtil_1, Environment_1, NetManager_3) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager"], function (require, exports, HTTPUtil_1, Environment_2, NetManager_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5400,8 +5410,8 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
             // 取到参数
             var params = request.__params;
             // 发送
-            HTTPUtil_1.send({
-                url: Environment_1.environment.toHostURL(params.path, params.hostIndex),
+            HTTPUtil_1.load({
+                url: Environment_2.environment.toHostURL(params.path, params.hostIndex),
                 data: params.data,
                 method: params.method,
                 retryTimes: params.retryTimes,
@@ -5416,7 +5426,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_19, Injector_15, BridgeManager_2, BridgeMessage_2, ModuleManager_3, Environment_2, Hash_1, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_19, Injector_15, BridgeManager_2, BridgeMessage_2, ModuleManager_3, Environment_3, Hash_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5443,7 +5453,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             // 加载页
             this._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
             // 初始化环境参数
-            Environment_2.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
+            Environment_3.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 初始化版本号管理器
             Version_1.version.initialize(function () {
                 // 监听Bridge初始化完毕事件，显示第一个模块

@@ -1,3 +1,4 @@
+import { environment } from "../engine/env/Environment";
 import { validateProtocol, joinQueryParams } from "./URLUtil";
 
 /**
@@ -28,6 +29,13 @@ export interface IHTTPRequestParams
      * @memberof IHTTPRequestParams
      */
     data?:any;
+    /**
+     * 是否使用CDN域名和CDN切换机制，默认是false
+     * 
+     * @type {boolean}
+     * @memberof IHTTPRequestParams
+     */
+    useCDN?:boolean;
     /**
      * HTTP方法类型，默认是GET
      * 
@@ -64,12 +72,12 @@ export interface IHTTPRequestParams
 }
 
 /**
- * 发送一个HTTP请求
+ * 发送一个HTTP请求，无视CDN，不进行CDN切换
  * 
  * @export
  * @param {IHTTPRequestParams} params 请求参数
  */
-export function send(params:IHTTPRequestParams):void
+export function load(params:IHTTPRequestParams):void
 {
     var retryTimes:number = params.retryTimes || 2;
     var timeout:number = params.timeout || 10000;
@@ -78,6 +86,8 @@ export function send(params:IHTTPRequestParams):void
     var data:any = params.data || {};
     // 取到url
     var url:string = params.url;
+    // 如果使用CDN则改用cdn域名
+    if(params.useCDN) url = environment.toCDNHostURL(url);
     // 合法化一下protocol
     url = validateProtocol(url);
     // 生成并初始化xhr
@@ -135,9 +145,18 @@ export function send(params:IHTTPRequestParams):void
                     }
                     else
                     {
-                        // 出错回调
-                        var err:Error = new Error(xhr.status + " " + xhr.statusText);
-                        params.onError && params.onError(err);
+                        // 出错，如果使用CDN功能则尝试切换
+                        if(params.useCDN && !environment.nextCDN())
+                        {
+                            // 还没切换完，重新加载
+                            load(params);
+                        }
+                        else
+                        {
+                            // 切换完了还失败，则汇报错误
+                            var err:Error = new Error(xhr.status + " " + xhr.statusText);
+                            params.onError && params.onError(err);
+                        }
                     }
                 }
                 catch(err)

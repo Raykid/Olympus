@@ -2961,6 +2961,13 @@ declare module "utils/HTTPUtil" {
          */
         data?: any;
         /**
+         * 是否使用CDN域名和CDN切换机制，默认是false
+         *
+         * @type {boolean}
+         * @memberof IHTTPRequestParams
+         */
+        useCDN?: boolean;
+        /**
          * HTTP方法类型，默认是GET
          *
          * @type {HTTPMethod}
@@ -2995,12 +3002,12 @@ declare module "utils/HTTPUtil" {
         onError?: (err: Error) => void;
     }
     /**
-     * 发送一个HTTP请求
+     * 发送一个HTTP请求，无视CDN，不进行CDN切换
      *
      * @export
      * @param {IHTTPRequestParams} params 请求参数
      */
-    export function send(params: IHTTPRequestParams): void;
+    export function load(params: IHTTPRequestParams): void;
 }
 declare module "engine/net/policies/HTTPRequestPolicy" {
     import IRequestPolicy from "engine/net/IRequestPolicy";
