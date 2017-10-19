@@ -3875,10 +3875,12 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                             url: target.listJsFiles(),
                             useCDN: true,
                             onResponse: function (results) {
-                                // 使用script标签将js文件加入html中
-                                var jsNode = document.createElement("script");
-                                jsNode.innerHTML = results.join("\n");
-                                document.body.appendChild(jsNode);
+                                if (results) {
+                                    // 使用script标签将js文件加入html中
+                                    var jsNode = document.createElement("script");
+                                    jsNode.innerHTML = results.join("\n");
+                                    document.body.appendChild(jsNode);
+                                }
                                 // 发送所有模块消息
                                 var requests = target.listInitRequests();
                                 NetManager_1.netManager.sendMultiRequests(requests, function (responses) {

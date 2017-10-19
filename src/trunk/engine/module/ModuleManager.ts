@@ -168,10 +168,13 @@ export default class ModuleManager
                         url: target.listJsFiles(),
                         useCDN: true,
                         onResponse: (results:string[])=>{
-                            // 使用script标签将js文件加入html中
-                            var jsNode:HTMLScriptElement = document.createElement("script");
-                            jsNode.innerHTML = results.join("\n");
-                            document.body.appendChild(jsNode);
+                            if(results)
+                            {
+                                // 使用script标签将js文件加入html中
+                                var jsNode:HTMLScriptElement = document.createElement("script");
+                                jsNode.innerHTML = results.join("\n");
+                                document.body.appendChild(jsNode);
+                            }
                             // 发送所有模块消息
                             var requests:RequestData[] = target.listInitRequests();
                             netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
