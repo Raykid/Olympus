@@ -3910,6 +3910,10 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 关闭标识符
                 this._opening = false;
             }
+            else {
+                // 关闭标识符
+                this._opening = false;
+            }
         };
         /**
          * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose

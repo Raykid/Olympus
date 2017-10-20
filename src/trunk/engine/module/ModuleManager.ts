@@ -222,6 +222,11 @@ export default class ModuleManager
             // 关闭标识符
             this._opening = false;
         }
+        else
+        {
+            // 关闭标识符
+            this._opening = false;
+        }
     }
 
     /**
