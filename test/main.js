@@ -254,7 +254,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             }, this);
             console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
         };
-        FirstMediator.prototype.onModuleChange = function (from, to) {
+        FirstMediator.prototype.onModuleChange = function (to, from) {
             if (to == FirstModule)
                 console.log("change to first module!");
             else if (to == SecondModule_1.default)

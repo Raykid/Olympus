@@ -205,7 +205,7 @@ export default class SceneManager
         from && from.onBeforeOut(to, data);
         to && to.onBeforeIn(from, data);
         // 派发事件
-        core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, from, to);
+        core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, to, from);
         // 调用准备接口
         prepareFunc && prepareFunc.call(policy, from, to);
         // 添加显示
@@ -218,7 +218,7 @@ export default class SceneManager
             from && from.onAfterOut(to, data);
             to && to.onAfterIn(from, data);
             // 派发事件
-            core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, from, to);
+            core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, to, from);
             // 调用回调
             complete && complete();
             // 完成步骤

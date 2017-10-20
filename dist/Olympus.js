@@ -2807,7 +2807,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             from && from.onBeforeOut(to, data);
             to && to.onBeforeIn(from, data);
             // 派发事件
-            Core_4.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, from, to);
+            Core_4.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
             // 调用准备接口
             prepareFunc && prepareFunc.call(policy, from, to);
             // 添加显示
@@ -2820,7 +2820,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                 from && from.onAfterOut(to, data);
                 to && to.onAfterIn(from, data);
                 // 派发事件
-                Core_4.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, from, to);
+                Core_4.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
                 // 调用回调
                 complete && complete();
                 // 完成步骤
@@ -3884,7 +3884,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                     if (replace)
                                         this.close(from && from[0], data);
                                     // 派发消息
-                                    Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, from && from[0], cls);
+                                    Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
                                     // 关闭标识符
                                     this._opening = false;
                                     // 如果有缓存的模块需要打开则打开之
@@ -3946,7 +3946,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 调用onActivate接口
                 toModule && toModule.onActivate(cls, data);
                 // 派发消息
-                Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, to && to[0]);
+                Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, to && to[0], cls);
             }
             else {
                 // 移除模块

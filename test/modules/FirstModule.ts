@@ -53,7 +53,7 @@ class FirstMediator extends SceneMediator
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)
-    private onModuleChange(from:any, to:any):void
+    private onModuleChange(to:any, from:any):void
     {
         if(to == FirstModule) console.log("change to first module!");
         else if(to == SecondModule) console.log("change to second module!");

@@ -194,7 +194,7 @@ export default class ModuleManager
                                 // 如果replace是true，则关掉上一个模块
                                 if(replace) this.close(from && from[0], data);
                                 // 派发消息
-                                core.dispatch(ModuleMessage.MODULE_CHANGE, from && from[0], cls);
+                                core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
                                 // 关闭标识符
                                 this._opening = false;
                                 // 如果有缓存的模块需要打开则打开之
@@ -258,7 +258,7 @@ export default class ModuleManager
             // 调用onActivate接口
             toModule && toModule.onActivate(cls, data);
             // 派发消息
-            core.dispatch(ModuleMessage.MODULE_CHANGE, cls, to && to[0]);
+            core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
         }
         else
         {
