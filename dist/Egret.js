@@ -65838,10 +65838,12 @@ define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", 
     exports.EgretSkin = EgretSkin;
     function EgretMediatorClass(skin) {
         return function (cls) {
+            // 调用MediatorClass方法
+            cls = Injector_1.MediatorClass(cls);
             // 监听类型实例化，转换皮肤格式
             ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, skin); });
-            // 调用MediatorClass方法
-            return Injector_1.MediatorClass(cls);
+            // 返回结果类型
+            return cls;
         };
     }
     exports.EgretMediatorClass = EgretMediatorClass;

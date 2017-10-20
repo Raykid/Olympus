@@ -24,9 +24,11 @@ export function EgretMediatorClass(skin:any):ClassDecorator
 {
     return function(cls:IConstructor):any
     {
+        // 调用MediatorClass方法
+        cls = MediatorClass(cls);
         // 监听类型实例化，转换皮肤格式
         listenConstruct(cls, mediator=>wrapSkin(mediator, skin));
-        // 调用MediatorClass方法
-        return MediatorClass(cls);
+        // 返回结果类型
+        return cls;
     } as ClassDecorator;
 }
