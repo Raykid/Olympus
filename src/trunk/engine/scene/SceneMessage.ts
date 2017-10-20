@@ -23,5 +23,5 @@ export default class SceneMessage
      * @type {string}
      * @memberof SceneMessage
      */
-    public static SCENE_AFTER_CHANGE:string = "sceneBeforeChange";
+    public static SCENE_AFTER_CHANGE:string = "sceneAfterChange";
 }

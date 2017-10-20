@@ -2568,7 +2568,7 @@ define("engine/scene/SceneMessage", ["require", "exports"], function (require, e
          * @type {string}
          * @memberof SceneMessage
          */
-        SceneMessage.SCENE_AFTER_CHANGE = "sceneBeforeChange";
+        SceneMessage.SCENE_AFTER_CHANGE = "sceneAfterChange";
         return SceneMessage;
     }());
     exports.default = SceneMessage;
