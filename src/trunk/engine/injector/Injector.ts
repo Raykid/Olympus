@@ -1,13 +1,13 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
-import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
+import { wrapConstruct, listenConstruct, listenDispose, getConstructor } from "../../utils/ConstructUtil";
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IModule from "../module/IModule";
+import IModuleConstructor from "../module/IModuleConstructor";
 import { bridgeManager } from "../bridge/BridgeManager";
 import IMediator from "../mediator/IMediator";
 import { moduleManager } from "../module/ModuleManager";
-import IModuleConstructor from "../module/IModuleConstructor";
 
 /**
  * @author Raykid
@@ -133,7 +133,8 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
                 instance[propertyKey] = mediator = new cls();
             }
             // 赋值所属模块
-            mediator["_dependModule"] = instance;
+            mediator["_dependModuleInstance"] = instance;
+            mediator["_dependModule"] = getConstructor(prototype.constructor);
         });
         // 监听销毁
         listenDispose(prototype.constructor, function(instance:IMediator):void
@@ -142,6 +143,7 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
             if(mediator)
             {
                 // 移除所属模块
+                mediator["_dependModuleInstance"] = undefined;
                 mediator["_dependModule"] = undefined;
                 // 移除实例
                 instance[propertyKey] = undefined;

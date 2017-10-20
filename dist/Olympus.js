@@ -4072,13 +4072,15 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     instance[propertyKey] = mediator = new cls();
                 }
                 // 赋值所属模块
-                mediator["_dependModule"] = instance;
+                mediator["_dependModuleInstance"] = instance;
+                mediator["_dependModule"] = ConstructUtil_2.getConstructor(prototype.constructor);
             });
             // 监听销毁
             ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
                 var mediator = instance[propertyKey];
                 if (mediator) {
                     // 移除所属模块
+                    mediator["_dependModuleInstance"] = undefined;
                     mediator["_dependModule"] = undefined;
                     // 移除实例
                     instance[propertyKey] = undefined;
@@ -4354,7 +4356,7 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
     }());
     exports.default = Model;
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core", "utils/ConstructUtil"], function (require, exports, Core_12, ConstructUtil_3) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4394,7 +4396,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "utils/Co
              * @memberof IMediator
              */
             get: function () {
-                return this._dependModule;
+                return this._dependModuleInstance;
             },
             enumerable: true,
             configurable: true
@@ -4407,7 +4409,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "utils/Co
              * @memberof IMediator
              */
             get: function () {
-                return ConstructUtil_3.getConstructor(this._dependModule.constructor);
+                return this._dependModule;
             },
             enumerable: true,
             configurable: true
@@ -4712,7 +4714,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_13, Dictionary_3, ModuleManager_2, ConstructUtil_4) {
+define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_13, Dictionary_3, ModuleManager_2, ConstructUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4891,7 +4893,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
          */
         Module.prototype.dispose = function () {
             // 关闭自身
-            var cls = ConstructUtil_4.getConstructor(this.constructor);
+            var cls = ConstructUtil_3.getConstructor(this.constructor);
             ModuleManager_2.moduleManager.close(cls);
             // 如果没关上则不销毁
             if (ModuleManager_2.moduleManager.isOpened(cls))

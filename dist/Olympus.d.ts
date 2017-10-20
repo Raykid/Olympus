@@ -2394,7 +2394,7 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         readonly disposed: boolean;
-        private _dependModule;
+        private _dependModuleInstance;
         /**
          * 所属的模块引用，需要配合@DelegateMediator使用
          *
@@ -2402,6 +2402,7 @@ declare module "engine/mediator/Mediator" {
          * @memberof IMediator
          */
         readonly dependModuleInstance: IModule;
+        private _dependModule;
         /**
          * 所属的模块类型，需要配合@DelegateMediator使用
          *
