@@ -2816,13 +2816,13 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             doFunc.call(policy, from, to, function () {
                 // 移除显示
                 from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
+                // 调用回调
+                complete && complete();
                 // 后置处理
                 from && from.onAfterOut(to, data);
                 to && to.onAfterIn(from, data);
                 // 派发事件
                 Core_4.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
-                // 调用回调
-                complete && complete();
                 // 完成步骤
                 SyncUtil_1.notify(SYNC_NAME);
             });

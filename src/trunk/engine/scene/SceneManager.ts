@@ -214,13 +214,13 @@ export default class SceneManager
         doFunc.call(policy, from, to, ()=>{
             // 移除显示
             from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
+            // 调用回调
+            complete && complete();
             // 后置处理
             from && from.onAfterOut(to, data);
             to && to.onAfterIn(from, data);
             // 派发事件
             core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, to, from);
-            // 调用回调
-            complete && complete();
             // 完成步骤
             notify(SYNC_NAME);
         });
