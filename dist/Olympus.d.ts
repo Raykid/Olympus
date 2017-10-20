@@ -1294,11 +1294,26 @@ declare module "engine/bridge/IHasBridge" {
         bridge: IBridge;
     }
 }
+declare module "engine/module/IModuleConstructor" {
+    import IModule from "engine/module/IModule";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * 模块构造器接口
+    */
+    export default interface IModuleConstructor {
+        new (): IModule;
+    }
+}
 declare module "engine/mediator/IMediator" {
     import IHasBridge from "engine/bridge/IHasBridge";
     import IOpenClose from "core/interfaces/IOpenClose";
     import IDisposable from "core/interfaces/IDisposable";
     import IModule from "engine/module/IModule";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1321,7 +1336,14 @@ declare module "engine/mediator/IMediator" {
          * @returns {IModule} 所属的模块引用
          * @memberof IMediator
          */
-        readonly dependModule: IModule;
+        readonly dependModuleInstance: IModule;
+        /**
+         * 所属的模块类型，需要配合@DelegateMediator使用
+         *
+         * @returns {IModuleConstructor} 所属的模块类型
+         * @memberof IMediator
+         */
+        readonly dependModule: IModuleConstructor;
         /**
          * 皮肤
          *
@@ -1391,20 +1413,6 @@ declare module "engine/mediator/IMediator" {
          * @memberof IMediator
          */
         unmapAllListeners(): void;
-    }
-}
-declare module "engine/module/IModuleConstructor" {
-    import IModule from "engine/module/IModule";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * 模块构造器接口
-    */
-    export default interface IModuleConstructor {
-        new (): IModule;
     }
 }
 declare module "engine/module/IModule" {
@@ -2353,6 +2361,7 @@ declare module "engine/mediator/Mediator" {
     import IMediator from "engine/mediator/IMediator";
     import IBridge from "engine/bridge/IBridge";
     import IModule from "engine/module/IModule";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -2392,7 +2401,14 @@ declare module "engine/mediator/Mediator" {
          * @returns {IModule} 所属的模块引用
          * @memberof IMediator
          */
-        readonly dependModule: IModule;
+        readonly dependModuleInstance: IModule;
+        /**
+         * 所属的模块类型，需要配合@DelegateMediator使用
+         *
+         * @returns {IModuleConstructor} 所属的模块类型
+         * @memberof IMediator
+         */
+        readonly dependModule: IModuleConstructor;
         constructor(skin?: any);
         /**
          * 列出中介者所需的资源数组，可重写

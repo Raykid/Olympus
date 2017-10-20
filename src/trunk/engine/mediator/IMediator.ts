@@ -2,6 +2,7 @@ import IHasBridge from "../bridge/IHasBridge";
 import IOpenClose from "../../core/interfaces/IOpenClose";
 import IDisposable from "../../core/interfaces/IDisposable";
 import IModule from "../module/IModule";
+import IModuleConstructor from "../module/IModuleConstructor";
 
 /**
  * @author Raykid
@@ -27,7 +28,15 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
      * @returns {IModule} 所属的模块引用
      * @memberof IMediator
      */
-    readonly dependModule:IModule;
+    readonly dependModuleInstance:IModule;
+
+    /**
+     * 所属的模块类型，需要配合@DelegateMediator使用
+     * 
+     * @returns {IModuleConstructor} 所属的模块类型
+     * @memberof IMediator
+     */
+    readonly dependModule:IModuleConstructor;
     
     /**
      * 皮肤

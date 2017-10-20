@@ -1,9 +1,11 @@
 import { core } from "../../core/Core";
 import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
+import { getConstructor } from "../../utils/ConstructUtil";
 import IMediator from "./IMediator";
 import IBridge from "../bridge/IBridge";
 import IModule from "../module/IModule";
+import IModuleConstructor from "../module/IModuleConstructor";
 
 /**
  * @author Raykid
@@ -51,9 +53,20 @@ export default class Mediator implements IMediator, IDispatcher
      * @returns {IModule} 所属的模块引用
      * @memberof IMediator
      */
-    public get dependModule():IModule
+    public get dependModuleInstance():IModule
     {
         return this._dependModule;
+    }
+    
+    /**
+     * 所属的模块类型，需要配合@DelegateMediator使用
+     * 
+     * @returns {IModuleConstructor} 所属的模块类型
+     * @memberof IMediator
+     */
+    public get dependModule():IModuleConstructor
+    {
+        return getConstructor(this._dependModule.constructor as IConstructor);
     }
 
     public constructor(skin?:any)
