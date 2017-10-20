@@ -1326,24 +1326,27 @@ declare module "engine/mediator/IMediator" {
         /**
          * 获取中介者是否已被销毁
          *
-         * @returns {boolean} 是否已被销毁
          * @memberof IMediator
          */
         readonly disposed: boolean;
         /**
          * 所属的模块引用，需要配合@DelegateMediator使用
          *
-         * @returns {IModule} 所属的模块引用
          * @memberof IMediator
          */
         readonly dependModuleInstance: IModule;
         /**
          * 所属的模块类型，需要配合@DelegateMediator使用
          *
-         * @returns {IModuleConstructor} 所属的模块类型
          * @memberof IMediator
          */
         readonly dependModule: IModuleConstructor;
+        /**
+         * 打开时传递的data对象
+         *
+         * @memberof IMediator
+         */
+        readonly data: any;
         /**
          * 皮肤
          *
@@ -2400,7 +2403,8 @@ declare module "engine/mediator/Mediator" {
         /**
          * 所属的模块引用，需要配合@DelegateMediator使用
          *
-         * @returns {IModule} 所属的模块引用
+         * @readonly
+         * @type {IModule}
          * @memberof IMediator
          */
         readonly dependModuleInstance: IModule;
@@ -2408,10 +2412,20 @@ declare module "engine/mediator/Mediator" {
         /**
          * 所属的模块类型，需要配合@DelegateMediator使用
          *
-         * @returns {IModuleConstructor} 所属的模块类型
+         * @readonly
+         * @type {IModuleConstructor}
          * @memberof IMediator
          */
         readonly dependModule: IModuleConstructor;
+        private _data;
+        /**
+         * 打开时传递的data对象
+         *
+         * @readonly
+         * @type {*}
+         * @memberof Mediator
+         */
+        readonly data: any;
         constructor(skin?: any);
         /**
          * 列出中介者所需的资源数组，可重写

@@ -4400,7 +4400,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             /**
              * 所属的模块引用，需要配合@DelegateMediator使用
              *
-             * @returns {IModule} 所属的模块引用
+             * @readonly
+             * @type {IModule}
              * @memberof IMediator
              */
             get: function () {
@@ -4413,11 +4414,26 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             /**
              * 所属的模块类型，需要配合@DelegateMediator使用
              *
-             * @returns {IModuleConstructor} 所属的模块类型
+             * @readonly
+             * @type {IModuleConstructor}
              * @memberof IMediator
              */
             get: function () {
                 return this._dependModule;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mediator.prototype, "data", {
+            /**
+             * 打开时传递的data对象
+             *
+             * @readonly
+             * @type {*}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this._data;
             },
             enumerable: true,
             configurable: true
@@ -4462,6 +4478,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          * @memberof Mediator
          */
         Mediator.prototype.open = function (data) {
+            this._data = data;
             this.onOpen(data);
             return this;
         };

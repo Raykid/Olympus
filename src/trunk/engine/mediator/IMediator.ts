@@ -17,7 +17,6 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
     /**
      * 获取中介者是否已被销毁
      * 
-     * @returns {boolean} 是否已被销毁
      * @memberof IMediator
      */
     readonly disposed:boolean;
@@ -25,7 +24,6 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
     /**
      * 所属的模块引用，需要配合@DelegateMediator使用
      * 
-     * @returns {IModule} 所属的模块引用
      * @memberof IMediator
      */
     readonly dependModuleInstance:IModule;
@@ -33,10 +31,16 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
     /**
      * 所属的模块类型，需要配合@DelegateMediator使用
      * 
-     * @returns {IModuleConstructor} 所属的模块类型
      * @memberof IMediator
      */
     readonly dependModule:IModuleConstructor;
+
+    /**
+     * 打开时传递的data对象
+     * 
+     * @memberof IMediator
+     */
+    readonly data:any;
     
     /**
      * 皮肤

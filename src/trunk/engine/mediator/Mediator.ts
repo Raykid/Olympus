@@ -50,7 +50,8 @@ export default class Mediator implements IMediator, IDispatcher
     /**
      * 所属的模块引用，需要配合@DelegateMediator使用
      * 
-     * @returns {IModule} 所属的模块引用
+     * @readonly
+     * @type {IModule}
      * @memberof IMediator
      */
     public get dependModuleInstance():IModule
@@ -62,12 +63,27 @@ export default class Mediator implements IMediator, IDispatcher
     /**
      * 所属的模块类型，需要配合@DelegateMediator使用
      * 
-     * @returns {IModuleConstructor} 所属的模块类型
+     * @readonly
+     * @type {IModuleConstructor}
      * @memberof IMediator
      */
     public get dependModule():IModuleConstructor
     {
         return this._dependModule;
+    }
+
+    private _data:any;
+
+    /**
+     * 打开时传递的data对象
+     * 
+     * @readonly
+     * @type {*}
+     * @memberof Mediator
+     */
+    public get data():any
+    {
+        return this._data;
     }
 
     public constructor(skin?:any)
@@ -123,6 +139,7 @@ export default class Mediator implements IMediator, IDispatcher
      */
     public open(data?:any):any
     {
+        this._data = data;
         this.onOpen(data);
         return this;
     }
