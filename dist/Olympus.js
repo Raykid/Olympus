@@ -3830,7 +3830,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 赋值打开参数
                 target.data = data;
                 // 加载所有已托管中介者的资源
-                var mediators = target.getDelegatedMediators().concat();
+                var mediators = target.delegatedMediators.concat();
                 var loadMediatorAssets = function (err) {
                     if (err) {
                         // 停止加载，调用模块加载失败接口
@@ -4749,33 +4749,19 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
             enumerable: true,
             configurable: true
         });
-        /**
-         * 列出模块所需CSS资源URL，可以重写
-         *
-         * @returns {string[]} CSS资源列表
-         * @memberof Module
-         */
-        Module.prototype.listStyleFiles = function () {
-            return null;
-        };
-        /**
-         * 列出模块所需JS资源URL，可以重写
-         *
-         * @returns {string[]} js资源列表
-         * @memberof Module
-         */
-        Module.prototype.listJsFiles = function () {
-            return null;
-        };
-        /**
-         * 列出模块初始化请求，可以重写
-         *
-         * @returns {RequestData[]} 模块的初始化请求列表
-         * @memberof Module
-         */
-        Module.prototype.listInitRequests = function () {
-            return null;
-        };
+        Object.defineProperty(Module.prototype, "delegatedMediators", {
+            /**
+             * 获取所有已托管的中介者
+             *
+             * @returns {IMediator[]} 已托管的中介者
+             * @memberof Module
+             */
+            get: function () {
+                return this._mediators;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Module.prototype.disposeMediator = function (mediator) {
             // 取消托管
             this.undelegateMediator(mediator);
@@ -4823,13 +4809,41 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
             }
         };
         /**
-         * 获取所有已托管的中介者
+         * 判断指定中介者是否包含在该模块里
          *
-         * @returns {IMediator[]} 已托管的中介者
+         * @param {IMediator} mediator 要判断的中介者
+         * @returns {boolean} 是否包含在该模块里
          * @memberof Module
          */
-        Module.prototype.getDelegatedMediators = function () {
-            return this._mediators;
+        Module.prototype.constainsMediator = function (mediator) {
+            return (this._mediators.indexOf(mediator) >= 0);
+        };
+        /**
+         * 列出模块所需CSS资源URL，可以重写
+         *
+         * @returns {string[]} CSS资源列表
+         * @memberof Module
+         */
+        Module.prototype.listStyleFiles = function () {
+            return null;
+        };
+        /**
+         * 列出模块所需JS资源URL，可以重写
+         *
+         * @returns {string[]} js资源列表
+         * @memberof Module
+         */
+        Module.prototype.listJsFiles = function () {
+            return null;
+        };
+        /**
+         * 列出模块初始化请求，可以重写
+         *
+         * @returns {RequestData[]} 模块的初始化请求列表
+         * @memberof Module
+         */
+        Module.prototype.listInitRequests = function () {
+            return null;
         };
         /**
          * 当模块资源加载完毕后调用

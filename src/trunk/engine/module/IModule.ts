@@ -18,6 +18,8 @@ export default interface IModule extends IDisposable
     data:any;
     /** 模块初始消息的返回数据 */
     responses:ResponseData[];
+    /** 获取所有已托管的中介者 */
+    readonly delegatedMediators:IMediator[];
     /** 列出模块所需CSS资源URL */
     listStyleFiles():string[];
     /** 列出模块所需JS资源URL */
@@ -28,8 +30,8 @@ export default interface IModule extends IDisposable
     delegateMediator(mediator:IMediator):void;
     /** 反托管中介者 */
     undelegateMediator(mediator:IMediator):void;
-    /** 获取所有已托管的中介者 */
-    getDelegatedMediators():IMediator[];
+    /** 判断指定中介者是否包含在该模块里 */
+    constainsMediator(mediator:IMediator):boolean;
     /** 当模块资源加载完毕后调用 */
     onLoadAssets(err?:Error):void;
     /** 打开模块时调用 */

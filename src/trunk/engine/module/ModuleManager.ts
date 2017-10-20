@@ -135,7 +135,7 @@ export default class ModuleManager
             // 赋值打开参数
             target.data = data;
             // 加载所有已托管中介者的资源
-            var mediators:IMediator[] = target.getDelegatedMediators().concat();
+            var mediators:IMediator[] = target.delegatedMediators.concat();
             var loadMediatorAssets:(err?:Error)=>void = (err?:Error)=>{
                 if(err)
                 {

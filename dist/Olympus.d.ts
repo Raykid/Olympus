@@ -1434,6 +1434,8 @@ declare module "engine/module/IModule" {
         data: any;
         /** 模块初始消息的返回数据 */
         responses: ResponseData[];
+        /** 获取所有已托管的中介者 */
+        readonly delegatedMediators: IMediator[];
         /** 列出模块所需CSS资源URL */
         listStyleFiles(): string[];
         /** 列出模块所需JS资源URL */
@@ -1444,8 +1446,8 @@ declare module "engine/module/IModule" {
         delegateMediator(mediator: IMediator): void;
         /** 反托管中介者 */
         undelegateMediator(mediator: IMediator): void;
-        /** 获取所有已托管的中介者 */
-        getDelegatedMediators(): IMediator[];
+        /** 判断指定中介者是否包含在该模块里 */
+        constainsMediator(mediator: IMediator): boolean;
         /** 当模块资源加载完毕后调用 */
         onLoadAssets(err?: Error): void;
         /** 打开模块时调用 */
@@ -2683,6 +2685,38 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         readonly disposed: boolean;
+        private _mediators;
+        /**
+         * 获取所有已托管的中介者
+         *
+         * @returns {IMediator[]} 已托管的中介者
+         * @memberof Module
+         */
+        readonly delegatedMediators: IMediator[];
+        private _disposeDict;
+        private disposeMediator(mediator);
+        /**
+         * 托管中介者
+         *
+         * @param {IMediator} mediator 中介者
+         * @memberof Module
+         */
+        delegateMediator(mediator: IMediator): void;
+        /**
+         * 取消托管中介者
+         *
+         * @param {IMediator} mediator 中介者
+         * @memberof Module
+         */
+        undelegateMediator(mediator: IMediator): void;
+        /**
+         * 判断指定中介者是否包含在该模块里
+         *
+         * @param {IMediator} mediator 要判断的中介者
+         * @returns {boolean} 是否包含在该模块里
+         * @memberof Module
+         */
+        constainsMediator(mediator: IMediator): boolean;
         /**
          * 列出模块所需CSS资源URL，可以重写
          *
@@ -2704,30 +2738,6 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         listInitRequests(): RequestData[];
-        private _mediators;
-        private _disposeDict;
-        private disposeMediator(mediator);
-        /**
-         * 托管中介者
-         *
-         * @param {IMediator} mediator 中介者
-         * @memberof Module
-         */
-        delegateMediator(mediator: IMediator): void;
-        /**
-         * 取消托管中介者
-         *
-         * @param {IMediator} mediator 中介者
-         * @memberof Module
-         */
-        undelegateMediator(mediator: IMediator): void;
-        /**
-         * 获取所有已托管的中介者
-         *
-         * @returns {IMediator[]} 已托管的中介者
-         * @memberof Module
-         */
-        getDelegatedMediators(): IMediator[];
         /**
          * 当模块资源加载完毕后调用
          *

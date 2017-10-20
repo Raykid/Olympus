@@ -49,40 +49,18 @@ export default abstract class Module implements IModule, IDispatcher
         return this._disposed;
     }
 
-    /**
-     * 列出模块所需CSS资源URL，可以重写
-     * 
-     * @returns {string[]} CSS资源列表
-     * @memberof Module
-     */
-    public listStyleFiles():string[]
-    {
-        return null;
-    }
-
-    /**
-     * 列出模块所需JS资源URL，可以重写
-     * 
-     * @returns {string[]} js资源列表
-     * @memberof Module
-     */
-    public listJsFiles():string[]
-    {
-        return null;
-    }
-
-    /**
-     * 列出模块初始化请求，可以重写
-     * 
-     * @returns {RequestData[]} 模块的初始化请求列表
-     * @memberof Module
-     */
-    public listInitRequests():RequestData[]
-    {
-        return null;
-    }
-
     private _mediators:IMediator[] = [];
+    
+    /**
+     * 获取所有已托管的中介者
+     * 
+     * @returns {IMediator[]} 已托管的中介者
+     * @memberof Module
+     */
+    public get delegatedMediators():IMediator[]
+    {
+        return this._mediators;
+    }
 
     private _disposeDict:Dictionary<IMediator, ()=>void> = new Dictionary();
     private disposeMediator(mediator:IMediator):void
@@ -94,6 +72,7 @@ export default abstract class Module implements IModule, IDispatcher
         // 如果所有已托管的中介者都已经被销毁，则销毁当前模块
         if(this._mediators.length <= 0) this.dispose();
     };
+    
     /**
      * 托管中介者
      * 
@@ -135,14 +114,48 @@ export default abstract class Module implements IModule, IDispatcher
     }
 
     /**
-     * 获取所有已托管的中介者
+     * 判断指定中介者是否包含在该模块里
      * 
-     * @returns {IMediator[]} 已托管的中介者
+     * @param {IMediator} mediator 要判断的中介者
+     * @returns {boolean} 是否包含在该模块里
      * @memberof Module
      */
-    public getDelegatedMediators():IMediator[]
+    public constainsMediator(mediator:IMediator):boolean
     {
-        return this._mediators;
+        return (this._mediators.indexOf(mediator) >= 0);
+    }
+    
+    /**
+     * 列出模块所需CSS资源URL，可以重写
+     * 
+     * @returns {string[]} CSS资源列表
+     * @memberof Module
+     */
+    public listStyleFiles():string[]
+    {
+        return null;
+    }
+
+    /**
+     * 列出模块所需JS资源URL，可以重写
+     * 
+     * @returns {string[]} js资源列表
+     * @memberof Module
+     */
+    public listJsFiles():string[]
+    {
+        return null;
+    }
+
+    /**
+     * 列出模块初始化请求，可以重写
+     * 
+     * @returns {RequestData[]} 模块的初始化请求列表
+     * @memberof Module
+     */
+    public listInitRequests():RequestData[]
+    {
+        return null;
     }
 
     /**
