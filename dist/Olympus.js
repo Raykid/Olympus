@@ -4002,22 +4002,25 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
         if (!cls.prototype.dispose)
             console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-        // 替换setSkin方法
-        var $skin;
-        Object.defineProperty(cls.prototype, "skin", {
-            configurable: true,
-            enumerable: true,
-            get: function () {
-                return $skin;
-            },
-            set: function (value) {
-                // 记录值
-                $skin = value;
-                // 根据skin类型选取表现层桥
-                this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
-                // 调用处理皮肤接口
-                this.bridge && this.bridge.handleSkin(this);
-            }
+        // 监听实例化
+        ConstructUtil_2.listenConstruct(cls, function (instance) {
+            // 替换setSkin方法
+            var $skin;
+            Object.defineProperty(instance, "skin", {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                    return $skin;
+                },
+                set: function (value) {
+                    // 记录值
+                    $skin = value;
+                    // 根据skin类型选取表现层桥
+                    this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
+                    // 调用处理皮肤接口
+                    this.bridge && this.bridge.handleSkin(this);
+                }
+            });
         });
         return ConstructUtil_2.wrapConstruct(cls);
     }

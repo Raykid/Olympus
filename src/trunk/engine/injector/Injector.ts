@@ -46,24 +46,28 @@ export function MediatorClass(cls:IConstructor):IConstructor
     // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
     if(!cls.prototype.dispose)
         console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-    // 替换setSkin方法
-    var $skin:any;
-    Object.defineProperty(cls.prototype, "skin", {
-        configurable: true,
-        enumerable: true,
-        get: function():any
-        {
-            return $skin;
-        },
-        set: function(value:any):void
-        {
-            // 记录值
-            $skin = value;
-            // 根据skin类型选取表现层桥
-            this.bridge = bridgeManager.getBridgeBySkin(value);
-            // 调用处理皮肤接口
-            this.bridge && this.bridge.handleSkin(this);
-        }
+    // 监听实例化
+    listenConstruct(cls, function(instance:any):void
+    {
+        // 替换setSkin方法
+        var $skin:any;
+        Object.defineProperty(instance, "skin", {
+            configurable: true,
+            enumerable: true,
+            get: function():any
+            {
+                return $skin;
+            },
+            set: function(value:any):void
+            {
+                // 记录值
+                $skin = value;
+                // 根据skin类型选取表现层桥
+                this.bridge = bridgeManager.getBridgeBySkin(value);
+                // 调用处理皮肤接口
+                this.bridge && this.bridge.handleSkin(this);
+            }
+        });
     });
     return wrapConstruct(cls);
 }
