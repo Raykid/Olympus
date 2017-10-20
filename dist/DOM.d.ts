@@ -1,15 +1,4 @@
 /// <reference path="Olympus.d.ts" />
-declare module "dom/injector/Injector" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-09
-     * @modify date 2017-10-09
-     *
-     * 负责注入的模块
-    */
-    export function DOMMediatorClass(cls: IConstructor): any;
-}
 declare module "DOMBridge" {
     import IBridge from "engine/bridge/IBridge";
     import IPromptPanel from "engine/panel/IPromptPanel";
@@ -251,4 +240,15 @@ declare module "DOMBridge" {
         /** 通用提示框 */
         promptPanel?: IPromptPanel;
     }
+}
+declare module "dom/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    export function DOMMediatorClass(cls: IConstructor): any;
 }

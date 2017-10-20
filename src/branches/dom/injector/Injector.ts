@@ -1,6 +1,7 @@
 import { listenConstruct } from "utils/ConstructUtil";
 import { MediatorClass } from "engine/injector/Injector";
 import { bridgeManager } from "engine/bridge/BridgeManager";
+import DOMBridge from "../../DOMBridge";
 
 /**
  * @author Raykid
@@ -12,8 +13,10 @@ import { bridgeManager } from "engine/bridge/BridgeManager";
 */
 export function DOMMediatorClass(cls:IConstructor):any
 {
-    // 监听类型实例化，赋值表现层桥
-    listenConstruct(cls, mediator=>mediator.bridge = bridgeManager.getBridge("DOM"));
     // 调用MediatorClass方法
-    return MediatorClass(cls);
+    cls = MediatorClass(cls);
+    // 监听类型实例化，赋值表现层桥
+    listenConstruct(cls, mediator=>mediator.bridge = bridgeManager.getBridge(DOMBridge.TYPE));
+    // 返回结果类型
+    return cls;
 }

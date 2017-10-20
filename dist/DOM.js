@@ -1,22 +1,3 @@
-define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-09
-     * @modify date 2017-10-09
-     *
-     * 负责注入的模块
-    */
-    function DOMMediatorClass(cls) {
-        // 监听类型实例化，赋值表现层桥
-        ConstructUtil_1.listenConstruct(cls, function (mediator) { return mediator.bridge = BridgeManager_1.bridgeManager.getBridge("DOM"); });
-        // 调用MediatorClass方法
-        return Injector_1.MediatorClass(cls);
-    }
-    exports.DOMMediatorClass = DOMMediatorClass;
-});
 /// <reference path="../../dist/Olympus.d.ts"/>
 define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"], function (require, exports, ObjectUtil_1, HTTPUtil_1) {
     "use strict";
@@ -417,5 +398,26 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"]
         return DOMBridge;
     }());
     exports.default = DOMBridge;
+});
+define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager", "DOMBridge"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_1, DOMBridge_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    function DOMMediatorClass(cls) {
+        // 调用MediatorClass方法
+        cls = Injector_1.MediatorClass(cls);
+        // 监听类型实例化，赋值表现层桥
+        ConstructUtil_1.listenConstruct(cls, function (mediator) { return mediator.bridge = BridgeManager_1.bridgeManager.getBridge(DOMBridge_1.default.TYPE); });
+        // 返回结果类型
+        return cls;
+    }
+    exports.DOMMediatorClass = DOMMediatorClass;
 });
 //# sourceMappingURL=DOM.js.map
