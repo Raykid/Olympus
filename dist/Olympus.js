@@ -2765,9 +2765,10 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                 policy = NoneScenePolicy_1.default;
             }
             // 执行切换
-            this.doChange(scene, to, data, policy, ChangeType.Pop, null, function () {
+            this.doChange(scene, to, data, policy, ChangeType.Pop, function () {
                 // 移除记录
                 _this._sceneStack.splice(_this._sceneStack.indexOf(scene), 1);
+            }, function () {
                 // 销毁场景
                 scene.dispose();
             });

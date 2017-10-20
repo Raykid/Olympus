@@ -159,10 +159,11 @@ export default class SceneManager
             data,
             policy,
             ChangeType.Pop,
-            null,
             ()=>{
                 // 移除记录
                 this._sceneStack.splice(this._sceneStack.indexOf(scene), 1);
+            },
+            ()=>{
                 // 销毁场景
                 scene.dispose();
             }
