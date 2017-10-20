@@ -52,7 +52,7 @@ export default class PanelMediator extends Mediator implements IPanel
      */
     public close(data?:any, to?:{x:number, y:number}):IPanel
     {
-        super.close(data);
+        this.onClose(data);
         return panelManager.drop(this, data, to);
     }
     

@@ -179,7 +179,7 @@ export default abstract class Module implements IModule, IDispatcher
     public onClose(data?:any):void
     {
         // 调用所有已托管中介者的close方法
-        for(var mediator of this._mediators)
+        for(var mediator of this._mediators.concat())
         {
             mediator.close(data);
         }

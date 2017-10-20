@@ -137,6 +137,7 @@ export default class Mediator implements IMediator, IDispatcher
     public close(data?:any):any
     {
         this.onClose(data);
+        this.dispose();
         return this;
     }
     

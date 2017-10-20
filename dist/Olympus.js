@@ -4466,6 +4466,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          */
         Mediator.prototype.close = function (data) {
             this.onClose(data);
+            this.dispose();
             return this;
         };
         /**
@@ -4615,7 +4616,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.close = function (data, to) {
-            _super.prototype.close.call(this, data);
+            this.onClose(data);
             return PanelManager_2.panelManager.drop(this, data, to);
         };
         /** 在弹出前调用的方法 */
@@ -4675,7 +4676,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.close = function (data) {
-            _super.prototype.close.call(this, data);
+            this.onClose(data);
             return SceneManager_2.sceneManager.pop(this, data);
         };
         /**
@@ -4856,7 +4857,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
          */
         Module.prototype.onClose = function (data) {
             // 调用所有已托管中介者的close方法
-            for (var _i = 0, _a = this._mediators; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this._mediators.concat(); _i < _a.length; _i++) {
                 var mediator = _a[_i];
                 mediator.close(data);
             }

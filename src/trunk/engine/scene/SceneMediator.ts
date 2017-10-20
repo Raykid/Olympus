@@ -49,7 +49,7 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public close(data?:any):IScene
     {
-        super.close(data);
+        this.onClose(data);
         return sceneManager.pop(this, data);
     }
 
