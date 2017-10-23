@@ -4767,7 +4767,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
         /**
          * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
          *
-         * @param {(err?:Error)=>void} handler 完毕后的回调函数，有错误则给出err，没有则不给
+         * @param {(err?:Error)=>void} [handler] 完毕后的回调函数，有错误则给出err，没有则不给
          * @memberof Mediator
          */
         Mediator.prototype.loadAssets = function (handler) {
@@ -4776,7 +4776,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
                 // 调用onLoadAssets接口
                 self.onLoadAssets(err);
                 // 调用回调
-                handler.call(this, err);
+                handler && handler.call(this, err);
             });
         };
         /**
