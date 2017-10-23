@@ -38,8 +38,9 @@ export default class PanelMediator extends Mediator implements IPanel
      */
     public open(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel
     {
+        panelManager.pop(this, data, isModel, from);
         super.open(data);
-        return panelManager.pop(this, data, isModel, from);
+        return this;
     }
 
     /**
@@ -52,8 +53,9 @@ export default class PanelMediator extends Mediator implements IPanel
      */
     public close(data?:any, to?:{x:number, y:number}):IPanel
     {
+        panelManager.drop(this, data, to);
         this.onClose(data);
-        return panelManager.drop(this, data, to);
+        return this;
     }
     
     /** 在弹出前调用的方法 */

@@ -4943,8 +4943,9 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.open = function (data, isModel, from) {
+            PanelManager_2.panelManager.pop(this, data, isModel, from);
             _super.prototype.open.call(this, data);
-            return PanelManager_2.panelManager.pop(this, data, isModel, from);
+            return this;
         };
         /**
          * 关闭当前弹窗（等同于调用PanelManager.drop方法）
@@ -4955,8 +4956,9 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.close = function (data, to) {
+            PanelManager_2.panelManager.drop(this, data, to);
             this.onClose(data);
-            return PanelManager_2.panelManager.drop(this, data, to);
+            return this;
         };
         /** 在弹出前调用的方法 */
         PanelMediator.prototype.onBeforePop = function (data, isModel, from) {
@@ -5004,8 +5006,9 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.open = function (data) {
+            SceneManager_2.sceneManager.push(this, data);
             _super.prototype.open.call(this, data);
-            return SceneManager_2.sceneManager.push(this, data);
+            return this;
         };
         /**
          * 关闭当前场景（相当于调用SceneManager.pop方法）
@@ -5015,8 +5018,9 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.close = function (data) {
+            SceneManager_2.sceneManager.pop(this, data);
             this.onClose(data);
-            return SceneManager_2.sceneManager.pop(this, data);
+            return this;
         };
         /**
          * 切入场景开始前调用
