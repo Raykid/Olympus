@@ -32,12 +32,16 @@ export default class BackPanelPolicy implements IPanelPolicy
         var fromY:number = 0;
 
         if(from != null) {
-            fromX = from.x || entity.x;
-            fromY = from.y || entity.y;
+            fromX = from.x;
+            fromY = from.y;
         } else {
-            fromX = entity.x + entity.width * 0.5;
-            fromY = entity.y + entity.height * 0.5;
+            fromX = entity.stage.stageWidth * 0.5;
+            fromY = entity.stage.stageHeight * 0.5;
         }
+        
+        // 更新弹出后位置
+        entity.x = fromX - entity.width * 0.5;
+        entity.y = fromY - entity.height * 0.5;
 
         // 开始缓动
         tweenFrom(entity, {
@@ -64,8 +68,8 @@ export default class BackPanelPolicy implements IPanelPolicy
         var toY:number = 0;
 
         if(to != null) {
-            toX = to.x || entity.x + entity.width * 0.5;
-            toY = to.y || entity.y + entity.height * 0.5;
+            toX = to.x;
+            toY = to.y;
         } else {
             toX = entity.x + entity.width * 0.5;
             toY = entity.y + entity.height * 0.5;

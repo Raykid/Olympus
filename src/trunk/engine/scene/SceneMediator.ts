@@ -36,9 +36,8 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public open(data?:any):IScene
     {
-        sceneManager.push(this, data);
         super.open(data);
-        return this;
+        return sceneManager.push(this, data);
     }
 
     /**
@@ -50,9 +49,8 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public close(data?:any):IScene
     {
-        sceneManager.pop(this, data);
         this.onClose(data);
-        return this;
+        return sceneManager.pop(this, data);
     }
 
     /**

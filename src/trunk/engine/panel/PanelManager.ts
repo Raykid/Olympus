@@ -186,7 +186,7 @@ export default class PanelManager
             if(handler.buttonType == null) handler.buttonType = ButtonType.normal;
         }
         // 显示弹窗
-        this.pop(prompt);
+        prompt.open();
         // 更新弹窗
         prompt.update(params);
         // 返回弹窗
