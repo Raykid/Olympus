@@ -185,9 +185,12 @@ export default class PanelManager
             if(handler.text == null) handler.text = handler.data;
             if(handler.buttonType == null) handler.buttonType = ButtonType.normal;
         }
+        // 显示弹窗
+        this.pop(prompt);
+        // 更新弹窗
         prompt.update(params);
-        // 显示并返回弹窗
-        return this.pop(prompt);
+        // 返回弹窗
+        return prompt;
     }
 
     /**

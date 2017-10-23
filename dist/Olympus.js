@@ -2990,9 +2990,12 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 if (handler.buttonType == null)
                     handler.buttonType = IPromptPanel_1.ButtonType.normal;
             }
+            // 显示弹窗
+            this.pop(prompt);
+            // 更新弹窗
             prompt.update(params);
-            // 显示并返回弹窗
-            return this.pop(prompt);
+            // 返回弹窗
+            return prompt;
         };
         /**
          * 显示警告窗口（只有一个确定按钮）
