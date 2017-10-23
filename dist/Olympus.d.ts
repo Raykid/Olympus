@@ -938,6 +938,9 @@ declare module "engine/panel/IPromptPanel" {
         /** 按钮类型，默认为normal */
         buttonType?: ButtonType;
     }
+    export interface IPromptPanelConstructor {
+        new (): IPromptPanel;
+    }
     export default interface IPromptPanel extends IPanel {
         /**
          * 更新通用提示窗显示

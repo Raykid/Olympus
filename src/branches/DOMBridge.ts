@@ -2,7 +2,7 @@
 
 import IBridge from "engine/bridge/IBridge";
 import { getObjectHashs } from "utils/ObjectUtil";
-import IPromptPanel from "engine/panel/IPromptPanel";
+import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
@@ -22,6 +22,7 @@ export default class DOMBridge implements IBridge
     public static TYPE:string = "DOM";
 
     private _initParams:IInitParams;
+    private _promptPanel:IPromptPanel;
 
     /**
      * 获取表现层类型名称
@@ -116,7 +117,11 @@ export default class DOMBridge implements IBridge
      */
     public get promptPanel():IPromptPanel
     {
-        return this._initParams.promptPanel;
+        if(!this._promptPanel && this._initParams.promptClass)
+        {
+            this._promptPanel = new this._initParams.promptClass();
+        }
+        return this._promptPanel;
     }
     
     /**
@@ -441,6 +446,6 @@ export interface IInitParams
 {
     /** DOM容器名称或引用，不传递则自动生成一个 */
     container?:string|HTMLElement;
-    /** 通用提示框 */
-    promptPanel?:IPromptPanel;
+    /** 通用提示框类型 */
+    promptClass?:IPromptPanelConstructor;
 }

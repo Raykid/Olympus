@@ -179,7 +179,7 @@ declare module "egret/utils/UIUtil" {
 }
 declare module "EgretBridge" {
     import IBridge from "engine/bridge/IBridge";
-    import IPromptPanel from "engine/panel/IPromptPanel";
+    import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
@@ -196,6 +196,7 @@ declare module "EgretBridge" {
         /** 提供静态类型常量 */
         static TYPE: string;
         private _initParams;
+        private _promptPanel;
         /**
          * 获取表现层类型名称
          *
@@ -444,7 +445,7 @@ declare module "EgretBridge" {
         backgroundColor?: number;
         /** 渲染模式，在harpy.RenderMode中查找枚举值，默认为AUTO **/
         renderMode?: RenderMode;
-        /** 通用提示框 */
-        promptPanel?: IPromptPanel;
+        /** 通用提示框类型 */
+        promptClass?: IPromptPanelConstructor;
     }
 }

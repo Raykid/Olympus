@@ -35,6 +35,11 @@ export interface IPromptHandler
     buttonType?:ButtonType;
 }
 
+export interface IPromptPanelConstructor
+{
+    new ():IPromptPanel;
+}
+
 export default interface IPromptPanel extends IPanel
 {
     /**

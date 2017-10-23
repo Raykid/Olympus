@@ -136,7 +136,10 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"]
              * @memberof DOMBridge
              */
             get: function () {
-                return this._initParams.promptPanel;
+                if (!this._promptPanel && this._initParams.promptClass) {
+                    this._promptPanel = new this._initParams.promptClass();
+                }
+                return this._promptPanel;
             },
             enumerable: true,
             configurable: true

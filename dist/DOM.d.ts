@@ -1,7 +1,7 @@
 /// <reference path="Olympus.d.ts" />
 declare module "DOMBridge" {
     import IBridge from "engine/bridge/IBridge";
-    import IPromptPanel from "engine/panel/IPromptPanel";
+    import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
@@ -17,6 +17,7 @@ declare module "DOMBridge" {
         /** 提供静态类型常量 */
         static TYPE: string;
         private _initParams;
+        private _promptPanel;
         /**
          * 获取表现层类型名称
          *
@@ -237,8 +238,8 @@ declare module "DOMBridge" {
     export interface IInitParams {
         /** DOM容器名称或引用，不传递则自动生成一个 */
         container?: string | HTMLElement;
-        /** 通用提示框 */
-        promptPanel?: IPromptPanel;
+        /** 通用提示框类型 */
+        promptClass?: IPromptPanelConstructor;
     }
 }
 declare module "dom/injector/Injector" {
