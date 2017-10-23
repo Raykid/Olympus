@@ -344,21 +344,22 @@ export default class DOMBridge implements IBridge
     /**
      * 加载资源
      * 
+     * @param {string[]} assets 资源数组
      * @param {IMediator} mediator 资源列表
      * @param {(err?:Error)=>void} handler 回调函数
      * @memberof DOMBridge
      */
-    public loadAssets(mediator:IMediator, handler:(err?:Error)=>void):void
+    public loadAssets(assets:string[], mediator:IMediator, handler:(err?:Error)=>void):void
     {
         // 声明一个皮肤文本，用于记录所有皮肤模板后一次性生成显示
         var skinStr:string = "";
         // 开始加载皮肤列表
-        var skins:string[] = mediator.listAssets().concat();
+        if(assets) assets = assets.concat();
         loadNext();
         
         function loadNext():void
         {
-            if(skins.length <= 0)
+            if(!assets || assets.length <= 0)
             {
                 // 设置一个外壳容器
                 var div:HTMLElement = document.createElement("div");
@@ -369,7 +370,7 @@ export default class DOMBridge implements IBridge
             }
             else
             {
-                var skin:string = skins.shift();
+                var skin:string = assets.shift();
                 if(skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0)
                 {
                     // 是皮肤字符串

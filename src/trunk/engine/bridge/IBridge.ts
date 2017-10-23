@@ -196,11 +196,12 @@ export default interface IBridge
     /**
      * 加载资源
      * 
+     * @param {string[]} assets 资源数组
      * @param {IMediator} mediator 要加载资源的中介者
      * @param {(err?:Error)=>void} handler 回调函数
      * @memberof IBridge
      */
-    loadAssets(mediator:IMediator, handler:(err?:Error)=>void):void;
+    loadAssets(assets:string[], mediator:IMediator, handler:(err?:Error)=>void):void;
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 

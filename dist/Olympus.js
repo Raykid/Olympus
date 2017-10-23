@@ -4773,9 +4773,15 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
         Mediator.prototype.loadAssets = function () {
             if (this._assetsLoading)
                 return;
+            // 进行规则检查，没有托管到Module的Mediator不应该声明任何资源依赖
+            var assets = this.listAssets();
+            if (!this._dependModule && assets && assets.length > 0) {
+                console.warn("非托管Mediator不能声明任何资源依赖，listAssets方法必须返回null或者空数组");
+                assets = null;
+            }
             this._assetsLoading = true;
             var self = this;
-            this.bridge.loadAssets(this, function (err) {
+            this.bridge.loadAssets(assets, this, function (err) {
                 // 设置标识符
                 self._assetsLoaded = true;
                 // 调用onLoadAssets接口

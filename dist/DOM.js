@@ -313,18 +313,20 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"]
         /**
          * 加载资源
          *
+         * @param {string[]} assets 资源数组
          * @param {IMediator} mediator 资源列表
          * @param {(err?:Error)=>void} handler 回调函数
          * @memberof DOMBridge
          */
-        DOMBridge.prototype.loadAssets = function (mediator, handler) {
+        DOMBridge.prototype.loadAssets = function (assets, mediator, handler) {
             // 声明一个皮肤文本，用于记录所有皮肤模板后一次性生成显示
             var skinStr = "";
             // 开始加载皮肤列表
-            var skins = mediator.listAssets().concat();
+            if (assets)
+                assets = assets.concat();
             loadNext();
             function loadNext() {
-                if (skins.length <= 0) {
+                if (!assets || assets.length <= 0) {
                     // 设置一个外壳容器
                     var div = document.createElement("div");
                     div.innerHTML = skinStr;
@@ -333,7 +335,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"]
                     handler();
                 }
                 else {
-                    var skin = skins.shift();
+                    var skin = assets.shift();
                     if (skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0) {
                         // 是皮肤字符串
                         skinStr += skin;

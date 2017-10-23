@@ -444,11 +444,12 @@ export default class EgretBridge implements IBridge
     /**
      * 加载资源
      * 
+     * @param {string[]} assets 资源数组
      * @param {IMediator} mediator 资源列表
      * @param {(err?:Error)=>void} handler 回调函数
      * @memberof EgretBridge
      */
-    public loadAssets(mediator:IMediator, handler:(err?:Error)=>void):void
+    public loadAssets(assets:string[], mediator:IMediator, handler:(err?:Error)=>void):void
     {
         var loader:AssetsLoader = new AssetsLoader({
             oneError: (evt:RES.ResourceEvent)=>{
@@ -462,7 +463,7 @@ export default class EgretBridge implements IBridge
                 handler();
             }
         });
-        loader.loadGroups(mediator.listAssets());
+        loader.loadGroups(assets);
     }
     
     /**

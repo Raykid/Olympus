@@ -109,9 +109,16 @@ export default class Mediator implements IMediator, IDispatcher
     public loadAssets():void
     {
         if(this._assetsLoading) return;
+        // 进行规则检查，没有托管到Module的Mediator不应该声明任何资源依赖
+        var assets:string[] = this.listAssets();
+        if(!this._dependModule && assets && assets.length > 0)
+        {
+            console.warn("非托管Mediator不能声明任何资源依赖，listAssets方法必须返回null或者空数组");
+            assets = null;
+        }
         this._assetsLoading = true;
         var self:Mediator = this;
-        this.bridge.loadAssets(this, function(err?:Error):void
+        this.bridge.loadAssets(assets, this, function(err?:Error):void
         {
             // 设置标识符
             self._assetsLoaded = true;

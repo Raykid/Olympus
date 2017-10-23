@@ -1246,11 +1246,12 @@ declare module "engine/bridge/IBridge" {
         /**
          * 加载资源
          *
+         * @param {string[]} assets 资源数组
          * @param {IMediator} mediator 要加载资源的中介者
          * @param {(err?:Error)=>void} handler 回调函数
          * @memberof IBridge
          */
-        loadAssets(mediator: IMediator, handler: (err?: Error) => void): void;
+        loadAssets(assets: string[], mediator: IMediator, handler: (err?: Error) => void): void;
         /**
          * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
          *
@@ -2614,6 +2615,7 @@ declare module "engine/mediator/Mediator" {
         constructor(skin?: any);
         /**
          * 列出中介者所需的资源数组，可重写
+         * 但如果Mediator没有被托管在Module中则该方法不应该被重写，否则可能会有问题
          *
          * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
          * @memberof Mediator
