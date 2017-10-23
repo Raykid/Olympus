@@ -93,6 +93,7 @@ export default class Mediator implements IMediator, IDispatcher
 
     /**
      * 列出中介者所需的资源数组，可重写
+     * 但如果Mediator没有被托管在Module中则该方法不应该被重写，否则可能会有问题
      * 
      * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
      * @memberof Mediator
@@ -156,6 +157,8 @@ export default class Mediator implements IMediator, IDispatcher
     public open(data?:any):any
     {
         this._data = data;
+        // 在调用onOpen之前先加载一下资源，因为如果Mediator脱离Module使用的话是没有地方可以加载资源的，导致很多逻辑无法进行
+        this.loadAssets();
         this.onOpen(data);
         return this;
     }
