@@ -8,6 +8,7 @@ import none from "./NonePanelPolicy";
 import PanelMessage from "./PanelMessage";
 import IPromptPanel, { IPromptParams, IPromptHandler, ButtonType } from "./IPromptPanel";
 import { sceneManager } from "../scene/SceneManager";
+import { system } from "../system/System";
 
 /**
  * @author Raykid
@@ -139,58 +140,58 @@ export default class PanelManager
      * 
      * @param {string} msg 要显示的文本
      * @param {...IPromptHandler[]} handlers 按钮回调数组
-     * @returns {IPanel} 返回被显示的弹窗
      * @memberof PanelManager
      */
-    public prompt(msg:string, ...handlers:IPromptHandler[]):IPanel;
+    public prompt(msg:string, ...handlers:IPromptHandler[]):void;
     /**
      * 显示提示窗口
      * 
      * @param {IPromptParams} params 弹窗数据
-     * @returns {IPanel} 返回被显示的弹窗
      * @memberof PanelManager
      */
-    public prompt(params:IPromptParams):IPanel;
+    public prompt(params:IPromptParams):void;
     /**
      * @private
      */
-    public prompt(msgOrParams:string|IPromptParams, ...handlers:IPromptHandler[]):IPanel
+    public prompt(msgOrParams:string|IPromptParams, ...handlers:IPromptHandler[]):void
     {
-        var params:IPromptParams;
-        if(typeof msgOrParams == "string")
+        // 整个挪到下一帧去
+        system.nextFrame(function():void
         {
-            params = {
-                msg: msgOrParams as string,
-                handlers: handlers
-            };
-        }
-        else
-        {
-            params = msgOrParams;
-        }
-        // 取到当前场景的类型
-        var type:string = sceneManager.currentScene.bridge.type;
-        // 用场景类型取到弹窗对象
-        var prompt:IPromptPanel = this._promptDict[type];
-        if(prompt == null)
-        {
-            // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
-            alert(params.msg);
-            return;
-        }
-        // 增加默认值
-        for(var i in params.handlers)
-        {
-            var handler:IPromptHandler = params.handlers[i];
-            if(handler.text == null) handler.text = handler.data;
-            if(handler.buttonType == null) handler.buttonType = ButtonType.normal;
-        }
-        // 显示弹窗
-        prompt.open();
-        // 更新弹窗
-        prompt.update(params);
-        // 返回弹窗
-        return prompt;
+            var params:IPromptParams;
+            if(typeof msgOrParams == "string")
+            {
+                params = {
+                    msg: msgOrParams as string,
+                    handlers: handlers
+                };
+            }
+            else
+            {
+                params = msgOrParams;
+            }
+            // 取到当前场景的类型
+            var type:string = sceneManager.currentScene.bridge.type;
+            // 用场景类型取到弹窗对象
+            var prompt:IPromptPanel = this._promptDict[type];
+            if(prompt == null)
+            {
+                // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
+                alert(params.msg);
+                return;
+            }
+            // 增加默认值
+            for(var i in params.handlers)
+            {
+                var handler:IPromptHandler = params.handlers[i];
+                if(handler.text == null) handler.text = handler.data;
+                if(handler.buttonType == null) handler.buttonType = ButtonType.normal;
+            }
+            // 显示弹窗
+            prompt.open();
+            // 更新弹窗
+            prompt.update(params);
+        }, this);
     }
 
     /**
@@ -198,10 +199,9 @@ export default class PanelManager
      * 
      * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
      * @param {()=>void} [okHandler] 确定按钮点击回调
-     * @returns {IPanel} 返回被显示的弹窗
      * @memberof PanelManager
      */
-    public alert(msgOrParams:string|IPromptParams, okHandler?:()=>void):IPanel
+    public alert(msgOrParams:string|IPromptParams, okHandler?:()=>void):void
     {
         var params:IPromptParams;
         if(typeof msgOrParams == "string")
@@ -215,7 +215,7 @@ export default class PanelManager
         params.handlers = [
             {data:"确定", handler:okHandler, buttonType:ButtonType.important}
         ];
-        return this.prompt(params);
+        this.prompt(params);
     }
 
     /**
@@ -224,10 +224,9 @@ export default class PanelManager
      * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
      * @param {()=>void} [okHandler] 确定按钮点击回调
      * @param {()=>void} [cancelHandler] 取消按钮点击回调
-     * @returns {IPanel} 返回被显示的弹窗
      * @memberof PanelManager
      */
-    public confirm(msgOrParams:string|IPromptParams, okHandler?:()=>void, cancelHandler? :()=>void):IPanel
+    public confirm(msgOrParams:string|IPromptParams, okHandler?:()=>void, cancelHandler? :()=>void):void
     {
         var params:IPromptParams;
         if(typeof msgOrParams == "string")
@@ -242,7 +241,7 @@ export default class PanelManager
             {data:"取消", handler:cancelHandler, buttonType:ButtonType.normal},
             {data:"确定", handler:okHandler, buttonType:ButtonType.important}
         ];
-        return this.prompt(params);
+        this.prompt(params);
     }
 }
 /** 再额外导出一个单例 */

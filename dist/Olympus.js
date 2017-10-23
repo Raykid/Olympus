@@ -2837,7 +2837,162 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
     /** 再额外导出一个单例 */
     exports.sceneManager = Core_4.core.getInject(SceneManager);
 });
-define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/scene/SceneManager"], function (require, exports, Core_5, Injector_3, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, SceneManager_1) {
+define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_5, Injector_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
+    */
+    var System = /** @class */ (function () {
+        function System() {
+            // 这里尝试一下TS的Tuple类型——Raykid
+            this._nextFrameList = [];
+            this._timer = 0;
+            var self = this;
+            if (requestAnimationFrame instanceof Function) {
+                requestAnimationFrame(onRequestAnimationFrame);
+            }
+            else {
+                // 如果不支持requestAnimationFrame则改用setTimeout计时，延迟时间1000/60毫秒
+                var startTime = Date.now();
+                setInterval(function () {
+                    var curTime = Date.now();
+                    // 赋值timer
+                    self._timer = curTime - startTime;
+                    // 调用tick方法
+                    self.tick();
+                }, 1000 / 60);
+            }
+            function onRequestAnimationFrame(timer) {
+                // 赋值timer，这个方法里无法获取this，因此需要通过注入的静态属性取到自身实例
+                self._timer = timer;
+                // 调用tick方法
+                self.tick();
+                // 计划下一次执行
+                requestAnimationFrame(onRequestAnimationFrame);
+            }
+        }
+        /**
+         * 获取从程序运行到当前所经过的毫秒数
+         *
+         * @returns {number} 毫秒数
+         * @memberof System
+         */
+        System.prototype.getTimer = function () {
+            return this._timer;
+        };
+        System.prototype.tick = function () {
+            // 调用下一帧回调
+            for (var i = 0, len = this._nextFrameList.length; i < len; i++) {
+                var data = this._nextFrameList.shift();
+                data[0].apply(data[1], data[2]);
+            }
+        };
+        /**
+         * 在下一帧执行某个方法
+         *
+         * @param {Function} handler 希望在下一帧执行的某个方法
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 方法参数列表
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        System.prototype.nextFrame = function (handler, thisArg) {
+            var _this = this;
+            var args = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                args[_i - 2] = arguments[_i];
+            }
+            var data = [handler, thisArg, args];
+            this._nextFrameList.push(data);
+            return {
+                cancel: function () {
+                    var index = _this._nextFrameList.indexOf(data);
+                    if (index >= 0)
+                        _this._nextFrameList.splice(index, 1);
+                }
+            };
+        };
+        /**
+         * 设置延迟回调
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        System.prototype.setTimeout = function (duration, handler, thisArg) {
+            var args = [];
+            for (var _i = 3; _i < arguments.length; _i++) {
+                args[_i - 3] = arguments[_i];
+            }
+            var startTimer = this._timer;
+            // 启动计时器
+            var nextFrame = this.nextFrame(tick, this);
+            function tick() {
+                var delta = this._timer - startTimer;
+                if (delta >= duration) {
+                    nextFrame = null;
+                    handler.apply(thisArg, args);
+                }
+                else {
+                    nextFrame = this.nextFrame(tick, this);
+                }
+            }
+            return {
+                cancel: function () {
+                    nextFrame && nextFrame.cancel();
+                    nextFrame = null;
+                }
+            };
+        };
+        /**
+         * 设置延时间隔
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        System.prototype.setInterval = function (duration, handler, thisArg) {
+            var args = [];
+            for (var _i = 3; _i < arguments.length; _i++) {
+                args[_i - 3] = arguments[_i];
+            }
+            var timeout = this.setTimeout(duration, onTimeout, this);
+            function onTimeout() {
+                // 触发回调
+                handler.apply(thisArg, args);
+                // 继续下一次
+                timeout = this.setTimeout(duration, onTimeout, this);
+            }
+            return {
+                cancel: function () {
+                    timeout && timeout.cancel();
+                    timeout = null;
+                }
+            };
+        };
+        System = __decorate([
+            Injector_3.Injectable,
+            __metadata("design:paramtypes", [])
+        ], System);
+        return System;
+    }());
+    exports.default = System;
+    /** 再额外导出一个单例 */
+    exports.system = Core_5.core.getInject(System);
+});
+define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/scene/SceneManager", "engine/system/System"], function (require, exports, Core_6, Injector_4, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, SceneManager_1, System_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2884,7 +3039,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 // 调用回调
                 panel.onBeforePop(data, isModel, from);
                 // 派发消息
-                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
+                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
                 // 调用准备接口
                 policy.prepare && policy.prepare(panel);
                 // 添加显示
@@ -2895,7 +3050,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 调用回调
                     panel.onAfterPop(data, isModel, from);
                     // 派发消息
-                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
+                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
                 }, from);
                 // 记录
                 this._panels.push(panel);
@@ -2918,13 +3073,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 // 调用回调
                 panel.onBeforeDrop(data, to);
                 // 派发消息
-                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
+                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
                 // 调用策略接口
                 policy.drop(panel, function () {
                     // 调用回调
                     panel.onAfterDrop(data, to);
                     // 派发消息
-                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
+                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
                     // 移除显示
                     var bridge = panel.bridge;
                     bridge.removeChild(bridge.panelLayer, panel.skin);
@@ -2963,46 +3118,46 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             for (var _i = 1; _i < arguments.length; _i++) {
                 handlers[_i - 1] = arguments[_i];
             }
-            var params;
-            if (typeof msgOrParams == "string") {
-                params = {
-                    msg: msgOrParams,
-                    handlers: handlers
-                };
-            }
-            else {
-                params = msgOrParams;
-            }
-            // 取到当前场景的类型
-            var type = SceneManager_1.sceneManager.currentScene.bridge.type;
-            // 用场景类型取到弹窗对象
-            var prompt = this._promptDict[type];
-            if (prompt == null) {
-                // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
-                alert(params.msg);
-                return;
-            }
-            // 增加默认值
-            for (var i in params.handlers) {
-                var handler = params.handlers[i];
-                if (handler.text == null)
-                    handler.text = handler.data;
-                if (handler.buttonType == null)
-                    handler.buttonType = IPromptPanel_1.ButtonType.normal;
-            }
-            // 显示弹窗
-            prompt.open();
-            // 更新弹窗
-            prompt.update(params);
-            // 返回弹窗
-            return prompt;
+            // 整个挪到下一帧去
+            System_1.system.nextFrame(function () {
+                var params;
+                if (typeof msgOrParams == "string") {
+                    params = {
+                        msg: msgOrParams,
+                        handlers: handlers
+                    };
+                }
+                else {
+                    params = msgOrParams;
+                }
+                // 取到当前场景的类型
+                var type = SceneManager_1.sceneManager.currentScene.bridge.type;
+                // 用场景类型取到弹窗对象
+                var prompt = this._promptDict[type];
+                if (prompt == null) {
+                    // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
+                    alert(params.msg);
+                    return;
+                }
+                // 增加默认值
+                for (var i in params.handlers) {
+                    var handler = params.handlers[i];
+                    if (handler.text == null)
+                        handler.text = handler.data;
+                    if (handler.buttonType == null)
+                        handler.buttonType = IPromptPanel_1.ButtonType.normal;
+                }
+                // 显示弹窗
+                prompt.open();
+                // 更新弹窗
+                prompt.update(params);
+            }, this);
         };
         /**
          * 显示警告窗口（只有一个确定按钮）
          *
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
-         * @returns {IPanel} 返回被显示的弹窗
          * @memberof PanelManager
          */
         PanelManager.prototype.alert = function (msgOrParams, okHandler) {
@@ -3016,7 +3171,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             params.handlers = [
                 { data: "确定", handler: okHandler, buttonType: IPromptPanel_1.ButtonType.important }
             ];
-            return this.prompt(params);
+            this.prompt(params);
         };
         /**
          * 显示确认窗口（有一个确定按钮和一个取消按钮）
@@ -3024,7 +3179,6 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
          * @param {()=>void} [cancelHandler] 取消按钮点击回调
-         * @returns {IPanel} 返回被显示的弹窗
          * @memberof PanelManager
          */
         PanelManager.prototype.confirm = function (msgOrParams, okHandler, cancelHandler) {
@@ -3039,18 +3193,18 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 { data: "取消", handler: cancelHandler, buttonType: IPromptPanel_1.ButtonType.normal },
                 { data: "确定", handler: okHandler, buttonType: IPromptPanel_1.ButtonType.important }
             ];
-            return this.prompt(params);
+            this.prompt(params);
         };
         PanelManager = __decorate([
-            Injector_3.Injectable
+            Injector_4.Injectable
         ], PanelManager);
         return PanelManager;
     }());
     exports.default = PanelManager;
     /** 再额外导出一个单例 */
-    exports.panelManager = Core_5.core.getInject(PanelManager);
+    exports.panelManager = Core_6.core.getInject(PanelManager);
 });
-define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager"], function (require, exports, Core_6, Injector_4, BridgeMessage_1, PanelManager_1) {
+define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager"], function (require, exports, Core_7, Injector_5, BridgeMessage_1, PanelManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3132,7 +3286,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                 for (var _b = 0, bridges_2 = bridges; _b < bridges_2.length; _b++) {
                     var bridge = bridges_2[_b];
                     // 派发消息
-                    Core_6.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
+                    Core_7.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
                     // 注册通用提示框
                     PanelManager_1.panelManager.registerPrompt(bridge.type, bridge.promptPanel);
                     // 初始化该表现层实例
@@ -3149,7 +3303,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                 // 先隐藏表现层桥的htmlWrapper
                 bridge.htmlWrapper.style.display = "none";
                 // 派发消息
-                Core_6.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
+                Core_7.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
                 // 设置初始化完毕属性
                 var data = self._bridgeDict[bridge.type];
                 data[1] = true;
@@ -3164,16 +3318,16 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                 allInited = allInited && data[1];
             }
             if (allInited)
-                Core_6.core.dispatch(BridgeMessage_1.default.BRIDGE_ALL_INIT);
+                Core_7.core.dispatch(BridgeMessage_1.default.BRIDGE_ALL_INIT);
         };
         BridgeManager = __decorate([
-            Injector_4.Injectable
+            Injector_5.Injectable
         ], BridgeManager);
         return BridgeManager;
     }());
     exports.default = BridgeManager;
     /** 再额外导出一个单例 */
-    exports.bridgeManager = Core_6.core.getInject(BridgeManager);
+    exports.bridgeManager = Core_7.core.getInject(BridgeManager);
 });
 define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_4) {
     "use strict";
@@ -3422,7 +3576,7 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
     }
     exports.joinHashParams = joinHashParams;
 });
-define("engine/env/Environment", ["require", "exports", "core/Core", "core/injector/Injector", "utils/URLUtil"], function (require, exports, Core_7, Injector_5, URLUtil_1) {
+define("engine/env/Environment", ["require", "exports", "core/Core", "core/injector/Injector", "utils/URLUtil"], function (require, exports, Core_8, Injector_6, URLUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3549,13 +3703,13 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
             return url;
         };
         Environment = __decorate([
-            Injector_5.Injectable
+            Injector_6.Injectable
         ], Environment);
         return Environment;
     }());
     exports.default = Environment;
     /** 再额外导出一个单例 */
-    exports.environment = Core_7.core.getInject(Environment);
+    exports.environment = Core_8.core.getInject(Environment);
 });
 define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils/URLUtil", "utils/ObjectUtil"], function (require, exports, Environment_1, URLUtil_2, ObjectUtil_5) {
     "use strict";
@@ -3712,7 +3866,7 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
     }());
     exports.default = ModuleMessage;
 });
-define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core", "utils/HTTPUtil", "engine/env/Environment"], function (require, exports, Injector_6, Core_8, HTTPUtil_1, Environment_2) {
+define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core", "utils/HTTPUtil", "engine/env/Environment"], function (require, exports, Injector_7, Core_9, HTTPUtil_1, Environment_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3997,17 +4151,17 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             }
         };
         Shell = __decorate([
-            Injector_6.Injectable
+            Injector_7.Injectable
         ], Shell);
         return Shell;
     }());
     exports.default = Shell;
     /** 初始化音频系统，为具有权限限制的系统解除音频限制 */
-    var shell = Core_8.core.getInject(Shell);
+    var shell = Core_9.core.getInject(Shell);
     exports.shell = shell;
     shell["initAudioContext"]();
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "utils/HTTPUtil", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/env/Shell"], function (require, exports, Core_9, Injector_7, HTTPUtil_2, NetManager_1, ModuleMessage_1, Environment_3, Shell_1) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "utils/HTTPUtil", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/env/Shell"], function (require, exports, Core_10, Injector_8, HTTPUtil_2, NetManager_1, ModuleMessage_1, Environment_3, Shell_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4108,7 +4262,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 播放背景音乐
                 var bgMusic = module.bgMusic;
                 if (bgMusic) {
-                    var shell = Core_9.core.getInject(Shell_1.default);
+                    var shell = Core_10.core.getInject(Shell_1.default);
                     shell.audioPlay(bgMusic, { loop: true, stopOthers: true });
                 }
             }
@@ -4204,7 +4358,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                     if (replace)
                                         this.close(from && from[0], data);
                                     // 派发消息
-                                    Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
+                                    Core_10.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
                                     // 关闭标识符
                                     this._opening = false;
                                     // 如果有缓存的模块需要打开则打开之
@@ -4270,7 +4424,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 调用onActivate接口
                 this.activateModule(toModule && toModule, cls, data);
                 // 派发消息
-                Core_9.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, to && to[0], cls);
+                Core_10.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, to && to[0], cls);
             }
             else {
                 // 移除模块
@@ -4280,15 +4434,15 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             }
         };
         ModuleManager = __decorate([
-            Injector_7.Injectable
+            Injector_8.Injectable
         ], ModuleManager);
         return ModuleManager;
     }());
     exports.default = ModuleManager;
     /** 再额外导出一个单例 */
-    exports.moduleManager = Core_9.core.getInject(ModuleManager);
+    exports.moduleManager = Core_10.core.getInject(ModuleManager);
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_8, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_1, ModuleManager_1) {
+define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_9, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_1, ModuleManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4308,11 +4462,11 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         // 转调Injectable方法
         if (this === undefined) {
             var cls = ConstructUtil_2.wrapConstruct(args[0]);
-            Injector_8.Injectable.call(this, cls);
+            Injector_9.Injectable.call(this, cls);
             return cls;
         }
         else {
-            var result = Injector_8.Injectable.apply(this, args);
+            var result = Injector_9.Injectable.apply(this, args);
             return function (realCls) {
                 realCls = ConstructUtil_2.wrapConstruct(realCls);
                 result.call(this, realCls);
@@ -4465,7 +4619,7 @@ define("engine/platform/WebPlatform", ["require", "exports"], function (require,
     }());
     exports.default = WebPlatform;
 });
-define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_10, Injector_9, WebPlatform_1) {
+define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_11, Injector_10, WebPlatform_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4495,168 +4649,13 @@ define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "c
             this.platform.reload();
         };
         PlatformManager = __decorate([
-            Injector_9.Injectable
+            Injector_10.Injectable
         ], PlatformManager);
         return PlatformManager;
     }());
     exports.default = PlatformManager;
     /** 再额外导出一个单例 */
-    exports.platformManager = Core_10.core.getInject(PlatformManager);
-});
-define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_11, Injector_10) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
-    */
-    var System = /** @class */ (function () {
-        function System() {
-            // 这里尝试一下TS的Tuple类型——Raykid
-            this._nextFrameList = [];
-            this._timer = 0;
-            var self = this;
-            if (requestAnimationFrame instanceof Function) {
-                requestAnimationFrame(onRequestAnimationFrame);
-            }
-            else {
-                // 如果不支持requestAnimationFrame则改用setTimeout计时，延迟时间1000/60毫秒
-                var startTime = Date.now();
-                setInterval(function () {
-                    var curTime = Date.now();
-                    // 赋值timer
-                    self._timer = curTime - startTime;
-                    // 调用tick方法
-                    self.tick();
-                }, 1000 / 60);
-            }
-            function onRequestAnimationFrame(timer) {
-                // 赋值timer，这个方法里无法获取this，因此需要通过注入的静态属性取到自身实例
-                self._timer = timer;
-                // 调用tick方法
-                self.tick();
-                // 计划下一次执行
-                requestAnimationFrame(onRequestAnimationFrame);
-            }
-        }
-        /**
-         * 获取从程序运行到当前所经过的毫秒数
-         *
-         * @returns {number} 毫秒数
-         * @memberof System
-         */
-        System.prototype.getTimer = function () {
-            return this._timer;
-        };
-        System.prototype.tick = function () {
-            // 调用下一帧回调
-            for (var i = 0, len = this._nextFrameList.length; i < len; i++) {
-                var data = this._nextFrameList.shift();
-                data[0].apply(data[1], data[2]);
-            }
-        };
-        /**
-         * 在下一帧执行某个方法
-         *
-         * @param {Function} handler 希望在下一帧执行的某个方法
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 方法参数列表
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        System.prototype.nextFrame = function (handler, thisArg) {
-            var _this = this;
-            var args = [];
-            for (var _i = 2; _i < arguments.length; _i++) {
-                args[_i - 2] = arguments[_i];
-            }
-            var data = [handler, thisArg, args];
-            this._nextFrameList.push(data);
-            return {
-                cancel: function () {
-                    var index = _this._nextFrameList.indexOf(data);
-                    if (index >= 0)
-                        _this._nextFrameList.splice(index, 1);
-                }
-            };
-        };
-        /**
-         * 设置延迟回调
-         *
-         * @param {number} duration 延迟毫秒值
-         * @param {Function} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 要传递的参数
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        System.prototype.setTimeout = function (duration, handler, thisArg) {
-            var args = [];
-            for (var _i = 3; _i < arguments.length; _i++) {
-                args[_i - 3] = arguments[_i];
-            }
-            var startTimer = this._timer;
-            // 启动计时器
-            var nextFrame = this.nextFrame(tick, this);
-            function tick() {
-                var delta = this._timer - startTimer;
-                if (delta >= duration) {
-                    nextFrame = null;
-                    handler.apply(thisArg, args);
-                }
-                else {
-                    nextFrame = this.nextFrame(tick, this);
-                }
-            }
-            return {
-                cancel: function () {
-                    nextFrame && nextFrame.cancel();
-                    nextFrame = null;
-                }
-            };
-        };
-        /**
-         * 设置延时间隔
-         *
-         * @param {number} duration 延迟毫秒值
-         * @param {Function} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 要传递的参数
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        System.prototype.setInterval = function (duration, handler, thisArg) {
-            var args = [];
-            for (var _i = 3; _i < arguments.length; _i++) {
-                args[_i - 3] = arguments[_i];
-            }
-            var timeout = this.setTimeout(duration, onTimeout, this);
-            function onTimeout() {
-                // 触发回调
-                handler.apply(thisArg, args);
-                // 继续下一次
-                timeout = this.setTimeout(duration, onTimeout, this);
-            }
-            return {
-                cancel: function () {
-                    timeout && timeout.cancel();
-                    timeout = null;
-                }
-            };
-        };
-        System = __decorate([
-            Injector_10.Injectable,
-            __metadata("design:paramtypes", [])
-        ], System);
-        return System;
-    }());
-    exports.default = System;
-    /** 再额外导出一个单例 */
-    exports.system = Core_11.core.getInject(System);
+    exports.platformManager = Core_11.core.getInject(PlatformManager);
 });
 define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
     "use strict";

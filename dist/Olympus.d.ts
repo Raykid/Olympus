@@ -1717,6 +1717,66 @@ declare module "engine/scene/SceneManager" {
     /** 再额外导出一个单例 */
     export const sceneManager: SceneManager;
 }
+declare module "engine/system/System" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
+    */
+    export default class System {
+        private _nextFrameList;
+        private _timer;
+        /**
+         * 获取从程序运行到当前所经过的毫秒数
+         *
+         * @returns {number} 毫秒数
+         * @memberof System
+         */
+        getTimer(): number;
+        constructor();
+        private tick();
+        /**
+         * 在下一帧执行某个方法
+         *
+         * @param {Function} handler 希望在下一帧执行的某个方法
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 方法参数列表
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        nextFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+        /**
+         * 设置延迟回调
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        setTimeout(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+        /**
+         * 设置延时间隔
+         *
+         * @param {number} duration 延迟毫秒值
+         * @param {Function} handler 回调函数
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 要传递的参数
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        setInterval(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+    }
+    export interface ICancelable {
+        cancel(): void;
+    }
+    /** 再额外导出一个单例 */
+    export const system: System;
+}
 declare module "engine/panel/PanelManager" {
     import IConstructor from "core/interfaces/IConstructor";
     import IPanel from "engine/panel/IPanel";
@@ -1788,37 +1848,33 @@ declare module "engine/panel/PanelManager" {
          *
          * @param {string} msg 要显示的文本
          * @param {...IPromptHandler[]} handlers 按钮回调数组
-         * @returns {IPanel} 返回被显示的弹窗
          * @memberof PanelManager
          */
-        prompt(msg: string, ...handlers: IPromptHandler[]): IPanel;
+        prompt(msg: string, ...handlers: IPromptHandler[]): void;
         /**
          * 显示提示窗口
          *
          * @param {IPromptParams} params 弹窗数据
-         * @returns {IPanel} 返回被显示的弹窗
          * @memberof PanelManager
          */
-        prompt(params: IPromptParams): IPanel;
+        prompt(params: IPromptParams): void;
         /**
          * 显示警告窗口（只有一个确定按钮）
          *
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
-         * @returns {IPanel} 返回被显示的弹窗
          * @memberof PanelManager
          */
-        alert(msgOrParams: string | IPromptParams, okHandler?: () => void): IPanel;
+        alert(msgOrParams: string | IPromptParams, okHandler?: () => void): void;
         /**
          * 显示确认窗口（有一个确定按钮和一个取消按钮）
          *
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
          * @param {()=>void} [cancelHandler] 取消按钮点击回调
-         * @returns {IPanel} 返回被显示的弹窗
          * @memberof PanelManager
          */
-        confirm(msgOrParams: string | IPromptParams, okHandler?: () => void, cancelHandler?: () => void): IPanel;
+        confirm(msgOrParams: string | IPromptParams, okHandler?: () => void, cancelHandler?: () => void): void;
     }
     /** 再额外导出一个单例 */
     export const panelManager: PanelManager;
@@ -2456,66 +2512,6 @@ declare module "engine/platform/PlatformManager" {
     }
     /** 再额外导出一个单例 */
     export const platformManager: PlatformManager;
-}
-declare module "engine/system/System" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 用来记录程序运行时间，并且提供延迟回调或频率回调功能
-    */
-    export default class System {
-        private _nextFrameList;
-        private _timer;
-        /**
-         * 获取从程序运行到当前所经过的毫秒数
-         *
-         * @returns {number} 毫秒数
-         * @memberof System
-         */
-        getTimer(): number;
-        constructor();
-        private tick();
-        /**
-         * 在下一帧执行某个方法
-         *
-         * @param {Function} handler 希望在下一帧执行的某个方法
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 方法参数列表
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        nextFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
-        /**
-         * 设置延迟回调
-         *
-         * @param {number} duration 延迟毫秒值
-         * @param {Function} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 要传递的参数
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        setTimeout(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
-        /**
-         * 设置延时间隔
-         *
-         * @param {number} duration 延迟毫秒值
-         * @param {Function} handler 回调函数
-         * @param {*} [thisArg] this指向
-         * @param {...any[]} args 要传递的参数
-         * @returns {ICancelable} 可取消的句柄
-         * @memberof System
-         */
-        setInterval(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
-    }
-    export interface ICancelable {
-        cancel(): void;
-    }
-    /** 再额外导出一个单例 */
-    export const system: System;
 }
 declare module "engine/model/Model" {
     import IMessage from "core/message/IMessage";
