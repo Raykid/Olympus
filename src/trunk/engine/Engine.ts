@@ -18,6 +18,7 @@ import Explorer from "./env/Explorer";
 import WindowExternal from "./env/WindowExternal";
 import Hash, { hash } from "./env/Hash";
 import Query from "./env/Query";
+import Shell from "./env/Shell";
 import Version, { version } from "./version/Version";
 import NetManager, { netManager } from "./net/NetManager";
 import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
