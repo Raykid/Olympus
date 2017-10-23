@@ -160,7 +160,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"]
                 document.body.appendChild(this._initParams.container);
             }
             // 如果通用提示框有父级容器，则先移除显示以备用
-            var promptPanel = this._initParams.promptPanel;
+            var promptPanel = this.promptPanel;
             if (promptPanel instanceof Element && promptPanel.parentElement) {
                 promptPanel.parentElement.removeChild(promptPanel);
             }

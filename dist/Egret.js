@@ -65790,9 +65790,8 @@ define("egret/utils/SkinUtil", ["require", "exports", "engine/scene/SceneMediato
     function wrapSkin(mediator, skin) {
         var comp = new eui.Component();
         mediator.skin = comp;
-        // 篡改mediator的onLoadAssets方法，在资源加载完毕时将皮肤附上去
-        var oriFunc = mediator.hasOwnProperty("onLoadAssets") ? mediator.onLoadAssets : void 0;
-        mediator.onLoadAssets = function (err) {
+        // 在资源加载完毕时将皮肤附上去
+        mediator.whenLoadAssets(function (err) {
             if (!err) {
                 comp.skinName = skin;
                 // 场景需要拉伸到与stage同宽高
@@ -65806,14 +65805,7 @@ define("egret/utils/SkinUtil", ["require", "exports", "engine/scene/SceneMediato
                     mediator[name] = comp[name];
                 }
             }
-            // 恢复onLoadAssets方法
-            if (oriFunc)
-                mediator.onLoadAssets = oriFunc;
-            else
-                delete mediator.onLoadAssets;
-            // 调用原始方法
-            mediator.onLoadAssets(err);
-        };
+        });
         return comp;
     }
     exports.wrapSkin = wrapSkin;

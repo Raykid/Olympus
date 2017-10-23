@@ -170,7 +170,9 @@ export default class ModuleManager
                 }
                 else if(mediators.length > 0)
                 {
-                    mediators.shift().loadAssets(loadMediatorAssets);
+                    var mediator:IMediator = mediators.shift();
+                    mediator.loadAssets();
+                    mediator.whenLoadAssets(loadMediatorAssets);
                 }
                 else
                 {

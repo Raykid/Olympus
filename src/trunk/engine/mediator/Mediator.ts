@@ -102,22 +102,38 @@ export default class Mediator implements IMediator, IDispatcher
         return null;
     }
 
-    /**
-     * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
-     * 
-     * @param {(err?:Error)=>void} [handler] 完毕后的回调函数，有错误则给出err，没有则不给
-     * @memberof Mediator
-     */
-    public loadAssets(handler?:(err?:Error)=>void):void
+    private _assetsLoaded:boolean = false;
+    private _assetsLoading:boolean = false;
+    private _loadAssetsHandlers:((err?:Error)=>void)[] = [];
+    public loadAssets():void
     {
+        if(this._assetsLoading) return;
+        this._assetsLoading = true;
         var self:Mediator = this;
         this.bridge.loadAssets(this, function(err?:Error):void
         {
+            // 设置标识符
+            self._assetsLoaded = true;
             // 调用onLoadAssets接口
             self.onLoadAssets(err);
-            // 调用回调
-            handler && handler.call(this, err);
+            // 通知所有监听者
+            for(var i:number = 0, len:number = self._loadAssetsHandlers.length; i < len; i++)
+            {
+                self._loadAssetsHandlers.shift()(err);
+            }
         });
+    }
+
+    /**
+     * 加载完毕后回调指定方法，如果已经加载完毕则立即回调
+     * 
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调
+     * @memberof Mediator
+     */
+    public whenLoadAssets(handler:(err?:Error)=>void):void
+    {
+        if(this._assetsLoaded) handler();
+        else this._loadAssetsHandlers.push(handler);
     }
 
     /**

@@ -13,9 +13,8 @@ export function wrapSkin(mediator:IMediator, skin:any):eui.Component
 {
     var comp:eui.Component = new eui.Component();
     mediator.skin = comp;
-    // 篡改mediator的onLoadAssets方法，在资源加载完毕时将皮肤附上去
-    var oriFunc:(err?: Error)=>void = mediator.hasOwnProperty("onLoadAssets") ? mediator.onLoadAssets : void 0;
-    mediator.onLoadAssets = function(err?:Error):void
+    // 在资源加载完毕时将皮肤附上去
+    mediator.whenLoadAssets(function(err?:Error):void
     {
         if(!err)
         {
@@ -32,11 +31,6 @@ export function wrapSkin(mediator:IMediator, skin:any):eui.Component
                 mediator[name] = comp[name];
             }
         }
-        // 恢复onLoadAssets方法
-        if(oriFunc) mediator.onLoadAssets = oriFunc;
-        else delete mediator.onLoadAssets;
-        // 调用原始方法
-        mediator.onLoadAssets(err);
-    };
+    });
     return comp;
 }

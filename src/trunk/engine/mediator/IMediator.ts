@@ -60,12 +60,19 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
     listAssets():string[];
     
     /**
-     * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
+     * 加载从listAssets中获取到的所有资源
      * 
-     * @param {(err?:Error)=>void} [handler] 完毕后的回调函数，有错误则给出err，没有则不给
      * @memberof IMediator
      */
-    loadAssets(handler?:(err?:Error)=>void):void;
+    loadAssets():void;
+
+    /**
+     * 加载完毕后回调指定方法，如果已经加载完毕则立即回调
+     * 
+     * @param {()=>void} handler 加载完毕后的回调
+     * @memberof IMediator
+     */
+    whenLoadAssets(handler:()=>void):void;
 
     /**
      * 当所需资源加载完毕后调用

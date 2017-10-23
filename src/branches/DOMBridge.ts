@@ -164,7 +164,7 @@ export default class DOMBridge implements IBridge
             document.body.appendChild(this._initParams.container);
         }
         // 如果通用提示框有父级容器，则先移除显示以备用
-        var promptPanel:IPromptPanel = this._initParams.promptPanel;
+        var promptPanel:IPromptPanel = this.promptPanel;
         if(promptPanel instanceof Element && promptPanel.parentElement)
         {
             promptPanel.parentElement.removeChild(promptPanel);

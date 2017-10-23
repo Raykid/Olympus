@@ -19,6 +19,11 @@ class SecondMediator extends SceneMediator
 {
     public btn:eui.Button;
 
+    public listAssets():string[]
+    {
+        return ["preload"];
+    }
+
     public onOpen():void
     {
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{

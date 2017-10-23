@@ -49,6 +49,9 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
         function SecondMediator() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        SecondMediator.prototype.listAssets = function () {
+            return ["preload"];
+        };
         SecondMediator.prototype.onOpen = function () {
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
                 ModuleManager_1.moduleManager.close(SecondModule);

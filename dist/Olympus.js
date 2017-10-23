@@ -4155,7 +4155,9 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                         target.onLoadAssets(err);
                     }
                     else if (mediators.length > 0) {
-                        mediators.shift().loadAssets(loadMediatorAssets);
+                        var mediator = mediators.shift();
+                        mediator.whenLoadAssets(loadMediatorAssets);
+                        mediator.loadAssets();
                     }
                     else {
                         // 调用onLoadAssets接口
@@ -4328,6 +4330,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         ConstructUtil_2.listenConstruct(cls, function (instance) {
             // 替换setSkin方法
             var $skin;
+            var $mediator;
             Object.defineProperty(instance, "skin", {
                 configurable: true,
                 enumerable: true,
@@ -4341,6 +4344,11 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
                     // 调用处理皮肤接口
                     this.bridge && this.bridge.handleSkin(this);
+                    // 初始化
+                    if (!$mediator) {
+                        $mediator = this;
+                        $mediator.loadAssets();
+                    }
                 }
             });
         });
@@ -4695,6 +4703,9 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
     var Mediator = /** @class */ (function () {
         function Mediator(skin) {
             this._disposed = false;
+            this._assetsLoaded = false;
+            this._assetsLoading = false;
+            this._loadAssetsHandlers = [];
             this._listeners = [];
             if (skin)
                 this.skin = skin;
@@ -4764,20 +4775,33 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
         Mediator.prototype.listAssets = function () {
             return null;
         };
-        /**
-         * 加载从listAssets中获取到的所有资源，完毕后调用回调函数
-         *
-         * @param {(err?:Error)=>void} [handler] 完毕后的回调函数，有错误则给出err，没有则不给
-         * @memberof Mediator
-         */
-        Mediator.prototype.loadAssets = function (handler) {
+        Mediator.prototype.loadAssets = function () {
+            if (this._assetsLoading)
+                return;
+            this._assetsLoading = true;
             var self = this;
             this.bridge.loadAssets(this, function (err) {
+                // 设置标识符
+                self._assetsLoaded = true;
                 // 调用onLoadAssets接口
                 self.onLoadAssets(err);
-                // 调用回调
-                handler && handler.call(this, err);
+                // 通知所有监听者
+                for (var i = 0, len = self._loadAssetsHandlers.length; i < len; i++) {
+                    self._loadAssetsHandlers.shift()(err);
+                }
             });
+        };
+        /**
+         * 加载完毕后回调指定方法，如果已经加载完毕则立即回调
+         *
+         * @param {(err?:Error)=>void} handler 加载完毕后的回调
+         * @memberof Mediator
+         */
+        Mediator.prototype.whenLoadAssets = function (handler) {
+            if (this._assetsLoaded)
+                handler();
+            else
+                this._loadAssetsHandlers.push(handler);
         };
         /**
          * 当所需资源加载完毕后调用
