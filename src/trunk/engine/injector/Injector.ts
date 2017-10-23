@@ -51,7 +51,6 @@ export function MediatorClass(cls:IConstructor):IConstructor
     {
         // 替换setSkin方法
         var $skin:any;
-        var $mediator:IMediator;
         Object.defineProperty(instance, "skin", {
             configurable: true,
             enumerable: true,
@@ -67,12 +66,6 @@ export function MediatorClass(cls:IConstructor):IConstructor
                 this.bridge = bridgeManager.getBridgeBySkin(value);
                 // 调用处理皮肤接口
                 this.bridge && this.bridge.handleSkin(this);
-                // 初始化
-                if(!$mediator)
-                {
-                    $mediator = this;
-                    $mediator.loadAssets();
-                }
             }
         });
     });

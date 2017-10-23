@@ -4156,8 +4156,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     }
                     else if (mediators.length > 0) {
                         var mediator = mediators.shift();
-                        mediator.whenLoadAssets(loadMediatorAssets);
                         mediator.loadAssets();
+                        mediator.whenLoadAssets(loadMediatorAssets);
                     }
                     else {
                         // 调用onLoadAssets接口
@@ -4330,7 +4330,6 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         ConstructUtil_2.listenConstruct(cls, function (instance) {
             // 替换setSkin方法
             var $skin;
-            var $mediator;
             Object.defineProperty(instance, "skin", {
                 configurable: true,
                 enumerable: true,
@@ -4344,11 +4343,6 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
                     // 调用处理皮肤接口
                     this.bridge && this.bridge.handleSkin(this);
-                    // 初始化
-                    if (!$mediator) {
-                        $mediator = this;
-                        $mediator.loadAssets();
-                    }
                 }
             });
         });
