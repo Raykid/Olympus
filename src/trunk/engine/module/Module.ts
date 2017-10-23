@@ -9,6 +9,7 @@ import IModuleConstructor from "./IModuleConstructor";
 import Dictionary from "../../utils/Dictionary";
 import { moduleManager } from "./ModuleManager";
 import { getConstructor } from "../../utils/ConstructUtil";
+import Shell from "../env/Shell";
 
 /**
  * @author Raykid
@@ -47,6 +48,18 @@ export default abstract class Module implements IModule, IDispatcher
     public get disposed():boolean
     {
         return this._disposed;
+    }
+
+    /**
+     * 获取背景音乐URL
+     * 
+     * @readonly
+     * @type {string}
+     * @memberof Module
+     */
+    public get bgMusic():string
+    {
+        return null;
     }
 
     private _mediators:IMediator[] = [];

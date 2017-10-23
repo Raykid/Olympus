@@ -18,6 +18,8 @@ export default interface IModule extends IDisposable
     data:any;
     /** 模块初始消息的返回数据 */
     responses:ResponseData[];
+    /** 获取背景音乐URL */
+    readonly bgMusic:string;
     /** 获取所有已托管的中介者 */
     readonly delegatedMediators:IMediator[];
     /** 列出模块所需CSS资源URL */

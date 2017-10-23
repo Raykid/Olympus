@@ -10,6 +10,7 @@ import IModuleConstructor from "./IModuleConstructor";
 import ModuleMessage from "./ModuleMessage"
 import IMediator from "../mediator/IMediator";
 import { environment } from "../env/Environment";
+import Shell from "../env/Shell";
 
 /**
  * @author Raykid
@@ -106,6 +107,31 @@ export default class ModuleManager
         return (this._moduleStack.filter(temp=>temp[0]==cls).length > 0);
     }
 
+    private activateModule(module:IModule, from:IModuleConstructor, data:any):void
+    {
+        if(module)
+        {
+            // 调用onActivate接口
+            module.onActivate(from, data);
+            // 播放背景音乐
+            var bgMusic:string = module.bgMusic;
+            if(bgMusic)
+            {
+                var shell:Shell = core.getInject(Shell);
+                shell.audioPlay(bgMusic, {loop: true, stopOthers: true});
+            }
+        }
+    }
+
+    private deactivateModule(module:IModule, to:IModuleConstructor, data:any):void
+    {
+        if(module)
+        {
+            // 调用onDeactivate接口
+            module.onDeactivate(to, data);
+        }
+    }
+
     /**
      * 打开模块
      * 
@@ -186,11 +212,11 @@ export default class ModuleManager
                                 // 调用onOpen接口
                                 target.onOpen(data);
                                 // 调用onDeactivate接口
-                                fromModule && fromModule.onDeactivate(cls, data);
+                                this.deactivateModule(fromModule && fromModule, cls, data);
                                 // 插入模块
                                 this._moduleStack.unshift([cls, target]);
                                 // 调用onActivate接口
-                                target.onActivate(from && from[0], data);
+                                this.activateModule(target, from && from[0], data);
                                 // 如果replace是true，则关掉上一个模块
                                 if(replace) this.close(from && from[0], data);
                                 // 派发消息
@@ -255,13 +281,13 @@ export default class ModuleManager
             var to:[IModuleConstructor, IModule] = this._moduleStack[1];
             var toModule:IModule = to && to[1];
             // 调用onDeactivate接口
-            target.onDeactivate(to && to[0], data);
+            this.deactivateModule(target, to && to[0], data);
             // 移除当前模块
             this._moduleStack.shift();
             // 调用onClose接口
             target.onClose(data);
             // 调用onActivate接口
-            toModule && toModule.onActivate(cls, data);
+            this.activateModule(toModule && toModule, cls, data);
             // 派发消息
             core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
         }

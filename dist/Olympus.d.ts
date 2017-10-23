@@ -1437,6 +1437,8 @@ declare module "engine/module/IModule" {
         data: any;
         /** 模块初始消息的返回数据 */
         responses: ResponseData[];
+        /** 获取背景音乐URL */
+        readonly bgMusic: string;
         /** 获取所有已托管的中介者 */
         readonly delegatedMediators: IMediator[];
         /** 列出模块所需CSS资源URL */
@@ -2054,6 +2056,13 @@ declare module "utils/HTTPUtil" {
          */
         method?: HTTPMethod;
         /**
+         * HTTP返回值类型，从XMLHttpRequestResponseType查找枚举值
+         *
+         * @type {XMLHttpRequestResponseType}
+         * @memberof IHTTPRequestParams
+         */
+        responseType?: XMLHttpRequestResponseType;
+        /**
          * 失败重试次数，默认重试2次
          *
          * @type {number}
@@ -2116,6 +2125,171 @@ declare module "engine/module/ModuleMessage" {
         static MODULE_LOAD_ASSETS_ERROR: string;
     }
 }
+declare module "engine/env/Shell" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-23
+     * @modify date 2017-10-23
+     *
+     * 外壳接口，该类既作为外壳接口的注入基类，也作为标准浏览器的实现使用
+    */
+    export default class Shell {
+        /**
+         * 获取当前外壳类型
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Shell
+         */
+        readonly type: string;
+        /*************************** 下面是页面跳转接口 ***************************/
+        /**
+         * 刷新页面
+         *
+         * @param {{
+         *         forcedReload?:boolean, // false表示允许从缓存取，true表示强制从服务器取，默认是false
+         *         url?:string, // 传递则使用新URL刷新页面
+         *         replace?:boolean // 如果有新url，则表示是否要替换当前浏览历史
+         *     }} [params]
+         * @memberof Shell
+         */
+        reload(params?: {
+            forcedReload?: boolean;
+            url?: string;
+            replace?: boolean;
+        }): void;
+        /**
+         * 打开一个新页面
+         *
+         * @param {{
+         *         url?:string, // 新页面地址，不传则不更新地址
+         *         name?:string, // 给新页面命名，或导航到已有页面
+         *         replace?:boolean, // 是否替换当前浏览历史条目，默认false
+         *         features:{[key:string]:any} // 其他可能的参数
+         *     }} [params]
+         * @memberof Shell
+         */
+        open(params?: {
+            url?: string;
+            name?: string;
+            replace?: boolean;
+            features: {
+                [key: string]: any;
+            };
+        }): void;
+        /**
+         * 关闭窗口
+         *
+         * @memberof Shell
+         */
+        close(): void;
+        /*************************** 下面是本地存储接口 ***************************/
+        /**
+         * 获取本地存储
+         *
+         * @param {string} key 要获取值的键
+         * @returns {string} 获取的值
+         * @memberof Shell
+         */
+        localStorageGet(key: string): string;
+        /**
+         * 设置本地存储
+         *
+         * @param {string} key 要设置的键
+         * @param {string} value 要设置的值
+         * @memberof Shell
+         */
+        localStorageSet(key: string, value: string): void;
+        /**
+         * 移除本地存储
+         *
+         * @param {string} key 要移除的键
+         * @memberof Shell
+         */
+        localStorageRemove(key: string): void;
+        /**
+         * 清空本地存储
+         *
+         * @memberof Shell
+         */
+        localStorageClear(): void;
+        /*************************** 下面是音频接口 ***************************/
+        private _context;
+        private _inited;
+        private _audioDict;
+        private _playingDict;
+        private initAudioContext();
+        /**
+         * 加载音频
+         *
+         * @param {string} url 音频URL
+         * @memberof Shell
+         */
+        audioLoad(url: string): void;
+        /**
+         * 播放音频，如果音频没有加载则先加载再播放
+         *
+         * @param {string} url 音频URL
+         * @param {AudioPlayParams} [params] 播放参数
+         * @returns {void}
+         * @memberof Shell
+         */
+        audioPlay(url: string, params?: AudioPlayParams): void;
+        private _audioStop(url, when?);
+        /**
+         * 暂停音频（不会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof Shell
+         */
+        audioPause(url: string): void;
+        /**
+         * 停止音频（会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof Shell
+         */
+        audioStop(url: string): void;
+        /**
+         * 跳转音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof Shell
+         */
+        audioSeek(url: string, time: number): void;
+        /** 此项代表外壳接口可根据实际情况扩展基类没有的方法或属性 */
+        [name: string]: any;
+    }
+    export interface AudioPlayParams {
+        /**
+         * 播放启动的时间戳
+         *
+         * @type {number}
+         * @memberof AudioPlayParams
+         */
+        time?: number;
+        /**
+         * 是否循环，默认为false
+         *
+         * @type {boolean}
+         * @memberof AudioPlayParams
+         */
+        loop?: boolean;
+        /**
+         * 是否播放前关闭其他声音，默认为false
+         *
+         * @type {boolean}
+         * @memberof AudioPlayParams
+         */
+        stopOthers?: boolean;
+    }
+    /** 初始化音频系统，为具有权限限制的系统解除音频限制 */
+    var shell: Shell;
+    /** 再额外导出一个单例 */
+    export { shell };
+}
 declare module "engine/module/ModuleManager" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
@@ -2167,6 +2341,8 @@ declare module "engine/module/ModuleManager" {
          * @memberof ModuleManager
          */
         isOpened(cls: IModuleConstructor): boolean;
+        private activateModule(module, from, data);
+        private deactivateModule(module, to, data);
         /**
          * 打开模块
          *
@@ -2699,6 +2875,14 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         readonly disposed: boolean;
+        /**
+         * 获取背景音乐URL
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Module
+         */
+        readonly bgMusic: string;
         private _mediators;
         /**
          * 获取所有已托管的中介者
@@ -2994,98 +3178,6 @@ declare module "engine/env/Query" {
     }
     /** 再额外导出一个单例 */
     export const query: Query;
-}
-declare module "engine/env/Shell" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-23
-     * @modify date 2017-10-23
-     *
-     * 外壳接口，该类既作为外壳接口的注入基类，也作为标准浏览器的实现使用
-     * 该类由于需要支持多态注入（也可以叫做桥接注入），所以不在模块中额外导出单例，请使用@Inject标签注入
-    */
-    export default class Shell {
-        /**
-         * 获取当前外壳类型
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Shell
-         */
-        readonly type: string;
-        /**
-         * 刷新页面
-         *
-         * @param {{
-         *         forcedReload?:boolean, // false表示允许从缓存取，true表示强制从服务器取，默认是false
-         *         url?:string, // 传递则使用新URL刷新页面
-         *         replace?:boolean // 如果有新url，则表示是否要替换当前浏览历史
-         *     }} [params]
-         * @memberof Shell
-         */
-        reload(params?: {
-            forcedReload?: boolean;
-            url?: string;
-            replace?: boolean;
-        }): void;
-        /**
-         * 打开一个新页面
-         *
-         * @param {{
-         *         url?:string, // 新页面地址，不传则不更新地址
-         *         name?:string, // 给新页面命名，或导航到已有页面
-         *         replace?:boolean, // 是否替换当前浏览历史条目，默认false
-         *         features:{[key:string]:any} // 其他可能的参数
-         *     }} [params]
-         * @memberof Shell
-         */
-        open(params?: {
-            url?: string;
-            name?: string;
-            replace?: boolean;
-            features: {
-                [key: string]: any;
-            };
-        }): void;
-        /**
-         * 关闭窗口
-         *
-         * @memberof Shell
-         */
-        close(): void;
-        /**
-         * 获取本地存储
-         *
-         * @param {string} key 要获取值的键
-         * @returns {string} 获取的值
-         * @memberof Shell
-         */
-        localStorageGet(key: string): string;
-        /**
-         * 设置本地存储
-         *
-         * @param {string} key 要设置的键
-         * @param {string} value 要设置的值
-         * @memberof Shell
-         */
-        localStorageSet(key: string, value: string): void;
-        /**
-         * 移除本地存储
-         *
-         * @param {string} key 要移除的键
-         * @memberof Shell
-         */
-        localStorageRemove(key: string): void;
-        /**
-         * 清空本地存储
-         *
-         * @memberof Shell
-         */
-        localStorageClear(): void;
-        /** 此项代表外壳接口可根据实际情况扩展基类没有的方法或属性 */
-        [name: string]: any;
-    }
 }
 declare module "engine/version/Version" {
     /**

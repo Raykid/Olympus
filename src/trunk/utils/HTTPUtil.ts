@@ -45,6 +45,13 @@ export interface IHTTPRequestParams
      */
     method?:HTTPMethod;
     /**
+     * HTTP返回值类型，从XMLHttpRequestResponseType查找枚举值
+     * 
+     * @type {XMLHttpRequestResponseType}
+     * @memberof IHTTPRequestParams
+     */
+    responseType?:XMLHttpRequestResponseType;
+    /**
      * 失败重试次数，默认重试2次
      * 
      * @type {number}
@@ -127,6 +134,7 @@ export function load(params:IHTTPRequestParams):void
     url = validateProtocol(url);
     // 生成并初始化xhr
     var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+    xhr.responseType = params.responseType;
     xhr.onreadystatechange = onReadyStateChange;
     // 发送
     send();
@@ -169,7 +177,7 @@ export function load(params:IHTTPRequestParams):void
                 if(xhr.status == 200)
                 {
                     // 成功回调
-                    params.onResponse && params.onResponse(xhr.responseText);
+                    params.onResponse && params.onResponse(xhr.response);
                 }
                 else if(retryTimes > 0)
                 {
