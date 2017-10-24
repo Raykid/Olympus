@@ -3447,7 +3447,7 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
             }
         }
         else {
-            url = wrapAbsolutePath(url, host);
+            url = host + "/" + url;
         }
         // 最后规整一下url
         url = trimURL(url);

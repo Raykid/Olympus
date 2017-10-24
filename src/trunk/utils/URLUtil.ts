@@ -82,7 +82,7 @@ export function wrapHost(url:string, host:string, forced:boolean = false):string
     }
     else
     {
-        url = wrapAbsolutePath(url, host);
+        url = host + "/" + url;
     }
     // 最后规整一下url
     url = trimURL(url);
