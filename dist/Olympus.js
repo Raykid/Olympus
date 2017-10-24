@@ -3189,12 +3189,15 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             this.pop(prompt);
             // 更新弹窗
             prompt.update(params);
+            // 返回弹窗
+            return prompt;
         };
         /**
          * 显示警告窗口（只有一个确定按钮）
          *
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
+         * @returns {IPromptPanel} 返回弹窗实体
          * @memberof PanelManager
          */
         PanelManager.prototype.alert = function (msgOrParams, okHandler) {
@@ -3208,7 +3211,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             params.handlers = [
                 { data: "确定", handler: okHandler, buttonType: IPromptPanel_1.ButtonType.important }
             ];
-            this.prompt(params);
+            return this.prompt(params);
         };
         /**
          * 显示确认窗口（有一个确定按钮和一个取消按钮）
@@ -3216,6 +3219,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
          * @param {()=>void} [cancelHandler] 取消按钮点击回调
+         * @returns {IPromptPanel} 返回弹窗实体
          * @memberof PanelManager
          */
         PanelManager.prototype.confirm = function (msgOrParams, okHandler, cancelHandler) {
@@ -3230,7 +3234,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 { data: "取消", handler: cancelHandler, buttonType: IPromptPanel_1.ButtonType.normal },
                 { data: "确定", handler: okHandler, buttonType: IPromptPanel_1.ButtonType.important }
             ];
-            this.prompt(params);
+            return this.prompt(params);
         };
         PanelManager = __decorate([
             Injector_4.Injectable

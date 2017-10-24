@@ -1885,33 +1885,37 @@ declare module "engine/panel/PanelManager" {
          *
          * @param {string} msg 要显示的文本
          * @param {...IPromptHandler[]} handlers 按钮回调数组
+         * @returns {IPromptPanel} 返回弹窗实体
          * @memberof PanelManager
          */
-        prompt(msg: string, ...handlers: IPromptHandler[]): void;
+        prompt(msg: string, ...handlers: IPromptHandler[]): IPromptPanel;
         /**
          * 显示提示窗口
          *
          * @param {IPromptParams} params 弹窗数据
+         * @returns {IPromptPanel} 返回弹窗实体
          * @memberof PanelManager
          */
-        prompt(params: IPromptParams): void;
+        prompt(params: IPromptParams): IPromptPanel;
         /**
          * 显示警告窗口（只有一个确定按钮）
          *
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
+         * @returns {IPromptPanel} 返回弹窗实体
          * @memberof PanelManager
          */
-        alert(msgOrParams: string | IPromptParams, okHandler?: () => void): void;
+        alert(msgOrParams: string | IPromptParams, okHandler?: () => void): IPromptPanel;
         /**
          * 显示确认窗口（有一个确定按钮和一个取消按钮）
          *
          * @param {(string|IPromptParams)} msgOrParams 要显示的文本，或者弹窗数据
          * @param {()=>void} [okHandler] 确定按钮点击回调
          * @param {()=>void} [cancelHandler] 取消按钮点击回调
+         * @returns {IPromptPanel} 返回弹窗实体
          * @memberof PanelManager
          */
-        confirm(msgOrParams: string | IPromptParams, okHandler?: () => void, cancelHandler?: () => void): void;
+        confirm(msgOrParams: string | IPromptParams, okHandler?: () => void, cancelHandler?: () => void): IPromptPanel;
     }
     /** 再额外导出一个单例 */
     export const panelManager: PanelManager;
