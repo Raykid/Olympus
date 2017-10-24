@@ -881,11 +881,21 @@ declare module "engine/panel/IPanel" {
             x: number;
             y: number;
         }): IPanel;
+        /** 弹出当前弹窗（只能由PanelManager调用） */
+        __open(data?: any, isModel?: boolean, from?: {
+            x: number;
+            y: number;
+        }): void;
         /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
         close(data?: any, to?: {
             x: number;
             y: number;
         }): IPanel;
+        /** 关闭当前弹窗（只能由PanelManager调用） */
+        __close(data?: any, to?: {
+            x: number;
+            y: number;
+        }): void;
         /** 在弹出前调用的方法 */
         onBeforePop(data?: any, isModel?: boolean, from?: {
             x: number;
@@ -969,8 +979,12 @@ declare module "engine/scene/IScene" {
         policy: IScenePolicy;
         /** 打开当前场景（相当于调用SceneManager.push方法） */
         open(data?: any): IScene;
+        /** 打开当前场景（只能由SceneManager调用） */
+        __open(data?: any): void;
         /** 关闭当前场景（相当于调用SceneManager.pop方法） */
         close(data?: any): IScene;
+        /** 关闭当前场景（只能由SceneManager调用） */
+        __close(data?: any): void;
         /**
          * 切入场景开始前调用
          * @param fromScene 从哪个场景切入
@@ -1685,6 +1699,14 @@ declare module "engine/scene/SceneManager" {
          */
         readonly activeCount: number;
         /**
+         * 获取场景是否已经开启
+         *
+         * @param {IScene} scene 场景对象
+         * @returns {boolean} 是否已经开启
+         * @memberof SceneManager
+         */
+        isOpened(scene: IScene): boolean;
+        /**
          * 切换场景，替换当前场景，当前场景会被销毁
          *
          * @param {IScene} scene 要切换到的场景
@@ -1799,6 +1821,14 @@ declare module "engine/panel/PanelManager" {
          * @memberof PanelManager
          */
         getOpened(cls?: IConstructor): IPanel[];
+        /**
+         * 获取弹窗是否已开启
+         *
+         * @param {IPanel} panel 弹窗对象
+         * @returns {boolean} 是否已经开启
+         * @memberof PanelManager
+         */
+        isOpened(panel: IPanel): boolean;
         /**
          * 打开一个弹窗
          *
@@ -2750,6 +2780,18 @@ declare module "engine/panel/PanelMediator" {
             y: number;
         }): IPanel;
         /**
+         * 弹出当前弹窗（只能由PanelManager调用）
+         *
+         * @param {*} [data] 数据
+         * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
+         * @param {{x:number, y:number}} [from] 弹出点坐标
+         * @memberof PanelMediator
+         */
+        __open(data?: any, isModel?: boolean, from?: {
+            x: number;
+            y: number;
+        }): void;
+        /**
          * 关闭当前弹窗（等同于调用PanelManager.drop方法）
          *
          * @param {*} [data] 数据
@@ -2761,6 +2803,17 @@ declare module "engine/panel/PanelMediator" {
             x: number;
             y: number;
         }): IPanel;
+        /**
+         * 关闭当前弹窗（只能由PanelManager调用）
+         *
+         * @param {*} [data] 数据
+         * @param {{x:number, y:number}} [to] 关闭点坐标
+         * @memberof PanelMediator
+         */
+        __close(data?: any, to?: {
+            x: number;
+            y: number;
+        }): void;
         /** 在弹出前调用的方法 */
         onBeforePop(data?: any, isModel?: boolean, from?: {
             x: number;
@@ -2813,6 +2866,13 @@ declare module "engine/scene/SceneMediator" {
          */
         open(data?: any): IScene;
         /**
+         * 打开当前场景（只能由SceneManager调用）
+         *
+         * @param {*} [data] 数据
+         * @memberof SceneMediator
+         */
+        __open(data?: any): void;
+        /**
          * 关闭当前场景（相当于调用SceneManager.pop方法）
          *
          * @param {*} [data] 数据
@@ -2820,6 +2880,13 @@ declare module "engine/scene/SceneMediator" {
          * @memberof SceneMediator
          */
         close(data?: any): IScene;
+        /**
+         * 关闭当前场景（只能由SceneManager调用）
+         *
+         * @param {*} [data] 数据
+         * @memberof SceneMediator
+         */
+        __close(data?: any): void;
         /**
          * 切入场景开始前调用
          * @param fromScene 从哪个场景切入

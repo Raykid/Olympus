@@ -2696,6 +2696,16 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             configurable: true
         });
         /**
+         * 获取场景是否已经开启
+         *
+         * @param {IScene} scene 场景对象
+         * @returns {boolean} 是否已经开启
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.isOpened = function (scene) {
+            return (this._sceneStack.indexOf(scene) >= 0);
+        };
+        /**
          * 切换场景，替换当前场景，当前场景会被销毁
          *
          * @param {IScene} scene 要切换到的场景
@@ -2712,7 +2722,14 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (this.activeCount == 0)
                 return this.push(scene, data);
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Switch, function () { return _this._sceneStack[0] = scene; });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Switch, function () {
+                var lastScene = _this._sceneStack[0];
+                // 数据先行
+                _this._sceneStack[0] = scene;
+                // 调用接口
+                lastScene && lastScene.__close(data);
+                scene.__open(data);
+            });
             return scene;
         };
         /**
@@ -2729,7 +2746,12 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             if (scene == null)
                 return scene;
             // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Push, function () { return _this._sceneStack.unshift(scene); });
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Push, function () {
+                // 数据先行
+                _this._sceneStack.unshift(scene);
+                // 调用接口
+                scene.__open(data);
+            });
             return scene;
         };
         /**
@@ -2766,11 +2788,11 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             }
             // 执行切换
             this.doChange(scene, to, data, policy, ChangeType.Pop, function () {
-                // 移除记录
+                // 数据先行
                 _this._sceneStack.splice(_this._sceneStack.indexOf(scene), 1);
             }, function () {
-                // 销毁场景
-                scene.dispose();
+                // 调用接口
+                scene.__close(data);
             });
         };
         SceneManager.prototype.doChange = function (from, to, data, policy, type, begin, complete) {
@@ -2992,7 +3014,7 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
     /** 再额外导出一个单例 */
     exports.system = Core_5.core.getInject(System);
 });
-define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/scene/SceneManager", "engine/system/System"], function (require, exports, Core_6, Injector_4, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, SceneManager_1, System_1) {
+define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/scene/SceneManager"], function (require, exports, Core_6, Injector_4, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, SceneManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3023,6 +3045,16 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 return this._panels.filter(function (panel) { return panel.constructor == cls; });
         };
         /**
+         * 获取弹窗是否已开启
+         *
+         * @param {IPanel} panel 弹窗对象
+         * @returns {boolean} 是否已经开启
+         * @memberof PanelManager
+         */
+        PanelManager.prototype.isOpened = function (panel) {
+            return (this._panels.indexOf(panel) >= 0);
+        };
+        /**
          * 打开一个弹窗
          *
          * @param {IPanel} panel 要打开的弹窗
@@ -3035,6 +3067,11 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
         PanelManager.prototype.pop = function (panel, data, isModel, from) {
             if (isModel === void 0) { isModel = true; }
             if (this._panels.indexOf(panel) < 0) {
+                // 数据先行
+                this._panels.push(panel);
+                // 调用接口
+                panel.__open(data, isModel, from);
+                // 获取策略
                 var policy = panel.policy || panel.bridge.defaultPanelPolicy || NonePanelPolicy_1.default;
                 // 调用回调
                 panel.onBeforePop(data, isModel, from);
@@ -3052,8 +3089,6 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 派发消息
                     Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
                 }, from);
-                // 记录
-                this._panels.push(panel);
             }
             return panel;
         };
@@ -3069,6 +3104,9 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
         PanelManager.prototype.drop = function (panel, data, to) {
             var index = this._panels.indexOf(panel);
             if (index >= 0) {
+                // 数据先行
+                this._panels.splice(index, 1);
+                // 获取策略
                 var policy = panel.policy || panel.bridge.defaultPanelPolicy || NonePanelPolicy_1.default;
                 // 调用回调
                 panel.onBeforeDrop(data, to);
@@ -3083,11 +3121,9 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 移除显示
                     var bridge = panel.bridge;
                     bridge.removeChild(bridge.panelLayer, panel.skin);
-                    // 销毁弹窗
-                    panel.dispose();
+                    // 调用接口
+                    panel.__close(data, to);
                 }, to);
-                // 移除记录
-                this._panels.splice(index, 1);
             }
             return panel;
         };
@@ -3118,40 +3154,37 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             for (var _i = 1; _i < arguments.length; _i++) {
                 handlers[_i - 1] = arguments[_i];
             }
-            // 整个挪到下一帧去
-            System_1.system.nextFrame(function () {
-                var params;
-                if (typeof msgOrParams == "string") {
-                    params = {
-                        msg: msgOrParams,
-                        handlers: handlers
-                    };
-                }
-                else {
-                    params = msgOrParams;
-                }
-                // 取到当前场景的类型
-                var type = SceneManager_1.sceneManager.currentScene.bridge.type;
-                // 用场景类型取到弹窗对象
-                var prompt = this._promptDict[type];
-                if (prompt == null) {
-                    // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
-                    alert(params.msg);
-                    return;
-                }
-                // 增加默认值
-                for (var i in params.handlers) {
-                    var handler = params.handlers[i];
-                    if (handler.text == null)
-                        handler.text = handler.data;
-                    if (handler.buttonType == null)
-                        handler.buttonType = IPromptPanel_1.ButtonType.normal;
-                }
-                // 显示弹窗
-                prompt.open();
-                // 更新弹窗
-                prompt.update(params);
-            }, this);
+            var params;
+            if (typeof msgOrParams == "string") {
+                params = {
+                    msg: msgOrParams,
+                    handlers: handlers
+                };
+            }
+            else {
+                params = msgOrParams;
+            }
+            // 取到当前场景的类型
+            var type = SceneManager_1.sceneManager.currentScene.bridge.type;
+            // 用场景类型取到弹窗对象
+            var prompt = this._promptDict[type];
+            if (prompt == null) {
+                // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
+                alert(params.msg);
+                return;
+            }
+            // 增加默认值
+            for (var i in params.handlers) {
+                var handler = params.handlers[i];
+                if (handler.text == null)
+                    handler.text = handler.data;
+                if (handler.buttonType == null)
+                    handler.buttonType = IPromptPanel_1.ButtonType.normal;
+            }
+            // 显示弹窗
+            this.pop(prompt);
+            // 更新弹窗
+            prompt.update(params);
         };
         /**
          * 显示警告窗口（只有一个确定按钮）
@@ -4972,8 +5005,18 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.open = function (data, isModel, from) {
-            _super.prototype.open.call(this, data);
             return PanelManager_2.panelManager.pop(this, data, isModel, from);
+        };
+        /**
+         * 弹出当前弹窗（只能由PanelManager调用）
+         *
+         * @param {*} [data] 数据
+         * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
+         * @param {{x:number, y:number}} [from] 弹出点坐标
+         * @memberof PanelMediator
+         */
+        PanelMediator.prototype.__open = function (data, isModel, from) {
+            _super.prototype.open.call(this, data);
         };
         /**
          * 关闭当前弹窗（等同于调用PanelManager.drop方法）
@@ -4984,8 +5027,17 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.close = function (data, to) {
-            this.onClose(data);
             return PanelManager_2.panelManager.drop(this, data, to);
+        };
+        /**
+         * 关闭当前弹窗（只能由PanelManager调用）
+         *
+         * @param {*} [data] 数据
+         * @param {{x:number, y:number}} [to] 关闭点坐标
+         * @memberof PanelMediator
+         */
+        PanelMediator.prototype.__close = function (data, to) {
+            _super.prototype.close.call(this, data);
         };
         /** 在弹出前调用的方法 */
         PanelMediator.prototype.onBeforePop = function (data, isModel, from) {
@@ -5033,8 +5085,16 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.open = function (data) {
-            _super.prototype.open.call(this, data);
             return SceneManager_2.sceneManager.push(this, data);
+        };
+        /**
+         * 打开当前场景（只能由SceneManager调用）
+         *
+         * @param {*} [data] 数据
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.__open = function (data) {
+            _super.prototype.open.call(this, data);
         };
         /**
          * 关闭当前场景（相当于调用SceneManager.pop方法）
@@ -5044,8 +5104,16 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.close = function (data) {
-            this.onClose(data);
             return SceneManager_2.sceneManager.pop(this, data);
+        };
+        /**
+         * 关闭当前场景（只能由SceneManager调用）
+         *
+         * @param {*} [data] 数据
+         * @memberof SceneMediator
+         */
+        SceneMediator.prototype.__close = function (data) {
+            _super.prototype.close.call(this, data);
         };
         /**
          * 切入场景开始前调用

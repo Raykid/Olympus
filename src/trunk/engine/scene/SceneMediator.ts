@@ -36,8 +36,18 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public open(data?:any):IScene
     {
-        super.open(data);
         return sceneManager.push(this, data);
+    }
+    
+    /**
+     * 打开当前场景（只能由SceneManager调用）
+     * 
+     * @param {*} [data] 数据
+     * @memberof SceneMediator
+     */
+    public __open(data?:any):void
+    {
+        super.open(data);
     }
 
     /**
@@ -49,8 +59,18 @@ export default class SceneMediator extends Mediator implements IScene
      */
     public close(data?:any):IScene
     {
-        this.onClose(data);
         return sceneManager.pop(this, data);
+    }
+
+    /**
+     * 关闭当前场景（只能由SceneManager调用）
+     * 
+     * @param {*} [data] 数据
+     * @memberof SceneMediator
+     */
+    public __close(data?:any):void
+    {
+        super.close(data);
     }
 
     /**

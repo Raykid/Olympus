@@ -38,10 +38,22 @@ export default class PanelMediator extends Mediator implements IPanel
      */
     public open(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel
     {
-        super.open(data);
         return panelManager.pop(this, data, isModel, from);
     }
 
+    /**
+     * 弹出当前弹窗（只能由PanelManager调用）
+     * 
+     * @param {*} [data] 数据
+     * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
+     * @param {{x:number, y:number}} [from] 弹出点坐标
+     * @memberof PanelMediator
+     */
+    public __open(data?:any, isModel?:boolean, from?:{x:number, y:number}):void
+    {
+        super.open(data);
+    }
+    
     /**
      * 关闭当前弹窗（等同于调用PanelManager.drop方法）
      * 
@@ -52,8 +64,19 @@ export default class PanelMediator extends Mediator implements IPanel
      */
     public close(data?:any, to?:{x:number, y:number}):IPanel
     {
-        this.onClose(data);
         return panelManager.drop(this, data, to);
+    }
+    
+    /**
+     * 关闭当前弹窗（只能由PanelManager调用）
+     * 
+     * @param {*} [data] 数据
+     * @param {{x:number, y:number}} [to] 关闭点坐标
+     * @memberof PanelMediator
+     */
+    public __close(data?:any, to?:{x:number, y:number}):void
+    {
+        super.close(data);
     }
     
     /** 在弹出前调用的方法 */

@@ -37,6 +37,18 @@ export default class PanelManager
     }
 
     /**
+     * 获取弹窗是否已开启
+     * 
+     * @param {IPanel} panel 弹窗对象
+     * @returns {boolean} 是否已经开启
+     * @memberof PanelManager
+     */
+    public isOpened(panel:IPanel):boolean
+    {
+        return (this._panels.indexOf(panel) >= 0);
+    }
+
+    /**
      * 打开一个弹窗
      * 
      * @param {IPanel} panel 要打开的弹窗
@@ -50,6 +62,11 @@ export default class PanelManager
     {
         if(this._panels.indexOf(panel) < 0)
         {
+            // 数据先行
+            this._panels.push(panel);
+            // 调用接口
+            panel.__open(data, isModel, from);
+            // 获取策略
             var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
             // 调用回调
             panel.onBeforePop(data, isModel, from);
@@ -67,8 +84,6 @@ export default class PanelManager
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModel, from);
             }, from);
-            // 记录
-            this._panels.push(panel);
         }
         return panel;
     }
@@ -87,6 +102,9 @@ export default class PanelManager
         var index:number = this._panels.indexOf(panel);
         if(index >= 0)
         {
+            // 数据先行
+            this._panels.splice(index, 1);
+            // 获取策略
             var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
             // 调用回调
             panel.onBeforeDrop(data, to);
@@ -101,11 +119,9 @@ export default class PanelManager
                 // 移除显示
                 var bridge:IBridge = panel.bridge;
                 bridge.removeChild(bridge.panelLayer, panel.skin);
-                // 销毁弹窗
-                panel.dispose();
+                // 调用接口
+                panel.__close(data, to);
             }, to);
-            // 移除记录
-            this._panels.splice(index, 1);
         }
         return panel;
     }
@@ -155,43 +171,39 @@ export default class PanelManager
      */
     public prompt(msgOrParams:string|IPromptParams, ...handlers:IPromptHandler[]):void
     {
-        // 整个挪到下一帧去
-        system.nextFrame(function():void
+        var params:IPromptParams;
+        if(typeof msgOrParams == "string")
         {
-            var params:IPromptParams;
-            if(typeof msgOrParams == "string")
-            {
-                params = {
-                    msg: msgOrParams as string,
-                    handlers: handlers
-                };
-            }
-            else
-            {
-                params = msgOrParams;
-            }
-            // 取到当前场景的类型
-            var type:string = sceneManager.currentScene.bridge.type;
-            // 用场景类型取到弹窗对象
-            var prompt:IPromptPanel = this._promptDict[type];
-            if(prompt == null)
-            {
-                // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
-                alert(params.msg);
-                return;
-            }
-            // 增加默认值
-            for(var i in params.handlers)
-            {
-                var handler:IPromptHandler = params.handlers[i];
-                if(handler.text == null) handler.text = handler.data;
-                if(handler.buttonType == null) handler.buttonType = ButtonType.normal;
-            }
-            // 显示弹窗
-            prompt.open();
-            // 更新弹窗
-            prompt.update(params);
-        }, this);
+            params = {
+                msg: msgOrParams as string,
+                handlers: handlers
+            };
+        }
+        else
+        {
+            params = msgOrParams;
+        }
+        // 取到当前场景的类型
+        var type:string = sceneManager.currentScene.bridge.type;
+        // 用场景类型取到弹窗对象
+        var prompt:IPromptPanel = this._promptDict[type];
+        if(prompt == null)
+        {
+            // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
+            alert(params.msg);
+            return;
+        }
+        // 增加默认值
+        for(var i in params.handlers)
+        {
+            var handler:IPromptHandler = params.handlers[i];
+            if(handler.text == null) handler.text = handler.data;
+            if(handler.buttonType == null) handler.buttonType = ButtonType.normal;
+        }
+        // 显示弹窗
+        this.pop(prompt);
+        // 更新弹窗
+        prompt.update(params);
     }
 
     /**

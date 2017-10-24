@@ -55,6 +55,18 @@ export default class SceneManager
     }
 
     /**
+     * 获取场景是否已经开启
+     * 
+     * @param {IScene} scene 场景对象
+     * @returns {boolean} 是否已经开启
+     * @memberof SceneManager
+     */
+    public isOpened(scene:IScene):boolean
+    {
+        return (this._sceneStack.indexOf(scene) >= 0);
+    }
+
+    /**
      * 切换场景，替换当前场景，当前场景会被销毁
      * 
      * @param {IScene} scene 要切换到的场景
@@ -79,7 +91,14 @@ export default class SceneManager
             data,
             scene.policy || scene.bridge.defaultScenePolicy || none,
             ChangeType.Switch,
-            ()=>this._sceneStack[0] = scene
+            ()=>{
+                var lastScene:IScene = this._sceneStack[0];
+                // 数据先行
+                this._sceneStack[0] = scene;
+                // 调用接口
+                lastScene && lastScene.__close(data);
+                scene.__open(data);
+            }
         );
         return scene;
     }
@@ -106,7 +125,12 @@ export default class SceneManager
             data,
             scene.policy || scene.bridge.defaultScenePolicy || none,
             ChangeType.Push,
-            ()=>this._sceneStack.unshift(scene)
+            ()=>{
+                // 数据先行
+                this._sceneStack.unshift(scene);
+                // 调用接口
+                scene.__open(data);
+            }
         );
         return scene;
     }
@@ -160,12 +184,12 @@ export default class SceneManager
             policy,
             ChangeType.Pop,
             ()=>{
-                // 移除记录
+                // 数据先行
                 this._sceneStack.splice(this._sceneStack.indexOf(scene), 1);
             },
             ()=>{
-                // 销毁场景
-                scene.dispose();
+                // 调用接口
+                scene.__close(data);
             }
         );
     }
