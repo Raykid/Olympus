@@ -112,16 +112,12 @@ export default class DOMBridge implements IBridge
      * 获取通用提示框
      * 
      * @readonly
-     * @type {IPromptPanel}
+     * @type {IPromptPanelConstructor}
      * @memberof DOMBridge
      */
-    public get promptPanel():IPromptPanel
+    public get promptClass():IPromptPanelConstructor
     {
-        if(!this._promptPanel && this._initParams.promptClass)
-        {
-            this._promptPanel = new this._initParams.promptClass();
-        }
-        return this._promptPanel;
+        return this._initParams.promptClass;
     }
     
     /**
@@ -162,12 +158,6 @@ export default class DOMBridge implements IBridge
         {
             this._initParams.container = document.createElement("div");
             document.body.appendChild(this._initParams.container);
-        }
-        // 如果通用提示框有父级容器，则先移除显示以备用
-        var promptPanel:IPromptPanel = this.promptPanel;
-        if(promptPanel instanceof Element && promptPanel.parentElement)
-        {
-            promptPanel.parentElement.removeChild(promptPanel);
         }
         // 调用回调
         complete(this);

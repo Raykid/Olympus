@@ -3135,7 +3135,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
          * 注册通用弹窗
          *
          * @param {string} type 通用弹窗要注册到的表现层类型
-         * @param {IPromptPanel} prompt 通用弹窗实例
+         * @param {IPromptPanelConstructor} prompt 通用弹窗类型
          * @memberof PanelManager
          */
         PanelManager.prototype.registerPrompt = function (type, prompt) {
@@ -3171,8 +3171,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             // 取到当前场景的类型
             var type = SceneManager_1.sceneManager.currentScene.bridge.type;
             // 用场景类型取到弹窗对象
-            var prompt = this._promptDict[type];
-            if (prompt == null) {
+            var promptCls = this._promptDict[type];
+            if (promptCls == null) {
                 // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
                 alert(params.msg);
                 return;
@@ -3185,6 +3185,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 if (handler.buttonType == null)
                     handler.buttonType = IPromptPanel_1.ButtonType.normal;
             }
+            // 实例化
+            var prompt = new promptCls();
             // 显示弹窗
             this.pop(prompt);
             // 更新弹窗
@@ -3329,7 +3331,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                     // 派发消息
                     Core_7.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
                     // 注册通用提示框
-                    PanelManager_1.panelManager.registerPrompt(bridge.type, bridge.promptPanel);
+                    PanelManager_1.panelManager.registerPrompt(bridge.type, bridge.promptClass);
                     // 初始化该表现层实例
                     if (bridge.init)
                         bridge.init(afterInitBridge);

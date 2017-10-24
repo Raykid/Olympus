@@ -1064,7 +1064,7 @@ declare module "engine/scene/IScenePolicy" {
     }
 }
 declare module "engine/bridge/IBridge" {
-    import IPromptPanel from "engine/panel/IPromptPanel";
+    import { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
@@ -1140,7 +1140,7 @@ declare module "engine/bridge/IBridge" {
          * @type {HTMLElement}
          * @memberof IBridge
          */
-        readonly promptPanel: IPromptPanel;
+        readonly promptClass: IPromptPanelConstructor;
         /**
          * 获取或设置默认弹窗策略
          *
@@ -1809,7 +1809,7 @@ declare module "engine/system/System" {
 declare module "engine/panel/PanelManager" {
     import IConstructor from "core/interfaces/IConstructor";
     import IPanel from "engine/panel/IPanel";
-    import IPromptPanel, { IPromptParams, IPromptHandler } from "engine/panel/IPromptPanel";
+    import IPromptPanel, { IPromptParams, IPromptHandler, IPromptPanelConstructor } from "engine/panel/IPromptPanel";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1869,10 +1869,10 @@ declare module "engine/panel/PanelManager" {
          * 注册通用弹窗
          *
          * @param {string} type 通用弹窗要注册到的表现层类型
-         * @param {IPromptPanel} prompt 通用弹窗实例
+         * @param {IPromptPanelConstructor} prompt 通用弹窗类型
          * @memberof PanelManager
          */
-        registerPrompt(type: string, prompt: IPromptPanel): void;
+        registerPrompt(type: string, prompt: IPromptPanelConstructor): void;
         /**
          * 取消注册通用弹窗
          *

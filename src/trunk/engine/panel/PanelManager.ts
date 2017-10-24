@@ -6,7 +6,7 @@ import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 import none from "./NonePanelPolicy";
 import PanelMessage from "./PanelMessage";
-import IPromptPanel, { IPromptParams, IPromptHandler, ButtonType } from "./IPromptPanel";
+import IPromptPanel, { IPromptParams, IPromptHandler, ButtonType, IPromptPanelConstructor } from "./IPromptPanel";
 import { sceneManager } from "../scene/SceneManager";
 import { system } from "../system/System";
 
@@ -128,15 +128,15 @@ export default class PanelManager
 
     /************************ 下面是通用弹窗的逻辑 ************************/
 
-    private _promptDict:{[type:string]:IPromptPanel} = {};
+    private _promptDict:{[type:string]:IPromptPanelConstructor} = {};
     /**
      * 注册通用弹窗
      * 
      * @param {string} type 通用弹窗要注册到的表现层类型
-     * @param {IPromptPanel} prompt 通用弹窗实例
+     * @param {IPromptPanelConstructor} prompt 通用弹窗类型
      * @memberof PanelManager
      */
-    public registerPrompt(type:string, prompt:IPromptPanel):void
+    public registerPrompt(type:string, prompt:IPromptPanelConstructor):void
     {
         this._promptDict[type] = prompt;
     }
@@ -188,8 +188,8 @@ export default class PanelManager
         // 取到当前场景的类型
         var type:string = sceneManager.currentScene.bridge.type;
         // 用场景类型取到弹窗对象
-        var prompt:IPromptPanel = this._promptDict[type];
-        if(prompt == null)
+        var promptCls:IPromptPanelConstructor = this._promptDict[type];
+        if(promptCls == null)
         {
             // 没有找到当前模块类型关联的通用弹窗类型，改用系统弹窗凑合一下
             alert(params.msg);
@@ -202,6 +202,8 @@ export default class PanelManager
             if(handler.text == null) handler.text = handler.data;
             if(handler.buttonType == null) handler.buttonType = ButtonType.normal;
         }
+        // 实例化
+        var prompt:IPromptPanel = new promptCls();
         // 显示弹窗
         this.pop(prompt);
         // 更新弹窗

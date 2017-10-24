@@ -91,7 +91,7 @@ export default class BridgeManager
                 // 派发消息
                 core.dispatch(BridgeMessage.BRIDGE_BEFORE_INIT, bridge);
                 // 注册通用提示框
-                panelManager.registerPrompt(bridge.type, bridge.promptPanel);
+                panelManager.registerPrompt(bridge.type, bridge.promptClass);
                 // 初始化该表现层实例
                 if(bridge.init) bridge.init(afterInitBridge);
                 else afterInitBridge(bridge);

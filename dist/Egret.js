@@ -65790,7 +65790,7 @@ define("egret/utils/SkinUtil", ["require", "exports", "engine/scene/SceneMediato
     function wrapSkin(mediator, skin) {
         var comp = new eui.Component();
         mediator.skin = comp;
-        // 篡改mediator的onOpen方法，皮肤附上去
+        // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
         var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
         mediator.onOpen = function () {
             var args = [];
@@ -66350,19 +66350,16 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(EgretBridge.prototype, "promptPanel", {
+        Object.defineProperty(EgretBridge.prototype, "promptClass", {
             /**
              * 获取通用提示框
              *
              * @readonly
-             * @type {IPromptPanel}
+             * @type {IPromptPanelConstructor}
              * @memberof EgretBridge
              */
             get: function () {
-                if (!this._promptPanel && this._initParams.promptClass) {
-                    this._promptPanel = new this._initParams.promptClass();
-                }
-                return this._promptPanel;
+                return this._initParams.promptClass;
             },
             enumerable: true,
             configurable: true

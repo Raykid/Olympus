@@ -1,7 +1,7 @@
 /// <reference path="Olympus.d.ts" />
 declare module "DOMBridge" {
     import IBridge from "engine/bridge/IBridge";
-    import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
+    import { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
@@ -78,10 +78,10 @@ declare module "DOMBridge" {
          * 获取通用提示框
          *
          * @readonly
-         * @type {IPromptPanel}
+         * @type {IPromptPanelConstructor}
          * @memberof DOMBridge
          */
-        readonly promptPanel: IPromptPanel;
+        readonly promptClass: IPromptPanelConstructor;
         /**
          * 获取默认弹窗策略
          *

@@ -127,19 +127,16 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"]
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DOMBridge.prototype, "promptPanel", {
+        Object.defineProperty(DOMBridge.prototype, "promptClass", {
             /**
              * 获取通用提示框
              *
              * @readonly
-             * @type {IPromptPanel}
+             * @type {IPromptPanelConstructor}
              * @memberof DOMBridge
              */
             get: function () {
-                if (!this._promptPanel && this._initParams.promptClass) {
-                    this._promptPanel = new this._initParams.promptClass();
-                }
-                return this._promptPanel;
+                return this._initParams.promptClass;
             },
             enumerable: true,
             configurable: true
@@ -158,11 +155,6 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil"]
             if (!this._initParams.container) {
                 this._initParams.container = document.createElement("div");
                 document.body.appendChild(this._initParams.container);
-            }
-            // 如果通用提示框有父级容器，则先移除显示以备用
-            var promptPanel = this.promptPanel;
-            if (promptPanel instanceof Element && promptPanel.parentElement) {
-                promptPanel.parentElement.removeChild(promptPanel);
             }
             // 调用回调
             complete(this);

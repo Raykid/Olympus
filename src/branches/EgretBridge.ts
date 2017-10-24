@@ -126,16 +126,12 @@ export default class EgretBridge implements IBridge
      * 获取通用提示框
      * 
      * @readonly
-     * @type {IPromptPanel}
+     * @type {IPromptPanelConstructor}
      * @memberof EgretBridge
      */
-    public get promptPanel():IPromptPanel
+    public get promptClass():IPromptPanelConstructor
     {
-        if(!this._promptPanel && this._initParams.promptClass)
-        {
-            this._promptPanel = new this._initParams.promptClass();
-        }
-        return this._promptPanel;
+        return this._initParams.promptClass;
     }
 
     /**

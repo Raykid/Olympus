@@ -1,4 +1,4 @@
-import IPromptPanel from "../panel/IPromptPanel";
+import { IPromptPanelConstructor } from "../panel/IPromptPanel";
 import IPanelPolicy from "../panel/IPanelPolicy";
 import IScenePolicy from "../scene/IScenePolicy";
 import IMediator from "../mediator/IMediator";
@@ -76,7 +76,7 @@ export default interface IBridge
      * @type {HTMLElement}
      * @memberof IBridge
      */
-    readonly promptPanel:IPromptPanel;
+    readonly promptClass:IPromptPanelConstructor;
     /**
      * 获取或设置默认弹窗策略
      * 
