@@ -2,7 +2,7 @@ import { core } from "../../core/Core";
 import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
 import { getConstructor } from "../../utils/ConstructUtil";
-import IMediator from "./IMediator";
+import IModuleMediator from "./IModuleMediator";
 import IBridge from "../bridge/IBridge";
 import IModule from "../module/IModule";
 import IModuleConstructor from "../module/IModuleConstructor";
@@ -15,7 +15,7 @@ import IModuleConstructor from "../module/IModuleConstructor";
  * 
  * 组件界面中介者基类
 */
-export default class Mediator implements IMediator, IDispatcher
+export default class Mediator implements IModuleMediator, IDispatcher
 {
     /**
      * 表现层桥
@@ -103,45 +103,23 @@ export default class Mediator implements IMediator, IDispatcher
         return null;
     }
 
-    private _assetsLoaded:boolean = false;
-    private _assetsLoading:boolean = false;
-    private _loadAssetsHandlers:((err?:Error)=>void)[] = [];
-    public loadAssets():void
-    {
-        if(this._assetsLoading) return;
-        // 进行规则检查，没有托管到Module的Mediator不应该声明任何资源依赖
-        var assets:string[] = this.listAssets();
-        if(!this._dependModule && assets && assets.length > 0)
-        {
-            console.warn("非托管Mediator不能声明任何资源依赖，listAssets方法必须返回null或者空数组");
-            assets = null;
-        }
-        this._assetsLoading = true;
-        var self:Mediator = this;
-        this.bridge.loadAssets(assets, this, function(err?:Error):void
-        {
-            // 设置标识符
-            self._assetsLoaded = true;
-            // 调用onLoadAssets接口
-            self.onLoadAssets(err);
-            // 通知所有监听者
-            for(var i:number = 0, len:number = self._loadAssetsHandlers.length; i < len; i++)
-            {
-                self._loadAssetsHandlers.shift()(err);
-            }
-        });
-    }
-
     /**
-     * 加载完毕后回调指定方法，如果已经加载完毕则立即回调
+     * 加载从listAssets中获取到的所有资源
      * 
-     * @param {(err?:Error)=>void} handler 加载完毕后的回调
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+     * @returns {void} 
      * @memberof Mediator
      */
-    public whenLoadAssets(handler:(err?:Error)=>void):void
+    public loadAssets(handler:(err?:Error)=>void):void
     {
-        if(this._assetsLoaded) handler();
-        else this._loadAssetsHandlers.push(handler);
+        var self:Mediator = this;
+        this.bridge.loadAssets(this.listAssets(), this, function(err?:Error):void
+        {
+            // 调用onLoadAssets接口
+            self.onLoadAssets(err);
+            // 调用回调
+            handler(err);
+        });
     }
 
     /**
@@ -164,8 +142,6 @@ export default class Mediator implements IMediator, IDispatcher
     public open(data?:any):any
     {
         this._data = data;
-        // 在调用onOpen之前先加载一下资源，因为如果Mediator脱离Module使用的话是没有地方可以加载资源的，导致很多逻辑无法进行
-        this.loadAssets();
         this.onOpen(data);
         return this;
     }

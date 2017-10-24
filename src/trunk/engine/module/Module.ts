@@ -3,7 +3,7 @@ import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
-import IMediator from "../mediator/IMediator";
+import IModuleMediator from "../mediator/IModuleMediator";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 import Dictionary from "../../utils/Dictionary";
@@ -62,21 +62,21 @@ export default abstract class Module implements IModule, IDispatcher
         return null;
     }
 
-    private _mediators:IMediator[] = [];
+    private _mediators:IModuleMediator[] = [];
     
     /**
      * 获取所有已托管的中介者
      * 
-     * @returns {IMediator[]} 已托管的中介者
+     * @returns {IModuleMediator[]} 已托管的中介者
      * @memberof Module
      */
-    public get delegatedMediators():IMediator[]
+    public get delegatedMediators():IModuleMediator[]
     {
         return this._mediators;
     }
 
-    private _disposeDict:Dictionary<IMediator, ()=>void> = new Dictionary();
-    private disposeMediator(mediator:IMediator):void
+    private _disposeDict:Dictionary<IModuleMediator, ()=>void> = new Dictionary();
+    private disposeMediator(mediator:IModuleMediator):void
     {
         // 取消托管
         this.undelegateMediator(mediator);
@@ -89,10 +89,10 @@ export default abstract class Module implements IModule, IDispatcher
     /**
      * 托管中介者
      * 
-     * @param {IMediator} mediator 中介者
+     * @param {IModuleMediator} mediator 中介者
      * @memberof Module
      */
-    public delegateMediator(mediator:IMediator):void
+    public delegateMediator(mediator:IModuleMediator):void
     {
         if(this._mediators.indexOf(mediator) < 0)
         {
@@ -108,10 +108,10 @@ export default abstract class Module implements IModule, IDispatcher
     /**
      * 取消托管中介者
      * 
-     * @param {IMediator} mediator 中介者
+     * @param {IModuleMediator} mediator 中介者
      * @memberof Module
      */
-    public undelegateMediator(mediator:IMediator):void
+    public undelegateMediator(mediator:IModuleMediator):void
     {
         var index:number = this._mediators.indexOf(mediator);
         if(index >= 0)
@@ -129,11 +129,11 @@ export default abstract class Module implements IModule, IDispatcher
     /**
      * 判断指定中介者是否包含在该模块里
      * 
-     * @param {IMediator} mediator 要判断的中介者
+     * @param {IModuleMediator} mediator 要判断的中介者
      * @returns {boolean} 是否包含在该模块里
      * @memberof Module
      */
-    public constainsMediator(mediator:IMediator):boolean
+    public constainsMediator(mediator:IModuleMediator):boolean
     {
         return (this._mediators.indexOf(mediator) >= 0);
     }
@@ -268,7 +268,7 @@ export default abstract class Module implements IModule, IDispatcher
         // 将所有已托管的中介者销毁
         for(var i:number = 0, len:number = this._mediators.length; i < len; i++)
         {
-            var mediator:IMediator = this._mediators.pop();
+            var mediator:IModuleMediator = this._mediators.pop();
             this.undelegateMediator(mediator);
             mediator.dispose();
         }

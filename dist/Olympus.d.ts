@@ -1374,33 +1374,6 @@ declare module "engine/mediator/IMediator" {
          */
         skin: any;
         /**
-         * 列出中介者所需的资源数组，可重写
-         *
-         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-         * @memberof IMediator
-         */
-        listAssets(): string[];
-        /**
-         * 加载从listAssets中获取到的所有资源
-         *
-         * @memberof IMediator
-         */
-        loadAssets(): void;
-        /**
-         * 加载完毕后回调指定方法，如果已经加载完毕则立即回调
-         *
-         * @param {()=>void} handler 加载完毕后的回调
-         * @memberof IMediator
-         */
-        whenLoadAssets(handler: () => void): void;
-        /**
-         * 当所需资源加载完毕后调用
-         *
-         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
-         * @memberof IMediator
-         */
-        onLoadAssets(err?: Error): void;
-        /**
          * 当打开时调用
          *
          * @param {*} [data] 可能的打开参数
@@ -1442,9 +1415,43 @@ declare module "engine/mediator/IMediator" {
         unmapAllListeners(): void;
     }
 }
+declare module "engine/mediator/IModuleMediator" {
+    import IMediator from "engine/mediator/IMediator";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-24
+     * @modify date 2017-10-24
+     *
+     * 托管到模块的中介者所具有的接口
+    */
+    export default interface IModuleMediator extends IMediator {
+        /**
+         * 列出中介者所需的资源数组，可重写
+         *
+         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+         * @memberof IModuleMediator
+         */
+        listAssets(): string[];
+        /**
+         * 加载从listAssets中获取到的所有资源
+         *
+         * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+         * @memberof IModuleMediator
+         */
+        loadAssets(handler: (err?: Error) => void): void;
+        /**
+         * 当所需资源加载完毕后调用
+         *
+         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+         * @memberof IModuleMediator
+         */
+        onLoadAssets(err?: Error): void;
+    }
+}
 declare module "engine/module/IModule" {
     import IDisposable from "core/interfaces/IDisposable";
-    import IMediator from "engine/mediator/IMediator";
+    import IModuleMediator from "engine/mediator/IModuleMediator";
     import RequestData from "engine/net/RequestData";
     import ResponseData from "engine/net/ResponseData";
     import IModuleConstructor from "engine/module/IModuleConstructor";
@@ -1464,7 +1471,7 @@ declare module "engine/module/IModule" {
         /** 获取背景音乐URL */
         readonly bgMusic: string;
         /** 获取所有已托管的中介者 */
-        readonly delegatedMediators: IMediator[];
+        readonly delegatedMediators: IModuleMediator[];
         /** 列出模块所需CSS资源URL */
         listStyleFiles(): string[];
         /** 列出模块所需JS资源URL */
@@ -1472,11 +1479,11 @@ declare module "engine/module/IModule" {
         /** 列出模块初始化请求 */
         listInitRequests(): RequestData[];
         /** 将中介者托管给模块 */
-        delegateMediator(mediator: IMediator): void;
+        delegateMediator(mediator: IModuleMediator): void;
         /** 反托管中介者 */
-        undelegateMediator(mediator: IMediator): void;
+        undelegateMediator(mediator: IModuleMediator): void;
         /** 判断指定中介者是否包含在该模块里 */
-        constainsMediator(mediator: IMediator): boolean;
+        constainsMediator(mediator: IModuleMediator): boolean;
         /** 当模块资源加载完毕后调用 */
         onLoadAssets(err?: Error): void;
         /** 打开模块时调用 */
@@ -2575,7 +2582,7 @@ declare module "engine/model/Model" {
 declare module "engine/mediator/Mediator" {
     import IDispatcher from "core/interfaces/IDispatcher";
     import IMessage from "core/message/IMessage";
-    import IMediator from "engine/mediator/IMediator";
+    import IModuleMediator from "engine/mediator/IModuleMediator";
     import IBridge from "engine/bridge/IBridge";
     import IModule from "engine/module/IModule";
     import IModuleConstructor from "engine/module/IModuleConstructor";
@@ -2587,7 +2594,7 @@ declare module "engine/mediator/Mediator" {
      *
      * 组件界面中介者基类
     */
-    export default class Mediator implements IMediator, IDispatcher {
+    export default class Mediator implements IModuleMediator, IDispatcher {
         /**
          * 表现层桥
          *
@@ -2647,17 +2654,14 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         listAssets(): string[];
-        private _assetsLoaded;
-        private _assetsLoading;
-        private _loadAssetsHandlers;
-        loadAssets(): void;
         /**
-         * 加载完毕后回调指定方法，如果已经加载完毕则立即回调
+         * 加载从listAssets中获取到的所有资源
          *
-         * @param {(err?:Error)=>void} handler 加载完毕后的回调
+         * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+         * @returns {void}
          * @memberof Mediator
          */
-        whenLoadAssets(handler: (err?: Error) => void): void;
+        loadAssets(handler: (err?: Error) => void): void;
         /**
          * 当所需资源加载完毕后调用
          *
@@ -2918,7 +2922,7 @@ declare module "engine/module/Module" {
     import IMessage from "core/message/IMessage";
     import RequestData from "engine/net/RequestData";
     import ResponseData from "engine/net/ResponseData";
-    import IMediator from "engine/mediator/IMediator";
+    import IModuleMediator from "engine/mediator/IModuleMediator";
     import IModule from "engine/module/IModule";
     import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
@@ -2965,34 +2969,34 @@ declare module "engine/module/Module" {
         /**
          * 获取所有已托管的中介者
          *
-         * @returns {IMediator[]} 已托管的中介者
+         * @returns {IModuleMediator[]} 已托管的中介者
          * @memberof Module
          */
-        readonly delegatedMediators: IMediator[];
+        readonly delegatedMediators: IModuleMediator[];
         private _disposeDict;
         private disposeMediator(mediator);
         /**
          * 托管中介者
          *
-         * @param {IMediator} mediator 中介者
+         * @param {IModuleMediator} mediator 中介者
          * @memberof Module
          */
-        delegateMediator(mediator: IMediator): void;
+        delegateMediator(mediator: IModuleMediator): void;
         /**
          * 取消托管中介者
          *
-         * @param {IMediator} mediator 中介者
+         * @param {IModuleMediator} mediator 中介者
          * @memberof Module
          */
-        undelegateMediator(mediator: IMediator): void;
+        undelegateMediator(mediator: IModuleMediator): void;
         /**
          * 判断指定中介者是否包含在该模块里
          *
-         * @param {IMediator} mediator 要判断的中介者
+         * @param {IModuleMediator} mediator 要判断的中介者
          * @returns {boolean} 是否包含在该模块里
          * @memberof Module
          */
-        constainsMediator(mediator: IMediator): boolean;
+        constainsMediator(mediator: IModuleMediator): boolean;
         /**
          * 列出模块所需CSS资源URL，可以重写
          *

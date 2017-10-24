@@ -1,5 +1,5 @@
 import IDisposable from "../../core/interfaces/IDisposable";
-import IMediator from "../mediator/IMediator";
+import IModuleMediator from "../mediator/IModuleMediator";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IModuleConstructor from "./IModuleConstructor";
@@ -21,7 +21,7 @@ export default interface IModule extends IDisposable
     /** 获取背景音乐URL */
     readonly bgMusic:string;
     /** 获取所有已托管的中介者 */
-    readonly delegatedMediators:IMediator[];
+    readonly delegatedMediators:IModuleMediator[];
     /** 列出模块所需CSS资源URL */
     listStyleFiles():string[];
     /** 列出模块所需JS资源URL */
@@ -29,11 +29,11 @@ export default interface IModule extends IDisposable
     /** 列出模块初始化请求 */
     listInitRequests():RequestData[];
     /** 将中介者托管给模块 */
-    delegateMediator(mediator:IMediator):void;
+    delegateMediator(mediator:IModuleMediator):void;
     /** 反托管中介者 */
-    undelegateMediator(mediator:IMediator):void;
+    undelegateMediator(mediator:IModuleMediator):void;
     /** 判断指定中介者是否包含在该模块里 */
-    constainsMediator(mediator:IMediator):boolean;
+    constainsMediator(mediator:IModuleMediator):boolean;
     /** 当模块资源加载完毕后调用 */
     onLoadAssets(err?:Error):void;
     /** 打开模块时调用 */

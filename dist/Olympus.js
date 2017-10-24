@@ -2379,6 +2379,10 @@ define("engine/mediator/IMediator", ["require", "exports"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("engine/mediator/IModuleMediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("engine/module/IModule", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -4343,8 +4347,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     }
                     else if (mediators.length > 0) {
                         var mediator = mediators.shift();
-                        mediator.loadAssets();
-                        mediator.whenLoadAssets(loadMediatorAssets);
+                        mediator.loadAssets(loadMediatorAssets);
                     }
                     else {
                         // 调用onLoadAssets接口
@@ -4729,9 +4732,6 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
     var Mediator = /** @class */ (function () {
         function Mediator(skin) {
             this._disposed = false;
-            this._assetsLoaded = false;
-            this._assetsLoading = false;
-            this._loadAssetsHandlers = [];
             this._listeners = [];
             if (skin)
                 this.skin = skin;
@@ -4802,39 +4802,21 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
         Mediator.prototype.listAssets = function () {
             return null;
         };
-        Mediator.prototype.loadAssets = function () {
-            if (this._assetsLoading)
-                return;
-            // 进行规则检查，没有托管到Module的Mediator不应该声明任何资源依赖
-            var assets = this.listAssets();
-            if (!this._dependModule && assets && assets.length > 0) {
-                console.warn("非托管Mediator不能声明任何资源依赖，listAssets方法必须返回null或者空数组");
-                assets = null;
-            }
-            this._assetsLoading = true;
-            var self = this;
-            this.bridge.loadAssets(assets, this, function (err) {
-                // 设置标识符
-                self._assetsLoaded = true;
-                // 调用onLoadAssets接口
-                self.onLoadAssets(err);
-                // 通知所有监听者
-                for (var i = 0, len = self._loadAssetsHandlers.length; i < len; i++) {
-                    self._loadAssetsHandlers.shift()(err);
-                }
-            });
-        };
         /**
-         * 加载完毕后回调指定方法，如果已经加载完毕则立即回调
+         * 加载从listAssets中获取到的所有资源
          *
-         * @param {(err?:Error)=>void} handler 加载完毕后的回调
+         * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+         * @returns {void}
          * @memberof Mediator
          */
-        Mediator.prototype.whenLoadAssets = function (handler) {
-            if (this._assetsLoaded)
-                handler();
-            else
-                this._loadAssetsHandlers.push(handler);
+        Mediator.prototype.loadAssets = function (handler) {
+            var self = this;
+            this.bridge.loadAssets(this.listAssets(), this, function (err) {
+                // 调用onLoadAssets接口
+                self.onLoadAssets(err);
+                // 调用回调
+                handler(err);
+            });
         };
         /**
          * 当所需资源加载完毕后调用
@@ -4853,8 +4835,6 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          */
         Mediator.prototype.open = function (data) {
             this._data = data;
-            // 在调用onOpen之前先加载一下资源，因为如果Mediator脱离Module使用的话是没有地方可以加载资源的，导致很多逻辑无法进行
-            this.loadAssets();
             this.onOpen(data);
             return this;
         };
@@ -5200,7 +5180,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
             /**
              * 获取所有已托管的中介者
              *
-             * @returns {IMediator[]} 已托管的中介者
+             * @returns {IModuleMediator[]} 已托管的中介者
              * @memberof Module
              */
             get: function () {
@@ -5222,7 +5202,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         /**
          * 托管中介者
          *
-         * @param {IMediator} mediator 中介者
+         * @param {IModuleMediator} mediator 中介者
          * @memberof Module
          */
         Module.prototype.delegateMediator = function (mediator) {
@@ -5238,7 +5218,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         /**
          * 取消托管中介者
          *
-         * @param {IMediator} mediator 中介者
+         * @param {IModuleMediator} mediator 中介者
          * @memberof Module
          */
         Module.prototype.undelegateMediator = function (mediator) {
@@ -5258,7 +5238,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         /**
          * 判断指定中介者是否包含在该模块里
          *
-         * @param {IMediator} mediator 要判断的中介者
+         * @param {IModuleMediator} mediator 要判断的中介者
          * @returns {boolean} 是否包含在该模块里
          * @memberof Module
          */

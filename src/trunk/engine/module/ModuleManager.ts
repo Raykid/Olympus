@@ -8,7 +8,7 @@ import { netManager } from "../net/NetManager";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 import ModuleMessage from "./ModuleMessage"
-import IMediator from "../mediator/IMediator";
+import IModuleMediator from "../mediator/IModuleMediator";
 import { environment } from "../env/Environment";
 import Shell from "../env/Shell";
 
@@ -161,7 +161,7 @@ export default class ModuleManager
             // 赋值打开参数
             target.data = data;
             // 加载所有已托管中介者的资源
-            var mediators:IMediator[] = target.delegatedMediators.concat();
+            var mediators:IModuleMediator[] = target.delegatedMediators.concat();
             var loadMediatorAssets:(err?:Error)=>void = (err?:Error)=>{
                 if(err)
                 {
@@ -170,9 +170,8 @@ export default class ModuleManager
                 }
                 else if(mediators.length > 0)
                 {
-                    var mediator:IMediator = mediators.shift();
-                    mediator.loadAssets();
-                    mediator.whenLoadAssets(loadMediatorAssets);
+                    var mediator:IModuleMediator = mediators.shift();
+                    mediator.loadAssets(loadMediatorAssets);
                 }
                 else
                 {
