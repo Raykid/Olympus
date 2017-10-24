@@ -3730,8 +3730,8 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
          * @memberof Environment
          */
         Environment.prototype.toCDNHostURL = function (url) {
-            // 加上domain
-            url = URLUtil_1.wrapHost(url, this.curCDNHost);
+            // 加上domain，变成绝对路径
+            url = URLUtil_1.wrapAbsolutePath(url, this.curCDNHost);
             // 统一protocol
             url = URLUtil_1.validateProtocol(url);
             // 规整一下

@@ -1,6 +1,6 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
-import { wrapHost, validateProtocol, trimURL } from "../../utils/URLUtil";
+import { wrapHost, validateProtocol, trimURL, wrapAbsolutePath } from "../../utils/URLUtil";
 
 /**
  * @author Raykid
@@ -120,8 +120,8 @@ export default class Environment
      */
     public toCDNHostURL(url:string):string
     {
-        // 加上domain
-        url = wrapHost(url, this.curCDNHost);
+        // 加上domain，变成绝对路径
+        url = wrapAbsolutePath(url, this.curCDNHost);
         // 统一protocol
         url = validateProtocol(url);
         // 规整一下
