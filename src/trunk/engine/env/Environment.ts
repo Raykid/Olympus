@@ -115,19 +115,16 @@ export default class Environment
      * 让url的域名变成CDN域名
      * 
      * @param {string} url 要转变的url
+     * @param {boolean} [forced=false] 是否强制替换host
      * @returns {string} 转变后的url
      * @memberof Environment
      */
-    public toCDNHostURL(url:string):string
+    public toCDNHostURL(url:string, forced:boolean=false):string
     {
-        // 加上domain，变成绝对路径
-        url = wrapAbsolutePath(url, this.curCDNHost);
-        // 统一protocol
-        url = validateProtocol(url);
-        // 规整一下
-        url = trimURL(url);
-        // 返回url
-        return url;
+        // 组织中缀
+        var midnameIndex:number = window.location.pathname.lastIndexOf("/");
+        var midname:string = window.location.pathname.substring(0, midnameIndex + 1);
+        return wrapHost(url, this.curCDNHost + "/" + midname, forced);
     }
 }
 /** 再额外导出一个单例 */

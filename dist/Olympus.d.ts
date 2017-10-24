@@ -2111,10 +2111,11 @@ declare module "engine/env/Environment" {
          * 让url的域名变成CDN域名
          *
          * @param {string} url 要转变的url
+         * @param {boolean} [forced=false] 是否强制替换host
          * @returns {string} 转变后的url
          * @memberof Environment
          */
-        toCDNHostURL(url: string): string;
+        toCDNHostURL(url: string, forced?: boolean): string;
     }
     /** 再额外导出一个单例 */
     export const environment: Environment;

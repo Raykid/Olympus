@@ -3726,18 +3726,16 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
          * 让url的域名变成CDN域名
          *
          * @param {string} url 要转变的url
+         * @param {boolean} [forced=false] 是否强制替换host
          * @returns {string} 转变后的url
          * @memberof Environment
          */
-        Environment.prototype.toCDNHostURL = function (url) {
-            // 加上domain，变成绝对路径
-            url = URLUtil_1.wrapAbsolutePath(url, this.curCDNHost);
-            // 统一protocol
-            url = URLUtil_1.validateProtocol(url);
-            // 规整一下
-            url = URLUtil_1.trimURL(url);
-            // 返回url
-            return url;
+        Environment.prototype.toCDNHostURL = function (url, forced) {
+            if (forced === void 0) { forced = false; }
+            // 组织中缀
+            var midnameIndex = window.location.pathname.lastIndexOf("/");
+            var midname = window.location.pathname.substring(0, midnameIndex + 1);
+            return URLUtil_1.wrapHost(url, this.curCDNHost + "/" + midname, forced);
         };
         Environment = __decorate([
             Injector_6.Injectable
