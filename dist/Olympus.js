@@ -4127,10 +4127,24 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
                 node.buffer = data.buffer;
                 node.loop = params && params.loop;
                 node.connect(this._context.destination);
-                if (this._inited)
+                if (this._inited) {
+                    // 监听播放完毕事件
+                    var listener = this.onPlayEnded.bind(this, url);
+                    node.addEventListener("ended", listener);
+                    // 开始播放
                     node.start((params && params.time) || data.startTime);
-                // 记录正在播放的节点
-                this._playingDict[url] = { node: node, params: params };
+                    // 记录正在播放的节点
+                    this._playingDict[url] = { node: node, params: params, listener: listener };
+                }
+            }
+        };
+        Shell.prototype.onPlayEnded = function (url) {
+            var data = this._playingDict[url];
+            if (data) {
+                // 移除播放完毕事件
+                data.node.removeEventListener("ended", data.listener);
+                // 停止播放
+                this.audioStop(url);
             }
         };
         Shell.prototype._audioStop = function (url, when) {

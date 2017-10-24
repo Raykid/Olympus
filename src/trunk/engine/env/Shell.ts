@@ -259,9 +259,28 @@ export default class Shell
             node.buffer = data.buffer;
             node.loop = params && params.loop;
             node.connect(this._context.destination);
-            if(this._inited) node.start((params && params.time) || data.startTime);
-            // 记录正在播放的节点
-            this._playingDict[url] = {node: node, params: params};
+            if(this._inited)
+            {
+                // 监听播放完毕事件
+                var listener:(evt:MediaStreamErrorEvent)=>void = this.onPlayEnded.bind(this, url);
+                node.addEventListener("ended", listener);
+                // 开始播放
+                node.start((params && params.time) || data.startTime);
+                // 记录正在播放的节点
+                this._playingDict[url] = {node: node, params: params, listener: listener};
+            }
+        }
+    }
+
+    private onPlayEnded(url:string):void
+    {
+        var data:AudioPlayingData = this._playingDict[url];
+        if(data)
+        {
+            // 移除播放完毕事件
+            data.node.removeEventListener("ended", data.listener);
+            // 停止播放
+            this.audioStop(url);
         }
     }
 
@@ -409,6 +428,12 @@ interface AudioPlayingData
      * @memberof AudioPlayingData
      */
     params:AudioPlayParams;
+    /**
+     * 监听函数，用于移除监听
+     * 
+     * @memberof AudioPlayingData
+     */
+    listener:(evt:MediaStreamErrorEvent)=>void;
 }
 
 /** 初始化音频系统，为具有权限限制的系统解除音频限制 */

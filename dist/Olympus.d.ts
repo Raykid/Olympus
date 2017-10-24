@@ -2344,6 +2344,7 @@ declare module "engine/env/Shell" {
          * @memberof Shell
          */
         audioPlay(url: string, params?: AudioPlayParams): void;
+        private onPlayEnded(url);
         private _audioStop(url, when?);
         /**
          * 暂停音频（不会重置进度）
