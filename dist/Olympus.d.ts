@@ -1932,7 +1932,7 @@ declare module "engine/bridge/BridgeManager" {
     /** 再额外导出一个单例 */
     export const bridgeManager: BridgeManager;
 }
-declare module "engine/mask/Mask" {
+declare module "engine/mask/MaskManager" {
     import IPanel from "engine/panel/IPanel";
     /**
      * @author Raykid
@@ -1940,9 +1940,9 @@ declare module "engine/mask/Mask" {
      * @create date 2017-10-25
      * @modify date 2017-10-25
      *
-     * 遮罩工具
+     * 遮罩管理器
     */
-    export default class Mask {
+    export default class MaskManager {
         private _entityDict;
         private _loadingMaskDict;
         private getLoadingMaskCount();
@@ -1993,14 +1993,14 @@ declare module "engine/mask/Mask" {
         isShowingModalMask(popup: IPanel): boolean;
     }
     /** 再额外导出一个单例 */
-    export const mask: Mask;
+    export const maskManager: MaskManager;
 }
 declare module "engine/bridge/IBridge" {
     import { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
-    import { IMaskEntity } from "engine/mask/Mask";
+    import { IMaskEntity } from "engine/mask/MaskManager";
     /**
      * @author Raykid
      * @email initial_r@qq.com

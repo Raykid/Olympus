@@ -2,7 +2,7 @@ import { IPromptPanelConstructor } from "../panel/IPromptPanel";
 import IPanelPolicy from "../panel/IPanelPolicy";
 import IScenePolicy from "../scene/IScenePolicy";
 import IMediator from "../mediator/IMediator";
-import { IMaskEntity } from "../mask/Mask";
+import { IMaskEntity } from "../mask/MaskManager";
 
 /**
  * @author Raykid

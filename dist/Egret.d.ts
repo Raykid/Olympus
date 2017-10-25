@@ -178,7 +178,7 @@ declare module "egret/utils/UIUtil" {
     export function wrapEUIList(group: eui.DataGroup, rendererHandler: (data?: any, renderer?: any) => void): void;
 }
 declare module "dom/mask/MaskEntity" {
-    import { IMaskEntity } from "engine/mask/Mask";
+    import { IMaskEntity } from "engine/mask/MaskManager";
     import IPanel from "engine/panel/IPanel";
     /**
      * @author Raykid
@@ -226,7 +226,7 @@ declare module "DOMBridge" {
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
-    import { IMaskEntity } from "engine/mask/Mask";
+    import { IMaskEntity } from "engine/mask/MaskManager";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -484,7 +484,7 @@ declare module "DOMBridge" {
     }
 }
 declare module "egret/mask/MaskEntity" {
-    import { IMaskEntity } from "engine/mask/Mask";
+    import { IMaskEntity } from "engine/mask/MaskManager";
     import IPanel from "engine/panel/IPanel";
     /**
      * @author Raykid
@@ -547,7 +547,7 @@ declare module "EgretBridge" {
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
-    import { IMaskEntity } from "engine/mask/Mask";
+    import { IMaskEntity } from "engine/mask/MaskManager";
     import RenderMode from "egret/RenderMode";
     import { MaskData } from "egret/mask/MaskEntity";
     /**

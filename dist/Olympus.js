@@ -4026,7 +4026,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.moduleManager = Core_8.core.getInject(ModuleManager);
 });
-define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager", "engine/module/ModuleManager"], function (require, exports, Core_9, Injector_7, BridgeMessage_1, PanelManager_1, ModuleManager_1) {
+define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager", "engine/module/ModuleManager", "engine/mask/MaskManager"], function (require, exports, Core_9, Injector_7, BridgeMessage_1, PanelManager_1, ModuleManager_1, MaskManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4133,6 +4133,8 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                     var bridge = bridges_2[_b];
                     // 派发消息
                     Core_9.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
+                    // 初始化Mask
+                    MaskManager_1.maskManager.registerMask(bridge.type, bridge.maskEntity);
                     // 注册通用提示框
                     PanelManager_1.panelManager.registerPrompt(bridge.type, bridge.promptClass);
                     // 初始化该表现层实例
@@ -4175,7 +4177,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.bridgeManager = Core_9.core.getInject(BridgeManager);
 });
-define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "engine/bridge/BridgeManager", "core/Core"], function (require, exports, Injector_8, BridgeManager_2, Core_10) {
+define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector", "engine/bridge/BridgeManager", "core/Core"], function (require, exports, Injector_8, BridgeManager_2, Core_10) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4184,14 +4186,14 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
      * @create date 2017-10-25
      * @modify date 2017-10-25
      *
-     * 遮罩工具
+     * 遮罩管理器
     */
-    var Mask = /** @class */ (function () {
-        function Mask() {
+    var MaskManager = /** @class */ (function () {
+        function MaskManager() {
             this._entityDict = {};
             this._loadingMaskDict = {};
         }
-        Mask.prototype.getLoadingMaskCount = function () {
+        MaskManager.prototype.getLoadingMaskCount = function () {
             var count = 0;
             for (var key in this._loadingMaskDict) {
                 var temp = this._loadingMaskDict[key];
@@ -4200,14 +4202,14 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
             }
             return count;
         };
-        Mask.prototype.plusLoadingMaskCount = function (key) {
+        MaskManager.prototype.plusLoadingMaskCount = function (key) {
             var count = this._loadingMaskDict[key] || 0;
             if (count < 0)
                 count = 0;
             this._loadingMaskDict[key] = ++count;
             return count;
         };
-        Mask.prototype.minusLoadingMaskCount = function (key) {
+        MaskManager.prototype.minusLoadingMaskCount = function (key) {
             var count = this._loadingMaskDict[key] || 0;
             count--;
             if (count < 0)
@@ -4222,13 +4224,13 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
          * @param type 所属表现层桥
          * @param entity 遮罩实体
          */
-        Mask.prototype.registerMask = function (type, entity) {
+        MaskManager.prototype.registerMask = function (type, entity) {
             this._entityDict[type] = entity;
         };
         /**
          * 显示遮罩
          */
-        Mask.prototype.showMask = function (alpha) {
+        MaskManager.prototype.showMask = function (alpha) {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
@@ -4237,14 +4239,14 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
         /**
          * 隐藏遮罩
          */
-        Mask.prototype.hideMask = function () {
+        MaskManager.prototype.hideMask = function () {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
                 entity.hideMask();
         };
         /**当前是否在显示遮罩*/
-        Mask.prototype.isShowingMask = function () {
+        MaskManager.prototype.isShowingMask = function () {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
@@ -4254,7 +4256,7 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
         /**
          * 显示加载图
          */
-        Mask.prototype.showLoading = function (alpha, key) {
+        MaskManager.prototype.showLoading = function (alpha, key) {
             if (key === void 0) { key = null; }
             // 若当前你没有loading则显示loading
             if (this.getLoadingMaskCount() == 0) {
@@ -4269,7 +4271,7 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
         /**
          * 隐藏加载图
          */
-        Mask.prototype.hideLoading = function (key) {
+        MaskManager.prototype.hideLoading = function (key) {
             if (key === void 0) { key = null; }
             // 减计数
             this.minusLoadingMaskCount(key);
@@ -4282,7 +4284,7 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
             }
         };
         /**当前是否在显示loading*/
-        Mask.prototype.isShowingLoading = function () {
+        MaskManager.prototype.isShowingLoading = function () {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
@@ -4290,35 +4292,35 @@ define("engine/mask/Mask", ["require", "exports", "core/injector/Injector", "eng
             return false;
         };
         /** 显示模态窗口遮罩 */
-        Mask.prototype.showModalMask = function (popup, alpha) {
+        MaskManager.prototype.showModalMask = function (popup, alpha) {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
                 entity.showModalMask(popup, alpha);
         };
         /** 隐藏模态窗口遮罩 */
-        Mask.prototype.hideModalMask = function (popup) {
+        MaskManager.prototype.hideModalMask = function (popup) {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
                 entity.hideModalMask(popup);
         };
         /** 当前是否在显示模态窗口遮罩 */
-        Mask.prototype.isShowingModalMask = function (popup) {
+        MaskManager.prototype.isShowingModalMask = function (popup) {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
                 return entity.isShowingModalMask(popup);
             return false;
         };
-        Mask = __decorate([
+        MaskManager = __decorate([
             Injector_8.Injectable
-        ], Mask);
-        return Mask;
+        ], MaskManager);
+        return MaskManager;
     }());
-    exports.default = Mask;
+    exports.default = MaskManager;
     /** 再额外导出一个单例 */
-    exports.mask = Core_10.core.getInject(Mask);
+    exports.maskManager = Core_10.core.getInject(MaskManager);
 });
 define("engine/bridge/IBridge", ["require", "exports"], function (require, exports) {
     "use strict";

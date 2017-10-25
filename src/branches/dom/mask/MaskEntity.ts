@@ -1,4 +1,4 @@
-import { IMaskEntity } from "engine/mask/Mask";
+import { IMaskEntity } from "engine/mask/MaskManager";
 import IBridge from "engine/bridge/IBridge";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import EgretBridge from "../../EgretBridge";

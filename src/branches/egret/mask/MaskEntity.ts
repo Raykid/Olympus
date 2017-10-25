@@ -1,4 +1,4 @@
-import { IMaskEntity } from "engine/mask/Mask";
+import { IMaskEntity } from "engine/mask/MaskManager";
 import IPanel from "engine/panel/IPanel";
 import IBridge from "engine/bridge/IBridge";
 import { bridgeManager } from "engine/bridge/BridgeManager";

@@ -6,6 +6,7 @@ import { panelManager } from "../panel/PanelManager";
 import { moduleManager } from "../module/ModuleManager";
 import IMediator from "../mediator/IMediator";
 import IModule from "../module/IModule";
+import { maskManager } from "../mask/MaskManager";
 
 /**
  * @author Raykid
@@ -115,6 +116,8 @@ export default class BridgeManager
             {
                 // 派发消息
                 core.dispatch(BridgeMessage.BRIDGE_BEFORE_INIT, bridge);
+                // 初始化Mask
+                maskManager.registerMask(bridge.type, bridge.maskEntity);
                 // 注册通用提示框
                 panelManager.registerPrompt(bridge.type, bridge.promptClass);
                 // 初始化该表现层实例

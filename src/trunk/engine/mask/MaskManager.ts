@@ -9,10 +9,10 @@ import { core } from "../../core/Core";
  * @create date 2017-10-25
  * @modify date 2017-10-25
  * 
- * 遮罩工具
+ * 遮罩管理器
 */
 @Injectable
-export default class Mask
+export default class MaskManager
 {
     private _entityDict:{[type:number]:IMaskEntity} = {};
     private _loadingMaskDict:{[key:string]:number} = {};
@@ -167,4 +167,4 @@ export interface IMaskEntity
     isShowingModalMask(popup:IPanel):boolean;
 }
 /** 再额外导出一个单例 */
-export const mask:Mask = core.getInject(Mask);
+export const maskManager:MaskManager = core.getInject(MaskManager);

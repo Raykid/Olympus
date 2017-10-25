@@ -20,7 +20,7 @@ import Hash, { hash } from "./env/Hash";
 import Query from "./env/Query";
 import Shell from "./env/Shell";
 import Version, { version } from "./version/Version";
-import Mask from "./mask/Mask";
+import MaskManager from "./mask/MaskManager";
 import NetManager, { netManager } from "./net/NetManager";
 import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
 import { IResponseDataConstructor } from "./net/ResponseData";

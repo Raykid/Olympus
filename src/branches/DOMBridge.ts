@@ -6,7 +6,7 @@ import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
-import { IMaskEntity } from "engine/mask/Mask";
+import { IMaskEntity } from "engine/mask/MaskManager";
 import { load } from "utils/HTTPUtil";
 import MaskEntity from "./dom/mask/MaskEntity";
 
