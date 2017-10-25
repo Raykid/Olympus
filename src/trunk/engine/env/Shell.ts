@@ -25,6 +25,11 @@ export default class Shell
     {
         return "web";
     }
+
+    public constructor()
+    {
+        this.initAudioContext();
+    }
     
     /*************************** 下面是页面跳转接口 ***************************/
 
@@ -436,8 +441,5 @@ interface AudioPlayingData
     listener:(evt:MediaStreamErrorEvent)=>void;
 }
 
-/** 初始化音频系统，为具有权限限制的系统解除音频限制 */
-var shell:Shell = core.getInject(Shell);
-shell["initAudioContext"]();
 /** 再额外导出一个单例 */
-export { shell };
+export var shell:Shell = core.getInject(Shell);

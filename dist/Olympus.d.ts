@@ -2073,6 +2073,7 @@ declare module "engine/env/Shell" {
          * @memberof Shell
          */
         readonly type: string;
+        constructor();
         /*************************** 下面是页面跳转接口 ***************************/
         /**
          * 刷新页面
@@ -2216,10 +2217,8 @@ declare module "engine/env/Shell" {
          */
         stopOthers?: boolean;
     }
-    /** 初始化音频系统，为具有权限限制的系统解除音频限制 */
-    var shell: Shell;
     /** 再额外导出一个单例 */
-    export { shell };
+    export var shell: Shell;
 }
 declare module "engine/module/ModuleManager" {
     import IModule from "engine/module/IModule";

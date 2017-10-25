@@ -3457,6 +3457,7 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             this._inited = false;
             this._audioDict = {};
             this._playingDict = {};
+            this.initAudioContext();
         }
         Object.defineProperty(Shell.prototype, "type", {
             /**
@@ -3740,15 +3741,14 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             }
         };
         Shell = __decorate([
-            Injector_5.Injectable
+            Injector_5.Injectable,
+            __metadata("design:paramtypes", [])
         ], Shell);
         return Shell;
     }());
     exports.default = Shell;
-    /** 初始化音频系统，为具有权限限制的系统解除音频限制 */
-    var shell = Core_7.core.getInject(Shell);
-    exports.shell = shell;
-    shell["initAudioContext"]();
+    /** 再额外导出一个单例 */
+    exports.shell = Core_7.core.getInject(Shell);
 });
 define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "utils/HTTPUtil", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/env/Shell"], function (require, exports, Core_8, Injector_6, HTTPUtil_2, NetManager_1, ModuleMessage_1, Environment_3, Shell_1) {
     "use strict";
