@@ -1601,152 +1601,6 @@ declare module "engine/panel/PanelMessage" {
         static PANEL_AFTER_DROP: string;
     }
 }
-declare module "engine/scene/NoneScenePolicy" {
-    import IScene from "engine/scene/IScene";
-    import IScenePolicy from "engine/scene/IScenePolicy";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 无任何动画的场景策略，可应用于任何显示层实现
-    */
-    export class NoneScenePolicy implements IScenePolicy {
-        /**
-         * 准备切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         */
-        prepareSwitch(from: IScene, to: IScene): void;
-        /**
-         * 切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         * @param callback 切换完毕的回调方法
-         */
-        switch(from: IScene, to: IScene, callback: () => void): void;
-    }
-    const _default: NoneScenePolicy;
-    export default _default;
-}
-declare module "engine/scene/SceneMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 场景相关的消息
-    */
-    export default class SceneMessage {
-        /**
-         * 切换场景前的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof SceneMessage
-         */
-        static SCENE_BEFORE_CHANGE: string;
-        /**
-         * 切换场景后的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof SceneMessage
-         */
-        static SCENE_AFTER_CHANGE: string;
-    }
-}
-declare module "utils/SyncUtil" {
-    /**
-     * 判断是否正在进行操作
-     *
-     * @export
-     * @param {string} name 队列名
-     * @returns {boolean} 队列是否正在操作
-     */
-    export function isOperating(name: string): boolean;
-    /**
-     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
-     *
-     * @export
-     * @param name 一个队列的名字
-     * @param {Function} fn 要执行的方法
-     * @param {*} [thisArg] 方法this对象
-     * @param {...any[]} [args] 方法参数
-     */
-    export function wait(name: string, fn: Function, thisArg?: any, ...args: any[]): void;
-    /**
-     * 完成一步操作并唤醒后续操作
-     *
-     * @export
-     * @param {string} name 队列名字
-     * @returns {void}
-     */
-    export function notify(name: string): void;
-}
-declare module "engine/scene/SceneManager" {
-    import IScene from "engine/scene/IScene";
-    export default class SceneManager {
-        private _sceneStack;
-        /**
-         * 获取当前场景
-         *
-         * @readonly
-         * @type {IScene}
-         * @memberof SceneManager
-         */
-        readonly currentScene: IScene;
-        /**
-         * 获取活动场景个数
-         *
-         * @readonly
-         * @type {number}
-         * @memberof SceneManager
-         */
-        readonly activeCount: number;
-        /**
-         * 获取场景是否已经开启
-         *
-         * @param {IScene} scene 场景对象
-         * @returns {boolean} 是否已经开启
-         * @memberof SceneManager
-         */
-        isOpened(scene: IScene): boolean;
-        /**
-         * 切换场景，替换当前场景，当前场景会被销毁
-         *
-         * @param {IScene} scene 要切换到的场景
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        switch(scene: IScene, data?: any): IScene;
-        /**
-         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
-         *
-         * @param {IScene} scene 要推入的场景
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        push(scene: IScene, data?: any): IScene;
-        /**
-         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
-         *
-         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        pop(scene: IScene, data?: any): IScene;
-        private doPop(scene, data);
-        private doChange(from, to, data, policy, type, begin?, complete?);
-    }
-    /** 再额外导出一个单例 */
-    export const sceneManager: SceneManager;
-}
 declare module "engine/system/System" {
     /**
      * @author Raykid
@@ -1920,46 +1774,6 @@ declare module "engine/panel/PanelManager" {
     }
     /** 再额外导出一个单例 */
     export const panelManager: PanelManager;
-}
-declare module "engine/bridge/BridgeManager" {
-    import IBridge from "engine/bridge/IBridge";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 用来管理所有表现层对象
-    */
-    export default class BridgeManager {
-        private _bridgeDict;
-        /**
-         * 获取表现层桥实例
-         *
-         * @param {string} type 表现层类型
-         * @returns {IBridge} 表现层桥实例
-         * @memberof BridgeManager
-         */
-        getBridge(type: string): IBridge;
-        /**
-         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
-         *
-         * @param {*} skin 皮肤实例
-         * @returns {IBridge|null} 皮肤所属表现层桥实例
-         * @memberof BridgeManager
-         */
-        getBridgeBySkin(skin: any): IBridge | null;
-        /**
-         * 注册一个表现层桥实例到框架中
-         *
-         * @param {...IBridge[]} bridges 要注册的所有表现层桥
-         * @memberof BridgeManager
-         */
-        registerBridge(...bridges: IBridge[]): void;
-        private testAllInit();
-    }
-    /** 再额外导出一个单例 */
-    export const bridgeManager: BridgeManager;
 }
 declare module "utils/URLUtil" {
     /**
@@ -2408,6 +2222,7 @@ declare module "engine/env/Shell" {
     export { shell };
 }
 declare module "engine/module/ModuleManager" {
+    import IModule from "engine/module/IModule";
     import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
@@ -2434,10 +2249,18 @@ declare module "engine/module/ModuleManager" {
          * 获取当前模块
          *
          * @readonly
-         * @type {IModuleConstructor}
+         * @type {IModuleConstructor|undefined}
          * @memberof ModuleManager
          */
         readonly currentModule: IModuleConstructor | undefined;
+        /**
+         * 获取当前模块的实例
+         *
+         * @readonly
+         * @type {(IModule|undefined)}
+         * @memberof ModuleManager
+         */
+        readonly currentModuleInstance: IModule | undefined;
         /**
          * 获取活动模块数量
          *
@@ -2480,6 +2303,54 @@ declare module "engine/module/ModuleManager" {
     }
     /** 再额外导出一个单例 */
     export const moduleManager: ModuleManager;
+}
+declare module "engine/bridge/BridgeManager" {
+    import IBridge from "engine/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来管理所有表现层对象
+    */
+    export default class BridgeManager {
+        private _bridgeDict;
+        /**
+         * 获取当前的表现层桥实例（规则是取当前模块的第一个拥有bridge属性的Mediator的bridge）
+         *
+         * @readonly
+         * @type {IBridge}
+         * @memberof BridgeManager
+         */
+        readonly currentBridge: IBridge;
+        /**
+         * 获取表现层桥实例
+         *
+         * @param {string} type 表现层类型
+         * @returns {IBridge} 表现层桥实例
+         * @memberof BridgeManager
+         */
+        getBridge(type: string): IBridge;
+        /**
+         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
+         *
+         * @param {*} skin 皮肤实例
+         * @returns {IBridge|null} 皮肤所属表现层桥实例
+         * @memberof BridgeManager
+         */
+        getBridgeBySkin(skin: any): IBridge | null;
+        /**
+         * 注册一个表现层桥实例到框架中
+         *
+         * @param {...IBridge[]} bridges 要注册的所有表现层桥
+         * @memberof BridgeManager
+         */
+        registerBridge(...bridges: IBridge[]): void;
+        private testAllInit();
+    }
+    /** 再额外导出一个单例 */
+    export const bridgeManager: BridgeManager;
 }
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
@@ -2853,6 +2724,152 @@ declare module "engine/panel/PanelMediator" {
             y: number;
         }): void;
     }
+}
+declare module "engine/scene/NoneScenePolicy" {
+    import IScene from "engine/scene/IScene";
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 无任何动画的场景策略，可应用于任何显示层实现
+    */
+    export class NoneScenePolicy implements IScenePolicy {
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        prepareSwitch(from: IScene, to: IScene): void;
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        switch(from: IScene, to: IScene, callback: () => void): void;
+    }
+    const _default: NoneScenePolicy;
+    export default _default;
+}
+declare module "engine/scene/SceneMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景相关的消息
+    */
+    export default class SceneMessage {
+        /**
+         * 切换场景前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        static SCENE_BEFORE_CHANGE: string;
+        /**
+         * 切换场景后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        static SCENE_AFTER_CHANGE: string;
+    }
+}
+declare module "utils/SyncUtil" {
+    /**
+     * 判断是否正在进行操作
+     *
+     * @export
+     * @param {string} name 队列名
+     * @returns {boolean} 队列是否正在操作
+     */
+    export function isOperating(name: string): boolean;
+    /**
+     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
+     *
+     * @export
+     * @param name 一个队列的名字
+     * @param {Function} fn 要执行的方法
+     * @param {*} [thisArg] 方法this对象
+     * @param {...any[]} [args] 方法参数
+     */
+    export function wait(name: string, fn: Function, thisArg?: any, ...args: any[]): void;
+    /**
+     * 完成一步操作并唤醒后续操作
+     *
+     * @export
+     * @param {string} name 队列名字
+     * @returns {void}
+     */
+    export function notify(name: string): void;
+}
+declare module "engine/scene/SceneManager" {
+    import IScene from "engine/scene/IScene";
+    export default class SceneManager {
+        private _sceneStack;
+        /**
+         * 获取当前场景
+         *
+         * @readonly
+         * @type {IScene}
+         * @memberof SceneManager
+         */
+        readonly currentScene: IScene;
+        /**
+         * 获取活动场景个数
+         *
+         * @readonly
+         * @type {number}
+         * @memberof SceneManager
+         */
+        readonly activeCount: number;
+        /**
+         * 获取场景是否已经开启
+         *
+         * @param {IScene} scene 场景对象
+         * @returns {boolean} 是否已经开启
+         * @memberof SceneManager
+         */
+        isOpened(scene: IScene): boolean;
+        /**
+         * 切换场景，替换当前场景，当前场景会被销毁
+         *
+         * @param {IScene} scene 要切换到的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        switch(scene: IScene, data?: any): IScene;
+        /**
+         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
+         *
+         * @param {IScene} scene 要推入的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        push(scene: IScene, data?: any): IScene;
+        /**
+         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
+         *
+         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        pop(scene: IScene, data?: any): IScene;
+        private doPop(scene, data);
+        private doChange(from, to, data, policy, type, begin?, complete?);
+    }
+    /** 再额外导出一个单例 */
+    export const sceneManager: SceneManager;
 }
 declare module "engine/scene/SceneMediator" {
     import Mediator from "engine/mediator/Mediator";

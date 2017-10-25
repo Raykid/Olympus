@@ -7,8 +7,8 @@ import IPanelPolicy from "./IPanelPolicy";
 import none from "./NonePanelPolicy";
 import PanelMessage from "./PanelMessage";
 import IPromptPanel, { IPromptParams, IPromptHandler, ButtonType, IPromptPanelConstructor } from "./IPromptPanel";
-import { sceneManager } from "../scene/SceneManager";
 import { system } from "../system/System";
+import { bridgeManager } from "../bridge/BridgeManager";
 
 /**
  * @author Raykid
@@ -64,6 +64,8 @@ export default class PanelManager
         {
             // 数据先行
             this._panels.push(panel);
+            // 弹窗所在的表现层必须要显示
+            panel.bridge.htmlWrapper.style.display = "";
             // 调用接口
             panel.__open(data, isModel, from);
             // 获取策略
@@ -186,7 +188,8 @@ export default class PanelManager
             params = msgOrParams;
         }
         // 取到当前场景的类型
-        var type:string = sceneManager.currentScene.bridge.type;
+        var curBridge:IBridge = bridgeManager.currentBridge;
+        var type:string = curBridge && curBridge.type;
         // 用场景类型取到弹窗对象
         var promptCls:IPromptPanelConstructor = this._promptDict[type];
         if(promptCls == null)

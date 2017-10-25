@@ -44,13 +44,26 @@ export default class ModuleManager
      * 获取当前模块
      * 
      * @readonly
-     * @type {IModuleConstructor}
+     * @type {IModuleConstructor|undefined}
      * @memberof ModuleManager
      */ 
     public get currentModule():IModuleConstructor|undefined
     {
         var curData:[IModuleConstructor, IModule] = this.getCurrent();
         return (curData && curData[0]);
+    }
+
+    /**
+     * 获取当前模块的实例
+     * 
+     * @readonly
+     * @type {(IModule|undefined)}
+     * @memberof ModuleManager
+     */
+    public get currentModuleInstance():IModule|undefined
+    {
+        var curData:[IModuleConstructor, IModule] = this.getCurrent();
+        return (curData && curData[1]);
     }
 
     /**
@@ -160,6 +173,8 @@ export default class ModuleManager
             var target:IModule = new cls();
             // 赋值打开参数
             target.data = data;
+            // 数据先行
+            this._moduleStack.unshift([cls, target]);
             // 加载所有已托管中介者的资源
             var mediators:IModuleMediator[] = target.delegatedMediators.concat();
             var loadMediatorAssets:(err?:Error)=>void = (err?:Error)=>{
@@ -214,8 +229,6 @@ export default class ModuleManager
                                 target.onOpen(data);
                                 // 调用onDeactivate接口
                                 this.deactivateModule(fromModule && fromModule, cls, data);
-                                // 插入模块
-                                this._moduleStack.unshift([cls, target]);
                                 // 调用onActivate接口
                                 this.activateModule(target, from && from[0], data);
                                 // 如果replace是true，则关掉上一个模块
@@ -279,12 +292,13 @@ export default class ModuleManager
         // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
         if(index == 0)
         {
-            var to:[IModuleConstructor, IModule] = this._moduleStack[1];
+            // 数据先行
+            this._moduleStack.shift();
+            // 获取前一个模块
+            var to:[IModuleConstructor, IModule] = this._moduleStack[0];
             var toModule:IModule = to && to[1];
             // 调用onDeactivate接口
             this.deactivateModule(target, to && to[0], data);
-            // 移除当前模块
-            this._moduleStack.shift();
             // 调用onClose接口
             target.onClose(data);
             // 调用onActivate接口
@@ -294,7 +308,7 @@ export default class ModuleManager
         }
         else
         {
-            // 移除模块
+            // 数据先行
             this._moduleStack.splice(index, 1);
             // 调用onClose接口
             target.onClose(data);

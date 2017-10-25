@@ -2519,365 +2519,7 @@ define("engine/panel/PanelMessage", ["require", "exports"], function (require, e
     }());
     exports.default = PanelMessage;
 });
-define("engine/scene/NoneScenePolicy", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 无任何动画的场景策略，可应用于任何显示层实现
-    */
-    var NoneScenePolicy = /** @class */ (function () {
-        function NoneScenePolicy() {
-        }
-        /**
-         * 准备切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         */
-        NoneScenePolicy.prototype.prepareSwitch = function (from, to) {
-            // 这个策略里啥也不用准备
-        };
-        /**
-         * 切换场景时调度
-         * @param from 切出的场景
-         * @param to 切入的场景
-         * @param callback 切换完毕的回调方法
-         */
-        NoneScenePolicy.prototype.switch = function (from, to, callback) {
-            // 直接延迟到下一帧回调（不能同步回调，否则可能会出问题）
-            setTimeout(callback, 0);
-        };
-        return NoneScenePolicy;
-    }());
-    exports.NoneScenePolicy = NoneScenePolicy;
-    /** 默认导出实例 */
-    exports.default = new NoneScenePolicy();
-});
-define("engine/scene/SceneMessage", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 场景相关的消息
-    */
-    var SceneMessage = /** @class */ (function () {
-        function SceneMessage() {
-        }
-        /**
-         * 切换场景前的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof SceneMessage
-         */
-        SceneMessage.SCENE_BEFORE_CHANGE = "sceneBeforeChange";
-        /**
-         * 切换场景后的消息
-         *
-         * @static
-         * @type {string}
-         * @memberof SceneMessage
-         */
-        SceneMessage.SCENE_AFTER_CHANGE = "sceneAfterChange";
-        return SceneMessage;
-    }());
-    exports.default = SceneMessage;
-});
-define("utils/SyncUtil", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 同步工具集，用于对多个
-    */
-    var _cache = {};
-    /**
-     * 判断是否正在进行操作
-     *
-     * @export
-     * @param {string} name 队列名
-     * @returns {boolean} 队列是否正在操作
-     */
-    function isOperating(name) {
-        var ctx = _cache[name];
-        return (ctx != null && ctx.operating);
-    }
-    exports.isOperating = isOperating;
-    /**
-     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
-     *
-     * @export
-     * @param name 一个队列的名字
-     * @param {Function} fn 要执行的方法
-     * @param {*} [thisArg] 方法this对象
-     * @param {...any[]} [args] 方法参数
-     */
-    function wait(name, fn, thisArg) {
-        var args = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            args[_i - 3] = arguments[_i];
-        }
-        var ctx = _cache[name];
-        if (ctx == null) {
-            _cache[name] = ctx = { operating: false, datas: [] };
-        }
-        if (ctx.operating) {
-            // 队列正在执行，推入缓存
-            ctx.datas.push({ fn: fn, thisArg: thisArg, args: args });
-        }
-        else {
-            // 队列没有在执行，直接执行
-            ctx.operating = true;
-            fn.apply(thisArg, args);
-        }
-    }
-    exports.wait = wait;
-    /**
-     * 完成一步操作并唤醒后续操作
-     *
-     * @export
-     * @param {string} name 队列名字
-     * @returns {void}
-     */
-    function notify(name) {
-        var ctx = _cache[name];
-        if (ctx == null || ctx.datas.length <= 0) {
-            // 队列执行完了，直接结束
-            ctx.operating = false;
-            return;
-        }
-        var data = ctx.datas.shift();
-        data.fn.apply(data.thisArg, data.args);
-    }
-    exports.notify = notify;
-});
-define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_4, Injector_2, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 弹窗管理器，包含切换场景、push场景、pop场景功能
-    */
-    var SYNC_NAME = "SceneManager_sync";
-    var ChangeType;
-    (function (ChangeType) {
-        ChangeType[ChangeType["Switch"] = 0] = "Switch";
-        ChangeType[ChangeType["Push"] = 1] = "Push";
-        ChangeType[ChangeType["Pop"] = 2] = "Pop";
-    })(ChangeType || (ChangeType = {}));
-    var SceneManager = /** @class */ (function () {
-        function SceneManager() {
-            this._sceneStack = [];
-        }
-        Object.defineProperty(SceneManager.prototype, "currentScene", {
-            /**
-             * 获取当前场景
-             *
-             * @readonly
-             * @type {IScene}
-             * @memberof SceneManager
-             */
-            get: function () {
-                return this._sceneStack[0];
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(SceneManager.prototype, "activeCount", {
-            /**
-             * 获取活动场景个数
-             *
-             * @readonly
-             * @type {number}
-             * @memberof SceneManager
-             */
-            get: function () {
-                return this._sceneStack.length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * 获取场景是否已经开启
-         *
-         * @param {IScene} scene 场景对象
-         * @returns {boolean} 是否已经开启
-         * @memberof SceneManager
-         */
-        SceneManager.prototype.isOpened = function (scene) {
-            return (this._sceneStack.indexOf(scene) >= 0);
-        };
-        /**
-         * 切换场景，替换当前场景，当前场景会被销毁
-         *
-         * @param {IScene} scene 要切换到的场景
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        SceneManager.prototype.switch = function (scene, data) {
-            var _this = this;
-            // 非空判断
-            if (scene == null)
-                return;
-            // 如果切入的是第一个场景，则改用push操作
-            if (this.activeCount == 0)
-                return this.push(scene, data);
-            // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Switch, function () {
-                var lastScene = _this._sceneStack[0];
-                // 数据先行
-                _this._sceneStack[0] = scene;
-                // 调用接口
-                lastScene && lastScene.__close(data);
-                scene.__open(data);
-            });
-            return scene;
-        };
-        /**
-         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
-         *
-         * @param {IScene} scene 要推入的场景
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        SceneManager.prototype.push = function (scene, data) {
-            var _this = this;
-            // 非空判断
-            if (scene == null)
-                return scene;
-            // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Push, function () {
-                // 数据先行
-                _this._sceneStack.unshift(scene);
-                // 调用接口
-                scene.__open(data);
-            });
-            return scene;
-        };
-        /**
-         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
-         *
-         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
-         * @param {*} [data] 要携带给下一个场景的数据
-         * @returns {IScene} 场景本体
-         * @memberof SceneManager
-         */
-        SceneManager.prototype.pop = function (scene, data) {
-            // 非空判断
-            if (scene == null)
-                return scene;
-            // 同步执行
-            SyncUtil_1.wait(SYNC_NAME, this.doPop, this, scene, data);
-            return scene;
-        };
-        SceneManager.prototype.doPop = function (scene, data) {
-            var _this = this;
-            // 如果没有足够的场景储备则什么都不做
-            if (this.activeCount <= 1) {
-                console.log("场景栈中的场景数量不足，无法执行pop操作");
-                // 完成步骤
-                SyncUtil_1.notify(SYNC_NAME);
-                return;
-            }
-            // 验证是否是当前场景，不是则直接移除，不使用Policy
-            var to = this._sceneStack[1];
-            var policy = scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default;
-            if (this._sceneStack.indexOf(scene) != 0) {
-                to = null;
-                policy = NoneScenePolicy_1.default;
-            }
-            // 执行切换
-            this.doChange(scene, to, data, policy, ChangeType.Pop, function () {
-                // 数据先行
-                _this._sceneStack.splice(_this._sceneStack.indexOf(scene), 1);
-            }, function () {
-                // 调用接口
-                scene.__close(data);
-            });
-        };
-        SceneManager.prototype.doChange = function (from, to, data, policy, type, begin, complete) {
-            // 如果from和to有一个为null则policy为none
-            if (!from || !to)
-                policy = NoneScenePolicy_1.default;
-            // to指定的场景必须要显示
-            if (to)
-                to.bridge.htmlWrapper.style.display = "";
-            // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-            if (from && to && to.bridge.type != from.bridge.type) {
-                from.bridge.htmlWrapper.style.display = "none";
-                policy = NoneScenePolicy_1.default;
-            }
-            // 调用回调
-            begin && begin();
-            // 获取接口引用
-            var prepareFunc;
-            var doFunc;
-            switch (type) {
-                case ChangeType.Switch:
-                    prepareFunc = policy.prepareSwitch;
-                    doFunc = policy.switch;
-                    break;
-                case ChangeType.Push:
-                    prepareFunc = policy.preparePush || policy.prepareSwitch;
-                    doFunc = policy.push || policy.switch;
-                    break;
-                case ChangeType.Pop:
-                    prepareFunc = policy.preparePop || policy.prepareSwitch;
-                    doFunc = policy.pop || policy.switch;
-                    break;
-            }
-            // 前置处理
-            from && from.onBeforeOut(to, data);
-            to && to.onBeforeIn(from, data);
-            // 派发事件
-            Core_4.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
-            // 调用准备接口
-            prepareFunc && prepareFunc.call(policy, from, to);
-            // 添加显示
-            to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
-            // 调用切换接口
-            doFunc.call(policy, from, to, function () {
-                // 移除显示
-                from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
-                // 调用回调
-                complete && complete();
-                // 后置处理
-                from && from.onAfterOut(to, data);
-                to && to.onAfterIn(from, data);
-                // 派发事件
-                Core_4.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
-                // 完成步骤
-                SyncUtil_1.notify(SYNC_NAME);
-            });
-        };
-        SceneManager = __decorate([
-            Injector_2.Injectable
-        ], SceneManager);
-        return SceneManager;
-    }());
-    exports.default = SceneManager;
-    /** 再额外导出一个单例 */
-    exports.sceneManager = Core_4.core.getInject(SceneManager);
-});
-define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_5, Injector_3) {
+define("engine/system/System", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_4, Injector_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3023,16 +2665,16 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
             };
         };
         System = __decorate([
-            Injector_3.Injectable,
+            Injector_2.Injectable,
             __metadata("design:paramtypes", [])
         ], System);
         return System;
     }());
     exports.default = System;
     /** 再额外导出一个单例 */
-    exports.system = Core_5.core.getInject(System);
+    exports.system = Core_4.core.getInject(System);
 });
-define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/scene/SceneManager"], function (require, exports, Core_6, Injector_4, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, SceneManager_1) {
+define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/bridge/BridgeManager"], function (require, exports, Core_5, Injector_3, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, BridgeManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3087,6 +2729,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             if (this._panels.indexOf(panel) < 0) {
                 // 数据先行
                 this._panels.push(panel);
+                // 弹窗所在的表现层必须要显示
+                panel.bridge.htmlWrapper.style.display = "";
                 // 调用接口
                 panel.__open(data, isModel, from);
                 // 获取策略
@@ -3094,7 +2738,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 // 调用回调
                 panel.onBeforePop(data, isModel, from);
                 // 派发消息
-                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
+                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_POP, panel, isModel, from);
                 // 调用准备接口
                 policy.prepare && policy.prepare(panel);
                 // 添加显示
@@ -3105,7 +2749,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 调用回调
                     panel.onAfterPop(data, isModel, from);
                     // 派发消息
-                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
+                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModel, from);
                 }, from);
             }
             return panel;
@@ -3129,13 +2773,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 // 调用回调
                 panel.onBeforeDrop(data, to);
                 // 派发消息
-                Core_6.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
+                Core_5.core.dispatch(PanelMessage_1.default.PANEL_BEFORE_DROP, panel, to);
                 // 调用策略接口
                 policy.drop(panel, function () {
                     // 调用回调
                     panel.onAfterDrop(data, to);
                     // 派发消息
-                    Core_6.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
+                    Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_DROP, panel, to);
                     // 移除显示
                     var bridge = panel.bridge;
                     bridge.removeChild(bridge.panelLayer, panel.skin);
@@ -3183,7 +2827,8 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 params = msgOrParams;
             }
             // 取到当前场景的类型
-            var type = SceneManager_1.sceneManager.currentScene.bridge.type;
+            var curBridge = BridgeManager_1.bridgeManager.currentBridge;
+            var type = curBridge && curBridge.type;
             // 用场景类型取到弹窗对象
             var promptCls = this._promptDict[type];
             if (promptCls == null) {
@@ -3253,138 +2898,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             return this.prompt(params);
         };
         PanelManager = __decorate([
-            Injector_4.Injectable
+            Injector_3.Injectable
         ], PanelManager);
         return PanelManager;
     }());
     exports.default = PanelManager;
     /** 再额外导出一个单例 */
-    exports.panelManager = Core_6.core.getInject(PanelManager);
-});
-define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager"], function (require, exports, Core_7, Injector_5, BridgeMessage_1, PanelManager_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 用来管理所有表现层对象
-    */
-    var BridgeManager = /** @class */ (function () {
-        function BridgeManager() {
-            this._bridgeDict = {};
-        }
-        /**
-         * 获取表现层桥实例
-         *
-         * @param {string} type 表现层类型
-         * @returns {IBridge} 表现层桥实例
-         * @memberof BridgeManager
-         */
-        BridgeManager.prototype.getBridge = function (type) {
-            var data = this._bridgeDict[type];
-            return (data && data[0]);
-        };
-        /**
-         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
-         *
-         * @param {*} skin 皮肤实例
-         * @returns {IBridge|null} 皮肤所属表现层桥实例
-         * @memberof BridgeManager
-         */
-        BridgeManager.prototype.getBridgeBySkin = function (skin) {
-            if (skin) {
-                // 遍历所有已注册的表现层桥进行判断
-                for (var type in this._bridgeDict) {
-                    var bridge = this._bridgeDict[type][0];
-                    if (bridge.isMySkin(skin))
-                        return bridge;
-                }
-            }
-            return null;
-        };
-        /**
-         * 注册一个表现层桥实例到框架中
-         *
-         * @param {...IBridge[]} bridges 要注册的所有表现层桥
-         * @memberof BridgeManager
-         */
-        BridgeManager.prototype.registerBridge = function () {
-            var _this = this;
-            var bridges = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                bridges[_i] = arguments[_i];
-            }
-            // 进行DOM初始化判断
-            if (!document.body) {
-                var onLoad = function (evt) {
-                    window.removeEventListener("load", onLoad);
-                    // 重新调用注册方法
-                    _this.registerBridge.apply(_this, bridges);
-                };
-                window.addEventListener("load", onLoad);
-                return;
-            }
-            // 进行初始化
-            if (bridges.length > 0) {
-                var self = this;
-                // 记录
-                for (var _a = 0, bridges_1 = bridges; _a < bridges_1.length; _a++) {
-                    var bridge = bridges_1[_a];
-                    var type = bridge.type;
-                    if (!this._bridgeDict[type]) {
-                        var data = [bridge, false];
-                        this._bridgeDict[type] = data;
-                    }
-                }
-                // 开始初始化
-                for (var _b = 0, bridges_2 = bridges; _b < bridges_2.length; _b++) {
-                    var bridge = bridges_2[_b];
-                    // 派发消息
-                    Core_7.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
-                    // 注册通用提示框
-                    PanelManager_1.panelManager.registerPrompt(bridge.type, bridge.promptClass);
-                    // 初始化该表现层实例
-                    if (bridge.init)
-                        bridge.init(afterInitBridge);
-                    else
-                        afterInitBridge(bridge);
-                }
-            }
-            else {
-                this.testAllInit();
-            }
-            function afterInitBridge(bridge) {
-                // 先隐藏表现层桥的htmlWrapper
-                bridge.htmlWrapper.style.display = "none";
-                // 派发消息
-                Core_7.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
-                // 设置初始化完毕属性
-                var data = self._bridgeDict[bridge.type];
-                data[1] = true;
-                // 测试是否全部初始化完毕
-                self.testAllInit();
-            }
-        };
-        BridgeManager.prototype.testAllInit = function () {
-            var allInited = true;
-            for (var key in this._bridgeDict) {
-                var data = this._bridgeDict[key];
-                allInited = allInited && data[1];
-            }
-            if (allInited)
-                Core_7.core.dispatch(BridgeMessage_1.default.BRIDGE_ALL_INIT);
-        };
-        BridgeManager = __decorate([
-            Injector_5.Injectable
-        ], BridgeManager);
-        return BridgeManager;
-    }());
-    exports.default = BridgeManager;
-    /** 再额外导出一个单例 */
-    exports.bridgeManager = Core_7.core.getInject(BridgeManager);
+    exports.panelManager = Core_5.core.getInject(PanelManager);
 });
 define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_4) {
     "use strict";
@@ -3633,7 +3153,7 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
     }
     exports.joinHashParams = joinHashParams;
 });
-define("engine/env/Environment", ["require", "exports", "core/Core", "core/injector/Injector", "utils/URLUtil"], function (require, exports, Core_8, Injector_6, URLUtil_1) {
+define("engine/env/Environment", ["require", "exports", "core/Core", "core/injector/Injector", "utils/URLUtil"], function (require, exports, Core_6, Injector_4, URLUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3758,13 +3278,13 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
             return URLUtil_1.wrapHost(url, this.curCDNHost + "/" + midname, forced);
         };
         Environment = __decorate([
-            Injector_6.Injectable
+            Injector_4.Injectable
         ], Environment);
         return Environment;
     }());
     exports.default = Environment;
     /** 再额外导出一个单例 */
-    exports.environment = Core_8.core.getInject(Environment);
+    exports.environment = Core_6.core.getInject(Environment);
 });
 define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils/URLUtil", "utils/ObjectUtil"], function (require, exports, Environment_1, URLUtil_2, ObjectUtil_5) {
     "use strict";
@@ -3921,7 +3441,7 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
     }());
     exports.default = ModuleMessage;
 });
-define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core", "utils/HTTPUtil", "engine/env/Environment"], function (require, exports, Injector_7, Core_9, HTTPUtil_1, Environment_2) {
+define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core", "utils/HTTPUtil", "engine/env/Environment"], function (require, exports, Injector_5, Core_7, HTTPUtil_1, Environment_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4220,17 +3740,17 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             }
         };
         Shell = __decorate([
-            Injector_7.Injectable
+            Injector_5.Injectable
         ], Shell);
         return Shell;
     }());
     exports.default = Shell;
     /** 初始化音频系统，为具有权限限制的系统解除音频限制 */
-    var shell = Core_9.core.getInject(Shell);
+    var shell = Core_7.core.getInject(Shell);
     exports.shell = shell;
     shell["initAudioContext"]();
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "utils/HTTPUtil", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/env/Shell"], function (require, exports, Core_10, Injector_8, HTTPUtil_2, NetManager_1, ModuleMessage_1, Environment_3, Shell_1) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "utils/HTTPUtil", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/env/Shell"], function (require, exports, Core_8, Injector_6, HTTPUtil_2, NetManager_1, ModuleMessage_1, Environment_3, Shell_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4267,12 +3787,27 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
              * 获取当前模块
              *
              * @readonly
-             * @type {IModuleConstructor}
+             * @type {IModuleConstructor|undefined}
              * @memberof ModuleManager
              */
             get: function () {
                 var curData = this.getCurrent();
                 return (curData && curData[0]);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ModuleManager.prototype, "currentModuleInstance", {
+            /**
+             * 获取当前模块的实例
+             *
+             * @readonly
+             * @type {(IModule|undefined)}
+             * @memberof ModuleManager
+             */
+            get: function () {
+                var curData = this.getCurrent();
+                return (curData && curData[1]);
             },
             enumerable: true,
             configurable: true
@@ -4331,7 +3866,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 播放背景音乐
                 var bgMusic = module.bgMusic;
                 if (bgMusic) {
-                    var shell = Core_10.core.getInject(Shell_1.default);
+                    var shell = Core_8.core.getInject(Shell_1.default);
                     shell.audioPlay(bgMusic, { loop: true, stopOthers: true });
                 }
             }
@@ -4370,6 +3905,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 var target = new cls();
                 // 赋值打开参数
                 target.data = data;
+                // 数据先行
+                this._moduleStack.unshift([cls, target]);
                 // 加载所有已托管中介者的资源
                 var mediators = target.delegatedMediators.concat();
                 var loadMediatorAssets = function (err) {
@@ -4418,15 +3955,13 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                     target.onOpen(data);
                                     // 调用onDeactivate接口
                                     this.deactivateModule(fromModule && fromModule, cls, data);
-                                    // 插入模块
-                                    this._moduleStack.unshift([cls, target]);
                                     // 调用onActivate接口
                                     this.activateModule(target, from && from[0], data);
                                     // 如果replace是true，则关掉上一个模块
                                     if (replace)
                                         this.close(from && from[0], data);
                                     // 派发消息
-                                    Core_10.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
+                                    Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
                                     // 关闭标识符
                                     this._opening = false;
                                     // 如果有缓存的模块需要打开则打开之
@@ -4481,36 +4016,186 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             var target = this._moduleStack[index][1];
             // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
             if (index == 0) {
-                var to = this._moduleStack[1];
+                // 数据先行
+                this._moduleStack.shift();
+                // 获取前一个模块
+                var to = this._moduleStack[0];
                 var toModule = to && to[1];
                 // 调用onDeactivate接口
                 this.deactivateModule(target, to && to[0], data);
-                // 移除当前模块
-                this._moduleStack.shift();
                 // 调用onClose接口
                 target.onClose(data);
                 // 调用onActivate接口
                 this.activateModule(toModule && toModule, cls, data);
                 // 派发消息
-                Core_10.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, to && to[0], cls);
+                Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, to && to[0], cls);
             }
             else {
-                // 移除模块
+                // 数据先行
                 this._moduleStack.splice(index, 1);
                 // 调用onClose接口
                 target.onClose(data);
             }
         };
         ModuleManager = __decorate([
-            Injector_8.Injectable
+            Injector_6.Injectable
         ], ModuleManager);
         return ModuleManager;
     }());
     exports.default = ModuleManager;
     /** 再额外导出一个单例 */
-    exports.moduleManager = Core_10.core.getInject(ModuleManager);
+    exports.moduleManager = Core_8.core.getInject(ModuleManager);
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_9, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_1, ModuleManager_1) {
+define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager", "engine/module/ModuleManager"], function (require, exports, Core_9, Injector_7, BridgeMessage_1, PanelManager_1, ModuleManager_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 用来管理所有表现层对象
+    */
+    var BridgeManager = /** @class */ (function () {
+        function BridgeManager() {
+            this._bridgeDict = {};
+        }
+        Object.defineProperty(BridgeManager.prototype, "currentBridge", {
+            /**
+             * 获取当前的表现层桥实例（规则是取当前模块的第一个拥有bridge属性的Mediator的bridge）
+             *
+             * @readonly
+             * @type {IBridge}
+             * @memberof BridgeManager
+             */
+            get: function () {
+                var curModule = ModuleManager_1.moduleManager.currentModuleInstance;
+                if (curModule) {
+                    var bridge;
+                    var mediators = curModule.delegatedMediators;
+                    for (var _i = 0, mediators_1 = mediators; _i < mediators_1.length; _i++) {
+                        var mediator = mediators_1[_i];
+                        if (mediator.bridge)
+                            return mediator.bridge;
+                    }
+                }
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 获取表现层桥实例
+         *
+         * @param {string} type 表现层类型
+         * @returns {IBridge} 表现层桥实例
+         * @memberof BridgeManager
+         */
+        BridgeManager.prototype.getBridge = function (type) {
+            var data = this._bridgeDict[type];
+            return (data && data[0]);
+        };
+        /**
+         * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
+         *
+         * @param {*} skin 皮肤实例
+         * @returns {IBridge|null} 皮肤所属表现层桥实例
+         * @memberof BridgeManager
+         */
+        BridgeManager.prototype.getBridgeBySkin = function (skin) {
+            if (skin) {
+                // 遍历所有已注册的表现层桥进行判断
+                for (var type in this._bridgeDict) {
+                    var bridge = this._bridgeDict[type][0];
+                    if (bridge.isMySkin(skin))
+                        return bridge;
+                }
+            }
+            return null;
+        };
+        /**
+         * 注册一个表现层桥实例到框架中
+         *
+         * @param {...IBridge[]} bridges 要注册的所有表现层桥
+         * @memberof BridgeManager
+         */
+        BridgeManager.prototype.registerBridge = function () {
+            var _this = this;
+            var bridges = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                bridges[_i] = arguments[_i];
+            }
+            // 进行DOM初始化判断
+            if (!document.body) {
+                var onLoad = function (evt) {
+                    window.removeEventListener("load", onLoad);
+                    // 重新调用注册方法
+                    _this.registerBridge.apply(_this, bridges);
+                };
+                window.addEventListener("load", onLoad);
+                return;
+            }
+            // 进行初始化
+            if (bridges.length > 0) {
+                var self = this;
+                // 记录
+                for (var _a = 0, bridges_1 = bridges; _a < bridges_1.length; _a++) {
+                    var bridge = bridges_1[_a];
+                    var type = bridge.type;
+                    if (!this._bridgeDict[type]) {
+                        var data = [bridge, false];
+                        this._bridgeDict[type] = data;
+                    }
+                }
+                // 开始初始化
+                for (var _b = 0, bridges_2 = bridges; _b < bridges_2.length; _b++) {
+                    var bridge = bridges_2[_b];
+                    // 派发消息
+                    Core_9.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
+                    // 注册通用提示框
+                    PanelManager_1.panelManager.registerPrompt(bridge.type, bridge.promptClass);
+                    // 初始化该表现层实例
+                    if (bridge.init)
+                        bridge.init(afterInitBridge);
+                    else
+                        afterInitBridge(bridge);
+                }
+            }
+            else {
+                this.testAllInit();
+            }
+            function afterInitBridge(bridge) {
+                // 先隐藏表现层桥的htmlWrapper
+                bridge.htmlWrapper.style.display = "none";
+                // 派发消息
+                Core_9.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
+                // 设置初始化完毕属性
+                var data = self._bridgeDict[bridge.type];
+                data[1] = true;
+                // 测试是否全部初始化完毕
+                self.testAllInit();
+            }
+        };
+        BridgeManager.prototype.testAllInit = function () {
+            var allInited = true;
+            for (var key in this._bridgeDict) {
+                var data = this._bridgeDict[key];
+                allInited = allInited && data[1];
+            }
+            if (allInited)
+                Core_9.core.dispatch(BridgeMessage_1.default.BRIDGE_ALL_INIT);
+        };
+        BridgeManager = __decorate([
+            Injector_7.Injectable
+        ], BridgeManager);
+        return BridgeManager;
+    }());
+    exports.default = BridgeManager;
+    /** 再额外导出一个单例 */
+    exports.bridgeManager = Core_9.core.getInject(BridgeManager);
+});
+define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_8, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_2, ModuleManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4530,11 +4215,11 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         // 转调Injectable方法
         if (this === undefined) {
             var cls = ConstructUtil_2.wrapConstruct(args[0]);
-            Injector_9.Injectable.call(this, cls);
+            Injector_8.Injectable.call(this, cls);
             return cls;
         }
         else {
-            var result = Injector_9.Injectable.apply(this, args);
+            var result = Injector_8.Injectable.apply(this, args);
             return function (realCls) {
                 realCls = ConstructUtil_2.wrapConstruct(realCls);
                 result.call(this, realCls);
@@ -4562,7 +4247,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     // 记录值
                     $skin = value;
                     // 根据skin类型选取表现层桥
-                    this.bridge = BridgeManager_1.bridgeManager.getBridgeBySkin(value);
+                    this.bridge = BridgeManager_2.bridgeManager.getBridgeBySkin(value);
                     // 调用处理皮肤接口
                     this.bridge && this.bridge.handleSkin(this);
                 }
@@ -4579,7 +4264,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         // 包装类
         var wrapperCls = ConstructUtil_2.wrapConstruct(cls);
         // 注册模块
-        ModuleManager_1.moduleManager.registerModule(wrapperCls);
+        ModuleManager_2.moduleManager.registerModule(wrapperCls);
         // 返回包装类
         return wrapperCls;
     }
@@ -4687,7 +4372,7 @@ define("engine/platform/WebPlatform", ["require", "exports"], function (require,
     }());
     exports.default = WebPlatform;
 });
-define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_11, Injector_10, WebPlatform_1) {
+define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_10, Injector_9, WebPlatform_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4717,15 +4402,15 @@ define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "c
             this.platform.reload();
         };
         PlatformManager = __decorate([
-            Injector_10.Injectable
+            Injector_9.Injectable
         ], PlatformManager);
         return PlatformManager;
     }());
     exports.default = PlatformManager;
     /** 再额外导出一个单例 */
-    exports.platformManager = Core_11.core.getInject(PlatformManager);
+    exports.platformManager = Core_10.core.getInject(PlatformManager);
 });
-define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
+define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_11) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4744,13 +4429,13 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_12.core.dispatch.apply(Core_12.core, [typeOrMsg].concat(params));
+            Core_11.core.dispatch.apply(Core_11.core, [typeOrMsg].concat(params));
         };
         return Model;
     }());
     exports.default = Model;
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_13) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_12) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4960,7 +4645,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_13.core.dispatch.apply(Core_13.core, [typeOrMsg].concat(params));
+            Core_12.core.dispatch.apply(Core_12.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁中介者
@@ -5071,7 +4756,365 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_1.default));
     exports.default = PanelMediator;
 });
-define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_2) {
+define("engine/scene/NoneScenePolicy", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 无任何动画的场景策略，可应用于任何显示层实现
+    */
+    var NoneScenePolicy = /** @class */ (function () {
+        function NoneScenePolicy() {
+        }
+        /**
+         * 准备切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         */
+        NoneScenePolicy.prototype.prepareSwitch = function (from, to) {
+            // 这个策略里啥也不用准备
+        };
+        /**
+         * 切换场景时调度
+         * @param from 切出的场景
+         * @param to 切入的场景
+         * @param callback 切换完毕的回调方法
+         */
+        NoneScenePolicy.prototype.switch = function (from, to, callback) {
+            // 直接延迟到下一帧回调（不能同步回调，否则可能会出问题）
+            setTimeout(callback, 0);
+        };
+        return NoneScenePolicy;
+    }());
+    exports.NoneScenePolicy = NoneScenePolicy;
+    /** 默认导出实例 */
+    exports.default = new NoneScenePolicy();
+});
+define("engine/scene/SceneMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 场景相关的消息
+    */
+    var SceneMessage = /** @class */ (function () {
+        function SceneMessage() {
+        }
+        /**
+         * 切换场景前的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        SceneMessage.SCENE_BEFORE_CHANGE = "sceneBeforeChange";
+        /**
+         * 切换场景后的消息
+         *
+         * @static
+         * @type {string}
+         * @memberof SceneMessage
+         */
+        SceneMessage.SCENE_AFTER_CHANGE = "sceneAfterChange";
+        return SceneMessage;
+    }());
+    exports.default = SceneMessage;
+});
+define("utils/SyncUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 同步工具集，用于对多个
+    */
+    var _cache = {};
+    /**
+     * 判断是否正在进行操作
+     *
+     * @export
+     * @param {string} name 队列名
+     * @returns {boolean} 队列是否正在操作
+     */
+    function isOperating(name) {
+        var ctx = _cache[name];
+        return (ctx != null && ctx.operating);
+    }
+    exports.isOperating = isOperating;
+    /**
+     * 开始同步操作，所有传递了相同name的操作会被以队列方式顺序执行
+     *
+     * @export
+     * @param name 一个队列的名字
+     * @param {Function} fn 要执行的方法
+     * @param {*} [thisArg] 方法this对象
+     * @param {...any[]} [args] 方法参数
+     */
+    function wait(name, fn, thisArg) {
+        var args = [];
+        for (var _i = 3; _i < arguments.length; _i++) {
+            args[_i - 3] = arguments[_i];
+        }
+        var ctx = _cache[name];
+        if (ctx == null) {
+            _cache[name] = ctx = { operating: false, datas: [] };
+        }
+        if (ctx.operating) {
+            // 队列正在执行，推入缓存
+            ctx.datas.push({ fn: fn, thisArg: thisArg, args: args });
+        }
+        else {
+            // 队列没有在执行，直接执行
+            ctx.operating = true;
+            fn.apply(thisArg, args);
+        }
+    }
+    exports.wait = wait;
+    /**
+     * 完成一步操作并唤醒后续操作
+     *
+     * @export
+     * @param {string} name 队列名字
+     * @returns {void}
+     */
+    function notify(name) {
+        var ctx = _cache[name];
+        if (ctx == null || ctx.datas.length <= 0) {
+            // 队列执行完了，直接结束
+            ctx.operating = false;
+            return;
+        }
+        var data = ctx.datas.shift();
+        data.fn.apply(data.thisArg, data.args);
+    }
+    exports.notify = notify;
+});
+define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_13, Injector_10, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 弹窗管理器，包含切换场景、push场景、pop场景功能
+    */
+    var SYNC_NAME = "SceneManager_sync";
+    var ChangeType;
+    (function (ChangeType) {
+        ChangeType[ChangeType["Switch"] = 0] = "Switch";
+        ChangeType[ChangeType["Push"] = 1] = "Push";
+        ChangeType[ChangeType["Pop"] = 2] = "Pop";
+    })(ChangeType || (ChangeType = {}));
+    var SceneManager = /** @class */ (function () {
+        function SceneManager() {
+            this._sceneStack = [];
+        }
+        Object.defineProperty(SceneManager.prototype, "currentScene", {
+            /**
+             * 获取当前场景
+             *
+             * @readonly
+             * @type {IScene}
+             * @memberof SceneManager
+             */
+            get: function () {
+                return this._sceneStack[0];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneManager.prototype, "activeCount", {
+            /**
+             * 获取活动场景个数
+             *
+             * @readonly
+             * @type {number}
+             * @memberof SceneManager
+             */
+            get: function () {
+                return this._sceneStack.length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * 获取场景是否已经开启
+         *
+         * @param {IScene} scene 场景对象
+         * @returns {boolean} 是否已经开启
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.isOpened = function (scene) {
+            return (this._sceneStack.indexOf(scene) >= 0);
+        };
+        /**
+         * 切换场景，替换当前场景，当前场景会被销毁
+         *
+         * @param {IScene} scene 要切换到的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.switch = function (scene, data) {
+            var _this = this;
+            // 非空判断
+            if (scene == null)
+                return;
+            // 如果切入的是第一个场景，则改用push操作
+            if (this.activeCount == 0)
+                return this.push(scene, data);
+            // 同步执行
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Switch, function () {
+                var lastScene = _this._sceneStack[0];
+                // 数据先行
+                _this._sceneStack[0] = scene;
+                // 调用接口
+                lastScene && lastScene.__close(data);
+                scene.__open(data);
+            });
+            return scene;
+        };
+        /**
+         * 推入场景，当前场景不会销毁，而是进入场景栈保存，以后可以通过popScene重新展现
+         *
+         * @param {IScene} scene 要推入的场景
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.push = function (scene, data) {
+            var _this = this;
+            // 非空判断
+            if (scene == null)
+                return scene;
+            // 同步执行
+            SyncUtil_1.wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default, ChangeType.Push, function () {
+                // 数据先行
+                _this._sceneStack.unshift(scene);
+                // 调用接口
+                scene.__open(data);
+            });
+            return scene;
+        };
+        /**
+         * 弹出场景，当前场景会被销毁，当前位于栈顶的场景会重新显示
+         *
+         * @param {IScene} scene 要切换出的场景，如果传入的场景不是当前场景则仅移除指定场景，不会进行切换操作
+         * @param {*} [data] 要携带给下一个场景的数据
+         * @returns {IScene} 场景本体
+         * @memberof SceneManager
+         */
+        SceneManager.prototype.pop = function (scene, data) {
+            // 非空判断
+            if (scene == null)
+                return scene;
+            // 同步执行
+            SyncUtil_1.wait(SYNC_NAME, this.doPop, this, scene, data);
+            return scene;
+        };
+        SceneManager.prototype.doPop = function (scene, data) {
+            var _this = this;
+            // 如果没有足够的场景储备则什么都不做
+            if (this.activeCount <= 1) {
+                console.log("场景栈中的场景数量不足，无法执行pop操作");
+                // 完成步骤
+                SyncUtil_1.notify(SYNC_NAME);
+                return;
+            }
+            // 验证是否是当前场景，不是则直接移除，不使用Policy
+            var to = this._sceneStack[1];
+            var policy = scene.policy || scene.bridge.defaultScenePolicy || NoneScenePolicy_1.default;
+            if (this._sceneStack.indexOf(scene) != 0) {
+                to = null;
+                policy = NoneScenePolicy_1.default;
+            }
+            // 执行切换
+            this.doChange(scene, to, data, policy, ChangeType.Pop, function () {
+                // 数据先行
+                _this._sceneStack.splice(_this._sceneStack.indexOf(scene), 1);
+            }, function () {
+                // 调用接口
+                scene.__close(data);
+            });
+        };
+        SceneManager.prototype.doChange = function (from, to, data, policy, type, begin, complete) {
+            // 如果from和to有一个为null则policy为none
+            if (!from || !to)
+                policy = NoneScenePolicy_1.default;
+            // to指定的场景必须要显示
+            if (to)
+                to.bridge.htmlWrapper.style.display = "";
+            // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
+            if (from && to && to.bridge.type != from.bridge.type) {
+                from.bridge.htmlWrapper.style.display = "none";
+                policy = NoneScenePolicy_1.default;
+            }
+            // 调用回调
+            begin && begin();
+            // 获取接口引用
+            var prepareFunc;
+            var doFunc;
+            switch (type) {
+                case ChangeType.Switch:
+                    prepareFunc = policy.prepareSwitch;
+                    doFunc = policy.switch;
+                    break;
+                case ChangeType.Push:
+                    prepareFunc = policy.preparePush || policy.prepareSwitch;
+                    doFunc = policy.push || policy.switch;
+                    break;
+                case ChangeType.Pop:
+                    prepareFunc = policy.preparePop || policy.prepareSwitch;
+                    doFunc = policy.pop || policy.switch;
+                    break;
+            }
+            // 前置处理
+            from && from.onBeforeOut(to, data);
+            to && to.onBeforeIn(from, data);
+            // 派发事件
+            Core_13.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
+            // 调用准备接口
+            prepareFunc && prepareFunc.call(policy, from, to);
+            // 添加显示
+            to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
+            // 调用切换接口
+            doFunc.call(policy, from, to, function () {
+                // 移除显示
+                from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
+                // 调用回调
+                complete && complete();
+                // 后置处理
+                from && from.onAfterOut(to, data);
+                to && to.onAfterIn(from, data);
+                // 派发事件
+                Core_13.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
+                // 完成步骤
+                SyncUtil_1.notify(SYNC_NAME);
+            });
+        };
+        SceneManager = __decorate([
+            Injector_10.Injectable
+        ], SceneManager);
+        return SceneManager;
+    }());
+    exports.default = SceneManager;
+    /** 再额外导出一个单例 */
+    exports.sceneManager = Core_13.core.getInject(SceneManager);
+});
+define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5097,7 +5140,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.open = function (data) {
-            return SceneManager_2.sceneManager.push(this, data);
+            return SceneManager_1.sceneManager.push(this, data);
         };
         /**
          * 打开当前场景（只能由SceneManager调用）
@@ -5116,7 +5159,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
          * @memberof SceneMediator
          */
         SceneMediator.prototype.close = function (data) {
-            return SceneManager_2.sceneManager.pop(this, data);
+            return SceneManager_1.sceneManager.pop(this, data);
         };
         /**
          * 关闭当前场景（只能由SceneManager调用）
@@ -5163,7 +5206,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_14, Dictionary_3, ModuleManager_2, ConstructUtil_3) {
+define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_14, Dictionary_3, ModuleManager_3, ConstructUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5371,9 +5414,9 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         Module.prototype.dispose = function () {
             // 关闭自身
             var cls = ConstructUtil_3.getConstructor(this.constructor);
-            ModuleManager_2.moduleManager.close(cls);
+            ModuleManager_3.moduleManager.close(cls);
             // 如果没关上则不销毁
-            if (ModuleManager_2.moduleManager.isOpened(cls))
+            if (ModuleManager_3.moduleManager.isOpened(cls))
                 return;
             // 将所有已托管的中介者销毁
             for (var i = 0, len = this._mediators.length; i < len; i++) {
@@ -5992,7 +6035,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_2, BridgeMessage_2, ModuleManager_3, Environment_5, Hash_1, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_3, BridgeMessage_2, ModuleManager_4, Environment_5, Hash_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6025,7 +6068,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 // 监听Bridge初始化完毕事件，显示第一个模块
                 Core_20.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, _this.onAllBridgesInit, _this);
                 // 注册并初始化表现层桥实例
-                BridgeManager_2.bridgeManager.registerBridge.apply(BridgeManager_2.bridgeManager, params.bridges);
+                BridgeManager_3.bridgeManager.registerBridge.apply(BridgeManager_3.bridgeManager, params.bridges);
             });
         };
         Engine.prototype.onAllBridgesInit = function () {
@@ -6036,10 +6079,10 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             // 监听首个模块开启
             Core_20.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
-            ModuleManager_3.moduleManager.open(this._initParams.firstModule);
+            ModuleManager_4.moduleManager.open(this._initParams.firstModule);
             // 如果有哈希模块则打开之
             if (Hash_1.hash.moduleName)
-                ModuleManager_3.moduleManager.open(Hash_1.hash.moduleName, Hash_1.hash.params, Hash_1.hash.direct);
+                ModuleManager_4.moduleManager.open(Hash_1.hash.moduleName, Hash_1.hash.params, Hash_1.hash.direct);
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听

@@ -3,6 +3,9 @@ import { Injectable } from "../../core/injector/Injector";
 import IBridge from "./IBridge";
 import BridgeMessage from "./BridgeMessage";
 import { panelManager } from "../panel/PanelManager";
+import { moduleManager } from "../module/ModuleManager";
+import IMediator from "../mediator/IMediator";
+import IModule from "../module/IModule";
 
 /**
  * @author Raykid
@@ -16,6 +19,28 @@ import { panelManager } from "../panel/PanelManager";
 export default class BridgeManager
 {
     private _bridgeDict:{[type:string]:[IBridge, boolean]} = {};
+
+    /**
+     * 获取当前的表现层桥实例（规则是取当前模块的第一个拥有bridge属性的Mediator的bridge）
+     * 
+     * @readonly
+     * @type {IBridge}
+     * @memberof BridgeManager
+     */
+    public get currentBridge():IBridge
+    {
+        var curModule:IModule = moduleManager.currentModuleInstance;
+        if(curModule)
+        {
+            var bridge:IBridge;
+            var mediators:IMediator[] = curModule.delegatedMediators;
+            for(var mediator of mediators)
+            {
+                if(mediator.bridge) return mediator.bridge;
+            }
+        }
+        return null;
+    }
 
     /**
      * 获取表现层桥实例
