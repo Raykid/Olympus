@@ -2170,9 +2170,10 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             // 如果消息是通讯消息则做处理
             if (msg instanceof RequestData_1.default) {
                 // 指定消息参数连接上公共参数作为参数
-                ObjectUtil_3.extendObject(msg.__params.data, RequestData_1.commonData);
+                var data = msg.__params.data;
+                ObjectUtil_3.extendObject(data, RequestData_1.commonData);
                 // 发送消息
-                msg.__policy.sendRequest(msg);
+                msg.__policy.sendRequest(msg, data);
                 // 派发系统消息
                 Core_3.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
             }
@@ -5928,15 +5929,16 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
          * 发送请求逻辑
          *
          * @param {RequestData} request 请求数据
+         * @param {*} [data] 经过处理后的请求参数，给了会替换request中的数据
          * @memberof HTTPRequestPolicy
          */
-        HTTPRequestPolicy.prototype.sendRequest = function (request) {
+        HTTPRequestPolicy.prototype.sendRequest = function (request, data) {
             // 取到参数
             var params = request.__params;
             // 发送
             HTTPUtil_3.load({
                 url: Environment_4.environment.toHostURL(params.path, params.hostIndex),
-                data: params.data,
+                data: data || params.data,
                 method: params.method,
                 retryTimes: params.retryTimes,
                 timeout: params.timeout,

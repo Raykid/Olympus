@@ -36,9 +36,10 @@ export default class NetManager
         if(msg instanceof RequestData)
         {
             // 指定消息参数连接上公共参数作为参数
-            extendObject(msg.__params.data, commonData);
+            var data:any = msg.__params.data;
+            extendObject(data, commonData);
             // 发送消息
-            msg.__policy.sendRequest(msg);
+            msg.__policy.sendRequest(msg, data);
             // 派发系统消息
             core.dispatch(NetMessage.NET_REQUEST, msg);
         }

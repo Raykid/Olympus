@@ -18,16 +18,17 @@ export class HTTPRequestPolicy implements IRequestPolicy
      * 发送请求逻辑
      * 
      * @param {RequestData} request 请求数据
+     * @param {*} [data] 经过处理后的请求参数，给了会替换request中的数据
      * @memberof HTTPRequestPolicy
      */
-    public sendRequest(request:RequestData):void
+    public sendRequest(request:RequestData, data?:any):void
     {
         // 取到参数
         var params:IRequestParams = request.__params;
         // 发送
         load({
             url: environment.toHostURL(params.path, params.hostIndex),
-            data: params.data,
+            data: data || params.data,
             method: params.method,
             retryTimes: params.retryTimes,
             timeout: params.timeout,
