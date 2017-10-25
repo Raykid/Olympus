@@ -20,6 +20,7 @@ import { maskManager } from "../mask/MaskManager";
 export default class BridgeManager
 {
     private _bridgeDict:{[type:string]:[IBridge, boolean]} = {};
+    private _bridgeList:[IBridge, boolean][] = [];
 
     /**
      * 获取当前的表现层桥实例（规则是取当前模块的第一个拥有bridge属性的Mediator的bridge）
@@ -30,6 +31,7 @@ export default class BridgeManager
      */
     public get currentBridge():IBridge
     {
+        // 先用当前模块的首个拥有bridge的Mediator的bridge
         var curModule:IModule = moduleManager.currentModuleInstance;
         if(curModule)
         {
@@ -40,7 +42,8 @@ export default class BridgeManager
                 if(mediator.bridge) return mediator.bridge;
             }
         }
-        return null;
+        // 没找到，再用第一个桥代替
+        return (this._bridgeList[0] && this._bridgeList[0][0]);
     }
 
     /**
@@ -68,9 +71,9 @@ export default class BridgeManager
         if(skin)
         {
             // 遍历所有已注册的表现层桥进行判断
-            for(var type in this._bridgeDict)
+            for(var data of this._bridgeList)
             {
-                var bridge:IBridge = this._bridgeDict[type][0];
+                var bridge:IBridge = data[0];
                 if(bridge.isMySkin(skin)) return bridge;
             }
         }
@@ -109,6 +112,7 @@ export default class BridgeManager
                 {
                     var data:[IBridge, boolean] = [bridge, false];
                     this._bridgeDict[type] = data;
+                    this._bridgeList.push(data);
                 }
             }
             // 开始初始化
@@ -147,9 +151,8 @@ export default class BridgeManager
     private testAllInit():void
     {
         var allInited:boolean = true;
-        for(var key in this._bridgeDict)
+        for(var data of this._bridgeList)
         {
-            var data:[IBridge, boolean] = this._bridgeDict[key];
             allInited = allInited && data[1];
         }
         if(allInited) core.dispatch(BridgeMessage.BRIDGE_ALL_INIT);

@@ -7,6 +7,7 @@ import RequestData, { commonData } from "./RequestData";
 import ResponseData, { IResponseDataConstructor } from "./ResponseData";
 import NetMessage from "./NetMessage";
 import * as NetUtil from "./NetUtil";
+import { maskManager } from "../mask/MaskManager";
 
 /**
  * @author Raykid
@@ -35,6 +36,8 @@ export default class NetManager
         // 如果消息是通讯消息则做处理
         if(msg instanceof RequestData)
         {
+            // 添加遮罩
+            maskManager.showLoading(null, "net");
             // 指定消息参数连接上公共参数作为参数
             var data:any = msg.__params.data;
             extendObject(data, commonData);
@@ -167,6 +170,8 @@ export default class NetManager
     /** 这里导出不希望用户使用的方法，供框架内使用 */
     public __onResponse(type:string, result:any, request?:RequestData):void|never
     {
+        // 移除遮罩
+        maskManager.hideLoading("net");
         // 解析结果
         var cls:IResponseDataConstructor = this._responseDict[type];
         if(cls)
@@ -199,6 +204,8 @@ export default class NetManager
 
     public __onError(err:Error, request?:RequestData):void
     {
+        // 移除遮罩
+        maskManager.hideLoading("net");
         // 派发事件
         core.dispatch(NetMessage.NET_ERROR, err, request);
     }

@@ -322,7 +322,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
 /// <reference path="../dist/DOM.d.ts"/>
 /// <reference path="../dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
-define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule", "net/request/TestRequest", "core/Core"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1, TestRequest_2, Core_1) {
+define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "engine/env/Environment", "utils/InitParamsUtil", "modules/FirstModule"], function (require, exports, DOMBridge_1, EgretBridge_1, Olympus_1, Environment_1, InitParamsUtil_1, FirstModule_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -365,8 +365,5 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
         }
     });
     console.log(Environment_1.environment.env, Environment_1.environment.getHost(), Environment_1.environment.curCDNHost);
-    var req = new TestRequest_2.default();
-    req.test = "Fuck you";
-    Core_1.core.dispatch(req);
 });
 //# sourceMappingURL=main.js.map

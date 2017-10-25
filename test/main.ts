@@ -12,7 +12,6 @@ import { environment } from "engine/env/Environment";
 import getParam from "./utils/InitParamsUtil"
 import FirstModule from "./modules/FirstModule";
 
-import TestRequest from "./net/request/TestRequest";
 import { core } from "core/Core";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import none from "engine/scene/NoneScenePolicy";
@@ -60,9 +59,3 @@ Olympus.startup({
 });
 
 console.log(environment.env, environment.getHost(), environment.curCDNHost);
-
-
-
-var req:TestRequest = new TestRequest();
-req.test = "Fuck you";
-core.dispatch(req);

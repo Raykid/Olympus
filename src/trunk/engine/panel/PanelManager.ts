@@ -9,6 +9,7 @@ import PanelMessage from "./PanelMessage";
 import IPromptPanel, { IPromptParams, IPromptHandler, ButtonType, IPromptPanelConstructor } from "./IPromptPanel";
 import { system } from "../system/System";
 import { bridgeManager } from "../bridge/BridgeManager";
+import { maskManager } from "../mask/MaskManager";
 
 /**
  * @author Raykid
@@ -53,12 +54,12 @@ export default class PanelManager
      * 
      * @param {IPanel} panel 要打开的弹窗
      * @param {*} [data] 数据
-     * @param {boolean} [isModel=true] 是否模态弹出
+     * @param {boolean} [isModal=true] 是否模态弹出
      * @param {{x:number, y:number}} [from] 弹出起点位置
      * @returns {IPanel} 返回弹窗对象
      * @memberof PanelManager
      */
-    public pop(panel:IPanel, data?:any, isModel:boolean=true, from?:{x:number, y:number}):IPanel
+    public pop(panel:IPanel, data?:any, isModal:boolean=true, from?:{x:number, y:number}):IPanel
     {
         if(this._panels.indexOf(panel) < 0)
         {
@@ -67,13 +68,13 @@ export default class PanelManager
             // 弹窗所在的表现层必须要显示
             panel.bridge.htmlWrapper.style.display = "";
             // 调用接口
-            panel.__open(data, isModel, from);
+            panel.__open(data, isModal, from);
             // 获取策略
             var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
             // 调用回调
-            panel.onBeforePop(data, isModel, from);
+            panel.onBeforePop(data, isModal, from);
             // 派发消息
-            core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModel, from);
+            core.dispatch(PanelMessage.PANEL_BEFORE_POP, panel, isModal, from);
             // 调用准备接口
             policy.prepare && policy.prepare(panel);
             // 添加显示
@@ -82,10 +83,12 @@ export default class PanelManager
             // 调用策略接口
             policy.pop(panel, ()=>{
                 // 调用回调
-                panel.onAfterPop(data, isModel, from);
+                panel.onAfterPop(data, isModal, from);
                 // 派发消息
-                core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModel, from);
+                core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModal, from);
             }, from);
+            // 如果是模态弹出，则需要遮罩层
+            if(isModal) maskManager.showModalMask(panel);
         }
         return panel;
     }
@@ -124,6 +127,8 @@ export default class PanelManager
                 // 调用接口
                 panel.__close(data, to);
             }, to);
+            // 移除遮罩
+            maskManager.hideModalMask(panel);
         }
         return panel;
     }
