@@ -1,5 +1,7 @@
+import { Injectable } from "../../core/injector/Injector";
 import IPanel from "../panel/IPanel";
 import { bridgeManager } from "../bridge/BridgeManager";
+import { core } from "../../core/Core";
 
 /**
  * @author Raykid
@@ -9,6 +11,7 @@ import { bridgeManager } from "../bridge/BridgeManager";
  * 
  * 遮罩工具
 */
+@Injectable
 export default class Mask
 {
     private _entityDict:{[type:number]:IMaskEntity} = {};
@@ -163,3 +166,5 @@ export interface IMaskEntity
     hideModalMask(popup:IPanel):void;
     isShowingModalMask(popup:IPanel):boolean;
 }
+/** 再额外导出一个单例 */
+export const mask:Mask = core.getInject(Mask);

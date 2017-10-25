@@ -1992,6 +1992,8 @@ declare module "engine/mask/Mask" {
         hideModalMask(popup: IPanel): void;
         isShowingModalMask(popup: IPanel): boolean;
     }
+    /** 再额外导出一个单例 */
+    export const mask: Mask;
 }
 declare module "engine/bridge/IBridge" {
     import { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
