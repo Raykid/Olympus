@@ -2377,30 +2377,6 @@ define("engine/scene/IScenePolicy", ["require", "exports"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/bridge/IBridge", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/module/IModuleConstructor", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/mediator/IMediator", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/mediator/IModuleMediator", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/module/IModule", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("engine/bridge/BridgeMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -3407,6 +3383,10 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
     }
     exports.load = load;
 });
+define("engine/module/IModuleConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("engine/module/ModuleMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -4195,7 +4175,167 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.bridgeManager = Core_9.core.getInject(BridgeManager);
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_8, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_2, ModuleManager_2) {
+define("engine/mask/Mask", ["require", "exports", "engine/bridge/BridgeManager"], function (require, exports, BridgeManager_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-25
+     * @modify date 2017-10-25
+     *
+     * 遮罩工具
+    */
+    var Mask = /** @class */ (function () {
+        function Mask() {
+            this._entityDict = {};
+            this._loadingMaskDict = {};
+        }
+        Mask.prototype.getLoadingMaskCount = function () {
+            var count = 0;
+            for (var key in this._loadingMaskDict) {
+                var temp = this._loadingMaskDict[key];
+                if (temp > 0)
+                    count += temp;
+            }
+            return count;
+        };
+        Mask.prototype.plusLoadingMaskCount = function (key) {
+            var count = this._loadingMaskDict[key] || 0;
+            if (count < 0)
+                count = 0;
+            this._loadingMaskDict[key] = ++count;
+            return count;
+        };
+        Mask.prototype.minusLoadingMaskCount = function (key) {
+            var count = this._loadingMaskDict[key] || 0;
+            count--;
+            if (count < 0)
+                count = 0;
+            this._loadingMaskDict[key] = count;
+            if (count == 0)
+                delete this._loadingMaskDict[key];
+            return count;
+        };
+        /**
+         * 初始化MaskUtil
+         * @param type 所属表现层桥
+         * @param entity 遮罩实体
+         */
+        Mask.prototype.registerMask = function (type, entity) {
+            this._entityDict[type] = entity;
+        };
+        /**
+         * 显示遮罩
+         */
+        Mask.prototype.showMask = function (alpha) {
+            var type = BridgeManager_2.bridgeManager.currentBridge.type;
+            var entity = this._entityDict[type];
+            if (entity != null)
+                entity.showMask(alpha);
+        };
+        /**
+         * 隐藏遮罩
+         */
+        Mask.prototype.hideMask = function () {
+            var type = BridgeManager_2.bridgeManager.currentBridge.type;
+            var entity = this._entityDict[type];
+            if (entity != null)
+                entity.hideMask();
+        };
+        /**当前是否在显示遮罩*/
+        Mask.prototype.isShowingMask = function () {
+            var type = BridgeManager_2.bridgeManager.currentBridge.type;
+            var entity = this._entityDict[type];
+            if (entity != null)
+                return entity.isShowingMask();
+            return false;
+        };
+        /**
+         * 显示加载图
+         */
+        Mask.prototype.showLoading = function (alpha, key) {
+            if (key === void 0) { key = null; }
+            // 若当前你没有loading则显示loading
+            if (this.getLoadingMaskCount() == 0) {
+                var type = BridgeManager_2.bridgeManager.currentBridge.type;
+                var entity = this._entityDict[type];
+                if (entity != null)
+                    entity.showLoading(alpha);
+            }
+            // 增计数
+            this.plusLoadingMaskCount(key);
+        };
+        /**
+         * 隐藏加载图
+         */
+        Mask.prototype.hideLoading = function (key) {
+            if (key === void 0) { key = null; }
+            // 减计数
+            this.minusLoadingMaskCount(key);
+            if (this.getLoadingMaskCount() == 0) {
+                // 移除loading
+                var type = BridgeManager_2.bridgeManager.currentBridge.type;
+                var entity = this._entityDict[type];
+                if (entity != null)
+                    entity.hideLoading();
+            }
+        };
+        /**当前是否在显示loading*/
+        Mask.prototype.isShowingLoading = function () {
+            var type = BridgeManager_2.bridgeManager.currentBridge.type;
+            var entity = this._entityDict[type];
+            if (entity != null)
+                return entity.isShowingLoading();
+            return false;
+        };
+        /** 显示模态窗口遮罩 */
+        Mask.prototype.showModalMask = function (popup, alpha) {
+            var type = BridgeManager_2.bridgeManager.currentBridge.type;
+            var entity = this._entityDict[type];
+            if (entity != null)
+                entity.showModalMask(popup, alpha);
+        };
+        /** 隐藏模态窗口遮罩 */
+        Mask.prototype.hideModalMask = function (popup) {
+            var type = BridgeManager_2.bridgeManager.currentBridge.type;
+            var entity = this._entityDict[type];
+            if (entity != null)
+                entity.hideModalMask(popup);
+        };
+        /** 当前是否在显示模态窗口遮罩 */
+        Mask.prototype.isShowingModalMask = function (popup) {
+            var type = BridgeManager_2.bridgeManager.currentBridge.type;
+            var entity = this._entityDict[type];
+            if (entity != null)
+                return entity.isShowingModalMask(popup);
+            return false;
+        };
+        return Mask;
+    }());
+    exports.default = Mask;
+});
+define("engine/bridge/IBridge", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/mediator/IMediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/mediator/IModuleMediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/module/IModule", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_8, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_3, ModuleManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4247,7 +4387,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     // 记录值
                     $skin = value;
                     // 根据skin类型选取表现层桥
-                    this.bridge = BridgeManager_2.bridgeManager.getBridgeBySkin(value);
+                    this.bridge = BridgeManager_3.bridgeManager.getBridgeBySkin(value);
                     // 调用处理皮肤接口
                     this.bridge && this.bridge.handleSkin(this);
                 }
@@ -6035,7 +6175,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_3, BridgeMessage_2, ModuleManager_4, Environment_5, Hash_1, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_20, Injector_16, BridgeManager_4, BridgeMessage_2, ModuleManager_4, Environment_5, Hash_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6068,7 +6208,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 // 监听Bridge初始化完毕事件，显示第一个模块
                 Core_20.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, _this.onAllBridgesInit, _this);
                 // 注册并初始化表现层桥实例
-                BridgeManager_3.bridgeManager.registerBridge.apply(BridgeManager_3.bridgeManager, params.bridges);
+                BridgeManager_4.bridgeManager.registerBridge.apply(BridgeManager_4.bridgeManager, params.bridges);
             });
         };
         Engine.prototype.onAllBridgesInit = function () {

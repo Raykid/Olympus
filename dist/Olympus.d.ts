@@ -1064,439 +1064,6 @@ declare module "engine/scene/IScenePolicy" {
         pop?(from: IScene, to: IScene, callback: () => void): void;
     }
 }
-declare module "engine/bridge/IBridge" {
-    import { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
-    import IPanelPolicy from "engine/panel/IPanelPolicy";
-    import IScenePolicy from "engine/scene/IScenePolicy";
-    import IMediator from "engine/mediator/IMediator";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-08-31
-     * @modify date 2017-08-31
-     *
-     * 这是表现层桥接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
-    */
-    export default interface IBridge {
-        /**
-         * 获取表现层类型名称
-         *
-         * @readonly
-         * @type {string}
-         * @memberof IBridge
-         */
-        readonly type: string;
-        /**
-         * 获取表现层HTML包装器，可以对其样式进行自定义调整
-         *
-         * @readonly
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        readonly htmlWrapper: HTMLElement;
-        /**
-         * 获取根显示节点
-         *
-         * @readonly
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        readonly root: any;
-        /**
-         * 获取背景容器
-         *
-         * @readonly
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        readonly bgLayer: any;
-        /**
-         * 获取场景容器
-         *
-         * @readonly
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        readonly sceneLayer: any;
-        /**
-         * 获取弹窗容器
-         *
-         * @readonly
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        readonly panelLayer: any;
-        /**
-         * 获取顶级容器
-         *
-         * @readonly
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        readonly topLayer: any;
-        /**
-         * 获取通用提示框
-         *
-         * @readonly
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        readonly promptClass: IPromptPanelConstructor;
-        /**
-         * 获取或设置默认弹窗策略
-         *
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        defaultPanelPolicy: IPanelPolicy;
-        /**
-         * 获取或设置场景切换策略
-         *
-         * @type {HTMLElement}
-         * @memberof IBridge
-         */
-        defaultScenePolicy: IScenePolicy;
-        /**
-         * 判断传入的skin是否是属于该表现层桥的
-         *
-         * @param {*} skin 皮肤实例
-         * @return {boolean} 是否数据该表现层桥
-         * @memberof IBridge
-         */
-        isMySkin(skin: any): boolean;
-        /**
-         * 当皮肤被设置时处理皮肤的方法
-         *
-         * @param {IMediator} mediator 中介者实例
-         * @memberof IBridge
-         */
-        handleSkin(mediator: IMediator): void;
-        /**
-         * 添加显示
-         *
-         * @param {*} parent 要添加到的父容器
-         * @param {*} target 被添加的显示对象
-         * @return {*} 返回被添加的显示对象
-         * @memberof IBridge
-         */
-        addChild(parent: any, target: any): any;
-        /**
-         * 按索引添加显示
-         *
-         * @param {*} parent 要添加到的父容器
-         * @param {*} target 被添加的显示对象
-         * @param {number} index 要添加到的父级索引
-         * @return {*} 返回被添加的显示对象
-         * @memberof IBridge
-         */
-        addChildAt(parent: any, target: any, index: number): any;
-        /**
-         * 移除显示对象
-         *
-         * @param {*} parent 父容器
-         * @param {*} target 被移除的显示对象
-         * @return {*} 返回被移除的显示对象
-         * @memberof IBridge
-         */
-        removeChild(parent: any, target: any): any;
-        /**
-         * 按索引移除显示
-         *
-         * @param {*} parent 父容器
-         * @param {number} index 索引
-         * @return {*} 返回被移除的显示对象
-         * @memberof IBridge
-         */
-        removeChildAt(parent: any, index: number): any;
-        /**
-         * 移除所有显示对象
-         *
-         * @param {*} parent 父容器
-         * @memberof IBridge
-         */
-        removeChildren(parent: any): void;
-        /**
-         * 获取父容器
-         *
-         * @param {*} target 指定显示对象
-         * @return {*} 父容器
-         * @memberof IBridge
-         */
-        getParent(target: any): any;
-        /**
-         * 获取指定索引处的显示对象
-         *
-         * @param {*} parent 父容器
-         * @param {number} index 指定父级索引
-         * @return {*} 索引处的显示对象
-         * @memberof IBridge
-         */
-        getChildAt(parent: any, index: number): any;
-        /**
-         * 获取显示索引
-         *
-         * @param {*} parent 父容器
-         * @param {*} target 子显示对象
-         * @return {number} target在parent中的索引
-         * @memberof IBridge
-         */
-        getChildIndex(parent: any, target: any): number;
-        /**
-         * 通过名称获取显示对象
-         *
-         * @param {*} parent 父容器
-         * @param {string} name 对象名称
-         * @return {*} 显示对象
-         * @memberof IBridge
-         */
-        getChildByName(parent: any, name: string): any;
-        /**
-         * 获取子显示对象数量
-         *
-         * @param {*} parent 父容器
-         * @return {number} 子显示对象数量
-         * @memberof IBridge
-         */
-        getChildCount(parent: any): number;
-        /**
-         * 加载资源
-         *
-         * @param {string[]} assets 资源数组
-         * @param {IMediator} mediator 要加载资源的中介者
-         * @param {(err?:Error)=>void} handler 回调函数
-         * @memberof IBridge
-         */
-        loadAssets(assets: string[], mediator: IMediator, handler: (err?: Error) => void): void;
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IBridge
-         */
-        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IBridge
-         */
-        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
-         *
-         * @param {()=>void} complete 初始化完毕后的回调
-         * @memberof IBridge
-         */
-        init?(complete: (bridge: IBridge) => void): void;
-    }
-}
-declare module "engine/bridge/IHasBridge" {
-    import IBridge from "engine/bridge/IBridge";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-08
-     * @modify date 2017-09-08
-     *
-     * 标识拥有表现层桥的接口
-    */
-    export default interface IHasMediatorBridge {
-        /**
-         * 表现层桥
-         */
-        bridge: IBridge;
-    }
-}
-declare module "engine/module/IModuleConstructor" {
-    import IModule from "engine/module/IModule";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * 模块构造器接口
-    */
-    export default interface IModuleConstructor {
-        new (): IModule;
-    }
-}
-declare module "engine/mediator/IMediator" {
-    import IHasBridge from "engine/bridge/IHasBridge";
-    import IOpenClose from "core/interfaces/IOpenClose";
-    import IDisposable from "core/interfaces/IDisposable";
-    import IModule from "engine/module/IModule";
-    import IModuleConstructor from "engine/module/IModuleConstructor";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-04
-     * @modify date 2017-09-04
-     *
-     * 界面中介者接口
-    */
-    export default interface IMediator extends IHasBridge, IOpenClose, IDisposable {
-        /**
-         * 获取中介者是否已被销毁
-         *
-         * @memberof IMediator
-         */
-        readonly disposed: boolean;
-        /**
-         * 所属的模块引用，需要配合@DelegateMediator使用
-         *
-         * @memberof IMediator
-         */
-        readonly dependModuleInstance: IModule;
-        /**
-         * 所属的模块类型，需要配合@DelegateMediator使用
-         *
-         * @memberof IMediator
-         */
-        readonly dependModule: IModuleConstructor;
-        /**
-         * 打开时传递的data对象
-         *
-         * @memberof IMediator
-         */
-        readonly data: any;
-        /**
-         * 皮肤
-         *
-         * @readonly
-         * @type {*}
-         * @memberof IMediator
-         */
-        skin: any;
-        /**
-         * 当打开时调用
-         *
-         * @param {*} [data] 可能的打开参数
-         * @memberof IMediator
-         */
-        onOpen(data?: any): void;
-        /**
-         * 当关闭时调用
-         *
-         * @param {*} [data] 可能的关闭参数
-         * @memberof IMediator
-         */
-        onClose(data?: any): void;
-        /**
-         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IMediator
-         */
-        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销监听事件
-         *
-         * @param {*} target 事件目标对象
-         * @param {string} type 事件类型
-         * @param {Function} handler 事件处理函数
-         * @param {*} [thisArg] this指向对象
-         * @memberof IMediator
-         */
-        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
-        /**
-         * 注销所有注册在当前中介者上的事件监听
-         *
-         * @memberof IMediator
-         */
-        unmapAllListeners(): void;
-    }
-}
-declare module "engine/mediator/IModuleMediator" {
-    import IMediator from "engine/mediator/IMediator";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-24
-     * @modify date 2017-10-24
-     *
-     * 托管到模块的中介者所具有的接口
-    */
-    export default interface IModuleMediator extends IMediator {
-        /**
-         * 列出中介者所需的资源数组，可重写
-         *
-         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-         * @memberof IModuleMediator
-         */
-        listAssets(): string[];
-        /**
-         * 加载从listAssets中获取到的所有资源
-         *
-         * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
-         * @memberof IModuleMediator
-         */
-        loadAssets(handler: (err?: Error) => void): void;
-        /**
-         * 当所需资源加载完毕后调用
-         *
-         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
-         * @memberof IModuleMediator
-         */
-        onLoadAssets(err?: Error): void;
-    }
-}
-declare module "engine/module/IModule" {
-    import IDisposable from "core/interfaces/IDisposable";
-    import IModuleMediator from "engine/mediator/IModuleMediator";
-    import RequestData from "engine/net/RequestData";
-    import ResponseData from "engine/net/ResponseData";
-    import IModuleConstructor from "engine/module/IModuleConstructor";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-06
-     * @modify date 2017-09-06
-     *
-     * 业务模块接口
-    */
-    export default interface IModule extends IDisposable {
-        /** 模块打开时的参数 */
-        data: any;
-        /** 模块初始消息的返回数据 */
-        responses: ResponseData[];
-        /** 获取背景音乐URL */
-        readonly bgMusic: string;
-        /** 获取所有已托管的中介者 */
-        readonly delegatedMediators: IModuleMediator[];
-        /** 列出模块所需CSS资源URL */
-        listStyleFiles(): string[];
-        /** 列出模块所需JS资源URL */
-        listJsFiles(): string[];
-        /** 列出模块初始化请求 */
-        listInitRequests(): RequestData[];
-        /** 将中介者托管给模块 */
-        delegateMediator(mediator: IModuleMediator): void;
-        /** 反托管中介者 */
-        undelegateMediator(mediator: IModuleMediator): void;
-        /** 判断指定中介者是否包含在该模块里 */
-        constainsMediator(mediator: IModuleMediator): boolean;
-        /** 当模块资源加载完毕后调用 */
-        onLoadAssets(err?: Error): void;
-        /** 打开模块时调用 */
-        onOpen(data?: any): void;
-        /** 关闭模块时调用 */
-        onClose(data?: any): void;
-        /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
-        onActivate(from: IModuleConstructor | undefined, data?: any): void;
-        /** 模块切换到后台是调用（close之后或者其他模块打开时） */
-        onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
-    }
-}
 declare module "engine/bridge/BridgeMessage" {
     /**
      * @author Raykid
@@ -2027,6 +1594,20 @@ declare module "utils/HTTPUtil" {
      */
     export function load(params: IHTTPRequestParams): void;
 }
+declare module "engine/module/IModuleConstructor" {
+    import IModule from "engine/module/IModule";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * 模块构造器接口
+    */
+    export default interface IModuleConstructor {
+        new (): IModule;
+    }
+}
 declare module "engine/module/ModuleMessage" {
     /**
      * @author Raykid
@@ -2350,6 +1931,503 @@ declare module "engine/bridge/BridgeManager" {
     }
     /** 再额外导出一个单例 */
     export const bridgeManager: BridgeManager;
+}
+declare module "engine/mask/Mask" {
+    import IPanel from "engine/panel/IPanel";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-25
+     * @modify date 2017-10-25
+     *
+     * 遮罩工具
+    */
+    export default class Mask {
+        private _entityDict;
+        private _loadingMaskDict;
+        private getLoadingMaskCount();
+        private plusLoadingMaskCount(key);
+        private minusLoadingMaskCount(key);
+        /**
+         * 初始化MaskUtil
+         * @param type 所属表现层桥
+         * @param entity 遮罩实体
+         */
+        registerMask(type: string, entity: IMaskEntity): void;
+        /**
+         * 显示遮罩
+         */
+        showMask(alpha?: number): void;
+        /**
+         * 隐藏遮罩
+         */
+        hideMask(): void;
+        /**当前是否在显示遮罩*/
+        isShowingMask(): boolean;
+        /**
+         * 显示加载图
+         */
+        showLoading(alpha?: number, key?: string): void;
+        /**
+         * 隐藏加载图
+         */
+        hideLoading(key?: string): void;
+        /**当前是否在显示loading*/
+        isShowingLoading(): boolean;
+        /** 显示模态窗口遮罩 */
+        showModalMask(popup: IPanel, alpha?: number): void;
+        /** 隐藏模态窗口遮罩 */
+        hideModalMask(popup: IPanel): void;
+        /** 当前是否在显示模态窗口遮罩 */
+        isShowingModalMask(popup: IPanel): boolean;
+    }
+    export interface IMaskEntity {
+        showMask(alpha?: number): void;
+        hideMask(): void;
+        isShowingMask(): boolean;
+        showLoading(alpha?: number): void;
+        hideLoading(): void;
+        isShowingLoading(): boolean;
+        showModalMask(popup: IPanel, alpha?: number): void;
+        hideModalMask(popup: IPanel): void;
+        isShowingModalMask(popup: IPanel): boolean;
+    }
+}
+declare module "engine/bridge/IBridge" {
+    import { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
+    import IPanelPolicy from "engine/panel/IPanelPolicy";
+    import IScenePolicy from "engine/scene/IScenePolicy";
+    import IMediator from "engine/mediator/IMediator";
+    import { IMaskEntity } from "engine/mask/Mask";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-08-31
+     * @modify date 2017-08-31
+     *
+     * 这是表现层桥接口，不同渲染引擎的表现层都需要实现该接口以接入Olympus框架
+    */
+    export default interface IBridge {
+        /**
+         * 获取表现层类型名称
+         *
+         * @readonly
+         * @type {string}
+         * @memberof IBridge
+         */
+        readonly type: string;
+        /**
+         * 获取表现层HTML包装器，可以对其样式进行自定义调整
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof IBridge
+         */
+        readonly htmlWrapper: HTMLElement;
+        /**
+         * 获取根显示节点
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IBridge
+         */
+        readonly root: any;
+        /**
+         * 获取背景容器
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IBridge
+         */
+        readonly bgLayer: any;
+        /**
+         * 获取场景容器
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IBridge
+         */
+        readonly sceneLayer: any;
+        /**
+         * 获取弹窗容器
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IBridge
+         */
+        readonly panelLayer: any;
+        /**
+         * 获取遮罩容器
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IBridge
+         */
+        readonly maskLayer: any;
+        /**
+         * 获取顶级容器
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IBridge
+         */
+        readonly topLayer: any;
+        /**
+         * 获取通用提示框
+         *
+         * @readonly
+         * @type {IPromptPanelConstructor}
+         * @memberof IBridge
+         */
+        readonly promptClass: IPromptPanelConstructor;
+        /**
+         * 获取遮罩实体
+         *
+         * @readonly
+         * @type {IMaskEntity}
+         * @memberof IBridge
+         */
+        readonly maskEntity: IMaskEntity;
+        /**
+         * 获取或设置默认弹窗策略
+         *
+         * @type {IPanelPolicy}
+         * @memberof IBridge
+         */
+        defaultPanelPolicy: IPanelPolicy;
+        /**
+         * 获取或设置场景切换策略
+         *
+         * @type {IScenePolicy}
+         * @memberof IBridge
+         */
+        defaultScenePolicy: IScenePolicy;
+        /**
+         * 判断传入的skin是否是属于该表现层桥的
+         *
+         * @param {*} skin 皮肤实例
+         * @return {boolean} 是否数据该表现层桥
+         * @memberof IBridge
+         */
+        isMySkin(skin: any): boolean;
+        /**
+         * 当皮肤被设置时处理皮肤的方法
+         *
+         * @param {IMediator} mediator 中介者实例
+         * @memberof IBridge
+         */
+        handleSkin(mediator: IMediator): void;
+        /**
+         * 添加显示
+         *
+         * @param {*} parent 要添加到的父容器
+         * @param {*} target 被添加的显示对象
+         * @return {*} 返回被添加的显示对象
+         * @memberof IBridge
+         */
+        addChild(parent: any, target: any): any;
+        /**
+         * 按索引添加显示
+         *
+         * @param {*} parent 要添加到的父容器
+         * @param {*} target 被添加的显示对象
+         * @param {number} index 要添加到的父级索引
+         * @return {*} 返回被添加的显示对象
+         * @memberof IBridge
+         */
+        addChildAt(parent: any, target: any, index: number): any;
+        /**
+         * 移除显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {*} target 被移除的显示对象
+         * @return {*} 返回被移除的显示对象
+         * @memberof IBridge
+         */
+        removeChild(parent: any, target: any): any;
+        /**
+         * 按索引移除显示
+         *
+         * @param {*} parent 父容器
+         * @param {number} index 索引
+         * @return {*} 返回被移除的显示对象
+         * @memberof IBridge
+         */
+        removeChildAt(parent: any, index: number): any;
+        /**
+         * 移除所有显示对象
+         *
+         * @param {*} parent 父容器
+         * @memberof IBridge
+         */
+        removeChildren(parent: any): void;
+        /**
+         * 获取父容器
+         *
+         * @param {*} target 指定显示对象
+         * @return {*} 父容器
+         * @memberof IBridge
+         */
+        getParent(target: any): any;
+        /**
+         * 获取指定索引处的显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {number} index 指定父级索引
+         * @return {*} 索引处的显示对象
+         * @memberof IBridge
+         */
+        getChildAt(parent: any, index: number): any;
+        /**
+         * 获取显示索引
+         *
+         * @param {*} parent 父容器
+         * @param {*} target 子显示对象
+         * @return {number} target在parent中的索引
+         * @memberof IBridge
+         */
+        getChildIndex(parent: any, target: any): number;
+        /**
+         * 通过名称获取显示对象
+         *
+         * @param {*} parent 父容器
+         * @param {string} name 对象名称
+         * @return {*} 显示对象
+         * @memberof IBridge
+         */
+        getChildByName(parent: any, name: string): any;
+        /**
+         * 获取子显示对象数量
+         *
+         * @param {*} parent 父容器
+         * @return {number} 子显示对象数量
+         * @memberof IBridge
+         */
+        getChildCount(parent: any): number;
+        /**
+         * 加载资源
+         *
+         * @param {string[]} assets 资源数组
+         * @param {IMediator} mediator 要加载资源的中介者
+         * @param {(err?:Error)=>void} handler 回调函数
+         * @memberof IBridge
+         */
+        loadAssets(assets: string[], mediator: IMediator, handler: (err?: Error) => void): void;
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IBridge
+         */
+        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IBridge
+         */
+        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
+         *
+         * @param {()=>void} complete 初始化完毕后的回调
+         * @memberof IBridge
+         */
+        init?(complete: (bridge: IBridge) => void): void;
+    }
+}
+declare module "engine/bridge/IHasBridge" {
+    import IBridge from "engine/bridge/IBridge";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-08
+     * @modify date 2017-09-08
+     *
+     * 标识拥有表现层桥的接口
+    */
+    export default interface IHasMediatorBridge {
+        /**
+         * 表现层桥
+         */
+        bridge: IBridge;
+    }
+}
+declare module "engine/mediator/IMediator" {
+    import IHasBridge from "engine/bridge/IHasBridge";
+    import IOpenClose from "core/interfaces/IOpenClose";
+    import IDisposable from "core/interfaces/IDisposable";
+    import IModule from "engine/module/IModule";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-04
+     * @modify date 2017-09-04
+     *
+     * 界面中介者接口
+    */
+    export default interface IMediator extends IHasBridge, IOpenClose, IDisposable {
+        /**
+         * 获取中介者是否已被销毁
+         *
+         * @memberof IMediator
+         */
+        readonly disposed: boolean;
+        /**
+         * 所属的模块引用，需要配合@DelegateMediator使用
+         *
+         * @memberof IMediator
+         */
+        readonly dependModuleInstance: IModule;
+        /**
+         * 所属的模块类型，需要配合@DelegateMediator使用
+         *
+         * @memberof IMediator
+         */
+        readonly dependModule: IModuleConstructor;
+        /**
+         * 打开时传递的data对象
+         *
+         * @memberof IMediator
+         */
+        readonly data: any;
+        /**
+         * 皮肤
+         *
+         * @readonly
+         * @type {*}
+         * @memberof IMediator
+         */
+        skin: any;
+        /**
+         * 当打开时调用
+         *
+         * @param {*} [data] 可能的打开参数
+         * @memberof IMediator
+         */
+        onOpen(data?: any): void;
+        /**
+         * 当关闭时调用
+         *
+         * @param {*} [data] 可能的关闭参数
+         * @memberof IMediator
+         */
+        onClose(data?: any): void;
+        /**
+         * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IMediator
+         */
+        mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 注销监听事件
+         *
+         * @param {*} target 事件目标对象
+         * @param {string} type 事件类型
+         * @param {Function} handler 事件处理函数
+         * @param {*} [thisArg] this指向对象
+         * @memberof IMediator
+         */
+        unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 注销所有注册在当前中介者上的事件监听
+         *
+         * @memberof IMediator
+         */
+        unmapAllListeners(): void;
+    }
+}
+declare module "engine/mediator/IModuleMediator" {
+    import IMediator from "engine/mediator/IMediator";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-24
+     * @modify date 2017-10-24
+     *
+     * 托管到模块的中介者所具有的接口
+    */
+    export default interface IModuleMediator extends IMediator {
+        /**
+         * 列出中介者所需的资源数组，可重写
+         *
+         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+         * @memberof IModuleMediator
+         */
+        listAssets(): string[];
+        /**
+         * 加载从listAssets中获取到的所有资源
+         *
+         * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+         * @memberof IModuleMediator
+         */
+        loadAssets(handler: (err?: Error) => void): void;
+        /**
+         * 当所需资源加载完毕后调用
+         *
+         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+         * @memberof IModuleMediator
+         */
+        onLoadAssets(err?: Error): void;
+    }
+}
+declare module "engine/module/IModule" {
+    import IDisposable from "core/interfaces/IDisposable";
+    import IModuleMediator from "engine/mediator/IModuleMediator";
+    import RequestData from "engine/net/RequestData";
+    import ResponseData from "engine/net/ResponseData";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-06
+     * @modify date 2017-09-06
+     *
+     * 业务模块接口
+    */
+    export default interface IModule extends IDisposable {
+        /** 模块打开时的参数 */
+        data: any;
+        /** 模块初始消息的返回数据 */
+        responses: ResponseData[];
+        /** 获取背景音乐URL */
+        readonly bgMusic: string;
+        /** 获取所有已托管的中介者 */
+        readonly delegatedMediators: IModuleMediator[];
+        /** 列出模块所需CSS资源URL */
+        listStyleFiles(): string[];
+        /** 列出模块所需JS资源URL */
+        listJsFiles(): string[];
+        /** 列出模块初始化请求 */
+        listInitRequests(): RequestData[];
+        /** 将中介者托管给模块 */
+        delegateMediator(mediator: IModuleMediator): void;
+        /** 反托管中介者 */
+        undelegateMediator(mediator: IModuleMediator): void;
+        /** 判断指定中介者是否包含在该模块里 */
+        constainsMediator(mediator: IModuleMediator): boolean;
+        /** 当模块资源加载完毕后调用 */
+        onLoadAssets(err?: Error): void;
+        /** 打开模块时调用 */
+        onOpen(data?: any): void;
+        /** 关闭模块时调用 */
+        onClose(data?: any): void;
+        /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
+        onActivate(from: IModuleConstructor | undefined, data?: any): void;
+        /** 模块切换到后台是调用（close之后或者其他模块打开时） */
+        onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
+    }
 }
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";

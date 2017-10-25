@@ -11,11 +11,13 @@ import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
+import { IMaskEntity } from "engine/mask/Mask";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
 import * as UIUtil from "./egret/utils/UIUtil";
+import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
 
 /**
  * @author Raykid
@@ -108,6 +110,19 @@ export default class EgretBridge implements IBridge
     {
         return this._panelLayer;
     }
+    
+    private _maskLayer:egret.DisplayObjectContainer;
+    /**
+     * 获取遮罩容器
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof EgretBridge
+     */
+    public get maskLayer():egret.DisplayObjectContainer
+    {
+        return this._maskLayer;
+    }
 
     private _topLayer:egret.DisplayObjectContainer;
     /**
@@ -132,6 +147,18 @@ export default class EgretBridge implements IBridge
     public get promptClass():IPromptPanelConstructor
     {
         return this._initParams.promptClass;
+    }
+    
+    /**
+     * 获取遮罩实体
+     * 
+     * @readonly
+     * @type {IMaskEntity}
+     * @memberof EgretBridge
+     */
+    public get maskEntity():IMaskEntity
+    {
+        return new MaskEntity(this._initParams.maskData);
     }
 
     /**
@@ -251,6 +278,9 @@ export default class EgretBridge implements IBridge
             // 创建弹出层
             self._panelLayer = new egret.Sprite();
             root.addChild(self._panelLayer);
+            // 创建遮罩层
+            self._maskLayer = new egret.Sprite();
+            root.addChild(self._maskLayer);
             // 创建顶级显示层
             self._topLayer = new egret.Sprite();
             root.addChild(self._topLayer);
@@ -521,6 +551,8 @@ export interface IInitParams
     renderMode?:RenderMode;
     /** 通用提示框类型 */
     promptClass?:IPromptPanelConstructor;
+    /** 遮罩数据 */
+    maskData?:MaskData;
 }
 
 class AssetAdapter implements eui.IAssetAdapter

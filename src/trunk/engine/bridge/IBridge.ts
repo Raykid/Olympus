@@ -2,6 +2,7 @@ import { IPromptPanelConstructor } from "../panel/IPromptPanel";
 import IPanelPolicy from "../panel/IPanelPolicy";
 import IScenePolicy from "../scene/IScenePolicy";
 import IMediator from "../mediator/IMediator";
+import { IMaskEntity } from "../mask/Mask";
 
 /**
  * @author Raykid
@@ -33,7 +34,7 @@ export default interface IBridge
      * 获取根显示节点
      * 
      * @readonly
-     * @type {HTMLElement}
+     * @type {*}
      * @memberof IBridge
      */
     readonly root:any;
@@ -41,7 +42,7 @@ export default interface IBridge
      * 获取背景容器
      * 
      * @readonly
-     * @type {HTMLElement}
+     * @type {*}
      * @memberof IBridge
      */
     readonly bgLayer:any;
@@ -49,7 +50,7 @@ export default interface IBridge
      * 获取场景容器
      * 
      * @readonly
-     * @type {HTMLElement}
+     * @type {*}
      * @memberof IBridge
      */
     readonly sceneLayer:any;
@@ -57,15 +58,23 @@ export default interface IBridge
      * 获取弹窗容器
      * 
      * @readonly
-     * @type {HTMLElement}
+     * @type {*}
      * @memberof IBridge
      */
     readonly panelLayer:any;
     /**
+     * 获取遮罩容器
+     * 
+     * @readonly
+     * @type {*}
+     * @memberof IBridge
+     */
+    readonly maskLayer:any;
+    /**
      * 获取顶级容器
      * 
      * @readonly
-     * @type {HTMLElement}
+     * @type {*}
      * @memberof IBridge
      */
     readonly topLayer:any;
@@ -73,21 +82,29 @@ export default interface IBridge
      * 获取通用提示框
      * 
      * @readonly
-     * @type {HTMLElement}
+     * @type {IPromptPanelConstructor}
      * @memberof IBridge
      */
     readonly promptClass:IPromptPanelConstructor;
     /**
+     * 获取遮罩实体
+     * 
+     * @readonly
+     * @type {IMaskEntity}
+     * @memberof IBridge
+     */
+    readonly maskEntity:IMaskEntity;
+    /**
      * 获取或设置默认弹窗策略
      * 
-     * @type {HTMLElement}
+     * @type {IPanelPolicy}
      * @memberof IBridge
      */
     defaultPanelPolicy:IPanelPolicy;
     /**
      * 获取或设置场景切换策略
      * 
-     * @type {HTMLElement}
+     * @type {IScenePolicy}
      * @memberof IBridge
      */
     defaultScenePolicy:IScenePolicy;

@@ -6,7 +6,9 @@ import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel
 import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
+import { IMaskEntity } from "engine/mask/Mask";
 import { load } from "utils/HTTPUtil";
+import MaskEntity from "./dom/mask/MaskEntity";
 
 /**
  * @author Raykid
@@ -97,6 +99,18 @@ export default class DOMBridge implements IBridge
     }
 
     /**
+     * 获取遮罩容器
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof DOMBridge
+     */
+    public get maskLayer():HTMLElement
+    {
+        return <HTMLElement>this._initParams.container;
+    }
+
+    /**
      * 获取顶级容器
      * 
      * @readonly
@@ -118,6 +132,18 @@ export default class DOMBridge implements IBridge
     public get promptClass():IPromptPanelConstructor
     {
         return this._initParams.promptClass;
+    }
+
+    /**
+     * 获取遮罩实体
+     * 
+     * @readonly
+     * @type {IMaskEntity}
+     * @memberof DOMBridge
+     */
+    public get maskEntity():IMaskEntity
+    {
+        return new MaskEntity(this._initParams.maskSkin);
     }
     
     /**
@@ -439,4 +465,6 @@ export interface IInitParams
     container?:string|HTMLElement;
     /** 通用提示框类型 */
     promptClass?:IPromptPanelConstructor;
+    /** 遮罩皮肤 */
+    maskSkin?:HTMLElement|string;
 }
