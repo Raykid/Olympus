@@ -14,6 +14,18 @@ export default class WindowExternal
 {
     private _params:{[key:string]:any} = {};
 
+    /**
+     * 获取全部window.external参数
+     * 
+     * @readonly
+     * @type {{[key:string]:string}}
+     * @memberof WindowExternal
+     */
+    public get params():{[key:string]:string}
+    {
+        return this._params;
+    }
+
     public constructor()
     {
         // 处理window.external

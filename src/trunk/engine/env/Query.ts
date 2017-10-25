@@ -14,6 +14,18 @@ export default class Query
 {
     private _params:{[key:string]:string};
 
+    /**
+     * 获取全部Query参数
+     * 
+     * @readonly
+     * @type {{[key:string]:string}}
+     * @memberof Query
+     */
+    public get params():{[key:string]:string}
+    {
+        return this._params;
+    }
+
     public constructor()
     {
         this._params = {};

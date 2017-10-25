@@ -5570,6 +5570,20 @@ define("engine/env/WindowExternal", ["require", "exports", "core/Core", "core/in
             }
             this._params = window.external;
         }
+        Object.defineProperty(WindowExternal.prototype, "params", {
+            /**
+             * 获取全部window.external参数
+             *
+             * @readonly
+             * @type {{[key:string]:string}}
+             * @memberof WindowExternal
+             */
+            get: function () {
+                return this._params;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取window.external中的参数
          *
@@ -5759,6 +5773,20 @@ define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/In
                 this._params[name] = value;
             }
         }
+        Object.defineProperty(Query.prototype, "params", {
+            /**
+             * 获取全部Query参数
+             *
+             * @readonly
+             * @type {{[key:string]:string}}
+             * @memberof Query
+             */
+            get: function () {
+                return this._params;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取GET参数
          *

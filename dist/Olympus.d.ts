@@ -3161,6 +3161,16 @@ declare module "engine/env/WindowExternal" {
     */
     export default class WindowExternal {
         private _params;
+        /**
+         * 获取全部window.external参数
+         *
+         * @readonly
+         * @type {{[key:string]:string}}
+         * @memberof WindowExternal
+         */
+        readonly params: {
+            [key: string]: string;
+        };
         constructor();
         /**
          * 获取window.external中的参数
@@ -3255,6 +3265,16 @@ declare module "engine/env/Query" {
     */
     export default class Query {
         private _params;
+        /**
+         * 获取全部Query参数
+         *
+         * @readonly
+         * @type {{[key:string]:string}}
+         * @memberof Query
+         */
+        readonly params: {
+            [key: string]: string;
+        };
         constructor();
         /**
          * 获取GET参数
