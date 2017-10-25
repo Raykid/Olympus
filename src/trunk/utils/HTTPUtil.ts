@@ -52,6 +52,13 @@ export interface IHTTPRequestParams
      */
     responseType?:XMLHttpRequestResponseType;
     /**
+     * HTTP POST时的Content-Type，默认"application/json"
+     * 
+     * @type {string}
+     * @memberof IHTTPRequestParams
+     */
+    contentType?:string;
+    /**
      * 失败重试次数，默认重试2次
      * 
      * @type {number}
@@ -147,7 +154,7 @@ export function load(params:IHTTPRequestParams):void
             case "POST":
                 // POST目前规定为JSON格式发送
                 xhr.open(method, url, true);
-                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("Content-Type", params.contentType || "application/json");
                 xhr.setRequestHeader("withCredentials", "true");
                 xhr.send(JSON.stringify(data));
                 break;

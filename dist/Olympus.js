@@ -3822,7 +3822,7 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
                 case "POST":
                     // POST目前规定为JSON格式发送
                     xhr.open(method, url, true);
-                    xhr.setRequestHeader("Content-Type", "application/json");
+                    xhr.setRequestHeader("Content-Type", params.contentType || "application/json");
                     xhr.setRequestHeader("withCredentials", "true");
                     xhr.send(JSON.stringify(data));
                     break;
