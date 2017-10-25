@@ -16,6 +16,7 @@ var instanceDict:Dictionary<IConstructor, ((instance?:any)=>void)[]> = new Dicti
 function handleInstance(instance:any):void
 {
     var cls:IConstructor = instance.constructor;
+    cls = cls["__ori_constructor__"] || cls;
     var funcs:((instance?:any)=>void)[] = instanceDict.get(cls);
     if(funcs) for(var func of funcs) func(instance);
 }
@@ -73,6 +74,7 @@ export function getConstructor(cls:IConstructor):IConstructor
  */
 export function listenConstruct(cls:IConstructor, handler:(instance?:any)=>void):void
 {
+    cls = cls["__ori_constructor__"] || cls;
     var list:((instance?:any)=>void)[] = instanceDict.get(cls);
     if(!list) instanceDict.set(cls, list = []);
     if(list.indexOf(handler) < 0) list.push(handler);
@@ -87,6 +89,7 @@ export function listenConstruct(cls:IConstructor, handler:(instance?:any)=>void)
  */
 export function unlistenConstruct(cls:IConstructor, handler:(instance?:any)=>void):void
 {
+    cls = cls["__ori_constructor__"] || cls;
     var list:((instance?:any)=>void)[] = instanceDict.get(cls);
     if(list)
     {

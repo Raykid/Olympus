@@ -1775,6 +1775,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
     var instanceDict = new Dictionary_2.default();
     function handleInstance(instance) {
         var cls = instance.constructor;
+        cls = cls["__ori_constructor__"] || cls;
         var funcs = instanceDict.get(cls);
         if (funcs)
             for (var _i = 0, funcs_1 = funcs; _i < funcs_1.length; _i++) {
@@ -1830,6 +1831,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
      * @param {(instance?:any)=>void} handler 处理函数
      */
     function listenConstruct(cls, handler) {
+        cls = cls["__ori_constructor__"] || cls;
         var list = instanceDict.get(cls);
         if (!list)
             instanceDict.set(cls, list = []);
@@ -1845,6 +1847,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
      * @param {(instance?:any)=>void} handler 处理函数
      */
     function unlistenConstruct(cls, handler) {
+        cls = cls["__ori_constructor__"] || cls;
         var list = instanceDict.get(cls);
         if (list) {
             var index = list.indexOf(handler);
