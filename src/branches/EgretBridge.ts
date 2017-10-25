@@ -97,6 +97,19 @@ export default class EgretBridge implements IBridge
     {
         return this._sceneLayer;
     }
+    
+    private _frameLayer:egret.DisplayObjectContainer;
+    /**
+     * 获取框架容器
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof EgretBridge
+     */
+    public get frameLayer():egret.DisplayObjectContainer
+    {
+        return this._frameLayer;
+    }
 
     private _panelLayer:egret.DisplayObjectContainer;
     /**
@@ -275,6 +288,9 @@ export default class EgretBridge implements IBridge
             // 创建场景显示层
             self._sceneLayer = new egret.Sprite();
             root.addChild(self._sceneLayer);
+            // 创建框架显示层
+            self._frameLayer = new egret.Sprite();
+            root.addChild(self._frameLayer);
             // 创建弹出层
             self._panelLayer = new egret.Sprite();
             root.addChild(self._panelLayer);

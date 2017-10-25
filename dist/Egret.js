@@ -66486,6 +66486,20 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(EgretBridge.prototype, "frameLayer", {
+            /**
+             * 获取框架容器
+             *
+             * @readonly
+             * @type {egret.DisplayObjectContainer}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._frameLayer;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(EgretBridge.prototype, "panelLayer", {
             /**
              * 获取弹窗容器
@@ -66630,6 +66644,9 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
                 // 创建场景显示层
                 self._sceneLayer = new egret.Sprite();
                 root.addChild(self._sceneLayer);
+                // 创建框架显示层
+                self._frameLayer = new egret.Sprite();
+                root.addChild(self._frameLayer);
                 // 创建弹出层
                 self._panelLayer = new egret.Sprite();
                 root.addChild(self._panelLayer);

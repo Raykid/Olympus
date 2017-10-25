@@ -55,6 +55,14 @@ export default interface IBridge
      */
     readonly sceneLayer:any;
     /**
+     * 获取框架容器
+     * 
+     * @readonly
+     * @type {*}
+     * @memberof IBridge
+     */
+    readonly frameLayer:any;
+    /**
      * 获取弹窗容器
      * 
      * @readonly

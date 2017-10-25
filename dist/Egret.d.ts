@@ -300,6 +300,15 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         readonly sceneLayer: egret.DisplayObjectContainer;
+        private _frameLayer;
+        /**
+         * 获取框架容器
+         *
+         * @readonly
+         * @type {egret.DisplayObjectContainer}
+         * @memberof EgretBridge
+         */
+        readonly frameLayer: egret.DisplayObjectContainer;
         private _panelLayer;
         /**
          * 获取弹窗容器

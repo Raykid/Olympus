@@ -103,6 +103,14 @@ declare module "DOMBridge" {
          */
         readonly sceneLayer: HTMLElement;
         /**
+         * 获取框架容器
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof DOMBridge
+         */
+        readonly frameLayer: HTMLElement;
+        /**
          * 获取弹窗容器
          *
          * @readonly

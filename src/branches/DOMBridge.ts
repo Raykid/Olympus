@@ -87,6 +87,18 @@ export default class DOMBridge implements IBridge
     }
 
     /**
+     * 获取框架容器
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof DOMBridge
+     */
+    public get frameLayer():HTMLElement
+    {
+        return <HTMLElement>this._initParams.container;
+    }
+
+    /**
      * 获取弹窗容器
      * 
      * @readonly

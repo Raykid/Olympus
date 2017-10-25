@@ -180,6 +180,20 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil",
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DOMBridge.prototype, "frameLayer", {
+            /**
+             * 获取框架容器
+             *
+             * @readonly
+             * @type {HTMLElement}
+             * @memberof DOMBridge
+             */
+            get: function () {
+                return this._initParams.container;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DOMBridge.prototype, "panelLayer", {
             /**
              * 获取弹窗容器
