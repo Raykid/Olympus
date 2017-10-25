@@ -6204,6 +6204,10 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
     /** 再额外导出一个实例 */
     exports.default = new HTTPRequestPolicy();
 });
+define("engine/plugin/IPlugin", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_21, Injector_17, BridgeManager_4, BridgeMessage_2, ModuleManager_4, Environment_5, Hash_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -6245,6 +6249,13 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             this._initParams.onInited && this._initParams.onInited();
             // 注销监听
             Core_21.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+            // 初始化插件
+            if (this._initParams.plugins) {
+                for (var _i = 0, _a = this._initParams.plugins; _i < _a.length; _i++) {
+                    var pluginCls = _a[_i];
+                    new pluginCls().initPlugin();
+                }
+            }
             // 监听首个模块开启
             Core_21.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块

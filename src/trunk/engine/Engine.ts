@@ -26,6 +26,7 @@ import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
 import { IResponseDataConstructor } from "./net/ResponseData";
 import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
+import { IPluginConstructor } from "./plugin/IPlugin";
 
 /**
  * @author Raykid
@@ -70,6 +71,14 @@ export default class Engine
         this._initParams.onInited && this._initParams.onInited();
         // 注销监听
         core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+        // 初始化插件
+        if(this._initParams.plugins)
+        {
+            for(var pluginCls of this._initParams.plugins)
+            {
+                new pluginCls().initPlugin();
+            }
+        }
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
@@ -138,6 +147,13 @@ export interface IInitParams
      * @memberof IInitParams
      */
     cdnsDict?:{[env:string]:string[]};
+    /**
+     * 插件列表
+     * 
+     * @type {IPluginConstructor[]}
+     * @memberof IInitParams
+     */
+    plugins?:IPluginConstructor[];
     /**
      * 框架初始化完毕时调用
      * 
