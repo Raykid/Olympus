@@ -1296,7 +1296,10 @@ define("utils/ObjectUtil", ["require", "exports"], function (require, exports) {
         if (target == null)
             return "__object_hash_0__";
         var key = "__object_hash__";
-        var value = target[key];
+        var value;
+        // 只有当前对象上有key才算
+        if (target.hasOwnProperty(key))
+            value = target[key];
         // 如果已经有哈希值则直接返回
         if (value)
             return value;

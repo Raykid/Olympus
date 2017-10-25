@@ -142,7 +142,9 @@ export function getObjectHash(target:any):string
 {
     if(target == null) return "__object_hash_0__";
     var key:string = "__object_hash__";
-    var value:string = target[key];
+    var value:string;
+    // 只有当前对象上有key才算
+    if(target.hasOwnProperty(key)) value = target[key];
     // 如果已经有哈希值则直接返回
     if(value) return value;
     // 如果是基础类型则直接返回对应字符串
