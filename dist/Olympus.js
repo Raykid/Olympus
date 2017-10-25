@@ -1308,7 +1308,14 @@ define("utils/ObjectUtil", ["require", "exports"], function (require, exports) {
         if (hashTypes.indexOf(type) < 0)
             return type + ":" + target;
         // 如果是复杂类型则返回计算的哈希值并打上标签
-        return (target[key] = "__object_hash_" + (++hash) + "__");
+        var value = "__object_hash_" + (++hash) + "__";
+        Object.defineProperty(target, key, {
+            configurable: true,
+            enumerable: false,
+            writable: false,
+            value: value
+        });
+        return value;
     }
     exports.getObjectHash = getObjectHash;
     /**

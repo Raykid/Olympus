@@ -151,7 +151,14 @@ export function getObjectHash(target:any):string
     var type:string = typeof target;
     if(hashTypes.indexOf(type) < 0) return type + ":" + target;
     // 如果是复杂类型则返回计算的哈希值并打上标签
-    return (target[key] = "__object_hash_" + (++hash) + "__");
+    var value:string = "__object_hash_" + (++hash) + "__";
+    Object.defineProperty(target, key, {
+        configurable: true,
+        enumerable: false,
+        writable: false,
+        value: value
+    });
+    return value;
 }
 
 /**
