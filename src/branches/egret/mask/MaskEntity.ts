@@ -15,9 +15,9 @@ import EgretBridge from "../../EgretBridge";
 */
 export default class MaskEntityImpl implements IMaskEntity
 {
-    private _maskAlpha:number;
-    private _loadingAlpha:number;
-    private _modalPanelAlpha:number;
+    private _maskAlpha:number = 0.5;
+    private _loadingAlpha:number = 0.5;
+    private _modalPanelAlpha:number = 0.5;
 
     private _showingMask:boolean = false;
     private _mask:egret.Shape;

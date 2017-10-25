@@ -66231,6 +66231,9 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
     */
     var MaskEntityImpl = /** @class */ (function () {
         function MaskEntityImpl(params) {
+            this._maskAlpha = 0.5;
+            this._loadingAlpha = 0.5;
+            this._modalPanelAlpha = 0.5;
             this._showingMask = false;
             this._showingLoading = false;
             if (params != null) {
