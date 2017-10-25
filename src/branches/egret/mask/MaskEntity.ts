@@ -2,8 +2,8 @@ import { IMaskEntity } from "engine/mask/MaskManager";
 import IPanel from "engine/panel/IPanel";
 import IBridge from "engine/bridge/IBridge";
 import { bridgeManager } from "engine/bridge/BridgeManager";
-import DOMBridge from "../../DOMBridge";
 import Dictionary from "utils/Dictionary";
+import EgretBridge from "../../EgretBridge";
 
 /**
  * @author Raykid
@@ -60,7 +60,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(this._showingMask) return;
         this._showingMask = true;
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._maskAlpha;
         this._mask.graphics.clear();
@@ -96,7 +96,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(this._showingLoading) return;
         this._showingLoading = true;
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._loadingAlpha;
         this._loadingMask.graphics.clear();
@@ -133,7 +133,7 @@ export default class MaskEntityImpl implements IMaskEntity
         this._modalPanelDict.set(panel, panel);
         this._modalPanelList.push(panel);
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._modalPanelAlpha;
         this._modalPanelMask.graphics.clear();

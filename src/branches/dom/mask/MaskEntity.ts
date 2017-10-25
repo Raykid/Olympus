@@ -1,8 +1,8 @@
 import { IMaskEntity } from "engine/mask/MaskManager";
 import IBridge from "engine/bridge/IBridge";
 import { bridgeManager } from "engine/bridge/BridgeManager";
-import EgretBridge from "../../EgretBridge";
 import IPanel from "engine/panel/IPanel";
+import DOMBridge from "../../DOMBridge";
 
 /**
  * @author Raykid
@@ -59,7 +59,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(this._skin == null || this._showing) return;
         this._showing = true;
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
         bridge.maskLayer.addChild(this._skin);
     }
 
@@ -71,7 +71,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(this._skin == null || !this._showing) return;
         this._showing = false;
         // 隐藏
-        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
         bridge.removeChild(this._skin.parentElement, this._skin);
     }
 
