@@ -5952,7 +5952,7 @@ define("engine/version/Version", ["require", "exports", "core/Core", "core/injec
     /** 再额外导出一个单例 */
     exports.version = Core_19.core.getInject(Version);
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager"], function (require, exports, HTTPUtil_3, Environment_4, NetManager_3) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_3, Environment_4, NetManager_3, ObjectUtil_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5976,16 +5976,15 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
         HTTPRequestPolicy.prototype.sendRequest = function (request, data) {
             // 取到参数
             var params = request.__params;
-            // 发送
-            HTTPUtil_3.load({
+            // 修改数据
+            var httpParams = ObjectUtil_6.extendObject({
                 url: Environment_4.environment.toHostURL(params.path, params.hostIndex),
                 data: data || params.data,
-                method: params.method,
-                retryTimes: params.retryTimes,
-                timeout: params.timeout,
                 onResponse: function (result) { return NetManager_3.netManager.__onResponse(request.__params.response.type, result, request); },
                 onError: function (err) { return NetManager_3.netManager.__onError(err, request); }
-            });
+            }, params);
+            // 发送
+            HTTPUtil_3.load(httpParams);
         };
         return HTTPRequestPolicy;
     }());

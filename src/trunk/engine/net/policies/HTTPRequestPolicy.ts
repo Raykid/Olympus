@@ -1,8 +1,9 @@
-import { load } from "../../../utils/HTTPUtil";
+import { load, IHTTPRequestParams } from "../../../utils/HTTPUtil";
 import IRequestPolicy from "../IRequestPolicy";
 import RequestData, { IRequestParams } from "../RequestData";
 import { environment } from "../../env/Environment";
 import { netManager } from "../NetManager";
+import { extendObject } from "../../../utils/ObjectUtil";
 
 /**
  * @author Raykid
@@ -25,16 +26,15 @@ export class HTTPRequestPolicy implements IRequestPolicy
     {
         // 取到参数
         var params:IRequestParams = request.__params;
-        // 发送
-        load({
+        // 修改数据
+        var httpParams:IHTTPRequestParams = extendObject({
             url: environment.toHostURL(params.path, params.hostIndex),
             data: data || params.data,
-            method: params.method,
-            retryTimes: params.retryTimes,
-            timeout: params.timeout,
             onResponse: result=>netManager.__onResponse(request.__params.response.type, result, request),
             onError: err=>netManager.__onError(err, request)
-        });
+        }, params);
+        // 发送
+        load(httpParams);
     }
 }
 
