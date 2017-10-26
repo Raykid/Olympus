@@ -3746,14 +3746,16 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 target.data = data;
                 // 数据先行
                 this._moduleStack.unshift([cls, target]);
-                // 显示Loading
-                MaskManager_2.maskManager.showLoading(null, "module");
+                // 记一个是否需要遮罩的flag
+                var maskFlag = true;
                 // 加载所有已托管中介者的资源
                 var mediators = target.delegatedMediators.concat();
                 var loadMediatorAssets = function (err) {
                     if (err) {
                         // 隐藏Loading
-                        MaskManager_2.maskManager.hideLoading("module");
+                        if (!maskFlag)
+                            MaskManager_2.maskManager.hideLoading("module");
+                        maskFlag = false;
                         // 停止加载，调用模块加载失败接口
                         target.onLoadAssets(err);
                     }
@@ -3763,7 +3765,9 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     }
                     else {
                         // 隐藏Loading
-                        MaskManager_2.maskManager.hideLoading("module");
+                        if (!maskFlag)
+                            MaskManager_2.maskManager.hideLoading("module");
+                        maskFlag = false;
                         // 调用onLoadAssets接口
                         target.onLoadAssets();
                         // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
@@ -3821,6 +3825,11 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                     }
                 };
                 loadMediatorAssets();
+                // 显示Loading
+                if (maskFlag) {
+                    MaskManager_2.maskManager.showLoading(null, "module");
+                    maskFlag = false;
+                }
             }
             else if (after.length > 0) {
                 // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块

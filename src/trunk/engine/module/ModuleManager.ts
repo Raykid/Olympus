@@ -176,15 +176,16 @@ export default class ModuleManager
             target.data = data;
             // 数据先行
             this._moduleStack.unshift([cls, target]);
-            // 显示Loading
-            maskManager.showLoading(null, "module");
+            // 记一个是否需要遮罩的flag
+            var maskFlag:boolean = true;
             // 加载所有已托管中介者的资源
             var mediators:IModuleMediator[] = target.delegatedMediators.concat();
             var loadMediatorAssets:(err?:Error)=>void = (err?:Error)=>{
                 if(err)
                 {
                     // 隐藏Loading
-                    maskManager.hideLoading("module");
+                    if(!maskFlag) maskManager.hideLoading("module");
+                    maskFlag = false;
                     // 停止加载，调用模块加载失败接口
                     target.onLoadAssets(err);
                 }
@@ -196,7 +197,8 @@ export default class ModuleManager
                 else
                 {
                     // 隐藏Loading
-                    maskManager.hideLoading("module");
+                    if(!maskFlag) maskManager.hideLoading("module");
+                    maskFlag = false;
                     // 调用onLoadAssets接口
                     target.onLoadAssets();
                     // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
@@ -256,6 +258,12 @@ export default class ModuleManager
                 }
             };
             loadMediatorAssets();
+            // 显示Loading
+            if(maskFlag)
+            {
+                maskManager.showLoading(null, "module");
+                maskFlag = false;
+            }
         }
         else if(after.length > 0)
         {
