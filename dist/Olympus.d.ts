@@ -3518,14 +3518,11 @@ declare module "engine/plugin/IPlugin" {
         /** 初始化插件，插件会在框架初始化完毕，首个模块打开前调用 */
         initPlugin(): void;
     }
-    export interface IPluginConstructor {
-        new (): IPlugin;
-    }
 }
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
     import IBridge from "engine/bridge/IBridge";
-    import { IPluginConstructor } from "engine/plugin/IPlugin";
+    import IPlugin from "engine/plugin/IPlugin";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3600,10 +3597,10 @@ declare module "engine/Engine" {
         /**
          * 插件列表
          *
-         * @type {IPluginConstructor[]}
+         * @type {IPlugin[]}
          * @memberof IInitParams
          */
-        plugins?: IPluginConstructor[];
+        plugins?: IPlugin[];
         /**
          * 框架初始化完毕时调用
          *

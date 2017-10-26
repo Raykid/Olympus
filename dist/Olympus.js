@@ -6290,17 +6290,17 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             });
         };
         Engine.prototype.onAllBridgesInit = function () {
+            // 初始化插件
+            if (this._initParams.plugins) {
+                for (var _i = 0, _a = this._initParams.plugins; _i < _a.length; _i++) {
+                    var plugin = _a[_i];
+                    plugin.initPlugin();
+                }
+            }
             // 调用回调
             this._initParams.onInited && this._initParams.onInited();
             // 注销监听
             Core_21.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
-            // 初始化插件
-            if (this._initParams.plugins) {
-                for (var _i = 0, _a = this._initParams.plugins; _i < _a.length; _i++) {
-                    var pluginCls = _a[_i];
-                    new pluginCls().initPlugin();
-                }
-            }
             // 监听首个模块开启
             Core_21.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
