@@ -3240,6 +3240,8 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
             retryTimes--;
             // 中止xhr
             xhr.abort();
+            // 添加时间戳作为随机版本号
+            url = URLUtil_2.joinQueryParams(url, { _r: Date.now() });
             // 重新发送
             send();
         }

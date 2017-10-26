@@ -216,6 +216,8 @@ export function load(params:IHTTPRequestParams):void
         retryTimes --;
         // 中止xhr
         xhr.abort();
+        // 添加时间戳作为随机版本号
+        url = joinQueryParams(url, {_r: Date.now()});
         // 重新发送
         send();
     }
