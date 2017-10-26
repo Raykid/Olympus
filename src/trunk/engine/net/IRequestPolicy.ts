@@ -14,8 +14,7 @@ export default interface IRequestPolicy
      * 发送请求逻辑
      * 
      * @param {RequestData} request 请求
-     * @param {*} [data] 经过处理后的请求参数，给了会替换request中的数据
      * @memberof IRequestPolicy
      */
-    sendRequest(request:RequestData, data?:any):void;
+    sendRequest(request:RequestData):void;
 }

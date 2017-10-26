@@ -4252,10 +4252,9 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 添加遮罩
                 MaskManager_4.maskManager.showLoading(null, "net");
                 // 指定消息参数连接上公共参数作为参数
-                var data = msg.__params.data;
-                ObjectUtil_5.extendObject(data, RequestData_1.commonData);
+                ObjectUtil_5.extendObject(msg.__params.data, RequestData_1.commonData);
                 // 发送消息
-                msg.__policy.sendRequest(msg, data);
+                msg.__policy.sendRequest(msg);
                 // 派发系统消息
                 Core_10.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
             }
@@ -6227,16 +6226,14 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
          * 发送请求逻辑
          *
          * @param {RequestData} request 请求数据
-         * @param {*} [data] 经过处理后的请求参数，给了会替换request中的数据
          * @memberof HTTPRequestPolicy
          */
-        HTTPRequestPolicy.prototype.sendRequest = function (request, data) {
+        HTTPRequestPolicy.prototype.sendRequest = function (request) {
             // 取到参数
             var params = request.__params;
             // 修改数据
             var httpParams = ObjectUtil_6.extendObject({
                 url: Environment_4.environment.toHostURL(params.path, params.hostIndex),
-                data: data || params.data,
                 onResponse: function (result) { return NetManager_3.netManager.__onResponse(request.__params.response.type, result, request); },
                 onError: function (err) { return NetManager_3.netManager.__onError(err, request); }
             }, params);

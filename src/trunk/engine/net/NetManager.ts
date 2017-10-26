@@ -39,10 +39,9 @@ export default class NetManager
             // 添加遮罩
             maskManager.showLoading(null, "net");
             // 指定消息参数连接上公共参数作为参数
-            var data:any = msg.__params.data;
-            extendObject(data, commonData);
+            extendObject(msg.__params.data, commonData);
             // 发送消息
-            msg.__policy.sendRequest(msg, data);
+            msg.__policy.sendRequest(msg);
             // 派发系统消息
             core.dispatch(NetMessage.NET_REQUEST, msg);
         }
