@@ -3494,8 +3494,8 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             else {
                 // 是否停止其他声音
                 if (params && params.stopOthers) {
-                    for (var url in this._playingDict) {
-                        this.audioStop(url);
+                    for (var playingUrl in this._playingDict) {
+                        this.audioStop(playingUrl);
                     }
                 }
                 // 已经加载完毕，直接播放

@@ -2,6 +2,7 @@ import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
 import { load } from "../../utils/HTTPUtil";
 import { environment } from "./Environment";
+import { system } from "../system/System";
 
 /**
  * @author Raykid
@@ -254,9 +255,9 @@ export default class Shell
             // 是否停止其他声音
             if(params && params.stopOthers)
             {
-                for(var url in this._playingDict)
+                for(var playingUrl in this._playingDict)
                 {
-                    this.audioStop(url);
+                    this.audioStop(playingUrl);
                 }
             }
             // 已经加载完毕，直接播放
