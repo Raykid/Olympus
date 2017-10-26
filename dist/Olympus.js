@@ -6406,27 +6406,13 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                     plugin.initPlugin();
                 }
             }
+            // 注册短名称
+            AssetsManager_3.assetsManager.configPath(this._initParams.pathDict);
             // 开始预加载过程
             var preloads = this._initParams.preloads;
             if (preloads) {
-                var paths;
-                if (preloads instanceof Array) {
-                    // 直接就是路径数组
-                    paths = preloads;
-                }
-                else {
-                    // 是字典，则先注册短名称，再将其转换为地址数组
-                    paths = [];
-                    for (var key in preloads) {
-                        var path = preloads[key];
-                        // 注册短名称
-                        AssetsManager_3.assetsManager.configPath(key, path);
-                        // 转换数组
-                        paths.push(path);
-                    }
-                }
                 // 去加载
-                AssetsManager_3.assetsManager.getAssets(paths, this.onPreloadOK.bind(this));
+                AssetsManager_3.assetsManager.getAssets(preloads, this.onPreloadOK.bind(this));
             }
             else {
                 // 没有预加载，直接完成

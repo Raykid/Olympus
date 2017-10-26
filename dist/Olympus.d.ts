@@ -3644,15 +3644,22 @@ declare module "engine/Engine" {
          */
         plugins?: IPlugin[];
         /**
+         * 短名称路径字典，key是短名称，value是路径
+         *
+         * @type {{[key:string]:string}}
+         * @memberof IInitParams
+         */
+        pathDict?: {
+            [key: string]: string;
+        };
+        /**
          * 预加载数组或字典，如果是字典则key为短名称，value为资源路径
          * 会在表现层桥初始化完毕后、框架初始化完毕前加载，加载结果会保存在AssetsManager中
          *
-         * @type {string[]|{[key:string]:string}}
+         * @type {string[]}
          * @memberof IInitParams
          */
-        preloads?: string[] | {
-            [key: string]: string;
-        };
+        preloads?: string[];
         /**
          * 框架初始化完毕时调用
          *

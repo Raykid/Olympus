@@ -78,31 +78,14 @@ export default class Engine
                 plugin.initPlugin();
             }
         }
+        // 注册短名称
+        assetsManager.configPath(this._initParams.pathDict);
         // 开始预加载过程
-        var preloads:string[]|{[key:string]:string} = this._initParams.preloads;
+        var preloads:string[] = this._initParams.preloads;
         if(preloads)
         {
-            var paths:string[];
-            if(preloads instanceof Array)
-            {
-                // 直接就是路径数组
-                paths = preloads;
-            }
-            else
-            {
-                // 是字典，则先注册短名称，再将其转换为地址数组
-                paths = [];
-                for(var key in preloads)
-                {
-                    var path:string = preloads[key];
-                    // 注册短名称
-                    assetsManager.configPath(key, path);
-                    // 转换数组
-                    paths.push(path);
-                }
-            }
             // 去加载
-            assetsManager.getAssets(paths, this.onPreloadOK.bind(this));
+            assetsManager.getAssets(preloads, this.onPreloadOK.bind(this));
         }
         else
         {
@@ -191,13 +174,20 @@ export interface IInitParams
      */
     plugins?:IPlugin[];
     /**
+     * 短名称路径字典，key是短名称，value是路径
+     * 
+     * @type {{[key:string]:string}}
+     * @memberof IInitParams
+     */
+    pathDict?:{[key:string]:string},
+    /**
      * 预加载数组或字典，如果是字典则key为短名称，value为资源路径
      * 会在表现层桥初始化完毕后、框架初始化完毕前加载，加载结果会保存在AssetsManager中
      * 
-     * @type {string[]|{[key:string]:string}}
+     * @type {string[]}
      * @memberof IInitParams
      */
-    preloads?:string[]|{[key:string]:string};
+    preloads?:string[];
     /**
      * 框架初始化完毕时调用
      * 

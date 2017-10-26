@@ -360,10 +360,11 @@ define("main", ["require", "exports", "DOMBridge", "EgretBridge", "Olympus", "en
             staging: ["https://cdn-cnc.staging.17zuoye.net/"],
             prod: ["https://cdn-cnc.17zuoye.com/"]
         },
-        preloads: {
+        pathDict: {
             a: "test1.js",
             b: "test2.js"
         },
+        preloads: ["a", "b"],
         onInited: function () {
             // bridgeManager.getBridge("Egret").defaultScenePolicy = none;
         }
