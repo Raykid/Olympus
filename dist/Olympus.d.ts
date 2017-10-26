@@ -2156,6 +2156,32 @@ declare module "engine/env/Shell" {
         /** 此项代表外壳接口可根据实际情况扩展基类没有的方法或属性 */
         [name: string]: any;
     }
+    export class AudioMessage {
+        /**
+         * 音频播放开始事件
+         *
+         * @static
+         * @type {string}
+         * @memberof Shell
+         */
+        static AUDIO_PLAY_STARTED: string;
+        /**
+         * 音频播放停止事件
+         *
+         * @static
+         * @type {string}
+         * @memberof Shell
+         */
+        static AUDIO_PLAY_STOPPED: string;
+        /**
+         * 音频播放完毕事件
+         *
+         * @static
+         * @type {string}
+         * @memberof Shell
+         */
+        static AUDIO_PLAY_ENDED: string;
+    }
     export interface AudioPlayParams {
         /**
          * 播放启动的时间戳

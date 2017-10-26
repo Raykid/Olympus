@@ -273,6 +273,8 @@ export default class Shell
                 node.start((params && params.time) || data.startTime);
                 // 记录正在播放的节点
                 this._playingDict[url] = {node: node, params: params, listener: listener};
+                // 派发播放开始事件
+                core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, url);
             }
         }
     }
@@ -286,6 +288,8 @@ export default class Shell
             data.node.removeEventListener("ended", data.listener);
             // 停止播放
             this.audioStop(url);
+            // 派发播放完毕事件
+            core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
         }
     }
 
@@ -306,6 +310,8 @@ export default class Shell
         // 关掉缓存数据的自动播放功能
         var data:AudioData = this._audioDict[url];
         if(data) data.autoPlay = false;
+        // 派发播放停止事件
+        core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
     }
     
     /**
@@ -358,6 +364,34 @@ export default class Shell
 
     /** 此项代表外壳接口可根据实际情况扩展基类没有的方法或属性 */
     [name:string]:any;
+}
+
+export class AudioMessage
+{
+    /**
+     * 音频播放开始事件
+     * 
+     * @static
+     * @type {string}
+     * @memberof Shell
+     */
+    public static AUDIO_PLAY_STARTED:string = "audioPlayStarted";
+    /**
+     * 音频播放停止事件
+     * 
+     * @static
+     * @type {string}
+     * @memberof Shell
+     */
+    public static AUDIO_PLAY_STOPPED:string = "audioPlayStopped";
+    /**
+     * 音频播放完毕事件
+     * 
+     * @static
+     * @type {string}
+     * @memberof Shell
+     */
+    public static AUDIO_PLAY_ENDED:string = "audioPlayEnded";
 }
 
 export interface AudioPlayParams

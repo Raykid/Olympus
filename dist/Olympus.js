@@ -3509,6 +3509,8 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
                     node.start((params && params.time) || data.startTime);
                     // 记录正在播放的节点
                     this._playingDict[url] = { node: node, params: params, listener: listener };
+                    // 派发播放开始事件
+                    Core_6.core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, url);
                 }
             }
         };
@@ -3519,6 +3521,8 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
                 data.node.removeEventListener("ended", data.listener);
                 // 停止播放
                 this.audioStop(url);
+                // 派发播放完毕事件
+                Core_6.core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
             }
         };
         Shell.prototype._audioStop = function (url, when) {
@@ -3538,6 +3542,8 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             var data = this._audioDict[url];
             if (data)
                 data.autoPlay = false;
+            // 派发播放停止事件
+            Core_6.core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
         };
         /**
          * 暂停音频（不会重置进度）
@@ -3586,6 +3592,36 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
         return Shell;
     }());
     exports.default = Shell;
+    var AudioMessage = /** @class */ (function () {
+        function AudioMessage() {
+        }
+        /**
+         * 音频播放开始事件
+         *
+         * @static
+         * @type {string}
+         * @memberof Shell
+         */
+        AudioMessage.AUDIO_PLAY_STARTED = "audioPlayStarted";
+        /**
+         * 音频播放停止事件
+         *
+         * @static
+         * @type {string}
+         * @memberof Shell
+         */
+        AudioMessage.AUDIO_PLAY_STOPPED = "audioPlayStopped";
+        /**
+         * 音频播放完毕事件
+         *
+         * @static
+         * @type {string}
+         * @memberof Shell
+         */
+        AudioMessage.AUDIO_PLAY_ENDED = "audioPlayEnded";
+        return AudioMessage;
+    }());
+    exports.AudioMessage = AudioMessage;
     /** 再额外导出一个单例 */
     exports.shell = Core_6.core.getInject(Shell);
 });
