@@ -6095,6 +6095,7 @@ define("engine/version/Version", ["require", "exports", "core/Core", "core/injec
          * @memberof Version
          */
         Version.prototype.initialize = function (handler) {
+            var _this = this;
             // 去加载version.cfg
             var request = null;
             if (window["XMLHttpRequest"]) {
@@ -6106,13 +6107,7 @@ define("engine/version/Version", ["require", "exports", "core/Core", "core/injec
                 request = new ActiveXObject("Microsoft.XMLHTTP");
             }
             // 注册回调函数
-            request.onreadystatechange = callback;
-            // 设置连接信息
-            request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
-            // 发送数据，开始和服务器进行交互
-            request.send();
-            // 回调函数,不同相应状态进行处理
-            function callback(evt) {
+            request.onreadystatechange = function (evt) {
                 var request = evt.target;
                 //判断对象状态是交互完成，接收服务器返回的数据
                 if (request.readyState == 4) {
@@ -6126,13 +6121,17 @@ define("engine/version/Version", ["require", "exports", "core/Core", "core/injec
                             if (arr.length == 2) {
                                 var key = arr[1].substr(2);
                                 var value = arr[0];
-                                this._hashDict[key] = value;
+                                _this._hashDict[key] = value;
                             }
                         }
                     }
                     handler();
                 }
-            }
+            };
+            // 设置连接信息
+            request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
+            // 发送数据，开始和服务器进行交互
+            request.send();
         };
         /**
          * 获取文件哈希值，如果没有文件哈希值则返回null

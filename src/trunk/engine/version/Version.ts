@@ -36,15 +36,7 @@ export default class Version
             request = new ActiveXObject("Microsoft.XMLHTTP");
         }
         // 注册回调函数
-        request.onreadystatechange = callback;
-        // 设置连接信息
-        request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
-        // 发送数据，开始和服务器进行交互
-        request.send();
-
-
-        // 回调函数,不同相应状态进行处理
-        function callback(evt:Event):void
+        request.onreadystatechange = (evt:Event)=>
         {
             var request:XMLHttpRequest = evt.target as XMLHttpRequest;
             //判断对象状态是交互完成，接收服务器返回的数据
@@ -69,7 +61,11 @@ export default class Version
                 }
                 handler();
             }
-        }
+        };
+        // 设置连接信息
+        request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
+        // 发送数据，开始和服务器进行交互
+        request.send();
     }
 
     /**
