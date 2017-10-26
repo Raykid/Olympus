@@ -1,8 +1,8 @@
 import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
-import { load } from "../../utils/HTTPUtil";
 import { environment } from "./Environment";
 import { system } from "../system/System";
+import { assetsManager } from "../assets/AssetsManager";
 
 /**
  * @author Raykid
@@ -207,17 +207,16 @@ export default class Shell
             // 记录数据
             this._audioDict[url] = data = {buffer:null, autoPlay:false, autoPlayParams: null, startTime: 0};
             // 开始加载
-            load({
-                url: url,
-                responseType: "arraybuffer",
-                onResponse: (result:ArrayBuffer) => {
+            assetsManager.getAssets(url, (result:ArrayBuffer) => {
+                if(result instanceof ArrayBuffer)
+                {
                     this._context.decodeAudioData(result, (buffer:AudioBuffer)=>{
                         data.buffer = buffer;
                         // 如果自动播放则播放
                         if(data.autoPlay) this.audioPlay(url, data.autoPlayParams);
                     });
                 }
-            });
+            }, "arraybuffer");
         }
     }
 

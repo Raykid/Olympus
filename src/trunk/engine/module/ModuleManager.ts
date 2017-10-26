@@ -1,7 +1,6 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector"
 import { wrapConstruct } from "../../utils/ConstructUtil";
-import { load } from "../../utils/HTTPUtil";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
@@ -12,6 +11,7 @@ import IModuleMediator from "../mediator/IModuleMediator";
 import { environment } from "../env/Environment";
 import Shell from "../env/Shell";
 import { maskManager } from "../mask/MaskManager";
+import { assetsManager } from "../assets/AssetsManager";
 
 /**
  * @author Raykid
@@ -215,45 +215,43 @@ export default class ModuleManager
                         }
                     }
                     // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
-                    load({
-                        url: target.listJsFiles(),
-                        useCDN: true,
-                        onResponse: (results:string[])=>{
-                            if(results)
-                            {
-                                // 使用script标签将js文件加入html中
-                                var jsNode:HTMLScriptElement = document.createElement("script");
-                                jsNode.innerHTML = results.join("\n");
-                                document.body.appendChild(jsNode);
-                            }
-                            // 发送所有模块消息
-                            var requests:RequestData[] = target.listInitRequests();
-                            netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
-                            {
-                                var from:[IModuleConstructor, IModule] = this.getCurrent();
-                                var fromModule:IModule = from && from[1];
-                                // 赋值responses
-                                target.responses = responses;
-                                // 调用onOpen接口
-                                target.onOpen(data);
-                                // 调用onDeactivate接口
-                                this.deactivateModule(fromModule && fromModule, cls, data);
-                                // 调用onActivate接口
-                                this.activateModule(target, from && from[0], data);
-                                // 如果replace是true，则关掉上一个模块
-                                if(replace) this.close(from && from[0], data);
-                                // 派发消息
-                                core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
-                                // 关闭标识符
-                                this._opening = false;
-                                // 如果有缓存的模块需要打开则打开之
-                                if(this._openCache.length > 0)
-                                    this.open.apply(this, this._openCache.shift());
-                            }, this);
-                        },
-                        onError: (err:Error)=>{
-                            target.onLoadAssets(err);
+                    assetsManager.getAssets(target.listJsFiles(), (results:string[]|Error)=>{
+                        if(results instanceof Error)
+                        {
+                            target.onLoadAssets(results);
+                            return;
                         }
+                        if(results)
+                        {
+                            // 使用script标签将js文件加入html中
+                            var jsNode:HTMLScriptElement = document.createElement("script");
+                            jsNode.innerHTML = results.join("\n");
+                            document.body.appendChild(jsNode);
+                        }
+                        // 发送所有模块消息
+                        var requests:RequestData[] = target.listInitRequests();
+                        netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
+                        {
+                            var from:[IModuleConstructor, IModule] = this.getCurrent();
+                            var fromModule:IModule = from && from[1];
+                            // 赋值responses
+                            target.responses = responses;
+                            // 调用onOpen接口
+                            target.onOpen(data);
+                            // 调用onDeactivate接口
+                            this.deactivateModule(fromModule && fromModule, cls, data);
+                            // 调用onActivate接口
+                            this.activateModule(target, from && from[0], data);
+                            // 如果replace是true，则关掉上一个模块
+                            if(replace) this.close(from && from[0], data);
+                            // 派发消息
+                            core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
+                            // 关闭标识符
+                            this._opening = false;
+                            // 如果有缓存的模块需要打开则打开之
+                            if(this._openCache.length > 0)
+                                this.open.apply(this, this._openCache.shift());
+                        }, this);
                     });
                 }
             };

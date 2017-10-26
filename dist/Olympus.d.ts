@@ -1736,6 +1736,34 @@ declare module "engine/panel/PanelManager" {
     /** 再额外导出一个单例 */
     export const panelManager: PanelManager;
 }
+declare module "engine/module/ModuleMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 模块消息
+    */
+    export default class ModuleMessage {
+        /**
+         * 切换模块消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        static MODULE_CHANGE: string;
+        /**
+         * 加载模块失败消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        static MODULE_LOAD_ASSETS_ERROR: string;
+    }
+}
 declare module "utils/URLUtil" {
     /**
      * 规整url
@@ -1988,33 +2016,48 @@ declare module "utils/HTTPUtil" {
      */
     export function load(params: IHTTPRequestParams): void;
 }
-declare module "engine/module/ModuleMessage" {
+declare module "engine/assets/AssetsManager" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-18
-     * @modify date 2017-09-18
+     * @create date 2017-10-26
+     * @modify date 2017-10-26
      *
-     * 模块消息
+     * 资源管理器
     */
-    export default class ModuleMessage {
+    export default class AssetsManager {
+        private _keyDict;
         /**
-         * 切换模块消息
+         * 为路径配置短名称
          *
-         * @static
-         * @type {string}
-         * @memberof ModuleMessage
+         * @param {string} key 路径短名称
+         * @param {string} path 路径
+         * @memberof AssetsManager
          */
-        static MODULE_CHANGE: string;
+        configPath(key: string, path: string): void;
         /**
-         * 加载模块失败消息
+         * 为路径配置短名称
          *
-         * @static
-         * @type {string}
-         * @memberof ModuleMessage
+         * @param {{[key:string]:string}} params 路径短名称字典
+         * @memberof AssetsManager
          */
-        static MODULE_LOAD_ASSETS_ERROR: string;
+        configPath(params: {
+            [key: string]: string;
+        }): void;
+        private _assetsDict;
+        /**
+         * 获取资源，如果已加载过则直接返回，如果未加载则加载后返回
+         *
+         * @param {string|string[]} keyOrPath 资源短名称或资源路径
+         * @param {(assets?:any|any[])=>void} complete 完成回调，如果加载失败则参数是个Error对象
+         * @param {XMLHttpRequestResponseType} [responseType] 加载类型
+         * @returns {void}
+         * @memberof AssetsManager
+         */
+        getAssets(keyOrPath: string | string[], complete: (assets?: any | any[]) => void, responseType?: XMLHttpRequestResponseType): void;
     }
+    /** 再额外导出一个单例 */
+    export const assetsManager: AssetsManager;
 }
 declare module "engine/env/Shell" {
     /**
@@ -3541,6 +3584,7 @@ declare module "engine/Engine" {
          */
         initialize(params: IInitParams): void;
         private onAllBridgesInit();
+        private onPreloadOK();
         private onModuleChange(from);
     }
     /** 再额外导出一个单例 */
@@ -3599,6 +3643,16 @@ declare module "engine/Engine" {
          * @memberof IInitParams
          */
         plugins?: IPlugin[];
+        /**
+         * 预加载数组或字典，如果是字典则key为短名称，value为资源路径
+         * 会在表现层桥初始化完毕后、框架初始化完毕前加载，加载结果会保存在AssetsManager中
+         *
+         * @type {string[]|{[key:string]:string}}
+         * @memberof IInitParams
+         */
+        preloads?: string[] | {
+            [key: string]: string;
+        };
         /**
          * 框架初始化完毕时调用
          *

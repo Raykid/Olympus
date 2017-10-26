@@ -13,6 +13,7 @@ import SceneMediator from "./scene/SceneMediator";
 import ModuleManager, {moduleManager} from "./module/ModuleManager";
 import IModuleConstructor from "./module/IModuleConstructor";
 import Module from "./module/Module";
+import AssetsManager, { assetsManager } from "./assets/AssetsManager";
 import Environment, { environment } from "./env/Environment";
 import Explorer from "./env/Explorer";
 import WindowExternal from "./env/WindowExternal";
@@ -67,6 +68,8 @@ export default class Engine
 
     private onAllBridgesInit():void
     {
+        // 注销监听
+        core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
         // 初始化插件
         if(this._initParams.plugins)
         {
@@ -75,10 +78,43 @@ export default class Engine
                 plugin.initPlugin();
             }
         }
+        // 开始预加载过程
+        var preloads:string[]|{[key:string]:string} = this._initParams.preloads;
+        if(preloads)
+        {
+            var paths:string[];
+            if(preloads instanceof Array)
+            {
+                // 直接就是路径数组
+                paths = preloads;
+            }
+            else
+            {
+                // 是字典，则先注册短名称，再将其转换为地址数组
+                paths = [];
+                for(var key in preloads)
+                {
+                    var path:string = preloads[key];
+                    // 注册短名称
+                    assetsManager.configPath(key, path);
+                    // 转换数组
+                    paths.push(path);
+                }
+            }
+            // 去加载
+            assetsManager.getAssets(paths, this.onPreloadOK.bind(this));
+        }
+        else
+        {
+            // 没有预加载，直接完成
+            this.onPreloadOK();
+        }
+    }
+
+    private onPreloadOK():void
+    {
         // 调用回调
         this._initParams.onInited && this._initParams.onInited();
-        // 注销监听
-        core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
@@ -154,6 +190,14 @@ export interface IInitParams
      * @memberof IInitParams
      */
     plugins?:IPlugin[];
+    /**
+     * 预加载数组或字典，如果是字典则key为短名称，value为资源路径
+     * 会在表现层桥初始化完毕后、框架初始化完毕前加载，加载结果会保存在AssetsManager中
+     * 
+     * @type {string[]|{[key:string]:string}}
+     * @memberof IInitParams
+     */
+    preloads?:string[]|{[key:string]:string};
     /**
      * 框架初始化完毕时调用
      * 
