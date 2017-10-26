@@ -3319,7 +3319,8 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
          * @memberof AssetsManager
          */
         AssetsManager.prototype.getAssets = function (keyOrPath) {
-            return this._assetsDict[keyOrPath];
+            var path = this._keyDict[keyOrPath] || keyOrPath;
+            return this._assetsDict[path];
         };
         /**
          * 加载资源，如果已加载过则同步回调，如果未加载则加载后异步回调

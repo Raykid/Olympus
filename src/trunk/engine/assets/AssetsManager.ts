@@ -59,7 +59,8 @@ export default class AssetsManager
      */
     public getAssets(keyOrPath:string):any
     {
-        return this._assetsDict[keyOrPath];
+        var path:string = this._keyDict[keyOrPath] || keyOrPath;
+        return this._assetsDict[path];
     }
 
     /**
