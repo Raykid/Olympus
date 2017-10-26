@@ -7,8 +7,8 @@ import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
 import { IMaskEntity } from "engine/mask/MaskManager";
-import { load } from "utils/HTTPUtil";
 import MaskEntity from "./dom/mask/MaskEntity";
+import { assetsManager } from "engine/assets/AssetsManager";
 
 /**
  * @author Raykid
@@ -214,28 +214,6 @@ export default class DOMBridge implements IBridge
     }
 
     /**
-     * 当皮肤被设置时处理皮肤的方法
-     * 
-     * @param {IMediator} mediator 中介者实例
-     * @memberof DOMBridge
-     */
-    public handleSkin(mediator:IMediator):void
-    {
-        // 当皮肤被赋值时将拥有id的节点赋值给mediator
-        var skin:HTMLElement = mediator.skin;
-        if(!skin) return;
-        // 使用正则表达式从皮肤字符串中查找所有id
-        var reg:RegExp = /id="([^"]+)"/g;
-        var skinStr:string = skin.innerHTML;
-        var result:RegExpExecArray;
-        while(result = reg.exec(skinStr))
-        {
-            var id:string = result[1];
-            mediator[id] = skin.querySelector("#" + id);
-        }
-    }
-
-    /**
      * 添加显示
      * 
      * @param {Element} parent 要添加到的父容器
@@ -379,8 +357,6 @@ export default class DOMBridge implements IBridge
      */
     public loadAssets(assets:string[], mediator:IMediator, handler:(err?:Error)=>void):void
     {
-        // 声明一个皮肤文本，用于记录所有皮肤模板后一次性生成显示
-        var skinStr:string = "";
         // 开始加载皮肤列表
         if(assets) assets = assets.concat();
         loadNext();
@@ -389,35 +365,21 @@ export default class DOMBridge implements IBridge
         {
             if(!assets || assets.length <= 0)
             {
-                // 设置一个外壳容器
-                var div:HTMLElement = document.createElement("div");
-                div.innerHTML = skinStr;
-                mediator.skin = div;
                 // 调用回调
                 handler();
             }
             else
             {
                 var skin:string = assets.shift();
-                if(skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0)
-                {
-                    // 是皮肤字符串
-                    skinStr += skin;
-                    loadNext();
-                }
-                else
-                {
-                    // 是皮肤地址
-                    load({
-                        url: skin,
-                        useCDN: true,
-                        onResponse: result=>{
-                            skinStr += result;
+                assetsManager.loadAssets(
+                    skin,
+                    result=>{
+                        if(result instanceof Error)
+                            handler(result);
+                        else
                             loadNext();
-                        },
-                        onError: err=>handler(err)
-                    });
-                }
+                    }
+                );
             }
         }
     }

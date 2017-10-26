@@ -1250,13 +1250,6 @@ declare module "engine/bridge/IBridge" {
          */
         isMySkin(skin: any): boolean;
         /**
-         * 当皮肤被设置时处理皮肤的方法
-         *
-         * @param {IMediator} mediator 中介者实例
-         * @memberof IBridge
-         */
-        handleSkin(mediator: IMediator): void;
-        /**
          * 添加显示
          *
          * @param {*} parent 要添加到的父容器
@@ -2046,7 +2039,15 @@ declare module "engine/assets/AssetsManager" {
         }): void;
         private _assetsDict;
         /**
-         * 获取资源，如果已加载过则直接返回，如果未加载则加载后返回
+         * 获取资源，同步的，且如果找不到资源并不会触发加载
+         *
+         * @param {string} keyOrPath 资源的短名称或路径
+         * @returns {*}
+         * @memberof AssetsManager
+         */
+        getAssets(keyOrPath: string): any;
+        /**
+         * 加载资源，如果已加载过则同步回调，如果未加载则加载后异步回调
          *
          * @param {string|string[]} keyOrPath 资源短名称或资源路径
          * @param {(assets?:any|any[])=>void} complete 完成回调，如果加载失败则参数是个Error对象
@@ -2054,7 +2055,7 @@ declare module "engine/assets/AssetsManager" {
          * @returns {void}
          * @memberof AssetsManager
          */
-        getAssets(keyOrPath: string | string[], complete: (assets?: any | any[]) => void, responseType?: XMLHttpRequestResponseType): void;
+        loadAssets(keyOrPath: string | string[], complete: (assets?: any | any[]) => void, responseType?: XMLHttpRequestResponseType): void;
     }
     /** 再额外导出一个单例 */
     export const assetsManager: AssetsManager;

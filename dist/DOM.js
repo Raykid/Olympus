@@ -80,7 +80,7 @@ define("dom/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeManage
     exports.default = MaskEntityImpl;
 });
 /// <reference path="../../dist/Olympus.d.ts"/>
-define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil", "dom/mask/MaskEntity"], function (require, exports, ObjectUtil_1, HTTPUtil_1, MaskEntity_1) {
+define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/mask/MaskEntity", "engine/assets/AssetsManager"], function (require, exports, ObjectUtil_1, MaskEntity_1, AssetsManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -293,26 +293,6 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil",
             return (skin instanceof HTMLElement);
         };
         /**
-         * 当皮肤被设置时处理皮肤的方法
-         *
-         * @param {IMediator} mediator 中介者实例
-         * @memberof DOMBridge
-         */
-        DOMBridge.prototype.handleSkin = function (mediator) {
-            // 当皮肤被赋值时将拥有id的节点赋值给mediator
-            var skin = mediator.skin;
-            if (!skin)
-                return;
-            // 使用正则表达式从皮肤字符串中查找所有id
-            var reg = /id="([^"]+)"/g;
-            var skinStr = skin.innerHTML;
-            var result;
-            while (result = reg.exec(skinStr)) {
-                var id = result[1];
-                mediator[id] = skin.querySelector("#" + id);
-            }
-        };
-        /**
          * 添加显示
          *
          * @param {Element} parent 要添加到的父容器
@@ -434,40 +414,23 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil",
          * @memberof DOMBridge
          */
         DOMBridge.prototype.loadAssets = function (assets, mediator, handler) {
-            // 声明一个皮肤文本，用于记录所有皮肤模板后一次性生成显示
-            var skinStr = "";
             // 开始加载皮肤列表
             if (assets)
                 assets = assets.concat();
             loadNext();
             function loadNext() {
                 if (!assets || assets.length <= 0) {
-                    // 设置一个外壳容器
-                    var div = document.createElement("div");
-                    div.innerHTML = skinStr;
-                    mediator.skin = div;
                     // 调用回调
                     handler();
                 }
                 else {
                     var skin = assets.shift();
-                    if (skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0) {
-                        // 是皮肤字符串
-                        skinStr += skin;
-                        loadNext();
-                    }
-                    else {
-                        // 是皮肤地址
-                        HTTPUtil_1.load({
-                            url: skin,
-                            useCDN: true,
-                            onResponse: function (result) {
-                                skinStr += result;
-                                loadNext();
-                            },
-                            onError: function (err) { return handler(err); }
-                        });
-                    }
+                    AssetsManager_1.assetsManager.loadAssets(skin, function (result) {
+                        if (result instanceof Error)
+                            handler(result);
+                        else
+                            loadNext();
+                    });
                 }
             }
         };
@@ -519,24 +482,105 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "utils/HTTPUtil",
     }());
     exports.default = DOMBridge;
 });
-define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager", "DOMBridge"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_2, DOMBridge_2) {
+define("dom/utils/SkinUtil", ["require", "exports", "engine/assets/AssetsManager"], function (require, exports, AssetsManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-10-09
-     * @modify date 2017-10-09
+     * @create date 2017-10-26
+     * @modify date 2017-10-26
      *
-     * 负责注入的模块
+     * 为DOM提供皮肤转换的工具集
     */
-    function DOMMediatorClass(cls) {
-        // 调用MediatorClass方法
-        cls = Injector_1.MediatorClass(cls);
-        // 监听类型实例化，赋值表现层桥
-        ConstructUtil_1.listenConstruct(cls, function (mediator) { return mediator.bridge = BridgeManager_2.bridgeManager.getBridge(DOMBridge_2.default.TYPE); });
-        // 返回结果类型
-        return cls;
+    /**
+     * 为中介者包装皮肤
+     *
+     * @export
+     * @param {IMediator} mediator 中介者
+     * @param {(HTMLElement|string|string[])} skin 皮肤，可以是HTMLElement，也可以是皮肤字符串，也可以是皮肤模板地址或地址数组
+     * @returns {HTMLElement} 皮肤的HTMLElement形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
+     */
+    function wrapSkin(mediator, skin) {
+        var result;
+        if (skin instanceof HTMLElement) {
+            result = skin;
+        }
+        else {
+            // 生成一个临时的div
+            result = document.createElement("div");
+            // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
+            var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
+            mediator.onOpen = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                if (skin instanceof Array) {
+                    // 是数组，将所有内容连接起来再一起赋值
+                    skin = skin.map(getContent).join("");
+                }
+                // 赋值皮肤内容
+                result.innerHTML = skin;
+                // 使用正则表达式将拥有id的节点赋值给mediator
+                var reg = /id=("([^"]+)"|'([^']+)')/g;
+                var res;
+                while (res = reg.exec(skin)) {
+                    var id = res[2] || res[3];
+                    mediator[id] = result.querySelector("#" + id);
+                }
+                // 恢复原始方法
+                if (oriFunc)
+                    mediator.onOpen = oriFunc;
+                else
+                    delete mediator.onOpen;
+                // 调用原始方法
+                mediator.onOpen.apply(this, args);
+            };
+        }
+        // 赋值皮肤
+        mediator.skin = result;
+        // 同步返回皮肤
+        return result;
+    }
+    exports.wrapSkin = wrapSkin;
+    function getContent(skin) {
+        if (skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0) {
+            // 是皮肤字符串，直接返回
+            return skin;
+        }
+        else {
+            // 是皮肤路径或路径短名称，获取后返回
+            return AssetsManager_2.assetsManager.getAssets(skin);
+        }
+    }
+});
+define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager", "DOMBridge", "dom/utils/SkinUtil"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_2, DOMBridge_2, SkinUtil_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function DOMMediatorClass() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        if (args[0] instanceof Function) {
+            // 调用MediatorClass方法
+            var cls = Injector_1.MediatorClass(args[0]);
+            // 监听类型实例化，赋值表现层桥
+            ConstructUtil_1.listenConstruct(cls, function (mediator) { return mediator.bridge = BridgeManager_2.bridgeManager.getBridge(DOMBridge_2.default.TYPE); });
+            // 返回结果类型
+            return cls;
+        }
+        else {
+            return function (cls) {
+                // 调用MediatorClass方法
+                cls = Injector_1.MediatorClass(cls);
+                // 监听类型实例化，转换皮肤格式
+                ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, args); });
+                // 返回结果类型
+                return cls;
+            };
+        }
     }
     exports.DOMMediatorClass = DOMMediatorClass;
 });

@@ -215,7 +215,7 @@ export default class ModuleManager
                         }
                     }
                     // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
-                    assetsManager.getAssets(target.listJsFiles(), (results:string[]|Error)=>{
+                    assetsManager.loadAssets(target.listJsFiles(), (results:string[]|Error)=>{
                         if(results instanceof Error)
                         {
                             target.onLoadAssets(results);

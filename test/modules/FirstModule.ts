@@ -22,7 +22,7 @@ import { DOMMediatorClass } from "dom/injector/Injector";
  * 测试首个模块
 */
 
-@DOMMediatorClass
+@DOMMediatorClass("./modules/test.html")
 class FirstMediator extends SceneMediator
 {
     @Inject

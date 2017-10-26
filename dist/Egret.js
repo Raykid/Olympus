@@ -65820,36 +65820,6 @@ define("egret/utils/SkinUtil", ["require", "exports", "engine/scene/SceneMediato
     }
     exports.wrapSkin = wrapSkin;
 });
-define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "egret/utils/SkinUtil"], function (require, exports, ConstructUtil_1, Injector_1, SkinUtil_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-09
-     * @modify date 2017-10-09
-     *
-     * 负责注入的模块
-    */
-    function EgretSkin(skin) {
-        return function (cls) {
-            // 监听类型实例化，转换皮肤格式
-            ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, skin); });
-        };
-    }
-    exports.EgretSkin = EgretSkin;
-    function EgretMediatorClass(skin) {
-        return function (cls) {
-            // 调用MediatorClass方法
-            cls = Injector_1.MediatorClass(cls);
-            // 监听类型实例化，转换皮肤格式
-            ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, skin); });
-            // 返回结果类型
-            return cls;
-        };
-    }
-    exports.EgretMediatorClass = EgretMediatorClass;
-});
 define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -66686,15 +66656,6 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             return (skin instanceof egret.DisplayObject);
         };
         /**
-         * 当皮肤被设置时处理皮肤的方法
-         *
-         * @param {IMediator} mediator 中介者实例
-         * @memberof EgretBridge
-         */
-        EgretBridge.prototype.handleSkin = function (mediator) {
-            // Egret暂不需要对皮肤进行特殊处理
-        };
-        /**
          * 添加显示
          *
          * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
@@ -66931,5 +66892,45 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
         };
         return ThemeAdapter;
     }());
+});
+define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "egret/utils/SkinUtil", "engine/bridge/BridgeManager", "EgretBridge"], function (require, exports, ConstructUtil_1, Injector_1, SkinUtil_1, BridgeManager_2, EgretBridge_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    function EgretSkin(skin) {
+        return function (cls) {
+            // 监听类型实例化，转换皮肤格式
+            ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, skin); });
+        };
+    }
+    exports.EgretSkin = EgretSkin;
+    function EgretMediatorClass(target) {
+        if (target instanceof Function) {
+            // 调用MediatorClass方法
+            var cls = Injector_1.MediatorClass(target);
+            // 监听类型实例化，赋值表现层桥
+            ConstructUtil_1.listenConstruct(cls, function (mediator) { return mediator.bridge = BridgeManager_2.bridgeManager.getBridge(EgretBridge_2.default.TYPE); });
+            // 返回结果类型
+            return cls;
+        }
+        else {
+            return function (cls) {
+                // 调用MediatorClass方法
+                cls = Injector_1.MediatorClass(cls);
+                // 监听类型实例化，转换皮肤格式
+                ConstructUtil_1.listenConstruct(cls, function (mediator) { return SkinUtil_1.wrapSkin(mediator, target); });
+                // 返回结果类型
+                return cls;
+            };
+        }
+    }
+    exports.EgretMediatorClass = EgretMediatorClass;
 });
 //# sourceMappingURL=Egret.js.map

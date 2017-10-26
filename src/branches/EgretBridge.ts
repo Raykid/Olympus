@@ -337,17 +337,6 @@ export default class EgretBridge implements IBridge
     }
     
     /**
-     * 当皮肤被设置时处理皮肤的方法
-     * 
-     * @param {IMediator} mediator 中介者实例
-     * @memberof EgretBridge
-     */
-    public handleSkin(mediator:IMediator):void
-    {
-        // Egret暂不需要对皮肤进行特殊处理
-    }
-    
-    /**
      * 添加显示
      * 
      * @param {egret.DisplayObjectContainer} parent 要添加到的父容器

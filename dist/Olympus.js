@@ -3312,7 +3312,17 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
             }
         };
         /**
-         * 获取资源，如果已加载过则直接返回，如果未加载则加载后返回
+         * 获取资源，同步的，且如果找不到资源并不会触发加载
+         *
+         * @param {string} keyOrPath 资源的短名称或路径
+         * @returns {*}
+         * @memberof AssetsManager
+         */
+        AssetsManager.prototype.getAssets = function (keyOrPath) {
+            return this._assetsDict[keyOrPath];
+        };
+        /**
+         * 加载资源，如果已加载过则同步回调，如果未加载则加载后异步回调
          *
          * @param {string|string[]} keyOrPath 资源短名称或资源路径
          * @param {(assets?:any|any[])=>void} complete 完成回调，如果加载失败则参数是个Error对象
@@ -3320,7 +3330,7 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
          * @returns {void}
          * @memberof AssetsManager
          */
-        AssetsManager.prototype.getAssets = function (keyOrPath, complete, responseType) {
+        AssetsManager.prototype.loadAssets = function (keyOrPath, complete, responseType) {
             var _this = this;
             // 非空判断
             if (!keyOrPath) {
@@ -3341,7 +3351,7 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
                     if (keyOrPath.length <= 0)
                         complete(results);
                     else
-                        _this.getAssets(keyOrPath.shift(), onGetOne);
+                        _this.loadAssets(keyOrPath.shift(), onGetOne);
                 };
                 getOne();
             }
@@ -3564,7 +3574,7 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
                 // 记录数据
                 this._audioDict[url] = data = { buffer: null, autoPlay: false, autoPlayParams: null, startTime: 0 };
                 // 开始加载
-                AssetsManager_1.assetsManager.getAssets(url, function (result) {
+                AssetsManager_1.assetsManager.loadAssets(url, function (result) {
                     if (result instanceof ArrayBuffer) {
                         _this._context.decodeAudioData(result, function (buffer) {
                             data.buffer = buffer;
@@ -3933,7 +3943,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                             }
                         }
                         // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
-                        AssetsManager_2.assetsManager.getAssets(target.listJsFiles(), function (results) {
+                        AssetsManager_2.assetsManager.loadAssets(target.listJsFiles(), function (results) {
                             if (results instanceof Error) {
                                 target.onLoadAssets(results);
                                 return;
@@ -4572,8 +4582,6 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     $skin = value;
                     // 根据skin类型选取表现层桥
                     this.bridge = BridgeManager_3.bridgeManager.getBridgeBySkin(value);
-                    // 调用处理皮肤接口
-                    this.bridge && this.bridge.handleSkin(this);
                 }
             });
         });
@@ -6412,7 +6420,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             var preloads = this._initParams.preloads;
             if (preloads) {
                 // 去加载
-                AssetsManager_3.assetsManager.getAssets(preloads, this.onPreloadOK.bind(this));
+                AssetsManager_3.assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this));
             }
             else {
                 // 没有预加载，直接完成

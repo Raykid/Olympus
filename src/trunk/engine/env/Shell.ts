@@ -207,7 +207,7 @@ export default class Shell
             // 记录数据
             this._audioDict[url] = data = {buffer:null, autoPlay:false, autoPlayParams: null, startTime: 0};
             // 开始加载
-            assetsManager.getAssets(url, (result:ArrayBuffer) => {
+            assetsManager.loadAssets(url, (result:ArrayBuffer) => {
                 if(result instanceof ArrayBuffer)
                 {
                     this._context.decodeAudioData(result, (buffer:AudioBuffer)=>{

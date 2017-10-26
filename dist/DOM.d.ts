@@ -180,13 +180,6 @@ declare module "DOMBridge" {
          */
         isMySkin(skin: any): boolean;
         /**
-         * 当皮肤被设置时处理皮肤的方法
-         *
-         * @param {IMediator} mediator 中介者实例
-         * @memberof DOMBridge
-         */
-        handleSkin(mediator: IMediator): void;
-        /**
          * 添加显示
          *
          * @param {Element} parent 要添加到的父容器
@@ -313,6 +306,26 @@ declare module "DOMBridge" {
         maskSkin?: HTMLElement | string;
     }
 }
+declare module "dom/utils/SkinUtil" {
+    import IMediator from "engine/mediator/IMediator";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-26
+     * @modify date 2017-10-26
+     *
+     * 为DOM提供皮肤转换的工具集
+    */
+    /**
+     * 为中介者包装皮肤
+     *
+     * @export
+     * @param {IMediator} mediator 中介者
+     * @param {(HTMLElement|string|string[])} skin 皮肤，可以是HTMLElement，也可以是皮肤字符串，也可以是皮肤模板地址或地址数组
+     * @returns {HTMLElement} 皮肤的HTMLElement形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
+     */
+    export function wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
+}
 declare module "dom/injector/Injector" {
     /**
      * @author Raykid
@@ -323,4 +336,5 @@ declare module "dom/injector/Injector" {
      * 负责注入的模块
     */
     export function DOMMediatorClass(cls: IConstructor): any;
+    export function DOMMediatorClass(...skins: string[]): ClassDecorator;
 }

@@ -295,7 +295,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onResponse", null);
         FirstMediator = __decorate([
-            Injector_7.DOMMediatorClass
+            Injector_7.DOMMediatorClass("./modules/test.html")
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));

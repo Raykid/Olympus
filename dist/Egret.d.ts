@@ -15,18 +15,6 @@ declare module "egret/utils/SkinUtil" {
     */
     export function wrapSkin(mediator: IMediator, skin: any): eui.Component;
 }
-declare module "egret/injector/Injector" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-09
-     * @modify date 2017-10-09
-     *
-     * 负责注入的模块
-    */
-    export function EgretSkin(skin: any): ClassDecorator;
-    export function EgretMediatorClass(skin: any): ClassDecorator;
-}
 declare module "egret/RenderMode" {
     /**
      * @author Raykid
@@ -382,13 +370,6 @@ declare module "EgretBridge" {
          */
         isMySkin(skin: any): boolean;
         /**
-         * 当皮肤被设置时处理皮肤的方法
-         *
-         * @param {IMediator} mediator 中介者实例
-         * @memberof EgretBridge
-         */
-        handleSkin(mediator: IMediator): void;
-        /**
          * 添加显示
          *
          * @param {egret.DisplayObjectContainer} parent 要添加到的父容器
@@ -537,4 +518,17 @@ declare module "EgretBridge" {
         /** 遮罩数据 */
         maskData?: MaskData;
     }
+}
+declare module "egret/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    export function EgretSkin(skin: any): ClassDecorator;
+    export function EgretMediatorClass(cls: IConstructor): any;
+    export function EgretMediatorClass(skin: string): ClassDecorator;
 }

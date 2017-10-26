@@ -85,7 +85,7 @@ export default class Engine
         if(preloads)
         {
             // 去加载
-            assetsManager.getAssets(preloads, this.onPreloadOK.bind(this));
+            assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this));
         }
         else
         {

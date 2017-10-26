@@ -1,6 +1,8 @@
 import { listenConstruct } from "utils/ConstructUtil";
 import { MediatorClass } from "engine/injector/Injector";
 import { wrapSkin } from "../utils/SkinUtil";
+import { bridgeManager } from "engine/bridge/BridgeManager";
+import EgretBridge from "../../EgretBridge";
 
 /**
  * @author Raykid
@@ -20,15 +22,29 @@ export function EgretSkin(skin:any):ClassDecorator
     } as ClassDecorator;
 }
 
-export function EgretMediatorClass(skin:any):ClassDecorator
+export function EgretMediatorClass(cls:IConstructor):any
+export function EgretMediatorClass(skin:string):ClassDecorator
+export function EgretMediatorClass(target:IConstructor|string):any
 {
-    return function(cls:IConstructor):any
+    if(target instanceof Function)
     {
         // 调用MediatorClass方法
-        cls = MediatorClass(cls);
-        // 监听类型实例化，转换皮肤格式
-        listenConstruct(cls, mediator=>wrapSkin(mediator, skin));
+        var cls = MediatorClass(target);
+        // 监听类型实例化，赋值表现层桥
+        listenConstruct(cls, mediator=>mediator.bridge = bridgeManager.getBridge(EgretBridge.TYPE));
         // 返回结果类型
         return cls;
-    } as ClassDecorator;
+    }
+    else
+    {
+        return function(cls:IConstructor):any
+        {
+            // 调用MediatorClass方法
+            cls = MediatorClass(cls);
+            // 监听类型实例化，转换皮肤格式
+            listenConstruct(cls, mediator=>wrapSkin(mediator, target));
+            // 返回结果类型
+            return cls;
+        } as ClassDecorator;
+    }
 }

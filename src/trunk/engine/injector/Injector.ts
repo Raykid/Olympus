@@ -64,8 +64,6 @@ export function MediatorClass(cls:IConstructor):IConstructor
                 $skin = value;
                 // 根据skin类型选取表现层桥
                 this.bridge = bridgeManager.getBridgeBySkin(value);
-                // 调用处理皮肤接口
-                this.bridge && this.bridge.handleSkin(this);
             }
         });
     });

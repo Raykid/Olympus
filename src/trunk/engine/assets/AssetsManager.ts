@@ -49,8 +49,21 @@ export default class AssetsManager
     }
 
     private _assetsDict:{[path:string]:any} = {};
+
     /**
-     * 获取资源，如果已加载过则直接返回，如果未加载则加载后返回
+     * 获取资源，同步的，且如果找不到资源并不会触发加载
+     * 
+     * @param {string} keyOrPath 资源的短名称或路径
+     * @returns {*} 
+     * @memberof AssetsManager
+     */
+    public getAssets(keyOrPath:string):any
+    {
+        return this._assetsDict[keyOrPath];
+    }
+
+    /**
+     * 加载资源，如果已加载过则同步回调，如果未加载则加载后异步回调
      * 
      * @param {string|string[]} keyOrPath 资源短名称或资源路径
      * @param {(assets?:any|any[])=>void} complete 完成回调，如果加载失败则参数是个Error对象
@@ -58,7 +71,7 @@ export default class AssetsManager
      * @returns {void} 
      * @memberof AssetsManager
      */
-    public getAssets(keyOrPath:string|string[], complete:(assets?:any|any[])=>void, responseType?:XMLHttpRequestResponseType):void
+    public loadAssets(keyOrPath:string|string[], complete:(assets?:any|any[])=>void, responseType?:XMLHttpRequestResponseType):void
     {
         // 非空判断
         if(!keyOrPath)
@@ -82,7 +95,7 @@ export default class AssetsManager
                 if(keyOrPath.length <= 0)
                     complete(results);
                 else
-                    this.getAssets(keyOrPath.shift(), onGetOne);
+                    this.loadAssets(keyOrPath.shift(), onGetOne);
             };
             getOne();
         }
