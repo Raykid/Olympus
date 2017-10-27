@@ -3439,7 +3439,7 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
     /** 再额外导出一个单例 */
     exports.assetsManager = Core_6.core.getInject(AssetsManager);
 });
-define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core", "engine/env/Environment", "engine/assets/AssetsManager"], function (require, exports, Injector_5, Core_7, Environment_2, AssetsManager_1) {
+define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core", "engine/env/Environment", "engine/assets/AssetsManager", "utils/ObjectUtil"], function (require, exports, Injector_5, Core_7, Environment_2, AssetsManager_1, ObjectUtil_5) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3581,10 +3581,13 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
                 // 如果当前有正在播放的音频，全部再播放一次
                 for (var url in _this._playingDict) {
                     var playingData = _this._playingDict[url];
-                    // 停止播放
-                    _this.audioStop(url);
-                    // 重新播放
-                    _this.audioPlay(url, playingData.params);
+                    // 如果不是跨域的则重新播一下
+                    if (!playingData.params.crossOrigin) {
+                        // 停止播放
+                        _this.audioStop(url);
+                        // 重新播放
+                        _this.audioPlay(url, playingData.params);
+                    }
                 }
             };
             window.addEventListener("touchstart", onInit);
@@ -3637,14 +3640,40 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             var data = this._audioDict[url];
             if (!data) {
                 // 没有加载过，开始加载音频
-                this.audioLoad(url);
-                // 设置自动播放
-                this._audioDict[url].autoPlay = true;
-                this._audioDict[url].autoPlayParams = params;
+                if (params && params.crossOrigin) {
+                    // 跨域默认停止其他声音
+                    for (var playingUrl in this._playingDict) {
+                        this.audioStop(playingUrl);
+                    }
+                    // 需要跨域加载，则使用Audio标签加载
+                    var audio = document.createElement("audio");
+                    audio.src = url;
+                    audio.loop = params.loop;
+                    audio.currentTime = params.time || 0;
+                    audio.autoplay = true;
+                    // 监听播放完毕事件
+                    var listener = this.onPlayEnded.bind(this, url);
+                    audio.addEventListener("ended", listener);
+                    // 记录正在播放的节点
+                    this._playingDict[url] = { node: audio, params: params, listener: listener };
+                    // 派发播放开始事件
+                    Core_7.core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, url);
+                }
+                else {
+                    // 不需要跨域，使用AudioContext加载
+                    this.audioLoad(url);
+                    // 设置自动播放
+                    this._audioDict[url].autoPlay = true;
+                    this._audioDict[url].autoPlayParams = params;
+                }
             }
             else if (!data.buffer) {
-                // 正在加载中，只设置自动播放
+                // AudioContext正在加载中，只设置自动播放
                 data.autoPlay = true;
+            }
+            else if (!data.node) {
+                // Audio标签，直接播放
+                data.node.play();
             }
             else {
                 // 是否停止其他声音
@@ -3691,7 +3720,10 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
                 return;
             // 关掉正在播放的音频
             try {
-                playingData.node.stop(when);
+                if (playingData.node instanceof AudioBufferSourceNode)
+                    playingData.node.stop(when);
+                else
+                    playingData.node.pause();
             }
             catch (err) { }
             delete this._playingDict[url];
@@ -3733,9 +3765,12 @@ define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "cor
             // 判断是否正在播放
             var playingData = this._playingDict[url];
             if (playingData) {
-                playingData.node.stop();
+                if (playingData.node instanceof AudioBufferSourceNode)
+                    playingData.node.stop();
+                else
+                    playingData.node.pause();
                 // 重新播放
-                this.audioPlay(url, { time: time });
+                this.audioPlay(url, ObjectUtil_5.extendObject({}, playingData.params, { time: time }));
             }
             else {
                 // 记录开启时间
@@ -4391,7 +4426,7 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
     /** 再额外导出一个单例 */
     exports.maskManager = Core_10.core.getInject(MaskManager);
 });
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage", "engine/mask/MaskManager"], function (require, exports, Core_11, Injector_9, CoreMessage_2, ObjectUtil_5, RequestData_1, NetMessage_1, MaskManager_4) {
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage", "engine/mask/MaskManager"], function (require, exports, Core_11, Injector_9, CoreMessage_2, ObjectUtil_6, RequestData_1, NetMessage_1, MaskManager_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NetManager = /** @class */ (function () {
@@ -4406,7 +4441,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 添加遮罩
                 MaskManager_4.maskManager.showLoading(null, "net");
                 // 指定消息参数连接上公共参数作为参数
-                ObjectUtil_5.extendObject(msg.__params.data, RequestData_1.commonData);
+                ObjectUtil_6.extendObject(msg.__params.data, RequestData_1.commonData);
                 // 发送消息
                 msg.__policy.sendRequest(msg);
                 // 派发系统消息
@@ -6359,7 +6394,7 @@ define("engine/version/Version", ["require", "exports", "core/Core", "core/injec
     /** 再额外导出一个单例 */
     exports.version = Core_21.core.getInject(Version);
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_2, Environment_4, NetManager_3, ObjectUtil_6) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_2, Environment_4, NetManager_3, ObjectUtil_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6383,7 +6418,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
             // 取到参数
             var params = request.__params;
             // 修改数据
-            var httpParams = ObjectUtil_6.extendObject({
+            var httpParams = ObjectUtil_7.extendObject({
                 url: Environment_4.environment.toHostURL(params.path, params.hostIndex),
                 onResponse: function (result) { return NetManager_3.netManager.__onResponse(request.__params.response.type, result, request); },
                 onError: function (err) { return NetManager_3.netManager.__onError(err, request); }

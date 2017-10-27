@@ -2261,12 +2261,21 @@ declare module "engine/env/Shell" {
          */
         loop?: boolean;
         /**
-         * 是否播放前关闭其他声音，默认为false
+         * 是否播放前关闭其他声音，默认为false，与crossOrigin无法同时为true
          *
          * @type {boolean}
          * @memberof AudioPlayParams
          */
         stopOthers?: boolean;
+        /**
+         * 是否支持跨域加载，默认为false。如果是true，则不会触发跨域检查，但是无法多播，
+         * 原理是如果仅仅是播放，而不读取音频的二进制数据就不会进行跨域检查，但是多播需要
+         * 将所有声道的二进制数据合并为一个，因此必定会触发跨域检查导致加载失败
+         *
+         * @type {boolean}
+         * @memberof AudioPlayParams
+         */
+        crossOrigin?: boolean;
     }
     /** 再额外导出一个单例 */
     export var shell: Shell;

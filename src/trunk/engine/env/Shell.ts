@@ -3,6 +3,7 @@ import { core } from "../../core/Core";
 import { environment } from "./Environment";
 import { system } from "../system/System";
 import { assetsManager } from "../assets/AssetsManager";
+import { extendObject } from "../../utils/ObjectUtil";
 
 /**
  * @author Raykid
@@ -179,10 +180,14 @@ export default class Shell
             for(var url in this._playingDict)
             {
                 var playingData:AudioPlayingData = this._playingDict[url];
-                // 停止播放
-                this.audioStop(url);
-                // 重新播放
-                this.audioPlay(url, playingData.params);
+                // 如果不是跨域的则重新播一下
+                if(!playingData.params.crossOrigin)
+                {
+                    // 停止播放
+                    this.audioStop(url);
+                    // 重新播放
+                    this.audioPlay(url, playingData.params);
+                }
             }
         };
         window.addEventListener("touchstart", onInit);
@@ -239,15 +244,45 @@ export default class Shell
         if(!data)
         {
             // 没有加载过，开始加载音频
-            this.audioLoad(url);
-            // 设置自动播放
-            this._audioDict[url].autoPlay = true;
-            this._audioDict[url].autoPlayParams = params;
+            if(params && params.crossOrigin)
+            {
+                // 跨域默认停止其他声音
+                for(var playingUrl in this._playingDict)
+                {
+                    this.audioStop(playingUrl);
+                }
+                // 需要跨域加载，则使用Audio标签加载
+                var audio:HTMLAudioElement = document.createElement("audio");
+                audio.src = url;
+                audio.loop = params.loop;
+                audio.currentTime = params.time || 0;
+                audio.autoplay = true;
+                // 监听播放完毕事件
+                var listener:(evt:MediaStreamErrorEvent)=>void = this.onPlayEnded.bind(this, url);
+                audio.addEventListener("ended", listener);
+                // 记录正在播放的节点
+                this._playingDict[url] = {node: audio, params: params, listener: listener};
+                // 派发播放开始事件
+                core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, url);
+            }
+            else
+            {
+                // 不需要跨域，使用AudioContext加载
+                this.audioLoad(url);
+                // 设置自动播放
+                this._audioDict[url].autoPlay = true;
+                this._audioDict[url].autoPlayParams = params;
+            }
         }
         else if(!data.buffer)
         {
-            // 正在加载中，只设置自动播放
+            // AudioContext正在加载中，只设置自动播放
             data.autoPlay = true;
+        }
+        else if(!data.node)
+        {
+            // Audio标签，直接播放
+            data.node.play();
         }
         else
         {
@@ -303,7 +338,10 @@ export default class Shell
         // 关掉正在播放的音频
         try
         {
-            playingData.node.stop(when);
+            if(playingData.node instanceof AudioBufferSourceNode)
+                playingData.node.stop(when);
+            else
+                playingData.node.pause();
         }
         catch(err) {}
         delete this._playingDict[url];
@@ -351,9 +389,12 @@ export default class Shell
         var playingData:AudioPlayingData = this._playingDict[url];
         if(playingData)
         {
-            playingData.node.stop();
+            if(playingData.node instanceof AudioBufferSourceNode)
+                playingData.node.stop();
+            else
+                playingData.node.pause();
             // 重新播放
-            this.audioPlay(url, {time: time});
+            this.audioPlay(url, extendObject({}, playingData.params, {time: time}));
         }
         else
         {
@@ -411,23 +452,39 @@ export interface AudioPlayParams
      */
     loop?:boolean;
     /**
-     * 是否播放前关闭其他声音，默认为false
+     * 是否播放前关闭其他声音，默认为false，与crossOrigin无法同时为true
      * 
      * @type {boolean}
      * @memberof AudioPlayParams
      */
     stopOthers?:boolean;
+    /**
+     * 是否支持跨域加载，默认为false。如果是true，则不会触发跨域检查，但是无法多播，
+     * 原理是如果仅仅是播放，而不读取音频的二进制数据就不会进行跨域检查，但是多播需要
+     * 将所有声道的二进制数据合并为一个，因此必定会触发跨域检查导致加载失败
+     * 
+     * @type {boolean}
+     * @memberof AudioPlayParams
+     */
+    crossOrigin?:boolean;
 }
 
 interface AudioData
 {
     /**
-     * 音频的缓存数据
+     * 音频的缓存数据，有此属性则表示crossOrigin一定为false
      * 
      * @type {AudioBuffer}
      * @memberof AudioData
      */
-    buffer:AudioBuffer;
+    buffer?:AudioBuffer;
+    /**
+     * 音频的HTML节点，有此属性则表示crossOrigin一定为true
+     * 
+     * @type {HTMLAudioElement}
+     * @memberof AudioData
+     */
+    node?:HTMLAudioElement;
     /**
      * 是否自动播放
      * 
@@ -456,10 +513,10 @@ interface AudioPlayingData
     /**
      * 正在播放的音频节点
      * 
-     * @type {AudioBufferSourceNode}
+     * @type {AudioBufferSourceNode|HTMLAudioElement}
      * @memberof AudioPlayingData
      */
-    node:AudioBufferSourceNode;
+    node:AudioBufferSourceNode|HTMLAudioElement;
     /**
      * 播放参数
      * 
