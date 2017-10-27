@@ -84,6 +84,8 @@ export function wrapHost(url:string, host:string, forced:boolean = false):string
     {
         url = host + "/" + url;
     }
+    // 合法化一下protocol
+    url = validateProtocol(url);
     // 最后规整一下url
     url = trimURL(url);
     return url;

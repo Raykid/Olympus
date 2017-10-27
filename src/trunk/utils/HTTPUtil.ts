@@ -1,5 +1,5 @@
 import { environment } from "../engine/env/Environment";
-import { validateProtocol, joinQueryParams } from "./URLUtil";
+import { validateProtocol, joinQueryParams, trimURL } from "./URLUtil";
 import { cloneObject } from "./ObjectUtil";
 
 /**
@@ -135,10 +135,18 @@ export function load(params:IHTTPRequestParams):void
     var data:any = params.data || {};
     // 取到url
     var url:string = params.url;
-    // 如果使用CDN则改用cdn域名
-    if(params.useCDN) url = environment.toCDNHostURL(url);
-    // 合法化一下protocol
-    url = validateProtocol(url);
+    if(params.useCDN)
+    {
+        // 如果使用CDN则改用cdn域名
+        url = environment.toCDNHostURL(url);
+    }
+    else
+    {
+        // 合法化一下protocol
+        url = validateProtocol(url);
+        // 规整一下url
+        url = trimURL(url);
+    }
     // 生成并初始化xhr
     var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
     if(params.responseType) xhr.responseType = params.responseType;

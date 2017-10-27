@@ -2862,6 +2862,8 @@ define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (re
         else {
             url = host + "/" + url;
         }
+        // 合法化一下protocol
+        url = validateProtocol(url);
         // 最后规整一下url
         url = trimURL(url);
         return url;
@@ -3156,10 +3158,6 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
             if (index === void 0) { index = 0; }
             // 加上domain
             url = URLUtil_1.wrapHost(url, this.getHost(index));
-            // 统一protocol
-            url = URLUtil_1.validateProtocol(url);
-            // 规整一下
-            url = URLUtil_1.trimURL(url);
             // 返回url
             return url;
         };
@@ -3233,11 +3231,16 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
         var data = params.data || {};
         // 取到url
         var url = params.url;
-        // 如果使用CDN则改用cdn域名
-        if (params.useCDN)
+        if (params.useCDN) {
+            // 如果使用CDN则改用cdn域名
             url = Environment_1.environment.toCDNHostURL(url);
-        // 合法化一下protocol
-        url = URLUtil_2.validateProtocol(url);
+        }
+        else {
+            // 合法化一下protocol
+            url = URLUtil_2.validateProtocol(url);
+            // 规整一下url
+            url = URLUtil_2.trimURL(url);
+        }
         // 生成并初始化xhr
         var xhr = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
         if (params.responseType)

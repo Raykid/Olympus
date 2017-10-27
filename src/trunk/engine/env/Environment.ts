@@ -1,6 +1,6 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
-import { wrapHost, validateProtocol, trimURL, wrapAbsolutePath } from "../../utils/URLUtil";
+import { wrapHost } from "../../utils/URLUtil";
 
 /**
  * @author Raykid
@@ -126,10 +126,6 @@ export default class Environment
     {
         // 加上domain
         url = wrapHost(url, this.getHost(index));
-        // 统一protocol
-        url = validateProtocol(url);
-        // 规整一下
-        url = trimURL(url);
         // 返回url
         return url;
     }
