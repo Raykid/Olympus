@@ -279,11 +279,6 @@ export default class Shell
             // AudioContext正在加载中，只设置自动播放
             data.autoPlay = true;
         }
-        else if(!data.node)
-        {
-            // Audio标签，直接播放
-            data.node.play();
-        }
         else
         {
             // 是否停止其他声音
