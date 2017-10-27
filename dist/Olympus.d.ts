@@ -1851,7 +1851,7 @@ declare module "engine/env/Environment" {
      * 环境参数
     */
     export default class Environment {
-        private _env;
+        protected _env: string;
         /**
          * 获取当前环境字符串
          *
@@ -1862,6 +1862,16 @@ declare module "engine/env/Environment" {
         readonly env: string;
         private _hostsDict;
         /**
+         * 获取域名字典
+         *
+         * @readonly
+         * @type {{[env:string]:string[]}}
+         * @memberof Environment
+         */
+        readonly hostsDict: {
+            [env: string]: string[];
+        };
+        /**
          * 获取当前环境下某索引处的消息域名
          *
          * @param {number} [index=0] 域名字典索引，默认是0
@@ -1870,6 +1880,16 @@ declare module "engine/env/Environment" {
          */
         getHost(index?: number): string;
         private _cdnsDict;
+        /**
+         * 获取CDN字典
+         *
+         * @readonly
+         * @type {{[env:string]:string[]}}
+         * @memberof Environment
+         */
+        readonly cdnsDict: {
+            [env: string]: string[];
+        };
         private _curCDNIndex;
         /**
          * 获取当前使用的CDN域名

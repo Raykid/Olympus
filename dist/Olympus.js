@@ -3054,6 +3054,20 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Environment.prototype, "hostsDict", {
+            /**
+             * 获取域名字典
+             *
+             * @readonly
+             * @type {{[env:string]:string[]}}
+             * @memberof Environment
+             */
+            get: function () {
+                return this._hostsDict;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 获取当前环境下某索引处的消息域名
          *
@@ -3068,6 +3082,20 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
                 return window.location.origin;
             return (hosts[index] || window.location.origin);
         };
+        Object.defineProperty(Environment.prototype, "cdnsDict", {
+            /**
+             * 获取CDN字典
+             *
+             * @readonly
+             * @type {{[env:string]:string[]}}
+             * @memberof Environment
+             */
+            get: function () {
+                return this._cdnsDict;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Environment.prototype, "curCDNHost", {
             /**
              * 获取当前使用的CDN域名

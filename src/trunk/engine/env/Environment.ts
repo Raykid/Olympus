@@ -13,7 +13,7 @@ import { wrapHost, validateProtocol, trimURL, wrapAbsolutePath } from "../../uti
 @Injectable
 export default class Environment
 {
-    private _env:string;
+    protected _env:string;
     /**
      * 获取当前环境字符串
      * 
@@ -27,6 +27,18 @@ export default class Environment
     }
 
     private _hostsDict:{[env:string]:string[]};
+    /**
+     * 获取域名字典
+     * 
+     * @readonly
+     * @type {{[env:string]:string[]}}
+     * @memberof Environment
+     */
+    public get hostsDict():{[env:string]:string[]}
+    {
+        return this._hostsDict;
+    }
+
     /**
      * 获取当前环境下某索引处的消息域名
      * 
@@ -42,6 +54,17 @@ export default class Environment
     }
 
     private _cdnsDict:{[env:string]:string[]};
+    /**
+     * 获取CDN字典
+     * 
+     * @readonly
+     * @type {{[env:string]:string[]}}
+     * @memberof Environment
+     */
+    public get cdnsDict():{[env:string]:string[]}
+    {
+        return this._cdnsDict;
+    }
     private _curCDNIndex:number;
     /**
      * 获取当前使用的CDN域名
