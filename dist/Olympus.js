@@ -3240,7 +3240,8 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
         url = URLUtil_2.validateProtocol(url);
         // 生成并初始化xhr
         var xhr = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
-        xhr.responseType = params.responseType;
+        if (params.responseType)
+            xhr.responseType = params.responseType;
         xhr.onreadystatechange = onReadyStateChange;
         // 发送
         send();

@@ -141,7 +141,7 @@ export function load(params:IHTTPRequestParams):void
     url = validateProtocol(url);
     // 生成并初始化xhr
     var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
-    xhr.responseType = params.responseType;
+    if(params.responseType) xhr.responseType = params.responseType;
     xhr.onreadystatechange = onReadyStateChange;
     // 发送
     send();
