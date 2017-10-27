@@ -6454,19 +6454,29 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
          * @memberof Engine
          */
         Engine.prototype.initialize = function (params) {
-            var _this = this;
-            this._initParams = params;
-            // 加载页
-            this._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
-            // 初始化环境参数
-            Environment_5.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
-            // 初始化版本号管理器
-            Version_1.version.initialize(function () {
-                // 监听Bridge初始化完毕事件，显示第一个模块
-                Core_22.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, _this.onAllBridgesInit, _this);
-                // 注册并初始化表现层桥实例
-                BridgeManager_4.bridgeManager.registerBridge.apply(BridgeManager_4.bridgeManager, params.bridges);
-            });
+            var self = this;
+            if (document.readyState == "loading")
+                document.addEventListener("readystatechange", doInitialize);
+            else
+                doInitialize();
+            function doInitialize() {
+                // 移除事件
+                if (this == document)
+                    document.removeEventListener("readystatechange", doInitialize);
+                // 要判断document是否初始化完毕
+                self._initParams = params;
+                // 加载页
+                self._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
+                // 初始化环境参数
+                Environment_5.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
+                // 初始化版本号管理器
+                Version_1.version.initialize(function () {
+                    // 监听Bridge初始化完毕事件，显示第一个模块
+                    Core_22.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
+                    // 注册并初始化表现层桥实例
+                    BridgeManager_4.bridgeManager.registerBridge.apply(BridgeManager_4.bridgeManager, params.bridges);
+                });
+            }
         };
         Engine.prototype.onAllBridgesInit = function () {
             // 注销监听

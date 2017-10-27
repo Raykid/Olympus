@@ -52,18 +52,28 @@ export default class Engine
      */
     public initialize(params:IInitParams):void
     {
-        this._initParams = params;
-        // 加载页
-        this._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
-        // 初始化环境参数
-        environment.initialize(params.env, params.hostsDict, params.cdnsDict);
-        // 初始化版本号管理器
-        version.initialize(()=>{
-            // 监听Bridge初始化完毕事件，显示第一个模块
-            core.listen(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
-            // 注册并初始化表现层桥实例
-            bridgeManager.registerBridge(...params.bridges);
-        });
+        var self:Engine = this;
+        if(document.readyState == "loading") document.addEventListener("readystatechange", doInitialize);
+        else doInitialize();
+
+        function doInitialize():void
+        {
+            // 移除事件
+            if(this == document) document.removeEventListener("readystatechange", doInitialize);
+            // 要判断document是否初始化完毕
+            self._initParams = params;
+            // 加载页
+            self._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
+            // 初始化环境参数
+            environment.initialize(params.env, params.hostsDict, params.cdnsDict);
+            // 初始化版本号管理器
+            version.initialize(()=>{
+                // 监听Bridge初始化完毕事件，显示第一个模块
+                core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
+                // 注册并初始化表现层桥实例
+                bridgeManager.registerBridge(...params.bridges);
+            });
+        }
     }
 
     private onAllBridgesInit():void
