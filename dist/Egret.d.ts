@@ -182,7 +182,7 @@ declare module "egret/mask/MaskEntity" {
         private _modalPanelAlpha;
         private _showingMask;
         private _mask;
-        private _skin;
+        private _loadingSkin;
         private _showingLoading;
         private _loadingMask;
         private _modalPanelDict;
@@ -220,7 +220,7 @@ declare module "egret/mask/MaskEntity" {
         maskAlpha?: number;
         loadingAlpha?: number;
         modalPanelAlpha?: number;
-        skin?: egret.DisplayObject;
+        loadingSkin?: egret.DisplayObject;
     }
 }
 declare module "EgretBridge" {

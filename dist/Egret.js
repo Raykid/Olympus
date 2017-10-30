@@ -66210,7 +66210,7 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
                 this._maskAlpha = (params.maskAlpha != null ? params.maskAlpha : 0.5);
                 this._loadingAlpha = (params.loadingAlpha != null ? params.loadingAlpha : 0.5);
                 this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
-                this._skin = params.skin;
+                this._loadingSkin = params.loadingSkin;
             }
             this._mask = new egret.Shape();
             this._mask.touchEnabled = true;
@@ -66273,8 +66273,8 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
             this._loadingMask.graphics.endFill();
             // 添加显示
             bridge.maskLayer.addChild(this._loadingMask);
-            if (this._skin != null)
-                bridge.maskLayer.addChild(this._skin);
+            if (this._loadingSkin != null)
+                bridge.maskLayer.addChild(this._loadingSkin);
         };
         /**
          * 隐藏加载图
@@ -66286,8 +66286,8 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
             // 隐藏
             if (this._loadingMask.parent != null)
                 this._loadingMask.parent.removeChild(this._loadingMask);
-            if (this._skin != null && this._skin.parent != null)
-                this._skin.parent.removeChild(this._skin);
+            if (this._loadingSkin != null && this._loadingSkin.parent != null)
+                this._loadingSkin.parent.removeChild(this._loadingSkin);
         };
         /**当前是否在显示loading*/
         MaskEntityImpl.prototype.isShowingLoading = function () {

@@ -11,9 +11,9 @@ declare module "dom/mask/MaskEntity" {
      * DOM遮罩实现
     */
     export default class MaskEntityImpl implements IMaskEntity {
-        private _skin;
+        private _loadingSkin;
         private _showing;
-        constructor(skin?: HTMLElement | string);
+        constructor(loadingSkin?: HTMLElement | string);
         /**
          * 显示遮罩
          */
