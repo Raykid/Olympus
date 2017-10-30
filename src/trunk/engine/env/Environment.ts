@@ -135,15 +135,24 @@ export default class Environment
      * 
      * @param {string} url 要转变的url
      * @param {boolean} [forced=false] 是否强制替换host
+     * @param {boolean} [infix=true] 是否加入路径中缀，即host之后，index.html之前的部分，默认加入
      * @returns {string} 转变后的url
      * @memberof Environment
      */
-    public toCDNHostURL(url:string, forced:boolean=false):string
+    public toCDNHostURL(url:string, forced:boolean=false, infix:boolean=true):string
     {
-        // 组织中缀
-        var midnameIndex:number = window.location.pathname.lastIndexOf("/");
-        var midname:string = window.location.pathname.substring(0, midnameIndex + 1);
-        return wrapHost(url, this.curCDNHost + "/" + midname, forced);
+        if(infix)
+        {
+            // 组织中缀
+            var midnameIndex:number = window.location.pathname.lastIndexOf("/");
+            var midname:string = window.location.pathname.substring(0, midnameIndex + 1);
+            return wrapHost(url, this.curCDNHost + "/" + midname, forced);
+        }
+        else
+        {
+            // 只替换域名
+            return wrapHost(url, this.curCDNHost, forced);
+        }
     }
 }
 /** 再额外导出一个单例 */

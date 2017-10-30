@@ -3166,15 +3166,23 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
          *
          * @param {string} url 要转变的url
          * @param {boolean} [forced=false] 是否强制替换host
+         * @param {boolean} [infix=true] 是否加入路径中缀，即host之后，index.html之前的部分，默认加入
          * @returns {string} 转变后的url
          * @memberof Environment
          */
-        Environment.prototype.toCDNHostURL = function (url, forced) {
+        Environment.prototype.toCDNHostURL = function (url, forced, infix) {
             if (forced === void 0) { forced = false; }
-            // 组织中缀
-            var midnameIndex = window.location.pathname.lastIndexOf("/");
-            var midname = window.location.pathname.substring(0, midnameIndex + 1);
-            return URLUtil_1.wrapHost(url, this.curCDNHost + "/" + midname, forced);
+            if (infix === void 0) { infix = true; }
+            if (infix) {
+                // 组织中缀
+                var midnameIndex = window.location.pathname.lastIndexOf("/");
+                var midname = window.location.pathname.substring(0, midnameIndex + 1);
+                return URLUtil_1.wrapHost(url, this.curCDNHost + "/" + midname, forced);
+            }
+            else {
+                // 只替换域名
+                return URLUtil_1.wrapHost(url, this.curCDNHost, forced);
+            }
         };
         Environment = __decorate([
             Injector_3.Injectable

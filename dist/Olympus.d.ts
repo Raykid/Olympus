@@ -1933,10 +1933,11 @@ declare module "engine/env/Environment" {
          *
          * @param {string} url 要转变的url
          * @param {boolean} [forced=false] 是否强制替换host
+         * @param {boolean} [infix=true] 是否加入路径中缀，即host之后，index.html之前的部分，默认加入
          * @returns {string} 转变后的url
          * @memberof Environment
          */
-        toCDNHostURL(url: string, forced?: boolean): string;
+        toCDNHostURL(url: string, forced?: boolean, infix?: boolean): string;
     }
     /** 再额外导出一个单例 */
     export const environment: Environment;
