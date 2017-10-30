@@ -14,18 +14,18 @@ import DOMBridge from "../../DOMBridge";
 */
 export default class MaskEntityImpl implements IMaskEntity
 {
-    private _skin:HTMLElement;
+    private _loadingSkin:HTMLElement;
     private _showing:boolean = false;
 
-    public constructor(skin?:HTMLElement|string)
+    public constructor(loadingSkin?:HTMLElement|string)
     {
-        if(typeof skin == "string")
+        if(typeof loadingSkin == "string")
         {
             var temp:HTMLElement = document.createElement("div");
-            temp.innerHTML = skin;
-            skin = temp.children.item(0) as HTMLElement;
+            temp.innerHTML = loadingSkin;
+            loadingSkin = temp;
         }
-        this._skin = skin;
+        this._loadingSkin = loadingSkin;
     }
 
     /**
@@ -56,11 +56,11 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public showLoading(alpha?:number):void
     {
-        if(this._skin == null || this._showing) return;
+        if(this._loadingSkin == null || this._showing) return;
         this._showing = true;
         // 显示
         var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
-        bridge.maskLayer.addChild(this._skin);
+        bridge.maskLayer.addChild(this._loadingSkin);
     }
 
     /**
@@ -68,11 +68,11 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public hideLoading():void
     {
-        if(this._skin == null || !this._showing) return;
+        if(this._loadingSkin == null || !this._showing) return;
         this._showing = false;
         // 隐藏
         var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
-        bridge.removeChild(this._skin.parentElement, this._skin);
+        bridge.removeChild(this._loadingSkin.parentElement, this._loadingSkin);
     }
 
     /**当前是否在显示loading*/

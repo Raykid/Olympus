@@ -22,7 +22,7 @@ export default class MaskEntityImpl implements IMaskEntity
     private _showingMask:boolean = false;
     private _mask:egret.Shape;
 
-    private _skin:egret.DisplayObject;
+    private _loadingSkin:egret.DisplayObject;
     private _showingLoading:boolean = false;
     private _loadingMask:egret.Shape;
 
@@ -37,7 +37,7 @@ export default class MaskEntityImpl implements IMaskEntity
             this._maskAlpha = (params.maskAlpha != null ? params.maskAlpha : 0.5);
             this._loadingAlpha = (params.loadingAlpha != null ? params.loadingAlpha : 0.5);
             this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
-            this._skin = params.skin;
+            this._loadingSkin = params.loadingSkin;
         }
 
         this._mask = new egret.Shape();
@@ -105,7 +105,7 @@ export default class MaskEntityImpl implements IMaskEntity
         this._loadingMask.graphics.endFill();
         // 添加显示
         bridge.maskLayer.addChild(this._loadingMask);
-        if(this._skin != null) bridge.maskLayer.addChild(this._skin);
+        if(this._loadingSkin != null) bridge.maskLayer.addChild(this._loadingSkin);
     }
 
     /**
@@ -117,7 +117,7 @@ export default class MaskEntityImpl implements IMaskEntity
         this._showingLoading = false;
         // 隐藏
         if(this._loadingMask.parent != null) this._loadingMask.parent.removeChild(this._loadingMask);
-        if(this._skin != null && this._skin.parent != null) this._skin.parent.removeChild(this._skin);
+        if(this._loadingSkin != null && this._loadingSkin.parent != null) this._loadingSkin.parent.removeChild(this._loadingSkin);
     }
 
     /**当前是否在显示loading*/
@@ -193,5 +193,5 @@ export interface MaskData
     maskAlpha?:number,
     loadingAlpha?:number,
     modalPanelAlpha?:number,
-    skin?:egret.DisplayObject
+    loadingSkin?:egret.DisplayObject
 }
