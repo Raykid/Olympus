@@ -5730,6 +5730,7 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
         AudioTagImpl.prototype._doStop = function (url, time) {
             var data = this._audioCache[url];
             if (data) {
+                data.node.autoplay = false;
                 data.node.pause();
                 // 设置停止时间
                 if (time != null)
@@ -6059,6 +6060,11 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.playSound = function (params) {
+            // 停止其他音频
+            if (params.stopOthers) {
+                this.stopAllSound();
+                this.stopAllMusics();
+            }
             params.url = Environment_3.environment.toCDNHostURL(params.url);
             this._soundImpl.play(params);
         };
@@ -6081,6 +6087,14 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
         AudioManager.prototype.pauseSound = function (url) {
             url = Environment_3.environment.toCDNHostURL(url);
             this._soundImpl.pause(url);
+        };
+        /**
+         * 停止所有Sound音频
+         *
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.stopAllSound = function () {
+            this._soundImpl.stopAll();
         };
         /**
          * 注册Music音频实现对象
@@ -6108,6 +6122,11 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.playMusic = function (params) {
+            // 停止其他音频
+            if (params.stopOthers) {
+                this.stopAllSound();
+                this.stopAllMusics();
+            }
             params.url = Environment_3.environment.toCDNHostURL(params.url);
             this._musicImpl.play(params);
         };
@@ -6130,6 +6149,14 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
         AudioManager.prototype.pauseMusic = function (url) {
             url = Environment_3.environment.toCDNHostURL(url);
             this._musicImpl.pause(url);
+        };
+        /**
+         * 停止所有Music音频
+         *
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.stopAllMusics = function () {
+            this._musicImpl.stopAll();
         };
         AudioManager = __decorate([
             Injector_13.Injectable

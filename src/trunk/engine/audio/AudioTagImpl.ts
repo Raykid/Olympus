@@ -96,6 +96,7 @@ export default class AudioTagImpl implements IAudio
         var data:AudioData = this._audioCache[url];
         if(data)
         {
+            data.node.autoplay = false;
             data.node.pause();
             // 设置停止时间
             if(time != null) data.node.currentTime = time * 0.001;

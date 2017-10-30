@@ -51,6 +51,12 @@ export default class AudioManager
      */
     public playSound(params:AudioPlayParams):void
     {
+        // 停止其他音频
+        if(params.stopOthers)
+        {
+            this.stopAllSound();
+            this.stopAllMusics();
+        }
         params.url = environment.toCDNHostURL(params.url);
         this._soundImpl.play(params);
     }
@@ -77,6 +83,16 @@ export default class AudioManager
     {
         url = environment.toCDNHostURL(url);
         this._soundImpl.pause(url);
+    }
+
+    /**
+     * 停止所有Sound音频
+     * 
+     * @memberof AudioManager
+     */
+    public stopAllSound():void
+    {
+        this._soundImpl.stopAll();
     }
 
     private _musicImpl:IAudio = new AudioContextImpl();
@@ -111,6 +127,12 @@ export default class AudioManager
      */
     public playMusic(params:AudioPlayParams):void
     {
+        // 停止其他音频
+        if(params.stopOthers)
+        {
+            this.stopAllSound();
+            this.stopAllMusics();
+        }
         params.url = environment.toCDNHostURL(params.url);
         this._musicImpl.play(params);
     }
@@ -137,6 +159,16 @@ export default class AudioManager
     {
         url = environment.toCDNHostURL(url);
         this._musicImpl.pause(url);
+    }
+
+    /**
+     * 停止所有Music音频
+     * 
+     * @memberof AudioManager
+     */
+    public stopAllMusics():void
+    {
+        this._musicImpl.stopAll();
     }
 }
 /** 再额外导出一个单例 */

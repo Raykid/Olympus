@@ -3480,6 +3480,12 @@ declare module "engine/audio/AudioManager" {
          * @memberof AudioManager
          */
         pauseSound(url: string): void;
+        /**
+         * 停止所有Sound音频
+         *
+         * @memberof AudioManager
+         */
+        stopAllSound(): void;
         private _musicImpl;
         /**
          * 注册Music音频实现对象
@@ -3516,6 +3522,12 @@ declare module "engine/audio/AudioManager" {
          * @memberof AudioManager
          */
         pauseMusic(url: string): void;
+        /**
+         * 停止所有Music音频
+         *
+         * @memberof AudioManager
+         */
+        stopAllMusics(): void;
     }
     /** 再额外导出一个单例 */
     export const audioManager: AudioManager;
