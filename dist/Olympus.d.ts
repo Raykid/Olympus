@@ -3235,6 +3235,14 @@ declare module "engine/audio/IAudio" {
          * @memberof IAudio
          */
         stopAll(): void;
+        /**
+         * 跳转音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof IAudio
+         */
+        seek(url: string, time: number): void;
     }
     export interface AudioPlayParams {
         /**
