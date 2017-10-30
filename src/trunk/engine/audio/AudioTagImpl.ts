@@ -1,5 +1,4 @@
 import IAudio, { AudioPlayParams } from "./IAudio";
-import { environment } from "../env/Environment";
 import { core } from "../../core/Core";
 import AudioMessage from "./AudioMessage";
 
@@ -22,8 +21,6 @@ export default class AudioTagImpl implements IAudio
      */
     public load(url:string):void
     {
-        // 调整为CDN地址
-        url = environment.toCDNHostURL(url);
         // 尝试获取缓存数据
         var data:AudioData = this._audioCache[url];
         // 如果没有缓存才去加载
@@ -35,7 +32,7 @@ export default class AudioTagImpl implements IAudio
             // 保存数据
             this._audioCache[url] = data = {node: node, status: AudioStatus.LOADING, playParams: null};
             // 监听加载
-            node.onload = ()=>{
+            node.onloadeddata = ()=>{
                 // 记录加载完毕
                 data.status = AudioStatus.PAUSED;
                 // 如果自动播放则播放

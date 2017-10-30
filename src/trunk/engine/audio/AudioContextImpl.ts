@@ -148,13 +148,17 @@ export default class AudioContextImpl implements IAudio
     private _doStop(url:string, time?:number):void
     {
         var data:AudioData = this._audioCache[url];
-        if(data && data.node)
+        if(data)
         {
-            data.node.stop(time);
             // 设置状态
             data.status = AudioStatus.PAUSED;
-            // 派发播放停止事件
-            core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
+            // 结束播放
+            if(data.node)
+            {
+                data.node.stop(time);
+                // 派发播放停止事件
+                core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
+            }
         }
     }
     

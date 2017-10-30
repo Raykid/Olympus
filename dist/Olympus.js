@@ -5629,7 +5629,7 @@ define("engine/audio/AudioMessage", ["require", "exports"], function (require, e
     }());
     exports.default = AudioMessage;
 });
-define("engine/audio/AudioTagImpl", ["require", "exports", "engine/env/Environment", "core/Core", "engine/audio/AudioMessage"], function (require, exports, Environment_3, Core_17, AudioMessage_1) {
+define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/audio/AudioMessage"], function (require, exports, Core_17, AudioMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5652,8 +5652,6 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "engine/env/Environme
          */
         AudioTagImpl.prototype.load = function (url) {
             var _this = this;
-            // 调整为CDN地址
-            url = Environment_3.environment.toCDNHostURL(url);
             // 尝试获取缓存数据
             var data = this._audioCache[url];
             // 如果没有缓存才去加载
@@ -5664,7 +5662,7 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "engine/env/Environme
                 // 保存数据
                 this._audioCache[url] = data = { node: node, status: AudioStatus.LOADING, playParams: null };
                 // 监听加载
-                node.onload = function () {
+                node.onloadeddata = function () {
                     // 记录加载完毕
                     data.status = AudioStatus.PAUSED;
                     // 如果自动播放则播放
@@ -5929,12 +5927,15 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
         };
         AudioContextImpl.prototype._doStop = function (url, time) {
             var data = this._audioCache[url];
-            if (data && data.node) {
-                data.node.stop(time);
+            if (data) {
                 // 设置状态
                 data.status = AudioStatus.PAUSED;
-                // 派发播放停止事件
-                Core_18.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_STOPPED, url);
+                // 结束播放
+                if (data.node) {
+                    data.node.stop(time);
+                    // 派发播放停止事件
+                    Core_18.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_STOPPED, url);
+                }
             }
         };
         /**
@@ -6006,7 +6007,7 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
         AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
     })(AudioStatus || (AudioStatus = {}));
 });
-define("engine/audio/AudioManager", ["require", "exports", "core/injector/Injector", "core/Core", "engine/audio/AudioTagImpl", "engine/audio/AudioContextImpl"], function (require, exports, Injector_13, Core_19, AudioTagImpl_1, AudioContextImpl_1) {
+define("engine/audio/AudioManager", ["require", "exports", "core/injector/Injector", "core/Core", "engine/audio/AudioTagImpl", "engine/audio/AudioContextImpl", "engine/env/Environment"], function (require, exports, Injector_13, Core_19, AudioTagImpl_1, AudioContextImpl_1, Environment_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6040,6 +6041,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.loadSound = function (url) {
+            url = Environment_3.environment.toCDNHostURL(url);
             this._soundImpl.load(url);
         };
         /**
@@ -6049,6 +6051,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.playSound = function (params) {
+            params.url = Environment_3.environment.toCDNHostURL(params.url);
             this._soundImpl.play(params);
         };
         /**
@@ -6058,6 +6061,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.stopSound = function (url) {
+            url = Environment_3.environment.toCDNHostURL(url);
             this._soundImpl.stop(url);
         };
         /**
@@ -6067,6 +6071,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.pauseSound = function (url) {
+            url = Environment_3.environment.toCDNHostURL(url);
             this._soundImpl.pause(url);
         };
         /**
@@ -6085,6 +6090,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.loadMusic = function (url) {
+            url = Environment_3.environment.toCDNHostURL(url);
             this._musicImpl.load(url);
         };
         /**
@@ -6094,6 +6100,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.playMusic = function (params) {
+            params.url = Environment_3.environment.toCDNHostURL(params.url);
             this._musicImpl.play(params);
         };
         /**
@@ -6103,6 +6110,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.stopMusic = function (url) {
+            url = Environment_3.environment.toCDNHostURL(url);
             this._musicImpl.stop(url);
         };
         /**
@@ -6112,6 +6120,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.pauseMusic = function (url) {
+            url = Environment_3.environment.toCDNHostURL(url);
             this._musicImpl.pause(url);
         };
         AudioManager = __decorate([

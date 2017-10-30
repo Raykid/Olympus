@@ -4,6 +4,7 @@ import Shell from "../env/Shell";
 import IAudio, { AudioPlayParams } from "./IAudio";
 import AudioTagImpl from "./AudioTagImpl";
 import AudioContextImpl from "./AudioContextImpl";
+import { environment } from "../env/Environment";
 
 /**
  * @author Raykid
@@ -38,6 +39,7 @@ export default class AudioManager
      */
     public loadSound(url:string):void
     {
+        url = environment.toCDNHostURL(url);
         this._soundImpl.load(url);
     }
 
@@ -49,6 +51,7 @@ export default class AudioManager
      */
     public playSound(params:AudioPlayParams):void
     {
+        params.url = environment.toCDNHostURL(params.url);
         this._soundImpl.play(params);
     }
 
@@ -60,6 +63,7 @@ export default class AudioManager
      */
     public stopSound(url:string):void
     {
+        url = environment.toCDNHostURL(url);
         this._soundImpl.stop(url);
     }
 
@@ -71,6 +75,7 @@ export default class AudioManager
      */
     public pauseSound(url:string):void
     {
+        url = environment.toCDNHostURL(url);
         this._soundImpl.pause(url);
     }
 
@@ -94,6 +99,7 @@ export default class AudioManager
      */
     public loadMusic(url:string):void
     {
+        url = environment.toCDNHostURL(url);
         this._musicImpl.load(url);
     }
 
@@ -105,6 +111,7 @@ export default class AudioManager
      */
     public playMusic(params:AudioPlayParams):void
     {
+        params.url = environment.toCDNHostURL(params.url);
         this._musicImpl.play(params);
     }
 
@@ -116,6 +123,7 @@ export default class AudioManager
      */
     public stopMusic(url:string):void
     {
+        url = environment.toCDNHostURL(url);
         this._musicImpl.stop(url);
     }
 
@@ -127,6 +135,7 @@ export default class AudioManager
      */
     public pauseMusic(url:string):void
     {
+        url = environment.toCDNHostURL(url);
         this._musicImpl.pause(url);
     }
 }
