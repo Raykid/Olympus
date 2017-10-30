@@ -14,6 +14,7 @@ import ModuleManager, {moduleManager} from "./module/ModuleManager";
 import IModuleConstructor from "./module/IModuleConstructor";
 import Module from "./module/Module";
 import AssetsManager, { assetsManager } from "./assets/AssetsManager";
+import AudioManager from "./audio/AudioManager";
 import Environment, { environment } from "./env/Environment";
 import Explorer from "./env/Explorer";
 import WindowExternal from "./env/WindowExternal";
