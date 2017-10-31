@@ -11,7 +11,7 @@ import IMessage from "../message/IMessage";
 export default interface IDispatcher
 {
     /**
-     * 派发内核消息
+     * 派发消息
      * 
      * @param {IMessage} msg 内核消息实例
      * @memberof Core
@@ -19,7 +19,7 @@ export default interface IDispatcher
     dispatch(msg:IMessage):void;
     
     /**
-     * 派发内核消息，消息会转变为Message类型对象
+     * 派发消息，消息会转变为Message类型对象
      * 
      * @param {string} type 消息类型
      * @param {...any[]} params 消息参数列表

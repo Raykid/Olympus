@@ -1404,6 +1404,53 @@ define("core/message/IMessage", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
+define("core/command/Command", ["require", "exports", "core/Core"], function (require, exports, Core_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
+    */
+    var Command = /** @class */ (function () {
+        function Command(msg) {
+            this.msg = msg;
+        }
+        Command.prototype.dispatch = function (typeOrMsg) {
+            var params = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                params[_i - 1] = arguments[_i];
+            }
+            Core_1.core.dispatch.apply(Core_1.core, [typeOrMsg].concat(params));
+        };
+        return Command;
+    }());
+    exports.default = Command;
+});
+define("core/command/ICommandConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+/// <reference path="../../core/global/IConstructor.ts"/>
+define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/interfaces/IDispatcher", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/observable/IObservable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("core/message/Message", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1495,82 +1542,24 @@ define("core/message/CoreMessage", ["require", "exports"], function (require, ex
     }());
     exports.default = CoreMessage;
 });
-define("core/command/Command", ["require", "exports", "core/Core"], function (require, exports, Core_1) {
+define("core/observable/Observable", ["require", "exports", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, CommonMessage_1, CoreMessage_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
+     * @create date 2017-10-31
+     * @modify date 2017-10-31
      *
-     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
+     * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
     */
-    var Command = /** @class */ (function () {
-        function Command(msg) {
-            this.msg = msg;
-        }
-        Command.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            Core_1.core.dispatch.apply(Core_1.core, [typeOrMsg].concat(params));
-        };
-        return Command;
-    }());
-    exports.default = Command;
-});
-define("core/command/ICommandConstructor", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("core/interfaces/IDispatcher", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-/// <reference path="../libs/Reflect.d.ts"/>
-/// <reference path="./global/Patch.ts"/>
-define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/CommonMessage", "core/message/CoreMessage"], function (require, exports, Dictionary_1, CommonMessage_1, CoreMessage_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
-     *
-     * @export
-     * @class Core
-     */
-    var Core = /** @class */ (function () {
-        function Core() {
-            /**
-             * 记录已经注入过的对象单例
-             *
-             * @private
-             * @type {Dictionary<Function, any>}
-             * @memberof Core
-             */
-            this._injectDict = new Dictionary_1.default();
-            /**
-             * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
-             *
-             * @private
-             * @type {Dictionary<any, IConstructor>}
-             * @memberof Core
-             */
-            this._injectStrDict = new Dictionary_1.default();
-            /*********************** 下面是内核消息系统 ***********************/
+    var Observable = /** @class */ (function () {
+        function Observable() {
             this._listenerDict = {};
-            /*********************** 下面是内核命令系统 ***********************/
             this._commandDict = {};
-            // 进行单例判断
-            if (Core._instance)
-                throw new Error("已生成过Core实例，不允许多次生成");
-            // 赋值单例
-            Core._instance = this;
-            // 注入自身
-            this.mapInjectValue(this);
+            this._disposed = false;
         }
-        Core.prototype.handleMessages = function (msg) {
+        Observable.prototype.handleMessages = function (msg) {
             var listeners1 = this._listenerDict[msg.type];
             var listeners2 = this._listenerDict[msg.constructor.toString()];
             var listeners = (listeners1 && listeners2 ? listeners1.concat(listeners2) : listeners1 || listeners2);
@@ -1589,14 +1578,14 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
             }
             var _a;
         };
-        Core.prototype.doDispatch = function (msg) {
+        Observable.prototype.doDispatch = function (msg) {
             // 触发命令
             this.handleCommands(msg);
             // 触发用listen形式监听的消息
             this.handleMessages(msg);
         };
         /** dispatch方法实现 */
-        Core.prototype.dispatch = function (typeOrMsg) {
+        Observable.prototype.dispatch = function (typeOrMsg) {
             var params = [];
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
@@ -1618,9 +1607,9 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
          * @param {string} type 消息类型
          * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof Core
+         * @memberof Observable
          */
-        Core.prototype.listen = function (type, handler, thisArg) {
+        Observable.prototype.listen = function (type, handler, thisArg) {
             type = (typeof type == "string" ? type : type.toString());
             var listeners = this._listenerDict[type];
             if (!listeners)
@@ -1641,9 +1630,9 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
          * @param {string} type 消息类型
          * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof Core
+         * @memberof Observable
          */
-        Core.prototype.unlisten = function (type, handler, thisArg) {
+        Observable.prototype.unlisten = function (type, handler, thisArg) {
             type = (typeof type == "string" ? type : type.toString());
             var listeners = this._listenerDict[type];
             // 检查存在性
@@ -1658,7 +1647,156 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
                 }
             }
         };
-        /*********************** 下面是依赖注入系统 ***********************/
+        Observable.prototype.handleCommands = function (msg) {
+            var commands = this._commandDict[msg.type];
+            if (commands) {
+                commands = commands.concat();
+                for (var _i = 0, commands_1 = commands; _i < commands_1.length; _i++) {
+                    var cls = commands_1[_i];
+                    // 执行命令
+                    new cls(msg).exec();
+                }
+            }
+        };
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Observable
+         */
+        Observable.prototype.mapCommand = function (type, cmd) {
+            var commands = this._commandDict[type];
+            if (!commands)
+                this._commandDict[type] = commands = [];
+            if (commands.indexOf(cmd) < 0)
+                commands.push(cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Observable
+         */
+        Observable.prototype.unmapCommand = function (type, cmd) {
+            var commands = this._commandDict[type];
+            if (!commands)
+                return;
+            var index = commands.indexOf(cmd);
+            if (index < 0)
+                return;
+            commands.splice(index, 1);
+        };
+        Object.defineProperty(Observable.prototype, "disposed", {
+            /** 是否已经被销毁 */
+            get: function () {
+                return this._disposed;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /** 销毁 */
+        Observable.prototype.dispose = function () {
+            this._disposed = true;
+        };
+        return Observable;
+    }());
+    exports.default = Observable;
+});
+/// <reference path="../libs/Reflect.d.ts"/>
+/// <reference path="./global/Patch.ts"/>
+define("core/Core", ["require", "exports", "utils/Dictionary", "core/observable/Observable"], function (require, exports, Dictionary_1, Observable_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
+     *
+     * @export
+     * @class Core
+     */
+    var Core = /** @class */ (function () {
+        function Core() {
+            /*********************** 下面是内核消息系统 ***********************/
+            this._observable = new Observable_1.default();
+            /*********************** 下面是依赖注入系统 ***********************/
+            /**
+             * 记录已经注入过的对象单例
+             *
+             * @private
+             * @type {Dictionary<Function, any>}
+             * @memberof Core
+             */
+            this._injectDict = new Dictionary_1.default();
+            /**
+             * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
+             *
+             * @private
+             * @type {Dictionary<any, IConstructor>}
+             * @memberof Core
+             */
+            this._injectStrDict = new Dictionary_1.default();
+            // 进行单例判断
+            if (Core._instance)
+                throw new Error("已生成过Core实例，不允许多次生成");
+            // 赋值单例
+            Core._instance = this;
+            // 注入自身
+            this.mapInjectValue(this);
+        }
+        /** dispatch方法实现 */
+        Core.prototype.dispatch = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            this._observable.dispatch.apply(this._observable, params);
+        };
+        /**
+         * 监听内核消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Core
+         */
+        Core.prototype.listen = function (type, handler, thisArg) {
+            this._observable.listen(type, handler, thisArg);
+        };
+        /**
+         * 移除内核消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Core
+         */
+        Core.prototype.unlisten = function (type, handler, thisArg) {
+            this._observable.unlisten(type, handler, thisArg);
+        };
+        /*********************** 下面是内核命令系统 ***********************/
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Core
+         */
+        Core.prototype.mapCommand = function (type, cmd) {
+            this._observable.mapCommand(type, cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Core
+         */
+        Core.prototype.unmapCommand = function (type, cmd) {
+            this._observable.unmapCommand(type, cmd);
+        };
         /**
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
@@ -1715,58 +1853,11 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/message/Com
                 return Reflect.getMetadata("design:type", type);
             }
         };
-        Core.prototype.handleCommands = function (msg) {
-            var commands = this._commandDict[msg.type];
-            if (commands) {
-                commands = commands.concat();
-                for (var _i = 0, commands_1 = commands; _i < commands_1.length; _i++) {
-                    var cls = commands_1[_i];
-                    // 执行命令
-                    new cls(msg).exec();
-                }
-            }
-        };
-        /**
-         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
-         *
-         * @param {string} type 要注册的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof Core
-         */
-        Core.prototype.mapCommand = function (type, cmd) {
-            var commands = this._commandDict[type];
-            if (!commands)
-                this._commandDict[type] = commands = [];
-            if (commands.indexOf(cmd) < 0)
-                commands.push(cmd);
-        };
-        /**
-         * 注销命令
-         *
-         * @param {string} type 要注销的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器
-         * @returns {void}
-         * @memberof Core
-         */
-        Core.prototype.unmapCommand = function (type, cmd) {
-            var commands = this._commandDict[type];
-            if (!commands)
-                return;
-            var index = commands.indexOf(cmd);
-            if (index < 0)
-                return;
-            commands.splice(index, 1);
-        };
         return Core;
     }());
     exports.default = Core;
     /** 再额外导出一个单例 */
     exports.core = new Core();
-});
-/// <reference path="../../core/global/IConstructor.ts"/>
-define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_2) {
     "use strict";
@@ -2169,10 +2260,6 @@ define("engine/net/NetUtil", ["require", "exports"], function (require, exports)
         return result;
     }
     exports.parseMap = parseMap;
-});
-define("core/interfaces/IDisposable", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/panel/IPromptPanel", ["require", "exports"], function (require, exports) {
     "use strict";

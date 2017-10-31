@@ -128,6 +128,172 @@ declare module "core/message/IMessage" {
         readonly type: string;
     }
 }
+declare module "core/command/Command" {
+    import IMessage from "core/message/IMessage";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
+    */
+    export default abstract class Command {
+        /**
+         * 触发该Command运行的Message实例
+         *
+         * @type {IMessage}
+         * @memberof Command
+         */
+        msg: IMessage;
+        constructor(msg: IMessage);
+        /**
+         * 派发内核消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof Core
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发内核消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof Core
+         */
+        dispatch(type: string, ...params: any[]): void;
+        /**
+         * 子类必须实现该方法
+         *
+         * @abstract
+         * @memberof Command
+         */
+        abstract exec(): void;
+    }
+}
+declare module "core/command/ICommandConstructor" {
+    import IMessage from "core/message/IMessage";
+    import Command from "core/command/Command";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 内核命令接口
+    */
+    export default interface ICommandConstructor {
+        new (msg: IMessage): Command;
+    }
+}
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-18
+ * @modify date 2017-09-18
+ *
+ * 这个文件是给全局设置一个IConstructor接口而设计的
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+declare module "core/interfaces/IConstructor" {
+    export default IConstructor;
+}
+declare module "core/interfaces/IDispatcher" {
+    import IMessage from "core/message/IMessage";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * 具有派发系统消息的便捷接口
+    */
+    export default interface IDispatcher {
+        /**
+         * 派发消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof Core
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof Core
+         */
+        dispatch(type: string, ...params: any[]): void;
+    }
+}
+declare module "core/observable/IObservable" {
+    import IConstructor from "core/interfaces/IConstructor";
+    import IDispatcher from "core/interfaces/IDispatcher";
+    import ICommandConstructor from "core/command/ICommandConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-31
+     * @modify date 2017-10-31
+     *
+     * 可观察接口
+    */
+    export default interface IObservable extends IDispatcher {
+        /**
+         * 监听消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IObservable
+         */
+        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 移除消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IObservable
+         */
+        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof IObservable
+         */
+        mapCommand(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof IObservable
+         */
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
+    }
+}
+declare module "core/interfaces/IDisposable" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 可回收接口
+    */
+    export default interface IDisposable {
+        /** 是否已经被销毁 */
+        readonly disposed: boolean;
+        /** 销毁 */
+        dispose(): void;
+    }
+}
 declare module "core/message/Message" {
     import IMessage from "core/message/IMessage";
     /**
@@ -198,96 +364,95 @@ declare module "core/message/CoreMessage" {
         static MESSAGE_DISPATCHED: string;
     }
 }
-declare module "core/command/Command" {
+declare module "core/observable/Observable" {
+    import IDisposable from "core/interfaces/IDisposable";
     import IMessage from "core/message/IMessage";
+    import ICommandConstructor from "core/command/ICommandConstructor";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
+     * @create date 2017-10-31
+     * @modify date 2017-10-31
      *
-     * 内核命令类，内核命令在注册了消息后可以在消息派发时被执行
+     * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
     */
-    export default abstract class Command {
-        /**
-         * 触发该Command运行的Message实例
-         *
-         * @type {IMessage}
-         * @memberof Command
-         */
-        msg: IMessage;
-        constructor(msg: IMessage);
+    export default class Observable implements IObservable, IDisposable {
+        private _listenerDict;
+        private handleMessages(msg);
+        private doDispatch(msg);
         /**
          * 派发内核消息
          *
          * @param {IMessage} msg 内核消息实例
-         * @memberof Core
+         * @memberof Observable
          */
         dispatch(msg: IMessage): void;
         /**
-         * 派发内核消息，消息会转变为Message类型对象
+         * 派发内核消息，消息会转变为CommonMessage类型对象
          *
          * @param {string} type 消息类型
          * @param {...any[]} params 消息参数列表
-         * @memberof Core
+         * @memberof Observable
          */
         dispatch(type: string, ...params: any[]): void;
         /**
-         * 子类必须实现该方法
-         *
-         * @abstract
-         * @memberof Command
-         */
-        abstract exec(): void;
-    }
-}
-declare module "core/command/ICommandConstructor" {
-    import IMessage from "core/message/IMessage";
-    import Command from "core/command/Command";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 内核命令接口
-    */
-    export default interface ICommandConstructor {
-        new (msg: IMessage): Command;
-    }
-}
-declare module "core/interfaces/IDispatcher" {
-    import IMessage from "core/message/IMessage";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * 具有派发系统消息的便捷接口
-    */
-    export default interface IDispatcher {
-        /**
-         * 派发内核消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof Core
-         */
-        dispatch(msg: IMessage): void;
-        /**
-         * 派发内核消息，消息会转变为Message类型对象
+         * 监听内核消息
          *
          * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof Core
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Observable
          */
-        dispatch(type: string, ...params: any[]): void;
+        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 移除内核消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Observable
+         */
+        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        private _commandDict;
+        private handleCommands(msg);
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Observable
+         */
+        mapCommand(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Observable
+         */
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
+        private _disposed;
+        /** 是否已经被销毁 */
+        readonly disposed: boolean;
+        /** 销毁 */
+        dispose(): void;
     }
 }
 declare module "core/Core" {
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
-    import IDispatcher from "core/interfaces/IDispatcher";
+    import IObservable from "core/observable/IObservable";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-08-31
+     * @modify date 2017-09-01
+     *
+     * Core模组是Olympus框架的核心模组，负责实现框架内消息转发、对象注入等核心功能
+     * Core模组是一切其他模组实现的基础和围绕的核心
+    */
     export interface IInjectableParams {
         type: IConstructor | string;
     }
@@ -297,29 +462,11 @@ declare module "core/Core" {
      * @export
      * @class Core
      */
-    export default class Core implements IDispatcher {
+    export default class Core implements IObservable {
         private static _instance;
-        /**
-         * 记录已经注入过的对象单例
-         *
-         * @private
-         * @type {Dictionary<Function, any>}
-         * @memberof Core
-         */
-        private _injectDict;
-        /**
-         * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
-         *
-         * @private
-         * @type {Dictionary<any, IConstructor>}
-         * @memberof Core
-         */
-        private _injectStrDict;
         constructor();
         /*********************** 下面是内核消息系统 ***********************/
-        private _listenerDict;
-        private handleMessages(msg);
-        private doDispatch(msg);
+        private _observable;
         /**
          * 派发内核消息
          *
@@ -328,7 +475,7 @@ declare module "core/Core" {
          */
         dispatch(msg: IMessage): void;
         /**
-         * 派发内核消息，消息会转变为Message类型对象
+         * 派发内核消息，消息会转变为CommonMessage类型对象
          *
          * @param {string} type 消息类型
          * @param {...any[]} params 消息参数列表
@@ -353,7 +500,41 @@ declare module "core/Core" {
          * @memberof Core
          */
         unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /*********************** 下面是内核命令系统 ***********************/
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Core
+         */
+        mapCommand(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Core
+         */
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
         /*********************** 下面是依赖注入系统 ***********************/
+        /**
+         * 记录已经注入过的对象单例
+         *
+         * @private
+         * @type {Dictionary<Function, any>}
+         * @memberof Core
+         */
+        private _injectDict;
+        /**
+         * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
+         *
+         * @private
+         * @type {Dictionary<any, IConstructor>}
+         * @memberof Core
+         */
+        private _injectStrDict;
         /**
          * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
          *
@@ -385,43 +566,9 @@ declare module "core/Core" {
          * @memberof Core
          */
         getInject(type: any): any;
-        /*********************** 下面是内核命令系统 ***********************/
-        private _commandDict;
-        private handleCommands(msg);
-        /**
-         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
-         *
-         * @param {string} type 要注册的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof Core
-         */
-        mapCommand(type: string, cmd: ICommandConstructor): void;
-        /**
-         * 注销命令
-         *
-         * @param {string} type 要注销的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器
-         * @returns {void}
-         * @memberof Core
-         */
-        unmapCommand(type: string, cmd: ICommandConstructor): void;
     }
     /** 再额外导出一个单例 */
     export const core: Core;
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-18
- * @modify date 2017-09-18
- *
- * 这个文件是给全局设置一个IConstructor接口而设计的
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-declare module "core/interfaces/IConstructor" {
-    export default IConstructor;
 }
 declare module "utils/ConstructUtil" {
     import IConstructor from "core/interfaces/IConstructor";
@@ -723,22 +870,6 @@ declare module "engine/net/NetUtil" {
     };
     export interface DataTypeClass {
         new (): DataType;
-    }
-}
-declare module "core/interfaces/IDisposable" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 可回收接口
-    */
-    export default interface IDisposable {
-        /** 是否已经被销毁 */
-        readonly disposed: boolean;
-        /** 销毁 */
-        dispose(): void;
     }
 }
 declare module "engine/panel/IPromptPanel" {
