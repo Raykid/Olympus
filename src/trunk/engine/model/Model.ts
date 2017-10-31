@@ -1,6 +1,7 @@
 import { core } from "../../core/Core";
 import IMessage from "../../core/message/IMessage";
-import IDispatcher from "../../core/interfaces/IDispatcher";
+import IObservable from "../../core/observable/IObservable";
+import ICommandConstructor from "../../core/command/ICommandConstructor";
 
 /**
  * @author Raykid
@@ -10,13 +11,13 @@ import IDispatcher from "../../core/interfaces/IDispatcher";
  * 
  * Model的基类，也可以不继承该基类，因为Model是很随意的东西
 */
-export default abstract class Model implements IDispatcher
+export default abstract class Model implements IObservable
 {
     /**
      * 派发内核消息
      * 
      * @param {IMessage} msg 内核消息实例
-     * @memberof Core
+     * @memberof Model
      */
     public dispatch(msg:IMessage):void;
     /**
@@ -24,11 +25,62 @@ export default abstract class Model implements IDispatcher
      * 
      * @param {string} type 消息类型
      * @param {...any[]} params 消息参数列表
-     * @memberof Core
+     * @memberof Model
      */
     public dispatch(type:string, ...params:any[]):void;
-    public dispatch(typeOrMsg:any, ...params:any[]):void
+    public dispatch(...params:any[]):void
     {
-        core.dispatch(typeOrMsg, ...params);
+        core.dispatch.apply(core, params);
+    }
+
+    /**
+     * 监听内核消息
+     * 
+     * @param {string} type 消息类型
+     * @param {Function} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof Model
+     */
+    public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
+    {
+        core.listen(type, handler, thisArg);
+    }
+
+    /**
+     * 移除内核消息监听
+     * 
+     * @param {string} type 消息类型
+     * @param {Function} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof Model
+     */
+    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
+    {
+        core.unlisten(type, handler, thisArg);
+    }
+    
+    /**
+     * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+     * 
+     * @param {string} type 要注册的消息类型
+     * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+     * @memberof Model
+     */
+    public mapCommand(type:string, cmd:ICommandConstructor):void
+    {
+        core.mapCommand(type, cmd);
+    }
+
+    /**
+     * 注销命令
+     * 
+     * @param {string} type 要注销的消息类型
+     * @param {(ICommandConstructor)} cmd 命令处理器
+     * @returns {void} 
+     * @memberof Model
+     */
+    public unmapCommand(type:string, cmd:ICommandConstructor):void
+    {
+        core.unmapCommand(type, cmd);
     }
 }

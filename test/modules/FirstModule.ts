@@ -3,7 +3,7 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import { EgretMediatorClass } from "egret/injector/Injector";
 import { Inject, MessageHandler } from "core/injector/Injector";
-import { ResponseHandler, ModuleClass, DelegateMediator } from "engine/injector/Injector";
+import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler } from "engine/injector/Injector";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
 import SceneMediator from "engine/scene/SceneMediator";
@@ -75,5 +75,12 @@ export default class FirstModule extends Module
     public listJsFiles():string[]
     {
         return ["test1.js", "./test2.js"];
+    }
+    
+    @MessageHandler("fuck")
+    @ModuleMessageHandler("fuck")
+    private onFuck(a):void
+    {
+        console.log("message at FirstModule: " + a);
     }
 }

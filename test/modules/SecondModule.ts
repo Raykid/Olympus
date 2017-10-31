@@ -3,7 +3,8 @@ import ResponseData from "engine/net/ResponseData";
 import { moduleManager } from "engine/module/ModuleManager";
 import SceneMediator from "engine/scene/SceneMediator";
 import { EgretMediatorClass } from "egret/injector/Injector";
-import { ModuleClass, DelegateMediator } from "engine/injector/Injector";
+import { ModuleClass, DelegateMediator, ModuleMessageHandler } from "engine/injector/Injector";
+import { MessageHandler } from "core/injector/Injector";
 
 /**
  * @author Raykid
@@ -29,6 +30,10 @@ class SecondMediator extends SceneMediator
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
             moduleManager.close(SecondModule);
         });
+        // 测试系统消息
+        this.dispatch("fuck", 123);
+        // 测试模块消息
+        this.dispatchModule("fuck", 123);
     }
 }
 
@@ -37,4 +42,11 @@ export default class SecondModule extends Module
 {
     @DelegateMediator
     private _mediator:SecondMediator;
+    
+    @MessageHandler("fuck")
+    @ModuleMessageHandler("fuck")
+    private onFuck(a):void
+    {
+        console.log("message at SecondModule: " + a);
+    }
 }

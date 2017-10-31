@@ -1,6 +1,5 @@
 import IConstructor from "../interfaces/IConstructor";
 import IMessage from "../message/IMessage";
-import IDispatcher from "../interfaces/IDispatcher";
 import ICommandConstructor from "../command/ICommandConstructor";
 
 /**
@@ -11,8 +10,24 @@ import ICommandConstructor from "../command/ICommandConstructor";
  * 
  * 可观察接口
 */
-export default interface IObservable extends IDispatcher
+export default interface IObservable
 {
+    /**
+     * 派发消息
+     * 
+     * @param {IMessage} msg 内核消息实例
+     * @memberof IObservable
+     */
+    dispatch(msg:IMessage):void;
+    
+    /**
+     * 派发消息，消息会转变为Message类型对象
+     * 
+     * @param {string} type 消息类型
+     * @param {...any[]} params 消息参数列表
+     * @memberof IObservable
+     */
+    dispatch(type:string, ...params:any[]):void;
     /**
      * 监听消息
      * 

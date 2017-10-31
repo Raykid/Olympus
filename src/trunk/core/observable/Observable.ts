@@ -185,6 +185,12 @@ export default class Observable implements IObservable, IDisposable
     /** 销毁 */
     public dispose():void
     {
+        if(this._disposed) return;
+        // 清空所有消息监听
+        this._listenerDict = null;
+        // 清空所有命令
+        this._commandDict = null;
+        // 标记销毁
         this._disposed = true;
     }
 }

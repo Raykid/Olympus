@@ -200,37 +200,9 @@ interface IConstructor extends Function {
 declare module "core/interfaces/IConstructor" {
     export default IConstructor;
 }
-declare module "core/interfaces/IDispatcher" {
-    import IMessage from "core/message/IMessage";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * 具有派发系统消息的便捷接口
-    */
-    export default interface IDispatcher {
-        /**
-         * 派发消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof Core
-         */
-        dispatch(msg: IMessage): void;
-        /**
-         * 派发消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof Core
-         */
-        dispatch(type: string, ...params: any[]): void;
-    }
-}
 declare module "core/observable/IObservable" {
     import IConstructor from "core/interfaces/IConstructor";
-    import IDispatcher from "core/interfaces/IDispatcher";
+    import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
     /**
      * @author Raykid
@@ -240,7 +212,22 @@ declare module "core/observable/IObservable" {
      *
      * 可观察接口
     */
-    export default interface IObservable extends IDispatcher {
+    export default interface IObservable {
+        /**
+         * 派发消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof IObservable
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof IObservable
+         */
+        dispatch(type: string, ...params: any[]): void;
         /**
          * 监听消息
          *
@@ -500,7 +487,6 @@ declare module "core/Core" {
          * @memberof Core
          */
         unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
-        /*********************** 下面是内核命令系统 ***********************/
         /**
          * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
          *
@@ -1071,7 +1057,113 @@ declare module "engine/scene/IScenePolicy" {
         pop?(from: IScene, to: IScene, callback: () => void): void;
     }
 }
+declare module "engine/module/IModuleObservable" {
+    import IMessage from "core/message/IMessage";
+    import ICommandConstructor from "core/command/ICommandConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-31
+     * @modify date 2017-10-31
+     *
+     * 模块可观察接口
+    */
+    export default interface IModuleObservable {
+        /**
+         * 监听消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        listenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 移除消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        unlistenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof IModuleObservable
+         */
+        mapCommandModule(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof IModuleObservable
+         */
+        unmapCommandModule(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 派发消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof IModuleObservable
+         */
+        dispatchModule(msg: IMessage): void;
+        /**
+         * 派发消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof IModuleObservable
+         */
+        dispatchModule(type: string, ...params: any[]): void;
+    }
+}
+declare module "engine/module/IModuleConstructor" {
+    import IModule from "engine/module/IModule";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * 模块构造器接口
+    */
+    export default interface IModuleConstructor {
+        new (): IModule;
+    }
+}
+declare module "engine/module/IModuleDependent" {
+    import IModule from "engine/module/IModule";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-31
+     * @modify date 2017-10-31
+     *
+     * 模块依赖者接口
+    */
+    export default interface IModuleDependent {
+        /**
+         * 所属的模块引用
+         *
+         * @memberof IModuleDependent
+         */
+        readonly dependModuleInstance: IModule;
+        /**
+         * 所属的模块类型
+         *
+         * @memberof IModuleDependent
+         */
+        readonly dependModule: IModuleConstructor;
+    }
+}
 declare module "engine/mediator/IModuleMediator" {
+    import IModuleObservable from "engine/module/IModuleObservable";
+    import IModuleDependent from "engine/module/IModuleDependent";
     import IMediator from "engine/mediator/IMediator";
     /**
      * @author Raykid
@@ -1081,7 +1173,7 @@ declare module "engine/mediator/IModuleMediator" {
      *
      * 托管到模块的中介者所具有的接口
     */
-    export default interface IModuleMediator extends IMediator {
+    export default interface IModuleMediator extends IMediator, IModuleObservable, IModuleDependent {
         /**
          * 列出中介者所需的资源数组，可重写
          *
@@ -1105,26 +1197,14 @@ declare module "engine/mediator/IModuleMediator" {
         onLoadAssets(err?: Error): void;
     }
 }
-declare module "engine/module/IModuleConstructor" {
-    import IModule from "engine/module/IModule";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * 模块构造器接口
-    */
-    export default interface IModuleConstructor {
-        new (): IModule;
-    }
-}
 declare module "engine/module/IModule" {
     import IDisposable from "core/interfaces/IDisposable";
     import IModuleMediator from "engine/mediator/IModuleMediator";
     import RequestData from "engine/net/RequestData";
     import ResponseData from "engine/net/ResponseData";
     import IModuleConstructor from "engine/module/IModuleConstructor";
+    import IModuleObservable from "engine/module/IModuleObservable";
+    import IModuleDependent from "engine/module/IModuleDependent";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1133,7 +1213,7 @@ declare module "engine/module/IModule" {
      *
      * 业务模块接口
     */
-    export default interface IModule extends IDisposable {
+    export default interface IModule extends IDisposable, IModuleObservable, IModuleDependent {
         /** 模块打开时的参数 */
         data: any;
         /** 模块初始消息的返回数据 */
@@ -1170,8 +1250,6 @@ declare module "engine/mediator/IMediator" {
     import IHasBridge from "engine/bridge/IHasBridge";
     import IOpenClose from "core/interfaces/IOpenClose";
     import IDisposable from "core/interfaces/IDisposable";
-    import IModule from "engine/module/IModule";
-    import IModuleConstructor from "engine/module/IModuleConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1187,18 +1265,6 @@ declare module "engine/mediator/IMediator" {
          * @memberof IMediator
          */
         readonly disposed: boolean;
-        /**
-         * 所属的模块引用，需要配合@DelegateMediator使用
-         *
-         * @memberof IMediator
-         */
-        readonly dependModuleInstance: IModule;
-        /**
-         * 所属的模块类型，需要配合@DelegateMediator使用
-         *
-         * @memberof IMediator
-         */
-        readonly dependModule: IModuleConstructor;
         /**
          * 打开时传递的data对象
          *
@@ -2906,125 +2972,13 @@ declare module "engine/net/NetManager" {
     /** 再额外导出一个单例 */
     export const netManager: NetManager;
 }
-declare module "engine/injector/Injector" {
-    import { IResponseDataConstructor } from "engine/net/ResponseData";
-    import IModuleConstructor from "engine/module/IModuleConstructor";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 负责注入的模块
-    */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    export function ModelClass(...args: any[]): any;
-    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    export function MediatorClass(cls: IConstructor): IConstructor;
-    /** 定义模块，支持实例注入 */
-    export function ModuleClass(cls: IModuleConstructor): IConstructor;
-    /** 处理通讯消息返回 */
-    export function ResponseHandler(prototype: any, propertyKey: string): void;
-    export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
-    /** 在Module内托管Mediator */
-    export function DelegateMediator(prototype: any, propertyKey: string): any;
-}
-declare module "engine/platform/IPlatform" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 平台接口
-    */
-    export default interface IPlatform {
-        /**
-         * 刷新当前页面
-         *
-         * @memberof IPlatform
-         */
-        reload(): void;
-    }
-}
-declare module "engine/platform/WebPlatform" {
-    import IPlatform from "engine/platform/IPlatform";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 网页平台接口实现类，也是平台接口的默认类
-    */
-    export default class WebPlatform implements IPlatform {
-        reload(): void;
-    }
-}
-declare module "engine/platform/PlatformManager" {
-    import IPlatform from "engine/platform/IPlatform";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 平台接口管理器，通过桥接模式统一不同平台的不同接口，从而实现对框架其他模块透明化
-    */
-    export default class PlatformManager implements IPlatform {
-        /**
-         * 平台接口实现对象，默认是普通网页平台，也可以根据需要定制
-         *
-         * @type {IPlatform}
-         * @memberof PlatformManager
-         */
-        platform: IPlatform;
-        /**
-         * 刷新当前页面
-         *
-         * @memberof PlatformManager
-         */
-        reload(): void;
-    }
-    /** 再额外导出一个单例 */
-    export const platformManager: PlatformManager;
-}
-declare module "engine/model/Model" {
-    import IMessage from "core/message/IMessage";
-    import IDispatcher from "core/interfaces/IDispatcher";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * Model的基类，也可以不继承该基类，因为Model是很随意的东西
-    */
-    export default abstract class Model implements IDispatcher {
-        /**
-         * 派发内核消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof Core
-         */
-        dispatch(msg: IMessage): void;
-        /**
-         * 派发内核消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof Core
-         */
-        dispatch(type: string, ...params: any[]): void;
-    }
-}
 declare module "engine/mediator/Mediator" {
-    import IDispatcher from "core/interfaces/IDispatcher";
     import IMessage from "core/message/IMessage";
     import IModuleMediator from "engine/mediator/IModuleMediator";
     import IBridge from "engine/bridge/IBridge";
     import IModule from "engine/module/IModule";
     import IModuleConstructor from "engine/module/IModuleConstructor";
+    import ICommandConstructor from "core/command/ICommandConstructor";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3033,7 +2987,7 @@ declare module "engine/mediator/Mediator" {
      *
      * 组件界面中介者基类
     */
-    export default class Mediator implements IModuleMediator, IDispatcher {
+    export default class Mediator implements IModuleMediator {
         /**
          * 表现层桥
          *
@@ -3180,12 +3134,214 @@ declare module "engine/mediator/Mediator" {
          * @memberof Core
          */
         dispatch(type: string, ...params: any[]): void;
+        /*********************** 下面是模块消息系统 ***********************/
+        /**
+         * 监听消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        listenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 移除消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        unlistenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof IModuleObservable
+         */
+        mapCommandModule(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof IModuleObservable
+         */
+        unmapCommandModule(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 派发消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof IModuleObservable
+         */
+        dispatchModule(msg: IMessage): void;
+        /**
+         * 派发消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof IModuleObservable
+         */
+        dispatchModule(type: string, ...params: any[]): void;
         /**
          * 销毁中介者
          *
          * @memberof Mediator
          */
         dispose(): void;
+    }
+}
+declare module "engine/injector/Injector" {
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
+    import IModuleConstructor from "engine/module/IModuleConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 负责注入的模块
+    */
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    export function ModelClass(...args: any[]): any;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    export function MediatorClass(cls: IConstructor): IConstructor;
+    /** 定义模块，支持实例注入 */
+    export function ModuleClass(cls: IModuleConstructor): IConstructor;
+    /** 处理模块消息 */
+    export function ModuleMessageHandler(prototype: any, propertyKey: string): void;
+    export function ModuleMessageHandler(type: string): MethodDecorator;
+    /** 处理通讯消息返回 */
+    export function ResponseHandler(prototype: any, propertyKey: string): void;
+    export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
+    /** 在Module内托管Mediator */
+    export function DelegateMediator(prototype: any, propertyKey: string): any;
+}
+declare module "engine/platform/IPlatform" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 平台接口
+    */
+    export default interface IPlatform {
+        /**
+         * 刷新当前页面
+         *
+         * @memberof IPlatform
+         */
+        reload(): void;
+    }
+}
+declare module "engine/platform/WebPlatform" {
+    import IPlatform from "engine/platform/IPlatform";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 网页平台接口实现类，也是平台接口的默认类
+    */
+    export default class WebPlatform implements IPlatform {
+        reload(): void;
+    }
+}
+declare module "engine/platform/PlatformManager" {
+    import IPlatform from "engine/platform/IPlatform";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 平台接口管理器，通过桥接模式统一不同平台的不同接口，从而实现对框架其他模块透明化
+    */
+    export default class PlatformManager implements IPlatform {
+        /**
+         * 平台接口实现对象，默认是普通网页平台，也可以根据需要定制
+         *
+         * @type {IPlatform}
+         * @memberof PlatformManager
+         */
+        platform: IPlatform;
+        /**
+         * 刷新当前页面
+         *
+         * @memberof PlatformManager
+         */
+        reload(): void;
+    }
+    /** 再额外导出一个单例 */
+    export const platformManager: PlatformManager;
+}
+declare module "engine/model/Model" {
+    import IMessage from "core/message/IMessage";
+    import IObservable from "core/observable/IObservable";
+    import ICommandConstructor from "core/command/ICommandConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * Model的基类，也可以不继承该基类，因为Model是很随意的东西
+    */
+    export default abstract class Model implements IObservable {
+        /**
+         * 派发内核消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof Model
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发内核消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof Model
+         */
+        dispatch(type: string, ...params: any[]): void;
+        /**
+         * 监听内核消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Model
+         */
+        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 移除内核消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Model
+         */
+        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Model
+         */
+        mapCommand(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Model
+         */
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
     }
 }
 declare module "engine/panel/PanelMediator" {
@@ -3503,13 +3659,13 @@ declare module "engine/scene/SceneMediator" {
     }
 }
 declare module "engine/module/Module" {
-    import IDispatcher from "core/interfaces/IDispatcher";
     import IMessage from "core/message/IMessage";
+    import ICommandConstructor from "core/command/ICommandConstructor";
     import RequestData from "engine/net/RequestData";
     import ResponseData from "engine/net/ResponseData";
     import IModuleMediator from "engine/mediator/IModuleMediator";
-    import IModule from "engine/module/IModule";
     import IModuleConstructor from "engine/module/IModuleConstructor";
+    import IModule from "engine/module/IModule";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3518,7 +3674,7 @@ declare module "engine/module/Module" {
      *
      * 模块基类
     */
-    export default abstract class Module implements IModule, IDispatcher {
+    export default abstract class Module implements IModule {
         /**
          * 打开时传入的参数
          *
@@ -3550,6 +3706,22 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         readonly bgMusic: string;
+        /**
+         * 所属的模块引用
+         *
+         * @readonly
+         * @type {IModule}
+         * @memberof IMediator
+         */
+        readonly dependModuleInstance: IModule;
+        /**
+         * 所属的模块类型
+         *
+         * @readonly
+         * @type {IModuleConstructor}
+         * @memberof IMediator
+         */
+        readonly dependModule: IModuleConstructor;
         private _mediators;
         /**
          * 获取所有已托管的中介者
@@ -3655,6 +3827,58 @@ declare module "engine/module/Module" {
          * @memberof Core
          */
         dispatch(type: string, ...params: any[]): void;
+        /*********************** 下面是模块消息系统 ***********************/
+        private _observable;
+        /**
+         * 监听消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        listenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 移除消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        unlistenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof IModuleObservable
+         */
+        mapCommandModule(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof IModuleObservable
+         */
+        unmapCommandModule(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 派发消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof IModuleObservable
+         */
+        dispatchModule(msg: IMessage): void;
+        /**
+         * 派发消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof IModuleObservable
+         */
+        dispatchModule(type: string, ...params: any[]): void;
         /**
          * 销毁模块，可以重写
          *

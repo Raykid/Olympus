@@ -1,15 +1,16 @@
 import { core } from "../../core/Core";
-import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
+import ICommandConstructor from "../../core/command/ICommandConstructor";
+import Observable from "../../core/observable/Observable";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IModuleMediator from "../mediator/IModuleMediator";
-import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 import Dictionary from "../../utils/Dictionary";
 import { moduleManager } from "./ModuleManager";
 import { getConstructor } from "../../utils/ConstructUtil";
 import Shell from "../env/Shell";
+import IModule from "./IModule";
 
 /**
  * @author Raykid
@@ -19,7 +20,7 @@ import Shell from "../env/Shell";
  * 
  * 模块基类
 */
-export default abstract class Module implements IModule, IDispatcher
+export default abstract class Module implements IModule
 {
     /**
      * 打开时传入的参数
@@ -60,6 +61,30 @@ export default abstract class Module implements IModule, IDispatcher
     public get bgMusic():string
     {
         return null;
+    }
+
+    /**
+     * 所属的模块引用
+     * 
+     * @readonly
+     * @type {IModule}
+     * @memberof IMediator
+     */
+    public get dependModuleInstance():IModule
+    {
+        return this;
+    }
+    
+    /**
+     * 所属的模块类型
+     * 
+     * @readonly
+     * @type {IModuleConstructor}
+     * @memberof IMediator
+     */
+    public get dependModule():IModuleConstructor
+    {
+        return getConstructor(<IModuleConstructor>this.constructor);
     }
 
     private _mediators:IModuleMediator[] = [];
@@ -252,6 +277,82 @@ export default abstract class Module implements IModule, IDispatcher
     {
         core.dispatch(typeOrMsg, ...params);
     }
+    
+    /*********************** 下面是模块消息系统 ***********************/
+
+    private _observable:Observable = new Observable();
+
+    /**
+     * 监听消息
+     * 
+     * @param {string} type 消息类型
+     * @param {Function} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof IModuleObservable
+     */
+    public listenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    {
+        this._observable.listen(type, handler, thisArg);
+    }
+
+    /**
+     * 移除消息监听
+     * 
+     * @param {string} type 消息类型
+     * @param {Function} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof IModuleObservable
+     */
+    public unlistenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    {
+        this._observable.unlisten(type, handler,thisArg);
+    }
+
+    /**
+     * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+     * 
+     * @param {string} type 要注册的消息类型
+     * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+     * @memberof IModuleObservable
+     */
+    public mapCommandModule(type:string, cmd:ICommandConstructor):void
+    {
+        this._observable.mapCommand(type, cmd);
+    }
+
+    /**
+     * 注销命令
+     * 
+     * @param {string} type 要注销的消息类型
+     * @param {(ICommandConstructor)} cmd 命令处理器
+     * @returns {void} 
+     * @memberof IModuleObservable
+     */
+    public unmapCommandModule(type:string, cmd:ICommandConstructor):void
+    {
+        this._observable.unmapCommand(type, cmd);
+    }
+
+    /**
+     * 派发消息
+     * 
+     * @param {IMessage} msg 内核消息实例
+     * @memberof IModuleObservable
+     */
+    public dispatchModule(msg:IMessage):void;
+    /**
+     * 派发消息，消息会转变为Message类型对象
+     * 
+     * @param {string} type 消息类型
+     * @param {...any[]} params 消息参数列表
+     * @memberof IModuleObservable
+     */
+    public dispatchModule(type:string, ...params:any[]):void;
+    /** dispatchModule方法实现 */
+    public dispatchModule(...params:any[]):void
+    {
+        this._observable.dispatch.apply(this._observable, params);
+    }
 
     /**
      * 销毁模块，可以重写
@@ -260,6 +361,7 @@ export default abstract class Module implements IModule, IDispatcher
      */
     public dispose():void
     {
+        if(this._disposed) return;
         // 关闭自身
         var cls:IModuleConstructor = <IModuleConstructor>getConstructor(<IModuleConstructor>this.constructor);
         moduleManager.close(cls);
@@ -272,6 +374,9 @@ export default abstract class Module implements IModule, IDispatcher
             this.undelegateMediator(mediator);
             mediator.dispose();
         }
+        // 销毁Observable实例
+        this._observable.dispose();
+        this._observable = null;
         // 记录
         this._disposed = true;
     }

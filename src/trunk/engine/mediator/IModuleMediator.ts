@@ -1,3 +1,5 @@
+import IModuleObservable from "../module/IModuleObservable";
+import IModuleDependent from "../module/IModuleDependent";
 import IMediator from "./IMediator";
 
 /**
@@ -8,7 +10,7 @@ import IMediator from "./IMediator";
  * 
  * 托管到模块的中介者所具有的接口
 */
-export default interface IModuleMediator extends IMediator
+export default interface IModuleMediator extends IMediator, IModuleObservable, IModuleDependent
 {
     /**
      * 列出中介者所需的资源数组，可重写

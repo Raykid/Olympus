@@ -93,8 +93,6 @@ export default class Core implements IObservable
         this._observable.unlisten(type, handler, thisArg);
     }
     
-    /*********************** 下面是内核命令系统 ***********************/
-
     /**
      * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
      * 
@@ -149,7 +147,8 @@ export default class Core implements IObservable
     public mapInject(target:IConstructor, type?:any):void
     {
         // 如果已经注入过了，则使用已经注入的单例再次注入
-        var value:any = this._injectDict.get(target) || new target();
+        var oriTarget:IConstructor = target["__ori_constructor__"] || target;
+        var value:any = this._injectDict.get(oriTarget) || new target();
         this.mapInjectValue(value, type);
     }
 

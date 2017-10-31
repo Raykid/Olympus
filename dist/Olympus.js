@@ -1439,10 +1439,6 @@ define("core/interfaces/IConstructor", ["require", "exports"], function (require
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("core/interfaces/IDispatcher", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("core/observable/IObservable", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -1699,6 +1695,13 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
         });
         /** 销毁 */
         Observable.prototype.dispose = function () {
+            if (this._disposed)
+                return;
+            // 清空所有消息监听
+            this._listenerDict = null;
+            // 清空所有命令
+            this._commandDict = null;
+            // 标记销毁
             this._disposed = true;
         };
         return Observable;
@@ -1775,7 +1778,6 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/observable/
         Core.prototype.unlisten = function (type, handler, thisArg) {
             this._observable.unlisten(type, handler, thisArg);
         };
-        /*********************** 下面是内核命令系统 ***********************/
         /**
          * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
          *
@@ -1806,7 +1808,8 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/observable/
          */
         Core.prototype.mapInject = function (target, type) {
             // 如果已经注入过了，则使用已经注入的单例再次注入
-            var value = this._injectDict.get(target) || new target();
+            var oriTarget = target["__ori_constructor__"] || target;
+            var value = this._injectDict.get(oriTarget) || new target();
             this.mapInjectValue(value, type);
         };
         /**
@@ -2294,11 +2297,19 @@ define("engine/scene/IScenePolicy", ["require", "exports"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/mediator/IModuleMediator", ["require", "exports"], function (require, exports) {
+define("engine/module/IModuleObservable", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/module/IModuleConstructor", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/module/IModuleDependent", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/mediator/IModuleMediator", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -5019,245 +5030,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
     /** 再额外导出一个单例 */
     exports.netManager = Core_14.core.getInject(NetManager);
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_11, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_3, ModuleManager_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 负责注入的模块
-    */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    function ModelClass() {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        // 转调Injectable方法
-        if (this === undefined) {
-            var cls = ConstructUtil_2.wrapConstruct(args[0]);
-            Injector_11.Injectable.call(this, cls);
-            return cls;
-        }
-        else {
-            var result = Injector_11.Injectable.apply(this, args);
-            return function (realCls) {
-                realCls = ConstructUtil_2.wrapConstruct(realCls);
-                result.call(this, realCls);
-                return realCls;
-            };
-        }
-    }
-    exports.ModelClass = ModelClass;
-    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    function MediatorClass(cls) {
-        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-        // 监听实例化
-        ConstructUtil_2.listenConstruct(cls, function (instance) {
-            // 替换setSkin方法
-            var $skin;
-            Object.defineProperty(instance, "skin", {
-                configurable: true,
-                enumerable: true,
-                get: function () {
-                    return $skin;
-                },
-                set: function (value) {
-                    // 记录值
-                    $skin = value;
-                    // 根据skin类型选取表现层桥
-                    this.bridge = BridgeManager_3.bridgeManager.getBridgeBySkin(value);
-                }
-            });
-        });
-        return ConstructUtil_2.wrapConstruct(cls);
-    }
-    exports.MediatorClass = MediatorClass;
-    /** 定义模块，支持实例注入 */
-    function ModuleClass(cls) {
-        // 判断一下Module是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-        // 包装类
-        var wrapperCls = ConstructUtil_2.wrapConstruct(cls);
-        // 注册模块
-        ModuleManager_2.moduleManager.registerModule(wrapperCls);
-        // 返回包装类
-        return wrapperCls;
-    }
-    exports.ModuleClass = ModuleClass;
-    function ResponseHandler(target, key) {
-        if (key) {
-            var defs = Reflect.getMetadata("design:paramtypes", target, key);
-            var resClass = defs[0];
-            if (!(resClass.prototype instanceof ResponseData_1.default))
-                throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-            doResponseHandler(target.constructor, key, defs[0]);
-        }
-        else {
-            return function (prototype, propertyKey, descriptor) {
-                doResponseHandler(prototype.constructor, propertyKey, target);
-            };
-        }
-    }
-    exports.ResponseHandler = ResponseHandler;
-    function doResponseHandler(cls, key, type) {
-        // 监听实例化
-        ConstructUtil_2.listenConstruct(cls, function (instance) {
-            NetManager_2.netManager.listenResponse(type, instance[key], instance);
-        });
-        // 监听销毁
-        ConstructUtil_2.listenDispose(cls, function (instance) {
-            NetManager_2.netManager.unlistenResponse(type, instance[key], instance);
-        });
-    }
-    /** 在Module内托管Mediator */
-    function DelegateMediator(prototype, propertyKey) {
-        if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
-            // 监听实例化
-            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
-                // 实例化
-                var mediator = instance[propertyKey];
-                if (mediator === undefined) {
-                    var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
-                    instance[propertyKey] = mediator = new cls();
-                }
-                // 赋值所属模块
-                mediator["_dependModuleInstance"] = instance;
-                mediator["_dependModule"] = ConstructUtil_2.getConstructor(prototype.constructor);
-            });
-            // 监听销毁
-            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
-                var mediator = instance[propertyKey];
-                if (mediator) {
-                    // 移除所属模块
-                    mediator["_dependModuleInstance"] = undefined;
-                    mediator["_dependModule"] = undefined;
-                    // 移除实例
-                    instance[propertyKey] = undefined;
-                }
-            });
-            // 篡改属性
-            var mediator;
-            return {
-                configurable: true,
-                enumerable: true,
-                get: function () {
-                    return mediator;
-                },
-                set: function (value) {
-                    if (value == mediator)
-                        return;
-                    // 取消托管中介者
-                    if (mediator) {
-                        this.undelegateMediator(mediator);
-                    }
-                    // 设置中介者
-                    mediator = value;
-                    // 托管新的中介者
-                    if (mediator) {
-                        this.delegateMediator(mediator);
-                    }
-                }
-            };
-        }
-    }
-    exports.DelegateMediator = DelegateMediator;
-});
-define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/platform/WebPlatform", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 网页平台接口实现类，也是平台接口的默认类
-    */
-    var WebPlatform = /** @class */ (function () {
-        function WebPlatform() {
-        }
-        WebPlatform.prototype.reload = function () {
-            window.location.reload(true);
-        };
-        return WebPlatform;
-    }());
-    exports.default = WebPlatform;
-});
-define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_15, Injector_12, WebPlatform_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 平台接口管理器，通过桥接模式统一不同平台的不同接口，从而实现对框架其他模块透明化
-    */
-    var PlatformManager = /** @class */ (function () {
-        function PlatformManager() {
-            /**
-             * 平台接口实现对象，默认是普通网页平台，也可以根据需要定制
-             *
-             * @type {IPlatform}
-             * @memberof PlatformManager
-             */
-            this.platform = new WebPlatform_1.default();
-        }
-        /**
-         * 刷新当前页面
-         *
-         * @memberof PlatformManager
-         */
-        PlatformManager.prototype.reload = function () {
-            this.platform.reload();
-        };
-        PlatformManager = __decorate([
-            Injector_12.Injectable
-        ], PlatformManager);
-        return PlatformManager;
-    }());
-    exports.default = PlatformManager;
-    /** 再额外导出一个单例 */
-    exports.platformManager = Core_15.core.getInject(PlatformManager);
-});
-define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_16) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-14
-     * @modify date 2017-09-14
-     *
-     * Model的基类，也可以不继承该基类，因为Model是很随意的东西
-    */
-    var Model = /** @class */ (function () {
-        function Model() {
-        }
-        Model.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            Core_16.core.dispatch.apply(Core_16.core, [typeOrMsg].concat(params));
-        };
-        return Model;
-    }());
-    exports.default = Model;
-});
-define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_17) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_15) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5467,7 +5240,59 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_17.core.dispatch.apply(Core_17.core, [typeOrMsg].concat(params));
+            Core_15.core.dispatch.apply(Core_15.core, [typeOrMsg].concat(params));
+        };
+        /*********************** 下面是模块消息系统 ***********************/
+        /**
+         * 监听消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        Mediator.prototype.listenModule = function (type, handler, thisArg) {
+            this._dependModuleInstance && this._dependModuleInstance.listenModule(type, handler, thisArg);
+        };
+        /**
+         * 移除消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        Mediator.prototype.unlistenModule = function (type, handler, thisArg) {
+            this._dependModuleInstance && this._dependModuleInstance.unlistenModule(type, handler, thisArg);
+        };
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof IModuleObservable
+         */
+        Mediator.prototype.mapCommandModule = function (type, cmd) {
+            this._dependModuleInstance && this._dependModuleInstance.mapCommandModule(type, cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof IModuleObservable
+         */
+        Mediator.prototype.unmapCommandModule = function (type, cmd) {
+            this._dependModuleInstance && this._dependModuleInstance.unmapCommandModule(type, cmd);
+        };
+        /** dispatchModule方法实现 */
+        Mediator.prototype.dispatchModule = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            this._dependModuleInstance && this._dependModuleInstance.dispatchModule.apply(this._dependModuleInstance, params);
         };
         /**
          * 销毁中介者
@@ -5475,28 +5300,365 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
          * @memberof Mediator
          */
         Mediator.prototype.dispose = function () {
-            if (!this._disposed) {
-                // 移除显示
-                if (this.skin && this.bridge) {
-                    var parent = this.bridge.getParent(this.skin);
-                    if (parent)
-                        this.bridge.removeChild(parent, this.skin);
-                }
-                // 注销事件监听
-                this.unmapAllListeners();
-                // 移除表现层桥
-                this.bridge = null;
-                // 移除皮肤
-                this.skin = null;
-                // 设置已被销毁
-                this._disposed = true;
+            if (this._disposed)
+                return;
+            // 移除显示
+            if (this.skin && this.bridge) {
+                var parent = this.bridge.getParent(this.skin);
+                if (parent)
+                    this.bridge.removeChild(parent, this.skin);
             }
+            // 注销事件监听
+            this.unmapAllListeners();
+            // 移除表现层桥
+            this.bridge = null;
+            // 移除皮肤
+            this.skin = null;
+            // 设置已被销毁
+            this._disposed = true;
         };
         return Mediator;
     }());
     exports.default = Mediator;
 });
-define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_2) {
+define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary"], function (require, exports, Injector_11, Message_3, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_3, Mediator_1, ModuleManager_2, Dictionary_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
+     *
+     * 负责注入的模块
+    */
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    function ModelClass() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        // 转调Injectable方法
+        if (this === undefined) {
+            var cls = ConstructUtil_2.wrapConstruct(args[0]);
+            Injector_11.Injectable.call(this, cls);
+            return cls;
+        }
+        else {
+            var result = Injector_11.Injectable.apply(this, args);
+            return function (realCls) {
+                realCls = ConstructUtil_2.wrapConstruct(realCls);
+                result.call(this, realCls);
+                return realCls;
+            };
+        }
+    }
+    exports.ModelClass = ModelClass;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    function MediatorClass(cls) {
+        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+        // 监听实例化
+        ConstructUtil_2.listenConstruct(cls, function (instance) {
+            // 替换setSkin方法
+            var $skin;
+            Object.defineProperty(instance, "skin", {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                    return $skin;
+                },
+                set: function (value) {
+                    // 记录值
+                    $skin = value;
+                    // 根据skin类型选取表现层桥
+                    this.bridge = BridgeManager_3.bridgeManager.getBridgeBySkin(value);
+                }
+            });
+        });
+        return ConstructUtil_2.wrapConstruct(cls);
+    }
+    exports.MediatorClass = MediatorClass;
+    /** 定义模块，支持实例注入 */
+    function ModuleClass(cls) {
+        // 判断一下Module是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
+        // 包装类
+        var wrapperCls = ConstructUtil_2.wrapConstruct(cls);
+        // 注册模块
+        ModuleManager_2.moduleManager.registerModule(wrapperCls);
+        // 返回包装类
+        return wrapperCls;
+    }
+    exports.ModuleClass = ModuleClass;
+    function ModuleMessageHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof Message_3.default))
+                throw new Error("@ModuleMessageHandler装饰器装饰的方法的首个参数必须是Message");
+            doModuleMessageHandler(target.constructor, key, resClass);
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                doModuleMessageHandler(prototype.constructor, propertyKey, target);
+            };
+        }
+    }
+    exports.ModuleMessageHandler = ModuleMessageHandler;
+    ;
+    function doModuleMessageHandler(cls, key, type) {
+        // 监听实例化
+        ConstructUtil_2.listenConstruct(cls, function (instance) {
+            if (instance instanceof Mediator_1.default) {
+                // 如果是Mediator，则需要等到被托管后再执行注册
+                addDelegateHandler(instance, function () {
+                    instance.dependModuleInstance.listenModule(type, instance[key], instance);
+                });
+            }
+            else {
+                var module = instance.dependModuleInstance;
+                module && module.listenModule(type, instance[key], instance);
+            }
+        });
+        // 监听销毁
+        ConstructUtil_2.listenDispose(cls, function (instance) {
+            var module = instance.dependModuleInstance;
+            module && module.unlistenModule(type, instance[key], instance);
+        });
+    }
+    function ResponseHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof ResponseData_1.default))
+                throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
+            doResponseHandler(target.constructor, key, defs[0]);
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                doResponseHandler(prototype.constructor, propertyKey, target);
+            };
+        }
+    }
+    exports.ResponseHandler = ResponseHandler;
+    function doResponseHandler(cls, key, type) {
+        // 监听实例化
+        ConstructUtil_2.listenConstruct(cls, function (instance) {
+            NetManager_2.netManager.listenResponse(type, instance[key], instance);
+        });
+        // 监听销毁
+        ConstructUtil_2.listenDispose(cls, function (instance) {
+            NetManager_2.netManager.unlistenResponse(type, instance[key], instance);
+        });
+    }
+    var delegateHandlerDict = new Dictionary_3.default();
+    function addDelegateHandler(instance, handler) {
+        if (!instance)
+            return;
+        var handlers = delegateHandlerDict.get(instance);
+        if (!handlers)
+            delegateHandlerDict.set(instance, handlers = []);
+        if (handlers.indexOf(handler) < 0)
+            handlers.push(handler);
+    }
+    /** 在Module内托管Mediator */
+    function DelegateMediator(prototype, propertyKey) {
+        if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
+            // 监听实例化
+            ConstructUtil_2.listenConstruct(prototype.constructor, function (instance) {
+                // 实例化
+                var mediator = instance[propertyKey];
+                if (mediator === undefined) {
+                    var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
+                    instance[propertyKey] = mediator = new cls();
+                }
+                // 赋值所属模块
+                mediator["_dependModuleInstance"] = instance;
+                mediator["_dependModule"] = ConstructUtil_2.getConstructor(prototype.constructor);
+                // 执行回调
+                var handlers = delegateHandlerDict.get(mediator);
+                if (handlers) {
+                    for (var _i = 0, handlers_1 = handlers; _i < handlers_1.length; _i++) {
+                        var handler = handlers_1[_i];
+                        handler(mediator);
+                    }
+                    // 移除记录
+                    delegateHandlerDict.delete(mediator);
+                }
+            });
+            // 监听销毁
+            ConstructUtil_2.listenDispose(prototype.constructor, function (instance) {
+                var mediator = instance[propertyKey];
+                if (mediator) {
+                    // 移除所属模块
+                    mediator["_dependModuleInstance"] = undefined;
+                    mediator["_dependModule"] = undefined;
+                    // 移除实例
+                    instance[propertyKey] = undefined;
+                }
+            });
+            // 篡改属性
+            var mediator;
+            return {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                    return mediator;
+                },
+                set: function (value) {
+                    if (value == mediator)
+                        return;
+                    // 取消托管中介者
+                    if (mediator) {
+                        this.undelegateMediator(mediator);
+                    }
+                    // 设置中介者
+                    mediator = value;
+                    // 托管新的中介者
+                    if (mediator) {
+                        this.delegateMediator(mediator);
+                    }
+                }
+            };
+        }
+    }
+    exports.DelegateMediator = DelegateMediator;
+});
+define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/platform/WebPlatform", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 网页平台接口实现类，也是平台接口的默认类
+    */
+    var WebPlatform = /** @class */ (function () {
+        function WebPlatform() {
+        }
+        WebPlatform.prototype.reload = function () {
+            window.location.reload(true);
+        };
+        return WebPlatform;
+    }());
+    exports.default = WebPlatform;
+});
+define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_16, Injector_12, WebPlatform_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 平台接口管理器，通过桥接模式统一不同平台的不同接口，从而实现对框架其他模块透明化
+    */
+    var PlatformManager = /** @class */ (function () {
+        function PlatformManager() {
+            /**
+             * 平台接口实现对象，默认是普通网页平台，也可以根据需要定制
+             *
+             * @type {IPlatform}
+             * @memberof PlatformManager
+             */
+            this.platform = new WebPlatform_1.default();
+        }
+        /**
+         * 刷新当前页面
+         *
+         * @memberof PlatformManager
+         */
+        PlatformManager.prototype.reload = function () {
+            this.platform.reload();
+        };
+        PlatformManager = __decorate([
+            Injector_12.Injectable
+        ], PlatformManager);
+        return PlatformManager;
+    }());
+    exports.default = PlatformManager;
+    /** 再额外导出一个单例 */
+    exports.platformManager = Core_16.core.getInject(PlatformManager);
+});
+define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_17) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-14
+     * @modify date 2017-09-14
+     *
+     * Model的基类，也可以不继承该基类，因为Model是很随意的东西
+    */
+    var Model = /** @class */ (function () {
+        function Model() {
+        }
+        Model.prototype.dispatch = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            Core_17.core.dispatch.apply(Core_17.core, params);
+        };
+        /**
+         * 监听内核消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Model
+         */
+        Model.prototype.listen = function (type, handler, thisArg) {
+            Core_17.core.listen(type, handler, thisArg);
+        };
+        /**
+         * 移除内核消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Model
+         */
+        Model.prototype.unlisten = function (type, handler, thisArg) {
+            Core_17.core.unlisten(type, handler, thisArg);
+        };
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Model
+         */
+        Model.prototype.mapCommand = function (type, cmd) {
+            Core_17.core.mapCommand(type, cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Model
+         */
+        Model.prototype.unmapCommand = function (type, cmd) {
+            Core_17.core.unmapCommand(type, cmd);
+        };
+        return Model;
+    }());
+    exports.default = Model;
+});
+define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_2, PanelManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5575,7 +5737,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
             // 可重写
         };
         return PanelMediator;
-    }(Mediator_1.default));
+    }(Mediator_2.default));
     exports.default = PanelMediator;
 });
 define("engine/scene/NoneScenePolicy", ["require", "exports"], function (require, exports) {
@@ -5936,7 +6098,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
     /** 再额外导出一个单例 */
     exports.sceneManager = Core_18.core.getInject(SceneManager);
 });
-define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_1) {
+define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_3, SceneManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6025,10 +6187,10 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
             // 可重写
         };
         return SceneMediator;
-    }(Mediator_2.default));
+    }(Mediator_3.default));
     exports.default = SceneMediator;
 });
-define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_19, Dictionary_3, ModuleManager_3, ConstructUtil_3) {
+define("engine/module/Module", ["require", "exports", "core/Core", "core/observable/Observable", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_19, Observable_2, Dictionary_4, ModuleManager_3, ConstructUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6043,7 +6205,9 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         function Module() {
             this._disposed = false;
             this._mediators = [];
-            this._disposeDict = new Dictionary_3.default();
+            this._disposeDict = new Dictionary_4.default();
+            /*********************** 下面是模块消息系统 ***********************/
+            this._observable = new Observable_2.default();
         }
         Object.defineProperty(Module.prototype, "disposed", {
             /**
@@ -6069,6 +6233,34 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
              */
             get: function () {
                 return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Module.prototype, "dependModuleInstance", {
+            /**
+             * 所属的模块引用
+             *
+             * @readonly
+             * @type {IModule}
+             * @memberof IMediator
+             */
+            get: function () {
+                return this;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Module.prototype, "dependModule", {
+            /**
+             * 所属的模块类型
+             *
+             * @readonly
+             * @type {IModuleConstructor}
+             * @memberof IMediator
+             */
+            get: function () {
+                return ConstructUtil_3.getConstructor(this.constructor);
             },
             enumerable: true,
             configurable: true
@@ -6229,11 +6421,64 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
             Core_19.core.dispatch.apply(Core_19.core, [typeOrMsg].concat(params));
         };
         /**
+         * 监听消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        Module.prototype.listenModule = function (type, handler, thisArg) {
+            this._observable.listen(type, handler, thisArg);
+        };
+        /**
+         * 移除消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof IModuleObservable
+         */
+        Module.prototype.unlistenModule = function (type, handler, thisArg) {
+            this._observable.unlisten(type, handler, thisArg);
+        };
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof IModuleObservable
+         */
+        Module.prototype.mapCommandModule = function (type, cmd) {
+            this._observable.mapCommand(type, cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof IModuleObservable
+         */
+        Module.prototype.unmapCommandModule = function (type, cmd) {
+            this._observable.unmapCommand(type, cmd);
+        };
+        /** dispatchModule方法实现 */
+        Module.prototype.dispatchModule = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            this._observable.dispatch.apply(this._observable, params);
+        };
+        /**
          * 销毁模块，可以重写
          *
          * @memberof Module
          */
         Module.prototype.dispose = function () {
+            if (this._disposed)
+                return;
             // 关闭自身
             var cls = ConstructUtil_3.getConstructor(this.constructor);
             ModuleManager_3.moduleManager.close(cls);
@@ -6246,6 +6491,9 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
                 this.undelegateMediator(mediator);
                 mediator.dispose();
             }
+            // 销毁Observable实例
+            this._observable.dispose();
+            this._observable = null;
             // 记录
             this._disposed = true;
         };

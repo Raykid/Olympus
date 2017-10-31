@@ -3,6 +3,8 @@ import IModuleMediator from "../mediator/IModuleMediator";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IModuleConstructor from "./IModuleConstructor";
+import IModuleObservable from "./IModuleObservable";
+import IModuleDependent from "./IModuleDependent";
 
 /**
  * @author Raykid
@@ -12,7 +14,7 @@ import IModuleConstructor from "./IModuleConstructor";
  * 
  * 业务模块接口
 */
-export default interface IModule extends IDisposable
+export default interface IModule extends IDisposable, IModuleObservable, IModuleDependent
 {
     /** 模块打开时的参数 */
     data:any;

@@ -22,20 +22,6 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
     readonly disposed:boolean;
 
     /**
-     * 所属的模块引用，需要配合@DelegateMediator使用
-     * 
-     * @memberof IMediator
-     */
-    readonly dependModuleInstance:IModule;
-
-    /**
-     * 所属的模块类型，需要配合@DelegateMediator使用
-     * 
-     * @memberof IMediator
-     */
-    readonly dependModule:IModuleConstructor;
-
-    /**
      * 打开时传递的data对象
      * 
      * @memberof IMediator

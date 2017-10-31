@@ -1,11 +1,11 @@
 import { core } from "../../core/Core";
-import IDispatcher from "../../core/interfaces/IDispatcher";
 import IMessage from "../../core/message/IMessage";
 import { getConstructor } from "../../utils/ConstructUtil";
 import IModuleMediator from "./IModuleMediator";
 import IBridge from "../bridge/IBridge";
 import IModule from "../module/IModule";
 import IModuleConstructor from "../module/IModuleConstructor";
+import ICommandConstructor from "../../core/command/ICommandConstructor";
 
 /**
  * @author Raykid
@@ -15,7 +15,7 @@ import IModuleConstructor from "../module/IModuleConstructor";
  * 
  * 组件界面中介者基类
 */
-export default class Mediator implements IModuleMediator, IDispatcher
+export default class Mediator implements IModuleMediator
 {
     /**
      * 表现层桥
@@ -269,6 +269,80 @@ export default class Mediator implements IModuleMediator, IDispatcher
         core.dispatch(typeOrMsg, ...params);
     }
 
+    /*********************** 下面是模块消息系统 ***********************/
+
+    /**
+     * 监听消息
+     * 
+     * @param {string} type 消息类型
+     * @param {Function} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof IModuleObservable
+     */
+    public listenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    {
+        this._dependModuleInstance && this._dependModuleInstance.listenModule(type, handler, thisArg);
+    }
+
+    /**
+     * 移除消息监听
+     * 
+     * @param {string} type 消息类型
+     * @param {Function} handler 消息处理函数
+     * @param {*} [thisArg] 消息this指向
+     * @memberof IModuleObservable
+     */
+    public unlistenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    {
+        this._dependModuleInstance && this._dependModuleInstance.unlistenModule(type, handler,thisArg);
+    }
+
+    /**
+     * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+     * 
+     * @param {string} type 要注册的消息类型
+     * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+     * @memberof IModuleObservable
+     */
+    public mapCommandModule(type:string, cmd:ICommandConstructor):void
+    {
+        this._dependModuleInstance && this._dependModuleInstance.mapCommandModule(type, cmd);
+    }
+
+    /**
+     * 注销命令
+     * 
+     * @param {string} type 要注销的消息类型
+     * @param {(ICommandConstructor)} cmd 命令处理器
+     * @returns {void} 
+     * @memberof IModuleObservable
+     */
+    public unmapCommandModule(type:string, cmd:ICommandConstructor):void
+    {
+        this._dependModuleInstance && this._dependModuleInstance.unmapCommandModule(type, cmd);
+    }
+
+    /**
+     * 派发消息
+     * 
+     * @param {IMessage} msg 内核消息实例
+     * @memberof IModuleObservable
+     */
+    public dispatchModule(msg:IMessage):void;
+    /**
+     * 派发消息，消息会转变为Message类型对象
+     * 
+     * @param {string} type 消息类型
+     * @param {...any[]} params 消息参数列表
+     * @memberof IModuleObservable
+     */
+    public dispatchModule(type:string, ...params:any[]):void;
+    /** dispatchModule方法实现 */
+    public dispatchModule(...params:any[]):void
+    {
+        this._dependModuleInstance && this._dependModuleInstance.dispatchModule.apply(this._dependModuleInstance, params);
+    }
+
     /**
      * 销毁中介者
      * 
@@ -276,23 +350,21 @@ export default class Mediator implements IModuleMediator, IDispatcher
      */
     public dispose():void
     {
-        if(!this._disposed)
+        if(this._disposed) return;
+        // 移除显示
+        if(this.skin && this.bridge)
         {
-            // 移除显示
-            if(this.skin && this.bridge)
-            {
-                var parent:any = this.bridge.getParent(this.skin);
-                if(parent) this.bridge.removeChild(parent, this.skin);
-            }
-            // 注销事件监听
-            this.unmapAllListeners();
-            // 移除表现层桥
-            this.bridge = null;
-            // 移除皮肤
-            this.skin = null;
-            // 设置已被销毁
-            this._disposed = true;
+            var parent:any = this.bridge.getParent(this.skin);
+            if(parent) this.bridge.removeChild(parent, this.skin);
         }
+        // 注销事件监听
+        this.unmapAllListeners();
+        // 移除表现层桥
+        this.bridge = null;
+        // 移除皮肤
+        this.skin = null;
+        // 设置已被销毁
+        this._disposed = true;
     }
 }
 
