@@ -2,6 +2,7 @@ import IAudio, { AudioPlayParams } from "./IAudio";
 import { assetsManager } from "../assets/AssetsManager";
 import { core } from "../../core/Core";
 import AudioMessage from "./AudioMessage";
+import { environment } from "../env/Environment";
 
 /**
  * @author Raykid
@@ -64,7 +65,7 @@ export default class AudioContextImpl implements IAudio
             // 使用AudioContext加载
             this._audioCache[url] = data = {buffer: null, status: AudioStatus.LOADING, playParams: null};
             // 开始加载
-            assetsManager.loadAssets(url, (result:ArrayBuffer) => {
+            assetsManager.loadAssets(environment.toCDNHostURL(url), (result:ArrayBuffer) => {
                 if(result instanceof ArrayBuffer)
                 {
                     this._context.decodeAudioData(result, (buffer:AudioBuffer)=>{

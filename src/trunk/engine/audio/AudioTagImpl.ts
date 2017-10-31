@@ -1,6 +1,7 @@
 import IAudio, { AudioPlayParams } from "./IAudio";
 import { core } from "../../core/Core";
 import AudioMessage from "./AudioMessage";
+import { environment } from "../env/Environment";
 
 /**
  * @author Raykid
@@ -28,7 +29,7 @@ export default class AudioTagImpl implements IAudio
         {
             // 使用Audio标签加载
             var node:HTMLAudioElement = document.createElement("audio");
-            node.src = url;
+            node.src = environment.toCDNHostURL(url);
             // 保存数据
             this._audioCache[url] = data = {node: node, status: AudioStatus.LOADING, playParams: null};
             // 监听加载

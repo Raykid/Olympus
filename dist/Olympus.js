@@ -5637,7 +5637,7 @@ define("engine/audio/AudioMessage", ["require", "exports"], function (require, e
     }());
     exports.default = AudioMessage;
 });
-define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/audio/AudioMessage"], function (require, exports, Core_17, AudioMessage_1) {
+define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment"], function (require, exports, Core_17, AudioMessage_1, Environment_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5666,7 +5666,7 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
             if (!data) {
                 // 使用Audio标签加载
                 var node = document.createElement("audio");
-                node.src = url;
+                node.src = Environment_3.environment.toCDNHostURL(url);
                 // 保存数据
                 this._audioCache[url] = data = { node: node, status: AudioStatus.LOADING, playParams: null };
                 // 监听加载
@@ -5800,7 +5800,7 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
         AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
     })(AudioStatus || (AudioStatus = {}));
 });
-define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/AssetsManager", "core/Core", "engine/audio/AudioMessage"], function (require, exports, AssetsManager_2, Core_18, AudioMessage_2) {
+define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/AssetsManager", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment"], function (require, exports, AssetsManager_2, Core_18, AudioMessage_2, Environment_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5857,7 +5857,7 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
                 // 使用AudioContext加载
                 this._audioCache[url] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null };
                 // 开始加载
-                AssetsManager_2.assetsManager.loadAssets(url, function (result) {
+                AssetsManager_2.assetsManager.loadAssets(Environment_4.environment.toCDNHostURL(url), function (result) {
                     if (result instanceof ArrayBuffer) {
                         _this._context.decodeAudioData(result, function (buffer) {
                             data.buffer = buffer;
@@ -6016,7 +6016,7 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
         AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
     })(AudioStatus || (AudioStatus = {}));
 });
-define("engine/audio/AudioManager", ["require", "exports", "core/injector/Injector", "core/Core", "engine/audio/AudioTagImpl", "engine/audio/AudioContextImpl", "engine/env/Environment"], function (require, exports, Injector_13, Core_19, AudioTagImpl_1, AudioContextImpl_1, Environment_3) {
+define("engine/audio/AudioManager", ["require", "exports", "core/injector/Injector", "core/Core", "engine/audio/AudioTagImpl", "engine/audio/AudioContextImpl"], function (require, exports, Injector_13, Core_19, AudioTagImpl_1, AudioContextImpl_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6050,7 +6050,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.loadSound = function (url) {
-            url = Environment_3.environment.toCDNHostURL(url);
             this._soundImpl.load(url);
         };
         /**
@@ -6065,7 +6064,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
                 this.stopAllSound();
                 this.stopAllMusics();
             }
-            params.url = Environment_3.environment.toCDNHostURL(params.url);
             this._soundImpl.play(params);
         };
         /**
@@ -6075,7 +6073,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.stopSound = function (url) {
-            url = Environment_3.environment.toCDNHostURL(url);
             this._soundImpl.stop(url);
         };
         /**
@@ -6085,7 +6082,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.pauseSound = function (url) {
-            url = Environment_3.environment.toCDNHostURL(url);
             this._soundImpl.pause(url);
         };
         /**
@@ -6112,7 +6108,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.loadMusic = function (url) {
-            url = Environment_3.environment.toCDNHostURL(url);
             this._musicImpl.load(url);
         };
         /**
@@ -6127,7 +6122,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
                 this.stopAllSound();
                 this.stopAllMusics();
             }
-            params.url = Environment_3.environment.toCDNHostURL(params.url);
             this._musicImpl.play(params);
         };
         /**
@@ -6137,7 +6131,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.stopMusic = function (url) {
-            url = Environment_3.environment.toCDNHostURL(url);
             this._musicImpl.stop(url);
         };
         /**
@@ -6147,7 +6140,6 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
          * @memberof AudioManager
          */
         AudioManager.prototype.pauseMusic = function (url) {
-            url = Environment_3.environment.toCDNHostURL(url);
             this._musicImpl.pause(url);
         };
         /**
@@ -6730,7 +6722,7 @@ define("engine/version/Version", ["require", "exports", "core/Core", "core/injec
     /** 再额外导出一个单例 */
     exports.version = Core_24.core.getInject(Version);
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_2, Environment_4, NetManager_3, ObjectUtil_6) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_2, Environment_5, NetManager_3, ObjectUtil_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6755,7 +6747,7 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
             var params = request.__params;
             // 修改数据
             var httpParams = ObjectUtil_6.extendObject({
-                url: Environment_4.environment.toHostURL(params.path, params.hostIndex),
+                url: Environment_5.environment.toHostURL(params.path, params.hostIndex),
                 onResponse: function (result) { return NetManager_3.netManager.__onResponse(request.__params.response.type, result, request); },
                 onError: function (err) { return NetManager_3.netManager.__onError(err, request); }
             }, params);
@@ -6772,7 +6764,7 @@ define("engine/plugin/IPlugin", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_25, Injector_19, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_5, Hash_1, Version_1, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_25, Injector_19, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6808,7 +6800,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 // 加载页
                 self._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
                 // 初始化环境参数
-                Environment_5.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
+                Environment_6.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
                 // 初始化版本号管理器
                 Version_1.version.initialize(function () {
                     // 监听Bridge初始化完毕事件，显示第一个模块
