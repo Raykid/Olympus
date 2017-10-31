@@ -3193,136 +3193,6 @@ define("engine/env/Environment", ["require", "exports", "core/Core", "core/injec
     /** 再额外导出一个单例 */
     exports.environment = Core_5.core.getInject(Environment);
 });
-define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core"], function (require, exports, Injector_4, Core_6) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-23
-     * @modify date 2017-10-23
-     *
-     * 外壳接口，该类既作为外壳接口的注入基类，也作为标准浏览器的实现使用
-    */
-    var Shell = /** @class */ (function () {
-        function Shell() {
-        }
-        Object.defineProperty(Shell.prototype, "type", {
-            /**
-             * 获取当前外壳类型
-             *
-             * @readonly
-             * @type {string}
-             * @memberof Shell
-             */
-            get: function () {
-                return "web";
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /*************************** 下面是页面跳转接口 ***************************/
-        /**
-         * 刷新页面
-         *
-         * @param {{
-         *         forcedReload?:boolean, // false表示允许从缓存取，true表示强制从服务器取，默认是false
-         *         url?:string, // 传递则使用新URL刷新页面
-         *         replace?:boolean // 如果有新url，则表示是否要替换当前浏览历史
-         *     }} [params]
-         * @memberof Shell
-         */
-        Shell.prototype.reload = function (params) {
-            if (!params)
-                window.location.reload();
-            else if (!params.url)
-                window.location.reload(params.forcedReload);
-            else if (!params.replace)
-                window.location.href = params.url;
-            else
-                window.location.replace(params.url);
-        };
-        /**
-         * 打开一个新页面
-         *
-         * @param {{
-         *         url?:string, // 新页面地址，不传则不更新地址
-         *         name?:string, // 给新页面命名，或导航到已有页面
-         *         replace?:boolean, // 是否替换当前浏览历史条目，默认false
-         *         features:{[key:string]:any} // 其他可能的参数
-         *     }} [params]
-         * @memberof Shell
-         */
-        Shell.prototype.open = function (params) {
-            if (!params) {
-                window.open();
-            }
-            else {
-                var features = undefined;
-                if (params.features) {
-                    features = [];
-                    for (var key in params.features) {
-                        features.push(key + "=" + params.features[key]);
-                    }
-                }
-                window.open(params.url, params.name, features && features.join(","), params.replace);
-            }
-        };
-        /**
-         * 关闭窗口
-         *
-         * @memberof Shell
-         */
-        Shell.prototype.close = function () {
-            window.close();
-        };
-        /*************************** 下面是本地存储接口 ***************************/
-        /**
-         * 获取本地存储
-         *
-         * @param {string} key 要获取值的键
-         * @returns {string} 获取的值
-         * @memberof Shell
-         */
-        Shell.prototype.localStorageGet = function (key) {
-            return window.localStorage.getItem(key);
-        };
-        /**
-         * 设置本地存储
-         *
-         * @param {string} key 要设置的键
-         * @param {string} value 要设置的值
-         * @memberof Shell
-         */
-        Shell.prototype.localStorageSet = function (key, value) {
-            window.localStorage.setItem(key, value);
-        };
-        /**
-         * 移除本地存储
-         *
-         * @param {string} key 要移除的键
-         * @memberof Shell
-         */
-        Shell.prototype.localStorageRemove = function (key) {
-            window.localStorage.removeItem(key);
-        };
-        /**
-         * 清空本地存储
-         *
-         * @memberof Shell
-         */
-        Shell.prototype.localStorageClear = function () {
-            window.localStorage.clear();
-        };
-        Shell = __decorate([
-            Injector_4.Injectable
-        ], Shell);
-        return Shell;
-    }());
-    exports.default = Shell;
-    /** 再额外导出一个单例 */
-    exports.shell = Core_6.core.getInject(Shell);
-});
 define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils/URLUtil", "utils/ObjectUtil"], function (require, exports, Environment_1, URLUtil_2, ObjectUtil_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -3452,7 +3322,7 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
     }
     exports.load = load;
 });
-define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/HTTPUtil"], function (require, exports, Injector_5, Core_7, HTTPUtil_1) {
+define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/HTTPUtil"], function (require, exports, Injector_4, Core_6, HTTPUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3569,15 +3439,720 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
             }
         };
         AssetsManager = __decorate([
-            Injector_5.Injectable
+            Injector_4.Injectable
         ], AssetsManager);
         return AssetsManager;
     }());
     exports.default = AssetsManager;
     /** 再额外导出一个单例 */
-    exports.assetsManager = Core_7.core.getInject(AssetsManager);
+    exports.assetsManager = Core_6.core.getInject(AssetsManager);
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/env/Shell", "engine/mask/MaskManager", "engine/assets/AssetsManager"], function (require, exports, Core_8, Injector_6, NetManager_1, ModuleMessage_1, Environment_2, Shell_1, MaskManager_2, AssetsManager_1) {
+define("engine/env/Shell", ["require", "exports", "core/injector/Injector", "core/Core"], function (require, exports, Injector_5, Core_7) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-23
+     * @modify date 2017-10-23
+     *
+     * 外壳接口，该类既作为外壳接口的注入基类，也作为标准浏览器的实现使用
+    */
+    var Shell = /** @class */ (function () {
+        function Shell() {
+        }
+        Object.defineProperty(Shell.prototype, "type", {
+            /**
+             * 获取当前外壳类型
+             *
+             * @readonly
+             * @type {string}
+             * @memberof Shell
+             */
+            get: function () {
+                return "web";
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /*************************** 下面是页面跳转接口 ***************************/
+        /**
+         * 刷新页面
+         *
+         * @param {{
+         *         forcedReload?:boolean, // false表示允许从缓存取，true表示强制从服务器取，默认是false
+         *         url?:string, // 传递则使用新URL刷新页面
+         *         replace?:boolean // 如果有新url，则表示是否要替换当前浏览历史
+         *     }} [params]
+         * @memberof Shell
+         */
+        Shell.prototype.reload = function (params) {
+            if (!params)
+                window.location.reload();
+            else if (!params.url)
+                window.location.reload(params.forcedReload);
+            else if (!params.replace)
+                window.location.href = params.url;
+            else
+                window.location.replace(params.url);
+        };
+        /**
+         * 打开一个新页面
+         *
+         * @param {{
+         *         url?:string, // 新页面地址，不传则不更新地址
+         *         name?:string, // 给新页面命名，或导航到已有页面
+         *         replace?:boolean, // 是否替换当前浏览历史条目，默认false
+         *         features:{[key:string]:any} // 其他可能的参数
+         *     }} [params]
+         * @memberof Shell
+         */
+        Shell.prototype.open = function (params) {
+            if (!params) {
+                window.open();
+            }
+            else {
+                var features = undefined;
+                if (params.features) {
+                    features = [];
+                    for (var key in params.features) {
+                        features.push(key + "=" + params.features[key]);
+                    }
+                }
+                window.open(params.url, params.name, features && features.join(","), params.replace);
+            }
+        };
+        /**
+         * 关闭窗口
+         *
+         * @memberof Shell
+         */
+        Shell.prototype.close = function () {
+            window.close();
+        };
+        /*************************** 下面是本地存储接口 ***************************/
+        /**
+         * 获取本地存储
+         *
+         * @param {string} key 要获取值的键
+         * @returns {string} 获取的值
+         * @memberof Shell
+         */
+        Shell.prototype.localStorageGet = function (key) {
+            return window.localStorage.getItem(key);
+        };
+        /**
+         * 设置本地存储
+         *
+         * @param {string} key 要设置的键
+         * @param {string} value 要设置的值
+         * @memberof Shell
+         */
+        Shell.prototype.localStorageSet = function (key, value) {
+            window.localStorage.setItem(key, value);
+        };
+        /**
+         * 移除本地存储
+         *
+         * @param {string} key 要移除的键
+         * @memberof Shell
+         */
+        Shell.prototype.localStorageRemove = function (key) {
+            window.localStorage.removeItem(key);
+        };
+        /**
+         * 清空本地存储
+         *
+         * @memberof Shell
+         */
+        Shell.prototype.localStorageClear = function () {
+            window.localStorage.clear();
+        };
+        Shell = __decorate([
+            Injector_5.Injectable
+        ], Shell);
+        return Shell;
+    }());
+    exports.default = Shell;
+    /** 再额外导出一个单例 */
+    exports.shell = Core_7.core.getInject(Shell);
+});
+define("engine/audio/IAudio", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/audio/AudioMessage", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 音频消息
+    */
+    var AudioMessage = /** @class */ (function () {
+        function AudioMessage() {
+        }
+        /**
+         * 音频播放开始事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        AudioMessage.AUDIO_PLAY_STARTED = "audioPlayStarted";
+        /**
+         * 音频播放停止事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        AudioMessage.AUDIO_PLAY_STOPPED = "audioPlayStopped";
+        /**
+         * 音频播放完毕事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        AudioMessage.AUDIO_PLAY_ENDED = "audioPlayEnded";
+        return AudioMessage;
+    }());
+    exports.default = AudioMessage;
+});
+define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment"], function (require, exports, Core_8, AudioMessage_1, Environment_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 使用Audio标签实现IAudio接口的实现类
+    */
+    var AudioTagImpl = /** @class */ (function () {
+        function AudioTagImpl() {
+            this._audioCache = {};
+        }
+        /**
+         * 加载音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioTagImpl
+         */
+        AudioTagImpl.prototype.load = function (url) {
+            var _this = this;
+            var toUrl = Environment_2.environment.toCDNHostURL(url);
+            // 尝试获取缓存数据
+            var data = this._audioCache[toUrl];
+            // 如果没有缓存才去加载
+            if (!data) {
+                // 使用Audio标签加载
+                var node = document.createElement("audio");
+                node.src = toUrl;
+                // 保存数据
+                this._audioCache[toUrl] = data = { node: node, status: AudioStatus.LOADING, playParams: null };
+                // 监听加载
+                node.onloadeddata = function () {
+                    // 记录加载完毕
+                    data.status = AudioStatus.PAUSED;
+                    // 如果自动播放则播放
+                    if (data.playParams)
+                        _this.play(data.playParams);
+                };
+                node.onended = function () {
+                    // 派发播放完毕事件
+                    Core_8.core.dispatch(AudioMessage_1.default.AUDIO_PLAY_ENDED, url);
+                };
+            }
+        };
+        /**
+         * 播放音频，如果音频没有加载则先加载再播放
+         *
+         * @param {AudioPlayParams} params 音频播放参数
+         * @returns {void}
+         * @memberof AudioTagImpl
+         */
+        AudioTagImpl.prototype.play = function (params) {
+            var toUrl = Environment_2.environment.toCDNHostURL(params.url);
+            // 尝试获取缓存数据
+            var data = this._audioCache[toUrl];
+            if (!data) {
+                // 没有加载过，开始加载音频
+                this.load(params.url);
+                // 设置播放参数
+                this._audioCache[toUrl].playParams = params;
+            }
+            else {
+                switch (data.status) {
+                    case AudioStatus.LOADING:
+                        // 正在加载中，替换自动播放参数
+                        data.playParams = params;
+                        break;
+                    case AudioStatus.PLAYING:
+                        // 正在播放，关闭后再播放
+                        this.stop(params.url);
+                        this.play(params);
+                        break;
+                    case AudioStatus.PAUSED:
+                        // 已经加载完毕，暂停中，直接播放
+                        if (params.stopOthers)
+                            this.stopAll();
+                        if (params.loop != null)
+                            data.node.loop = params.loop;
+                        if (params.time != null)
+                            data.node.currentTime = params.time * 0.001;
+                        data.node.play();
+                        // 设置状态
+                        data.status = AudioStatus.PLAYING;
+                        // 派发播放开始事件
+                        Core_8.core.dispatch(AudioMessage_1.default.AUDIO_PLAY_STARTED, params.url);
+                        break;
+                }
+            }
+        };
+        AudioTagImpl.prototype._doStop = function (url, time) {
+            var toUrl = Environment_2.environment.toCDNHostURL(url);
+            var data = this._audioCache[toUrl];
+            if (data) {
+                data.node.autoplay = false;
+                data.node.pause();
+                // 设置停止时间
+                if (time != null)
+                    data.node.currentTime = time * 0.001;
+                // 设置状态
+                data.status = AudioStatus.PAUSED;
+                // 派发播放停止事件
+                Core_8.core.dispatch(AudioMessage_1.default.AUDIO_PLAY_STOPPED, url);
+            }
+        };
+        /**
+         * 暂停音频（不会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioTagImpl
+         */
+        AudioTagImpl.prototype.pause = function (url) {
+            this._doStop(url);
+        };
+        /**
+         * 停止音频（会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioTagImpl
+         */
+        AudioTagImpl.prototype.stop = function (url) {
+            this._doStop(url, 0);
+        };
+        /**
+         * 停止所有音频
+         *
+         * @memberof AudioTagImpl
+         */
+        AudioTagImpl.prototype.stopAll = function () {
+            for (var url in this._audioCache) {
+                this.stop(url);
+            }
+        };
+        /**
+         * 跳转音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioTagImpl
+         */
+        AudioTagImpl.prototype.seek = function (url, time) {
+            var data = this._audioCache[url];
+            if (data)
+                data.node.currentTime = time * 0.001;
+        };
+        return AudioTagImpl;
+    }());
+    exports.default = AudioTagImpl;
+    var AudioStatus;
+    (function (AudioStatus) {
+        /**
+         * 加载中
+         */
+        AudioStatus[AudioStatus["LOADING"] = 0] = "LOADING";
+        /**
+         * 已暂停
+         */
+        AudioStatus[AudioStatus["PAUSED"] = 1] = "PAUSED";
+        /**
+         * 播放中
+         */
+        AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
+    })(AudioStatus || (AudioStatus = {}));
+});
+define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/AssetsManager", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment"], function (require, exports, AssetsManager_1, Core_9, AudioMessage_2, Environment_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 使用AudioContext实现IAudio接口的实现类
+    */
+    var AudioContextImpl = /** @class */ (function () {
+        function AudioContextImpl() {
+            var _this = this;
+            this._inited = false;
+            this._audioCache = {};
+            this._context = new (window["AudioContext"] || window["webkitAudioContext"])();
+            var onInit = function () {
+                window.removeEventListener("touchstart", onInit);
+                window.removeEventListener("mousedown", onInit);
+                // 生成一个空的音频，播放并停止，用以解除限制
+                var source = _this._context.createBufferSource();
+                source.buffer = _this._context.createBuffer(1, 1, 44100);
+                source.connect(_this._context.destination);
+                source.start();
+                source.stop();
+                // 设置标识符
+                _this._inited = true;
+                // 如果当前有正在播放的音频，全部再播放一次
+                for (var url in _this._audioCache) {
+                    var data = _this._audioCache[url];
+                    if (data.status == AudioStatus.PLAYING) {
+                        // 停止播放
+                        _this.stop(data.playParams.url);
+                        // 重新播放
+                        _this.play(data.playParams);
+                    }
+                }
+            };
+            window.addEventListener("touchstart", onInit);
+            window.addEventListener("mousedown", onInit);
+        }
+        /**
+         * 加载音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioContextImpl
+         */
+        AudioContextImpl.prototype.load = function (url) {
+            var _this = this;
+            var toUrl = Environment_3.environment.toCDNHostURL(url);
+            // 尝试获取缓存数据
+            var data = this._audioCache[toUrl];
+            // 如果没有缓存才去加载
+            if (!data) {
+                // 使用AudioContext加载
+                this._audioCache[toUrl] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null };
+                // 开始加载
+                AssetsManager_1.assetsManager.loadAssets(toUrl, function (result) {
+                    if (result instanceof ArrayBuffer) {
+                        _this._context.decodeAudioData(result, function (buffer) {
+                            data.buffer = buffer;
+                            // 设置状态
+                            data.status = AudioStatus.PAUSED;
+                            // 如果自动播放则播放
+                            if (data.playParams)
+                                _this.play(data.playParams);
+                        });
+                    }
+                }, "arraybuffer");
+            }
+        };
+        /**
+         * 播放音频，如果音频没有加载则先加载再播放
+         *
+         * @param {AudioPlayParams} params 音频播放参数
+         * @returns {void}
+         * @memberof AudioContextImpl
+         */
+        AudioContextImpl.prototype.play = function (params) {
+            var _this = this;
+            var toUrl = Environment_3.environment.toCDNHostURL(params.url);
+            // 尝试获取缓存数据
+            var data = this._audioCache[toUrl];
+            if (!data) {
+                // 没有加载过，开始加载音频
+                this.load(params.url);
+                // 设置播放参数
+                this._audioCache[toUrl].playParams = params;
+            }
+            else {
+                switch (data.status) {
+                    case AudioStatus.LOADING:
+                        // 正在加载中，替换自动播放参数
+                        data.playParams = params;
+                        break;
+                    case AudioStatus.PLAYING:
+                        // 正在播放，关闭后再播放
+                        this.stop(params.url);
+                        this.play(params);
+                        break;
+                    case AudioStatus.PAUSED:
+                        // 设置状态
+                        data.status = AudioStatus.PLAYING;
+                        // 已经加载完毕，直接播放
+                        if (this._inited) {
+                            data.node = this._context.createBufferSource();
+                            data.node.buffer = data.buffer;
+                            if (params.loop != null)
+                                data.node.loop = params.loop;
+                            data.node.connect(this._context.destination);
+                            // 监听播放完毕
+                            data.node.onended = function () {
+                                var data = _this._audioCache[toUrl];
+                                if (data) {
+                                    // 停止播放
+                                    _this.stop(params.url);
+                                    // 派发播放完毕事件
+                                    Core_9.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_ENDED, params.url);
+                                }
+                            };
+                            // 开始播放，优先取参数中的时间，没有就取默认开始时间
+                            var playTime;
+                            if (params && params.time != null)
+                                playTime = params.time * 0.001;
+                            else
+                                playTime = data.playTime;
+                            delete data.playTime;
+                            data.node.start(playTime);
+                            // 派发播放开始事件
+                            Core_9.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_STARTED, params.url);
+                        }
+                        break;
+                }
+            }
+        };
+        AudioContextImpl.prototype._doStop = function (url, time) {
+            var toUrl = Environment_3.environment.toCDNHostURL(url);
+            var data = this._audioCache[toUrl];
+            if (data) {
+                // 设置状态
+                data.status = AudioStatus.PAUSED;
+                // 结束播放
+                if (data.node) {
+                    data.node.stop(time);
+                    // 派发播放停止事件
+                    Core_9.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_STOPPED, url);
+                }
+            }
+        };
+        /**
+         * 暂停音频（不会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioContextImpl
+         */
+        AudioContextImpl.prototype.pause = function (url) {
+            this._doStop(url);
+        };
+        /**
+         * 停止音频（会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioContextImpl
+         */
+        AudioContextImpl.prototype.stop = function (url) {
+            this._doStop(url, 0);
+        };
+        /**
+         * 停止所有音频
+         *
+         * @memberof AudioContextImpl
+         */
+        AudioContextImpl.prototype.stopAll = function () {
+            for (var url in this._audioCache) {
+                this.stop(url);
+            }
+        };
+        /**
+         * 跳转音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioContextImpl
+         */
+        AudioContextImpl.prototype.seek = function (url, time) {
+            var toUrl = Environment_3.environment.toCDNHostURL(url);
+            var data = this._audioCache[toUrl];
+            if (data) {
+                var params = data.playParams;
+                if (data.status == AudioStatus.PLAYING) {
+                    // 停止重新播放
+                    this.stop(url);
+                    params.time = time;
+                    this.play(params);
+                }
+                else {
+                    data.playTime = time;
+                }
+            }
+        };
+        return AudioContextImpl;
+    }());
+    exports.default = AudioContextImpl;
+    var AudioStatus;
+    (function (AudioStatus) {
+        /**
+         * 加载中
+         */
+        AudioStatus[AudioStatus["LOADING"] = 0] = "LOADING";
+        /**
+         * 已暂停
+         */
+        AudioStatus[AudioStatus["PAUSED"] = 1] = "PAUSED";
+        /**
+         * 播放中
+         */
+        AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
+    })(AudioStatus || (AudioStatus = {}));
+});
+define("engine/audio/AudioManager", ["require", "exports", "core/injector/Injector", "core/Core", "engine/audio/AudioTagImpl", "engine/audio/AudioContextImpl"], function (require, exports, Injector_6, Core_10, AudioTagImpl_1, AudioContextImpl_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 音频管理器，音频接口被强行分为两部分：Sound和Music。
+     * Sound：使用Audio标签播放，可以跨域播放但可能会被某些浏览器限制，必须在点击事件处理函数中播放
+     * Music：使用AudioContext播放，可以一定程度上越过点击事件检查，但无法跨域播放，适合播放背景音乐
+    */
+    var AudioManager = /** @class */ (function () {
+        function AudioManager() {
+            this._soundImpl = new AudioTagImpl_1.default();
+            this._musicImpl = new AudioContextImpl_1.default();
+        }
+        /**
+         * 注册Sound音频实现对象
+         *
+         * @param {IAudio} soundImpl Sound音频实现对象
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.registerSoundImpl = function (soundImpl) {
+            this._soundImpl = soundImpl;
+        };
+        /**
+         * 加载Sound音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.loadSound = function (url) {
+            this._soundImpl.load(url);
+        };
+        /**
+         * 播放Sound音频，如果没有加载则会先行加载
+         *
+         * @param {AudioPlayParams} params 音频播放参数
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.playSound = function (params) {
+            // 停止其他音频
+            if (params.stopOthers) {
+                this.stopAllSound();
+                this.stopAllMusics();
+            }
+            this._soundImpl.play(params);
+        };
+        /**
+         * 停止Sound音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.stopSound = function (url) {
+            this._soundImpl.stop(url);
+        };
+        /**
+         * 暂停Sound音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.pauseSound = function (url) {
+            this._soundImpl.pause(url);
+        };
+        /**
+         * 停止所有Sound音频
+         *
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.stopAllSound = function () {
+            this._soundImpl.stopAll();
+        };
+        /**
+         * 注册Music音频实现对象
+         *
+         * @param {IAudio} musicImpl Music音频实现对象
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.registerMusicImpl = function (musicImpl) {
+            this._musicImpl = musicImpl;
+        };
+        /**
+         * 加载Music音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.loadMusic = function (url) {
+            this._musicImpl.load(url);
+        };
+        /**
+         * 播放Music音频，如果没有加载则会先行加载
+         *
+         * @param {AudioPlayParams} [params] 音频参数
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.playMusic = function (params) {
+            // 停止其他音频
+            if (params.stopOthers) {
+                this.stopAllSound();
+                this.stopAllMusics();
+            }
+            this._musicImpl.play(params);
+        };
+        /**
+         * 停止Music音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.stopMusic = function (url) {
+            this._musicImpl.stop(url);
+        };
+        /**
+         * 暂停Music音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.pauseMusic = function (url) {
+            this._musicImpl.pause(url);
+        };
+        /**
+         * 停止所有Music音频
+         *
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.stopAllMusics = function () {
+            this._musicImpl.stopAll();
+        };
+        AudioManager = __decorate([
+            Injector_6.Injectable
+        ], AudioManager);
+        return AudioManager;
+    }());
+    exports.default = AudioManager;
+    /** 再额外导出一个单例 */
+    exports.audioManager = Core_10.core.getInject(AudioManager);
+});
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/mask/MaskManager", "engine/assets/AssetsManager", "engine/audio/AudioManager"], function (require, exports, Core_11, Injector_7, NetManager_1, ModuleMessage_1, Environment_4, MaskManager_2, AssetsManager_2, AudioManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3693,8 +4268,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 播放背景音乐
                 var bgMusic = module.bgMusic;
                 if (bgMusic) {
-                    var shell = Core_8.core.getInject(Shell_1.default);
-                    shell.audioPlay(bgMusic, { loop: true, stopOthers: true });
+                    // 使用Music音频播放
+                    AudioManager_1.audioManager.playMusic({ url: bgMusic, loop: true, stopOthers: true });
                 }
             }
         };
@@ -3766,12 +4341,12 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 var cssNode = document.createElement("link");
                                 cssNode.rel = "stylesheet";
                                 cssNode.type = "text/css";
-                                cssNode.href = Environment_2.environment.toCDNHostURL(cssFile);
+                                cssNode.href = Environment_4.environment.toCDNHostURL(cssFile);
                                 document.body.appendChild(cssNode);
                             }
                         }
                         // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
-                        AssetsManager_1.assetsManager.loadAssets(target.listJsFiles(), function (results) {
+                        AssetsManager_2.assetsManager.loadAssets(target.listJsFiles(), function (results) {
                             if (results instanceof Error) {
                                 target.onLoadAssets(results);
                                 return;
@@ -3799,7 +4374,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 if (replace)
                                     this.close(from && from[0], data);
                                 // 派发消息
-                                Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
+                                Core_11.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
                                 // 关闭标识符
                                 this._opening = false;
                                 // 如果有缓存的模块需要打开则打开之
@@ -3867,7 +4442,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 调用onActivate接口
                 this.activateModule(toModule && toModule, cls, data);
                 // 派发消息
-                Core_8.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, to && to[0], cls);
+                Core_11.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, to && to[0], cls);
             }
             else {
                 // 数据先行
@@ -3877,15 +4452,15 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             }
         };
         ModuleManager = __decorate([
-            Injector_6.Injectable
+            Injector_7.Injectable
         ], ModuleManager);
         return ModuleManager;
     }());
     exports.default = ModuleManager;
     /** 再额外导出一个单例 */
-    exports.moduleManager = Core_8.core.getInject(ModuleManager);
+    exports.moduleManager = Core_11.core.getInject(ModuleManager);
 });
-define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager", "engine/module/ModuleManager", "engine/mask/MaskManager"], function (require, exports, Core_9, Injector_7, BridgeMessage_1, PanelManager_1, ModuleManager_1, MaskManager_3) {
+define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager", "engine/module/ModuleManager", "engine/mask/MaskManager"], function (require, exports, Core_12, Injector_8, BridgeMessage_1, PanelManager_1, ModuleManager_1, MaskManager_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -3996,7 +4571,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                 for (var _b = 0, bridges_2 = bridges; _b < bridges_2.length; _b++) {
                     var bridge = bridges_2[_b];
                     // 派发消息
-                    Core_9.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
+                    Core_12.core.dispatch(BridgeMessage_1.default.BRIDGE_BEFORE_INIT, bridge);
                     // 初始化Mask
                     MaskManager_3.maskManager.registerMask(bridge.type, bridge.maskEntity);
                     // 注册通用提示框
@@ -4015,7 +4590,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                 // 先隐藏表现层桥的htmlWrapper
                 bridge.htmlWrapper.style.display = "none";
                 // 派发消息
-                Core_9.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
+                Core_12.core.dispatch(BridgeMessage_1.default.BRIDGE_AFTER_INIT, bridge);
                 // 设置初始化完毕属性
                 var data = self._bridgeDict[bridge.type];
                 data[1] = true;
@@ -4030,18 +4605,18 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                 allInited = allInited && data[1];
             }
             if (allInited)
-                Core_9.core.dispatch(BridgeMessage_1.default.BRIDGE_ALL_INIT);
+                Core_12.core.dispatch(BridgeMessage_1.default.BRIDGE_ALL_INIT);
         };
         BridgeManager = __decorate([
-            Injector_7.Injectable
+            Injector_8.Injectable
         ], BridgeManager);
         return BridgeManager;
     }());
     exports.default = BridgeManager;
     /** 再额外导出一个单例 */
-    exports.bridgeManager = Core_9.core.getInject(BridgeManager);
+    exports.bridgeManager = Core_12.core.getInject(BridgeManager);
 });
-define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector", "engine/bridge/BridgeManager", "core/Core"], function (require, exports, Injector_8, BridgeManager_2, Core_10) {
+define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector", "engine/bridge/BridgeManager", "core/Core"], function (require, exports, Injector_9, BridgeManager_2, Core_13) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4178,22 +4753,22 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
             return false;
         };
         MaskManager = __decorate([
-            Injector_8.Injectable
+            Injector_9.Injectable
         ], MaskManager);
         return MaskManager;
     }());
     exports.default = MaskManager;
     /** 再额外导出一个单例 */
-    exports.maskManager = Core_10.core.getInject(MaskManager);
+    exports.maskManager = Core_13.core.getInject(MaskManager);
 });
-define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage", "engine/mask/MaskManager"], function (require, exports, Core_11, Injector_9, CoreMessage_2, ObjectUtil_5, RequestData_1, NetMessage_1, MaskManager_4) {
+define("engine/net/NetManager", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/CoreMessage", "utils/ObjectUtil", "engine/net/RequestData", "engine/net/NetMessage", "engine/mask/MaskManager"], function (require, exports, Core_14, Injector_10, CoreMessage_2, ObjectUtil_5, RequestData_1, NetMessage_1, MaskManager_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NetManager = /** @class */ (function () {
         function NetManager() {
             this._responseDict = {};
             this._responseListeners = {};
-            Core_11.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
+            Core_14.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
         }
         NetManager.prototype.onMsgDispatched = function (msg) {
             // 如果消息是通讯消息则做处理
@@ -4205,7 +4780,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 发送消息
                 msg.__policy.sendRequest(msg);
                 // 派发系统消息
-                Core_11.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
+                Core_14.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
             }
         };
         /**
@@ -4286,7 +4861,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                     leftResCount++;
                 }
                 // 发送请求
-                Core_11.core.dispatch(request);
+                Core_14.core.dispatch(request);
             }
             // 测试回调
             testCallback();
@@ -4323,7 +4898,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 执行解析
                 response.parse(result);
                 // 派发事件
-                Core_11.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
+                Core_14.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
                 // 触发事件形式监听
                 var listeners = this._responseListeners[type];
                 if (listeners) {
@@ -4345,19 +4920,19 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             // 移除遮罩
             MaskManager_4.maskManager.hideLoading("net");
             // 派发事件
-            Core_11.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
+            Core_14.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
         };
         NetManager = __decorate([
-            Injector_9.Injectable,
+            Injector_10.Injectable,
             __metadata("design:paramtypes", [])
         ], NetManager);
         return NetManager;
     }());
     exports.default = NetManager;
     /** 再额外导出一个单例 */
-    exports.netManager = Core_11.core.getInject(NetManager);
+    exports.netManager = Core_14.core.getInject(NetManager);
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_10, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_3, ModuleManager_2) {
+define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/module/ModuleManager"], function (require, exports, Injector_11, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_3, ModuleManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4377,11 +4952,11 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         // 转调Injectable方法
         if (this === undefined) {
             var cls = ConstructUtil_2.wrapConstruct(args[0]);
-            Injector_10.Injectable.call(this, cls);
+            Injector_11.Injectable.call(this, cls);
             return cls;
         }
         else {
-            var result = Injector_10.Injectable.apply(this, args);
+            var result = Injector_11.Injectable.apply(this, args);
             return function (realCls) {
                 realCls = ConstructUtil_2.wrapConstruct(realCls);
                 result.call(this, realCls);
@@ -4532,7 +5107,7 @@ define("engine/platform/WebPlatform", ["require", "exports"], function (require,
     }());
     exports.default = WebPlatform;
 });
-define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_12, Injector_11, WebPlatform_1) {
+define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/platform/WebPlatform"], function (require, exports, Core_15, Injector_12, WebPlatform_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4562,15 +5137,15 @@ define("engine/platform/PlatformManager", ["require", "exports", "core/Core", "c
             this.platform.reload();
         };
         PlatformManager = __decorate([
-            Injector_11.Injectable
+            Injector_12.Injectable
         ], PlatformManager);
         return PlatformManager;
     }());
     exports.default = PlatformManager;
     /** 再额外导出一个单例 */
-    exports.platformManager = Core_12.core.getInject(PlatformManager);
+    exports.platformManager = Core_15.core.getInject(PlatformManager);
 });
-define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_13) {
+define("engine/model/Model", ["require", "exports", "core/Core"], function (require, exports, Core_16) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4589,13 +5164,13 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_13.core.dispatch.apply(Core_13.core, [typeOrMsg].concat(params));
+            Core_16.core.dispatch.apply(Core_16.core, [typeOrMsg].concat(params));
         };
         return Model;
     }());
     exports.default = Model;
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_14) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function (require, exports, Core_17) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4805,7 +5380,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core"], function
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_14.core.dispatch.apply(Core_14.core, [typeOrMsg].concat(params));
+            Core_17.core.dispatch.apply(Core_17.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁中介者
@@ -5060,7 +5635,7 @@ define("utils/SyncUtil", ["require", "exports"], function (require, exports) {
     }
     exports.notify = notify;
 });
-define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_15, Injector_12, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
+define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/scene/NoneScenePolicy", "engine/scene/SceneMessage", "utils/SyncUtil"], function (require, exports, Core_18, Injector_13, NoneScenePolicy_1, SceneMessage_1, SyncUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5245,7 +5820,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             from && from.onBeforeOut(to, data);
             to && to.onBeforeIn(from, data);
             // 派发事件
-            Core_15.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
+            Core_18.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
             // 调用准备接口
             prepareFunc && prepareFunc.call(policy, from, to);
             // 添加显示
@@ -5260,19 +5835,19 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                 from && from.onAfterOut(to, data);
                 to && to.onAfterIn(from, data);
                 // 派发事件
-                Core_15.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
+                Core_18.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
                 // 完成步骤
                 SyncUtil_1.notify(SYNC_NAME);
             });
         };
         SceneManager = __decorate([
-            Injector_12.Injectable
+            Injector_13.Injectable
         ], SceneManager);
         return SceneManager;
     }());
     exports.default = SceneManager;
     /** 再额外导出一个单例 */
-    exports.sceneManager = Core_15.core.getInject(SceneManager);
+    exports.sceneManager = Core_18.core.getInject(SceneManager);
 });
 define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Mediator", "engine/scene/SceneManager"], function (require, exports, Mediator_2, SceneManager_1) {
     "use strict";
@@ -5366,7 +5941,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_16, Dictionary_3, ModuleManager_3, ConstructUtil_3) {
+define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_19, Dictionary_3, ModuleManager_3, ConstructUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5564,7 +6139,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
-            Core_16.core.dispatch.apply(Core_16.core, [typeOrMsg].concat(params));
+            Core_19.core.dispatch.apply(Core_19.core, [typeOrMsg].concat(params));
         };
         /**
          * 销毁模块，可以重写
@@ -5590,581 +6165,6 @@ define("engine/module/Module", ["require", "exports", "core/Core", "utils/Dictio
         return Module;
     }());
     exports.default = Module;
-});
-define("engine/audio/IAudio", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/audio/AudioMessage", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 音频消息
-    */
-    var AudioMessage = /** @class */ (function () {
-        function AudioMessage() {
-        }
-        /**
-         * 音频播放开始事件
-         *
-         * @static
-         * @type {string}
-         * @memberof AudioMessage
-         */
-        AudioMessage.AUDIO_PLAY_STARTED = "audioPlayStarted";
-        /**
-         * 音频播放停止事件
-         *
-         * @static
-         * @type {string}
-         * @memberof AudioMessage
-         */
-        AudioMessage.AUDIO_PLAY_STOPPED = "audioPlayStopped";
-        /**
-         * 音频播放完毕事件
-         *
-         * @static
-         * @type {string}
-         * @memberof AudioMessage
-         */
-        AudioMessage.AUDIO_PLAY_ENDED = "audioPlayEnded";
-        return AudioMessage;
-    }());
-    exports.default = AudioMessage;
-});
-define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment"], function (require, exports, Core_17, AudioMessage_1, Environment_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 使用Audio标签实现IAudio接口的实现类
-    */
-    var AudioTagImpl = /** @class */ (function () {
-        function AudioTagImpl() {
-            this._audioCache = {};
-        }
-        /**
-         * 加载音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioTagImpl
-         */
-        AudioTagImpl.prototype.load = function (url) {
-            var _this = this;
-            var toUrl = Environment_3.environment.toCDNHostURL(url);
-            // 尝试获取缓存数据
-            var data = this._audioCache[toUrl];
-            // 如果没有缓存才去加载
-            if (!data) {
-                // 使用Audio标签加载
-                var node = document.createElement("audio");
-                node.src = toUrl;
-                // 保存数据
-                this._audioCache[toUrl] = data = { node: node, status: AudioStatus.LOADING, playParams: null };
-                // 监听加载
-                node.onloadeddata = function () {
-                    // 记录加载完毕
-                    data.status = AudioStatus.PAUSED;
-                    // 如果自动播放则播放
-                    if (data.playParams)
-                        _this.play(data.playParams);
-                };
-                node.onended = function () {
-                    // 派发播放完毕事件
-                    Core_17.core.dispatch(AudioMessage_1.default.AUDIO_PLAY_ENDED, url);
-                };
-            }
-        };
-        /**
-         * 播放音频，如果音频没有加载则先加载再播放
-         *
-         * @param {AudioPlayParams} params 音频播放参数
-         * @returns {void}
-         * @memberof AudioTagImpl
-         */
-        AudioTagImpl.prototype.play = function (params) {
-            var toUrl = Environment_3.environment.toCDNHostURL(params.url);
-            // 尝试获取缓存数据
-            var data = this._audioCache[toUrl];
-            if (!data) {
-                // 没有加载过，开始加载音频
-                this.load(params.url);
-                // 设置播放参数
-                this._audioCache[toUrl].playParams = params;
-            }
-            else {
-                switch (data.status) {
-                    case AudioStatus.LOADING:
-                        // 正在加载中，替换自动播放参数
-                        data.playParams = params;
-                        break;
-                    case AudioStatus.PLAYING:
-                        // 正在播放，关闭后再播放
-                        this.stop(params.url);
-                        this.play(params);
-                        break;
-                    case AudioStatus.PAUSED:
-                        // 已经加载完毕，暂停中，直接播放
-                        if (params.stopOthers)
-                            this.stopAll();
-                        if (params.loop != null)
-                            data.node.loop = params.loop;
-                        if (params.time != null)
-                            data.node.currentTime = params.time * 0.001;
-                        data.node.play();
-                        // 设置状态
-                        data.status = AudioStatus.PLAYING;
-                        // 派发播放开始事件
-                        Core_17.core.dispatch(AudioMessage_1.default.AUDIO_PLAY_STARTED, params.url);
-                        break;
-                }
-            }
-        };
-        AudioTagImpl.prototype._doStop = function (url, time) {
-            var toUrl = Environment_3.environment.toCDNHostURL(url);
-            var data = this._audioCache[toUrl];
-            if (data) {
-                data.node.autoplay = false;
-                data.node.pause();
-                // 设置停止时间
-                if (time != null)
-                    data.node.currentTime = time * 0.001;
-                // 设置状态
-                data.status = AudioStatus.PAUSED;
-                // 派发播放停止事件
-                Core_17.core.dispatch(AudioMessage_1.default.AUDIO_PLAY_STOPPED, url);
-            }
-        };
-        /**
-         * 暂停音频（不会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioTagImpl
-         */
-        AudioTagImpl.prototype.pause = function (url) {
-            this._doStop(url);
-        };
-        /**
-         * 停止音频（会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioTagImpl
-         */
-        AudioTagImpl.prototype.stop = function (url) {
-            this._doStop(url, 0);
-        };
-        /**
-         * 停止所有音频
-         *
-         * @memberof AudioTagImpl
-         */
-        AudioTagImpl.prototype.stopAll = function () {
-            for (var url in this._audioCache) {
-                this.stop(url);
-            }
-        };
-        /**
-         * 跳转音频进度
-         *
-         * @param {string} url 音频URL
-         * @param {number} time 要跳转到的音频位置，毫秒值
-         * @memberof AudioTagImpl
-         */
-        AudioTagImpl.prototype.seek = function (url, time) {
-            var data = this._audioCache[url];
-            if (data)
-                data.node.currentTime = time * 0.001;
-        };
-        return AudioTagImpl;
-    }());
-    exports.default = AudioTagImpl;
-    var AudioStatus;
-    (function (AudioStatus) {
-        /**
-         * 加载中
-         */
-        AudioStatus[AudioStatus["LOADING"] = 0] = "LOADING";
-        /**
-         * 已暂停
-         */
-        AudioStatus[AudioStatus["PAUSED"] = 1] = "PAUSED";
-        /**
-         * 播放中
-         */
-        AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
-    })(AudioStatus || (AudioStatus = {}));
-});
-define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/AssetsManager", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment"], function (require, exports, AssetsManager_2, Core_18, AudioMessage_2, Environment_4) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 使用AudioContext实现IAudio接口的实现类
-    */
-    var AudioContextImpl = /** @class */ (function () {
-        function AudioContextImpl() {
-            var _this = this;
-            this._inited = false;
-            this._audioCache = {};
-            this._context = new (window["AudioContext"] || window["webkitAudioContext"])();
-            var onInit = function () {
-                window.removeEventListener("touchstart", onInit);
-                window.removeEventListener("mousedown", onInit);
-                // 生成一个空的音频，播放并停止，用以解除限制
-                var source = _this._context.createBufferSource();
-                source.buffer = _this._context.createBuffer(1, 1, 44100);
-                source.connect(_this._context.destination);
-                source.start();
-                source.stop();
-                // 设置标识符
-                _this._inited = true;
-                // 如果当前有正在播放的音频，全部再播放一次
-                for (var url in _this._audioCache) {
-                    var data = _this._audioCache[url];
-                    if (data.status == AudioStatus.PLAYING) {
-                        // 停止播放
-                        _this.stop(data.playParams.url);
-                        // 重新播放
-                        _this.play(data.playParams);
-                    }
-                }
-            };
-            window.addEventListener("touchstart", onInit);
-            window.addEventListener("mousedown", onInit);
-        }
-        /**
-         * 加载音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioContextImpl
-         */
-        AudioContextImpl.prototype.load = function (url) {
-            var _this = this;
-            var toUrl = Environment_4.environment.toCDNHostURL(url);
-            // 尝试获取缓存数据
-            var data = this._audioCache[toUrl];
-            // 如果没有缓存才去加载
-            if (!data) {
-                // 使用AudioContext加载
-                this._audioCache[toUrl] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null };
-                // 开始加载
-                AssetsManager_2.assetsManager.loadAssets(toUrl, function (result) {
-                    if (result instanceof ArrayBuffer) {
-                        _this._context.decodeAudioData(result, function (buffer) {
-                            data.buffer = buffer;
-                            // 设置状态
-                            data.status = AudioStatus.PAUSED;
-                            // 如果自动播放则播放
-                            if (data.playParams)
-                                _this.play(data.playParams);
-                        });
-                    }
-                }, "arraybuffer");
-            }
-        };
-        /**
-         * 播放音频，如果音频没有加载则先加载再播放
-         *
-         * @param {AudioPlayParams} params 音频播放参数
-         * @returns {void}
-         * @memberof AudioContextImpl
-         */
-        AudioContextImpl.prototype.play = function (params) {
-            var _this = this;
-            var toUrl = Environment_4.environment.toCDNHostURL(params.url);
-            // 尝试获取缓存数据
-            var data = this._audioCache[toUrl];
-            if (!data) {
-                // 没有加载过，开始加载音频
-                this.load(params.url);
-                // 设置播放参数
-                this._audioCache[toUrl].playParams = params;
-            }
-            else {
-                switch (data.status) {
-                    case AudioStatus.LOADING:
-                        // 正在加载中，替换自动播放参数
-                        data.playParams = params;
-                        break;
-                    case AudioStatus.PLAYING:
-                        // 正在播放，关闭后再播放
-                        this.stop(params.url);
-                        this.play(params);
-                        break;
-                    case AudioStatus.PAUSED:
-                        // 设置状态
-                        data.status = AudioStatus.PLAYING;
-                        // 已经加载完毕，直接播放
-                        if (this._inited) {
-                            data.node = this._context.createBufferSource();
-                            data.node.buffer = data.buffer;
-                            if (params.loop != null)
-                                data.node.loop = params.loop;
-                            data.node.connect(this._context.destination);
-                            // 监听播放完毕
-                            data.node.onended = function () {
-                                var data = _this._audioCache[toUrl];
-                                if (data) {
-                                    // 停止播放
-                                    _this.stop(params.url);
-                                    // 派发播放完毕事件
-                                    Core_18.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_ENDED, params.url);
-                                }
-                            };
-                            // 开始播放，优先取参数中的时间，没有就取默认开始时间
-                            var playTime;
-                            if (params && params.time != null)
-                                playTime = params.time * 0.001;
-                            else
-                                playTime = data.playTime;
-                            delete data.playTime;
-                            data.node.start(playTime);
-                            // 派发播放开始事件
-                            Core_18.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_STARTED, params.url);
-                        }
-                        break;
-                }
-            }
-        };
-        AudioContextImpl.prototype._doStop = function (url, time) {
-            var toUrl = Environment_4.environment.toCDNHostURL(url);
-            var data = this._audioCache[toUrl];
-            if (data) {
-                // 设置状态
-                data.status = AudioStatus.PAUSED;
-                // 结束播放
-                if (data.node) {
-                    data.node.stop(time);
-                    // 派发播放停止事件
-                    Core_18.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_STOPPED, url);
-                }
-            }
-        };
-        /**
-         * 暂停音频（不会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioContextImpl
-         */
-        AudioContextImpl.prototype.pause = function (url) {
-            this._doStop(url);
-        };
-        /**
-         * 停止音频（会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioContextImpl
-         */
-        AudioContextImpl.prototype.stop = function (url) {
-            this._doStop(url, 0);
-        };
-        /**
-         * 停止所有音频
-         *
-         * @memberof AudioContextImpl
-         */
-        AudioContextImpl.prototype.stopAll = function () {
-            for (var url in this._audioCache) {
-                this.stop(url);
-            }
-        };
-        /**
-         * 跳转音频进度
-         *
-         * @param {string} url 音频URL
-         * @param {number} time 要跳转到的音频位置，毫秒值
-         * @memberof AudioContextImpl
-         */
-        AudioContextImpl.prototype.seek = function (url, time) {
-            var toUrl = Environment_4.environment.toCDNHostURL(url);
-            var data = this._audioCache[toUrl];
-            if (data) {
-                var params = data.playParams;
-                if (data.status == AudioStatus.PLAYING) {
-                    // 停止重新播放
-                    this.stop(url);
-                    params.time = time;
-                    this.play(params);
-                }
-                else {
-                    data.playTime = time;
-                }
-            }
-        };
-        return AudioContextImpl;
-    }());
-    exports.default = AudioContextImpl;
-    var AudioStatus;
-    (function (AudioStatus) {
-        /**
-         * 加载中
-         */
-        AudioStatus[AudioStatus["LOADING"] = 0] = "LOADING";
-        /**
-         * 已暂停
-         */
-        AudioStatus[AudioStatus["PAUSED"] = 1] = "PAUSED";
-        /**
-         * 播放中
-         */
-        AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
-    })(AudioStatus || (AudioStatus = {}));
-});
-define("engine/audio/AudioManager", ["require", "exports", "core/injector/Injector", "core/Core", "engine/audio/AudioTagImpl", "engine/audio/AudioContextImpl"], function (require, exports, Injector_13, Core_19, AudioTagImpl_1, AudioContextImpl_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 音频管理器，音频接口被强行分为两部分：Sound和Music。
-     * Sound：使用Audio标签播放，可以跨域播放但可能会被某些浏览器限制，必须在点击事件处理函数中播放
-     * Music：使用AudioContext播放，可以一定程度上越过点击事件检查，但无法跨域播放，适合播放背景音乐
-    */
-    var AudioManager = /** @class */ (function () {
-        function AudioManager() {
-            this._soundImpl = new AudioTagImpl_1.default();
-            this._musicImpl = new AudioContextImpl_1.default();
-        }
-        /**
-         * 注册Sound音频实现对象
-         *
-         * @param {IAudio} soundImpl Sound音频实现对象
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.registerSoundImpl = function (soundImpl) {
-            this._soundImpl = soundImpl;
-        };
-        /**
-         * 加载Sound音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.loadSound = function (url) {
-            this._soundImpl.load(url);
-        };
-        /**
-         * 播放Sound音频，如果没有加载则会先行加载
-         *
-         * @param {AudioPlayParams} params 音频播放参数
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.playSound = function (params) {
-            // 停止其他音频
-            if (params.stopOthers) {
-                this.stopAllSound();
-                this.stopAllMusics();
-            }
-            this._soundImpl.play(params);
-        };
-        /**
-         * 停止Sound音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.stopSound = function (url) {
-            this._soundImpl.stop(url);
-        };
-        /**
-         * 暂停Sound音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.pauseSound = function (url) {
-            this._soundImpl.pause(url);
-        };
-        /**
-         * 停止所有Sound音频
-         *
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.stopAllSound = function () {
-            this._soundImpl.stopAll();
-        };
-        /**
-         * 注册Music音频实现对象
-         *
-         * @param {IAudio} musicImpl Music音频实现对象
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.registerMusicImpl = function (musicImpl) {
-            this._musicImpl = musicImpl;
-        };
-        /**
-         * 加载Music音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.loadMusic = function (url) {
-            this._musicImpl.load(url);
-        };
-        /**
-         * 播放Music音频，如果没有加载则会先行加载
-         *
-         * @param {AudioPlayParams} [params] 音频参数
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.playMusic = function (params) {
-            // 停止其他音频
-            if (params.stopOthers) {
-                this.stopAllSound();
-                this.stopAllMusics();
-            }
-            this._musicImpl.play(params);
-        };
-        /**
-         * 停止Music音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.stopMusic = function (url) {
-            this._musicImpl.stop(url);
-        };
-        /**
-         * 暂停Music音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.pauseMusic = function (url) {
-            this._musicImpl.pause(url);
-        };
-        /**
-         * 停止所有Music音频
-         *
-         * @memberof AudioManager
-         */
-        AudioManager.prototype.stopAllMusics = function () {
-            this._musicImpl.stopAll();
-        };
-        AudioManager = __decorate([
-            Injector_13.Injectable
-        ], AudioManager);
-        return AudioManager;
-    }());
-    exports.default = AudioManager;
-    /** 再额外导出一个单例 */
-    exports.audioManager = Core_19.core.getInject(AudioManager);
 });
 define("engine/env/Explorer", ["require", "exports", "core/Core", "core/injector/Injector"], function (require, exports, Core_20, Injector_14) {
     "use strict";

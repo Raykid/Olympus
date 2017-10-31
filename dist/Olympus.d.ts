@@ -1942,101 +1942,6 @@ declare module "engine/env/Environment" {
     /** 再额外导出一个单例 */
     export const environment: Environment;
 }
-declare module "engine/env/Shell" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-23
-     * @modify date 2017-10-23
-     *
-     * 外壳接口，该类既作为外壳接口的注入基类，也作为标准浏览器的实现使用
-    */
-    export default class Shell {
-        /**
-         * 获取当前外壳类型
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Shell
-         */
-        readonly type: string;
-        /*************************** 下面是页面跳转接口 ***************************/
-        /**
-         * 刷新页面
-         *
-         * @param {{
-         *         forcedReload?:boolean, // false表示允许从缓存取，true表示强制从服务器取，默认是false
-         *         url?:string, // 传递则使用新URL刷新页面
-         *         replace?:boolean // 如果有新url，则表示是否要替换当前浏览历史
-         *     }} [params]
-         * @memberof Shell
-         */
-        reload(params?: {
-            forcedReload?: boolean;
-            url?: string;
-            replace?: boolean;
-        }): void;
-        /**
-         * 打开一个新页面
-         *
-         * @param {{
-         *         url?:string, // 新页面地址，不传则不更新地址
-         *         name?:string, // 给新页面命名，或导航到已有页面
-         *         replace?:boolean, // 是否替换当前浏览历史条目，默认false
-         *         features:{[key:string]:any} // 其他可能的参数
-         *     }} [params]
-         * @memberof Shell
-         */
-        open(params?: {
-            url?: string;
-            name?: string;
-            replace?: boolean;
-            features: {
-                [key: string]: any;
-            };
-        }): void;
-        /**
-         * 关闭窗口
-         *
-         * @memberof Shell
-         */
-        close(): void;
-        /*************************** 下面是本地存储接口 ***************************/
-        /**
-         * 获取本地存储
-         *
-         * @param {string} key 要获取值的键
-         * @returns {string} 获取的值
-         * @memberof Shell
-         */
-        localStorageGet(key: string): string;
-        /**
-         * 设置本地存储
-         *
-         * @param {string} key 要设置的键
-         * @param {string} value 要设置的值
-         * @memberof Shell
-         */
-        localStorageSet(key: string, value: string): void;
-        /**
-         * 移除本地存储
-         *
-         * @param {string} key 要移除的键
-         * @memberof Shell
-         */
-        localStorageRemove(key: string): void;
-        /**
-         * 清空本地存储
-         *
-         * @memberof Shell
-         */
-        localStorageClear(): void;
-        /** 此项代表外壳接口可根据实际情况扩展基类没有的方法或属性 */
-        [name: string]: any;
-    }
-    /** 再额外导出一个单例 */
-    export var shell: Shell;
-}
 declare module "utils/HTTPUtil" {
     /**
      * @author Raykid
@@ -2175,6 +2080,442 @@ declare module "engine/assets/AssetsManager" {
     }
     /** 再额外导出一个单例 */
     export const assetsManager: AssetsManager;
+}
+declare module "engine/env/Shell" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-23
+     * @modify date 2017-10-23
+     *
+     * 外壳接口，该类既作为外壳接口的注入基类，也作为标准浏览器的实现使用
+    */
+    export default class Shell {
+        /**
+         * 获取当前外壳类型
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Shell
+         */
+        readonly type: string;
+        /*************************** 下面是页面跳转接口 ***************************/
+        /**
+         * 刷新页面
+         *
+         * @param {{
+         *         forcedReload?:boolean, // false表示允许从缓存取，true表示强制从服务器取，默认是false
+         *         url?:string, // 传递则使用新URL刷新页面
+         *         replace?:boolean // 如果有新url，则表示是否要替换当前浏览历史
+         *     }} [params]
+         * @memberof Shell
+         */
+        reload(params?: {
+            forcedReload?: boolean;
+            url?: string;
+            replace?: boolean;
+        }): void;
+        /**
+         * 打开一个新页面
+         *
+         * @param {{
+         *         url?:string, // 新页面地址，不传则不更新地址
+         *         name?:string, // 给新页面命名，或导航到已有页面
+         *         replace?:boolean, // 是否替换当前浏览历史条目，默认false
+         *         features:{[key:string]:any} // 其他可能的参数
+         *     }} [params]
+         * @memberof Shell
+         */
+        open(params?: {
+            url?: string;
+            name?: string;
+            replace?: boolean;
+            features: {
+                [key: string]: any;
+            };
+        }): void;
+        /**
+         * 关闭窗口
+         *
+         * @memberof Shell
+         */
+        close(): void;
+        /*************************** 下面是本地存储接口 ***************************/
+        /**
+         * 获取本地存储
+         *
+         * @param {string} key 要获取值的键
+         * @returns {string} 获取的值
+         * @memberof Shell
+         */
+        localStorageGet(key: string): string;
+        /**
+         * 设置本地存储
+         *
+         * @param {string} key 要设置的键
+         * @param {string} value 要设置的值
+         * @memberof Shell
+         */
+        localStorageSet(key: string, value: string): void;
+        /**
+         * 移除本地存储
+         *
+         * @param {string} key 要移除的键
+         * @memberof Shell
+         */
+        localStorageRemove(key: string): void;
+        /**
+         * 清空本地存储
+         *
+         * @memberof Shell
+         */
+        localStorageClear(): void;
+        /** 此项代表外壳接口可根据实际情况扩展基类没有的方法或属性 */
+        [name: string]: any;
+    }
+    /** 再额外导出一个单例 */
+    export var shell: Shell;
+}
+declare module "engine/audio/IAudio" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 音频接口
+    */
+    export default interface IAudio {
+        /**
+         * 加载音频
+         *
+         * @param {string} url 音频URL
+         * @memberof IAudio
+         */
+        load(url: string): void;
+        /**
+         * 播放音频，如果音频没有加载则先加载再播放
+         *
+         * @param {AudioPlayParams} params 音频播放参数
+         * @returns {void}
+         * @memberof IAudio
+         */
+        play(params: AudioPlayParams): void;
+        /**
+         * 暂停音频（不会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof IAudio
+         */
+        pause(url: string): void;
+        /**
+         * 停止音频（会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof IAudio
+         */
+        stop(url: string): void;
+        /**
+         * 停止所有音频
+         *
+         * @memberof IAudio
+         */
+        stopAll(): void;
+        /**
+         * 跳转音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof IAudio
+         */
+        seek(url: string, time: number): void;
+    }
+    export interface AudioPlayParams {
+        /**
+         * 音频地址
+         *
+         * @type {string}
+         * @memberof AudioPlayParams
+         */
+        url: string;
+        /**
+         * 播放启动的时间戳
+         *
+         * @type {number}
+         * @memberof AudioPlayParams
+         */
+        time?: number;
+        /**
+         * 是否循环，默认为false
+         *
+         * @type {boolean}
+         * @memberof AudioPlayParams
+         */
+        loop?: boolean;
+        /**
+         * 是否播放前关闭其他声音，默认为false，与important无法同时为true
+         *
+         * @type {boolean}
+         * @memberof AudioPlayParams
+         */
+        stopOthers?: boolean;
+    }
+}
+declare module "engine/audio/AudioMessage" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 音频消息
+    */
+    export default class AudioMessage {
+        /**
+         * 音频播放开始事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        static AUDIO_PLAY_STARTED: string;
+        /**
+         * 音频播放停止事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        static AUDIO_PLAY_STOPPED: string;
+        /**
+         * 音频播放完毕事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        static AUDIO_PLAY_ENDED: string;
+    }
+}
+declare module "engine/audio/AudioTagImpl" {
+    import IAudio, { AudioPlayParams } from "engine/audio/IAudio";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 使用Audio标签实现IAudio接口的实现类
+    */
+    export default class AudioTagImpl implements IAudio {
+        private _audioCache;
+        /**
+         * 加载音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioTagImpl
+         */
+        load(url: string): void;
+        /**
+         * 播放音频，如果音频没有加载则先加载再播放
+         *
+         * @param {AudioPlayParams} params 音频播放参数
+         * @returns {void}
+         * @memberof AudioTagImpl
+         */
+        play(params: AudioPlayParams): void;
+        private _doStop(url, time?);
+        /**
+         * 暂停音频（不会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioTagImpl
+         */
+        pause(url: string): void;
+        /**
+         * 停止音频（会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioTagImpl
+         */
+        stop(url: string): void;
+        /**
+         * 停止所有音频
+         *
+         * @memberof AudioTagImpl
+         */
+        stopAll(): void;
+        /**
+         * 跳转音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioTagImpl
+         */
+        seek(url: string, time: number): void;
+    }
+}
+declare module "engine/audio/AudioContextImpl" {
+    import IAudio, { AudioPlayParams } from "engine/audio/IAudio";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 使用AudioContext实现IAudio接口的实现类
+    */
+    export default class AudioContextImpl implements IAudio {
+        private _context;
+        private _inited;
+        private _audioCache;
+        constructor();
+        /**
+         * 加载音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioContextImpl
+         */
+        load(url: string): void;
+        /**
+         * 播放音频，如果音频没有加载则先加载再播放
+         *
+         * @param {AudioPlayParams} params 音频播放参数
+         * @returns {void}
+         * @memberof AudioContextImpl
+         */
+        play(params: AudioPlayParams): void;
+        private _doStop(url, time?);
+        /**
+         * 暂停音频（不会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioContextImpl
+         */
+        pause(url: string): void;
+        /**
+         * 停止音频（会重置进度）
+         *
+         * @param {string} url 音频URL
+         * @memberof AudioContextImpl
+         */
+        stop(url: string): void;
+        /**
+         * 停止所有音频
+         *
+         * @memberof AudioContextImpl
+         */
+        stopAll(): void;
+        /**
+         * 跳转音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioContextImpl
+         */
+        seek(url: string, time: number): void;
+    }
+}
+declare module "engine/audio/AudioManager" {
+    import IAudio, { AudioPlayParams } from "engine/audio/IAudio";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-30
+     * @modify date 2017-10-30
+     *
+     * 音频管理器，音频接口被强行分为两部分：Sound和Music。
+     * Sound：使用Audio标签播放，可以跨域播放但可能会被某些浏览器限制，必须在点击事件处理函数中播放
+     * Music：使用AudioContext播放，可以一定程度上越过点击事件检查，但无法跨域播放，适合播放背景音乐
+    */
+    export default class AudioManager {
+        private _soundImpl;
+        /**
+         * 注册Sound音频实现对象
+         *
+         * @param {IAudio} soundImpl Sound音频实现对象
+         * @memberof AudioManager
+         */
+        registerSoundImpl(soundImpl: IAudio): void;
+        /**
+         * 加载Sound音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        loadSound(url: string): void;
+        /**
+         * 播放Sound音频，如果没有加载则会先行加载
+         *
+         * @param {AudioPlayParams} params 音频播放参数
+         * @memberof AudioManager
+         */
+        playSound(params: AudioPlayParams): void;
+        /**
+         * 停止Sound音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        stopSound(url: string): void;
+        /**
+         * 暂停Sound音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        pauseSound(url: string): void;
+        /**
+         * 停止所有Sound音频
+         *
+         * @memberof AudioManager
+         */
+        stopAllSound(): void;
+        private _musicImpl;
+        /**
+         * 注册Music音频实现对象
+         *
+         * @param {IAudio} musicImpl Music音频实现对象
+         * @memberof AudioManager
+         */
+        registerMusicImpl(musicImpl: IAudio): void;
+        /**
+         * 加载Music音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        loadMusic(url: string): void;
+        /**
+         * 播放Music音频，如果没有加载则会先行加载
+         *
+         * @param {AudioPlayParams} [params] 音频参数
+         * @memberof AudioManager
+         */
+        playMusic(params: AudioPlayParams): void;
+        /**
+         * 停止Music音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        stopMusic(url: string): void;
+        /**
+         * 暂停Music音频
+         *
+         * @param {string} url 音频地址
+         * @memberof AudioManager
+         */
+        pauseMusic(url: string): void;
+        /**
+         * 停止所有Music音频
+         *
+         * @memberof AudioManager
+         */
+        stopAllMusics(): void;
+    }
+    /** 再额外导出一个单例 */
+    export const audioManager: AudioManager;
 }
 declare module "engine/module/ModuleManager" {
     import IModule from "engine/module/IModule";
@@ -3190,347 +3531,6 @@ declare module "engine/module/Module" {
          */
         dispose(): void;
     }
-}
-declare module "engine/audio/IAudio" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 音频接口
-    */
-    export default interface IAudio {
-        /**
-         * 加载音频
-         *
-         * @param {string} url 音频URL
-         * @memberof IAudio
-         */
-        load(url: string): void;
-        /**
-         * 播放音频，如果音频没有加载则先加载再播放
-         *
-         * @param {AudioPlayParams} params 音频播放参数
-         * @returns {void}
-         * @memberof IAudio
-         */
-        play(params: AudioPlayParams): void;
-        /**
-         * 暂停音频（不会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof IAudio
-         */
-        pause(url: string): void;
-        /**
-         * 停止音频（会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof IAudio
-         */
-        stop(url: string): void;
-        /**
-         * 停止所有音频
-         *
-         * @memberof IAudio
-         */
-        stopAll(): void;
-        /**
-         * 跳转音频进度
-         *
-         * @param {string} url 音频URL
-         * @param {number} time 要跳转到的音频位置，毫秒值
-         * @memberof IAudio
-         */
-        seek(url: string, time: number): void;
-    }
-    export interface AudioPlayParams {
-        /**
-         * 音频地址
-         *
-         * @type {string}
-         * @memberof AudioPlayParams
-         */
-        url: string;
-        /**
-         * 播放启动的时间戳
-         *
-         * @type {number}
-         * @memberof AudioPlayParams
-         */
-        time?: number;
-        /**
-         * 是否循环，默认为false
-         *
-         * @type {boolean}
-         * @memberof AudioPlayParams
-         */
-        loop?: boolean;
-        /**
-         * 是否播放前关闭其他声音，默认为false，与important无法同时为true
-         *
-         * @type {boolean}
-         * @memberof AudioPlayParams
-         */
-        stopOthers?: boolean;
-    }
-}
-declare module "engine/audio/AudioMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 音频消息
-    */
-    export default class AudioMessage {
-        /**
-         * 音频播放开始事件
-         *
-         * @static
-         * @type {string}
-         * @memberof AudioMessage
-         */
-        static AUDIO_PLAY_STARTED: string;
-        /**
-         * 音频播放停止事件
-         *
-         * @static
-         * @type {string}
-         * @memberof AudioMessage
-         */
-        static AUDIO_PLAY_STOPPED: string;
-        /**
-         * 音频播放完毕事件
-         *
-         * @static
-         * @type {string}
-         * @memberof AudioMessage
-         */
-        static AUDIO_PLAY_ENDED: string;
-    }
-}
-declare module "engine/audio/AudioTagImpl" {
-    import IAudio, { AudioPlayParams } from "engine/audio/IAudio";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 使用Audio标签实现IAudio接口的实现类
-    */
-    export default class AudioTagImpl implements IAudio {
-        private _audioCache;
-        /**
-         * 加载音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioTagImpl
-         */
-        load(url: string): void;
-        /**
-         * 播放音频，如果音频没有加载则先加载再播放
-         *
-         * @param {AudioPlayParams} params 音频播放参数
-         * @returns {void}
-         * @memberof AudioTagImpl
-         */
-        play(params: AudioPlayParams): void;
-        private _doStop(url, time?);
-        /**
-         * 暂停音频（不会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioTagImpl
-         */
-        pause(url: string): void;
-        /**
-         * 停止音频（会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioTagImpl
-         */
-        stop(url: string): void;
-        /**
-         * 停止所有音频
-         *
-         * @memberof AudioTagImpl
-         */
-        stopAll(): void;
-        /**
-         * 跳转音频进度
-         *
-         * @param {string} url 音频URL
-         * @param {number} time 要跳转到的音频位置，毫秒值
-         * @memberof AudioTagImpl
-         */
-        seek(url: string, time: number): void;
-    }
-}
-declare module "engine/audio/AudioContextImpl" {
-    import IAudio, { AudioPlayParams } from "engine/audio/IAudio";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 使用AudioContext实现IAudio接口的实现类
-    */
-    export default class AudioContextImpl implements IAudio {
-        private _context;
-        private _inited;
-        private _audioCache;
-        constructor();
-        /**
-         * 加载音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioContextImpl
-         */
-        load(url: string): void;
-        /**
-         * 播放音频，如果音频没有加载则先加载再播放
-         *
-         * @param {AudioPlayParams} params 音频播放参数
-         * @returns {void}
-         * @memberof AudioContextImpl
-         */
-        play(params: AudioPlayParams): void;
-        private _doStop(url, time?);
-        /**
-         * 暂停音频（不会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioContextImpl
-         */
-        pause(url: string): void;
-        /**
-         * 停止音频（会重置进度）
-         *
-         * @param {string} url 音频URL
-         * @memberof AudioContextImpl
-         */
-        stop(url: string): void;
-        /**
-         * 停止所有音频
-         *
-         * @memberof AudioContextImpl
-         */
-        stopAll(): void;
-        /**
-         * 跳转音频进度
-         *
-         * @param {string} url 音频URL
-         * @param {number} time 要跳转到的音频位置，毫秒值
-         * @memberof AudioContextImpl
-         */
-        seek(url: string, time: number): void;
-    }
-}
-declare module "engine/audio/AudioManager" {
-    import IAudio, { AudioPlayParams } from "engine/audio/IAudio";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-30
-     * @modify date 2017-10-30
-     *
-     * 音频管理器，音频接口被强行分为两部分：Sound和Music。
-     * Sound：使用Audio标签播放，可以跨域播放但可能会被某些浏览器限制，必须在点击事件处理函数中播放
-     * Music：使用AudioContext播放，可以一定程度上越过点击事件检查，但无法跨域播放，适合播放背景音乐
-    */
-    export default class AudioManager {
-        private _soundImpl;
-        /**
-         * 注册Sound音频实现对象
-         *
-         * @param {IAudio} soundImpl Sound音频实现对象
-         * @memberof AudioManager
-         */
-        registerSoundImpl(soundImpl: IAudio): void;
-        /**
-         * 加载Sound音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        loadSound(url: string): void;
-        /**
-         * 播放Sound音频，如果没有加载则会先行加载
-         *
-         * @param {AudioPlayParams} params 音频播放参数
-         * @memberof AudioManager
-         */
-        playSound(params: AudioPlayParams): void;
-        /**
-         * 停止Sound音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        stopSound(url: string): void;
-        /**
-         * 暂停Sound音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        pauseSound(url: string): void;
-        /**
-         * 停止所有Sound音频
-         *
-         * @memberof AudioManager
-         */
-        stopAllSound(): void;
-        private _musicImpl;
-        /**
-         * 注册Music音频实现对象
-         *
-         * @param {IAudio} musicImpl Music音频实现对象
-         * @memberof AudioManager
-         */
-        registerMusicImpl(musicImpl: IAudio): void;
-        /**
-         * 加载Music音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        loadMusic(url: string): void;
-        /**
-         * 播放Music音频，如果没有加载则会先行加载
-         *
-         * @param {AudioPlayParams} [params] 音频参数
-         * @memberof AudioManager
-         */
-        playMusic(params: AudioPlayParams): void;
-        /**
-         * 停止Music音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        stopMusic(url: string): void;
-        /**
-         * 暂停Music音频
-         *
-         * @param {string} url 音频地址
-         * @memberof AudioManager
-         */
-        pauseMusic(url: string): void;
-        /**
-         * 停止所有Music音频
-         *
-         * @memberof AudioManager
-         */
-        stopAllMusics(): void;
-    }
-    /** 再额外导出一个单例 */
-    export const audioManager: AudioManager;
 }
 declare module "engine/env/Explorer" {
     /**

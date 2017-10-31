@@ -9,9 +9,9 @@ import IModuleConstructor from "./IModuleConstructor";
 import ModuleMessage from "./ModuleMessage"
 import IModuleMediator from "../mediator/IModuleMediator";
 import { environment } from "../env/Environment";
-import Shell from "../env/Shell";
 import { maskManager } from "../mask/MaskManager";
 import { assetsManager } from "../assets/AssetsManager";
+import { audioManager } from "../audio/AudioManager";
 
 /**
  * @author Raykid
@@ -131,8 +131,8 @@ export default class ModuleManager
             var bgMusic:string = module.bgMusic;
             if(bgMusic)
             {
-                var shell:Shell = core.getInject(Shell);
-                shell.audioPlay(bgMusic, {loop: true, stopOthers: true});
+                // 使用Music音频播放
+                audioManager.playMusic({url: bgMusic, loop: true, stopOthers: true});
             }
         }
     }
