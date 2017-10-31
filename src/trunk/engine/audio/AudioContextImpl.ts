@@ -39,7 +39,7 @@ export default class AudioContextImpl implements IAudio
                 if(data.status == AudioStatus.PLAYING)
                 {
                     // 停止播放
-                    this.stop(url);
+                    this.stop(data.playParams.url);
                     // 重新播放
                     this.play(data.playParams);
                 }
@@ -57,15 +57,16 @@ export default class AudioContextImpl implements IAudio
      */
     public load(url:string):void
     {
+        var toUrl:string = environment.toCDNHostURL(url);
         // 尝试获取缓存数据
-        var data:AudioData = this._audioCache[url];
+        var data:AudioData = this._audioCache[toUrl];
         // 如果没有缓存才去加载
         if(!data)
         {
             // 使用AudioContext加载
-            this._audioCache[url] = data = {buffer: null, status: AudioStatus.LOADING, playParams: null};
+            this._audioCache[toUrl] = data = {buffer: null, status: AudioStatus.LOADING, playParams: null};
             // 开始加载
-            assetsManager.loadAssets(environment.toCDNHostURL(url), (result:ArrayBuffer) => {
+            assetsManager.loadAssets(toUrl, (result:ArrayBuffer) => {
                 if(result instanceof ArrayBuffer)
                 {
                     this._context.decodeAudioData(result, (buffer:AudioBuffer)=>{
@@ -89,14 +90,15 @@ export default class AudioContextImpl implements IAudio
      */
     public play(params:AudioPlayParams):void
     {
+        var toUrl:string = environment.toCDNHostURL(params.url);
         // 尝试获取缓存数据
-        var data:AudioData = this._audioCache[params.url];
+        var data:AudioData = this._audioCache[toUrl];
         if(!data)
         {
             // 没有加载过，开始加载音频
             this.load(params.url);
             // 设置播放参数
-            this._audioCache[params.url].playParams = params;
+            this._audioCache[toUrl].playParams = params;
         }
         else
         {
@@ -123,7 +125,7 @@ export default class AudioContextImpl implements IAudio
                         data.node.connect(this._context.destination);
                         // 监听播放完毕
                         data.node.onended = ()=>{
-                            var data:AudioData = this._audioCache[params.url];
+                            var data:AudioData = this._audioCache[toUrl];
                             if(data)
                             {
                                 // 停止播放
@@ -148,7 +150,8 @@ export default class AudioContextImpl implements IAudio
 
     private _doStop(url:string, time?:number):void
     {
-        var data:AudioData = this._audioCache[url];
+        var toUrl:string = environment.toCDNHostURL(url);
+        var data:AudioData = this._audioCache[toUrl];
         if(data)
         {
             // 设置状态
@@ -207,7 +210,8 @@ export default class AudioContextImpl implements IAudio
      */
     public seek(url:string, time:number):void
     {
-        var data:AudioData = this._audioCache[url];
+        var toUrl:string = environment.toCDNHostURL(url);
+        var data:AudioData = this._audioCache[toUrl];
         if(data)
         {
             var params:AudioPlayParams = data.playParams;

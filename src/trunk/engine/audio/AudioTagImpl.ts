@@ -22,16 +22,17 @@ export default class AudioTagImpl implements IAudio
      */
     public load(url:string):void
     {
+        var toUrl:string = environment.toCDNHostURL(url);
         // 尝试获取缓存数据
-        var data:AudioData = this._audioCache[url];
+        var data:AudioData = this._audioCache[toUrl];
         // 如果没有缓存才去加载
         if(!data)
         {
             // 使用Audio标签加载
             var node:HTMLAudioElement = document.createElement("audio");
-            node.src = environment.toCDNHostURL(url);
+            node.src = toUrl;
             // 保存数据
-            this._audioCache[url] = data = {node: node, status: AudioStatus.LOADING, playParams: null};
+            this._audioCache[toUrl] = data = {node: node, status: AudioStatus.LOADING, playParams: null};
             // 监听加载
             node.onloadeddata = ()=>{
                 // 记录加载完毕
@@ -55,14 +56,15 @@ export default class AudioTagImpl implements IAudio
      */
     public play(params:AudioPlayParams):void
     {
+        var toUrl:string = environment.toCDNHostURL(params.url);
         // 尝试获取缓存数据
-        var data:AudioData = this._audioCache[params.url];
+        var data:AudioData = this._audioCache[toUrl];
         if(!data)
         {
             // 没有加载过，开始加载音频
             this.load(params.url);
             // 设置播放参数
-            this._audioCache[params.url].playParams = params;
+            this._audioCache[toUrl].playParams = params;
         }
         else
         {
@@ -94,7 +96,8 @@ export default class AudioTagImpl implements IAudio
 
     private _doStop(url:string, time?:number):void
     {
-        var data:AudioData = this._audioCache[url];
+        var toUrl:string = environment.toCDNHostURL(url);
+        var data:AudioData = this._audioCache[toUrl];
         if(data)
         {
             data.node.autoplay = false;

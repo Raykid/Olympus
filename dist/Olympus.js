@@ -5660,15 +5660,16 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
          */
         AudioTagImpl.prototype.load = function (url) {
             var _this = this;
+            var toUrl = Environment_3.environment.toCDNHostURL(url);
             // 尝试获取缓存数据
-            var data = this._audioCache[url];
+            var data = this._audioCache[toUrl];
             // 如果没有缓存才去加载
             if (!data) {
                 // 使用Audio标签加载
                 var node = document.createElement("audio");
-                node.src = Environment_3.environment.toCDNHostURL(url);
+                node.src = toUrl;
                 // 保存数据
-                this._audioCache[url] = data = { node: node, status: AudioStatus.LOADING, playParams: null };
+                this._audioCache[toUrl] = data = { node: node, status: AudioStatus.LOADING, playParams: null };
                 // 监听加载
                 node.onloadeddata = function () {
                     // 记录加载完毕
@@ -5691,13 +5692,14 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
          * @memberof AudioTagImpl
          */
         AudioTagImpl.prototype.play = function (params) {
+            var toUrl = Environment_3.environment.toCDNHostURL(params.url);
             // 尝试获取缓存数据
-            var data = this._audioCache[params.url];
+            var data = this._audioCache[toUrl];
             if (!data) {
                 // 没有加载过，开始加载音频
                 this.load(params.url);
                 // 设置播放参数
-                this._audioCache[params.url].playParams = params;
+                this._audioCache[toUrl].playParams = params;
             }
             else {
                 switch (data.status) {
@@ -5728,7 +5730,8 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
             }
         };
         AudioTagImpl.prototype._doStop = function (url, time) {
-            var data = this._audioCache[url];
+            var toUrl = Environment_3.environment.toCDNHostURL(url);
+            var data = this._audioCache[toUrl];
             if (data) {
                 data.node.autoplay = false;
                 data.node.pause();
@@ -5833,7 +5836,7 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
                     var data = _this._audioCache[url];
                     if (data.status == AudioStatus.PLAYING) {
                         // 停止播放
-                        _this.stop(url);
+                        _this.stop(data.playParams.url);
                         // 重新播放
                         _this.play(data.playParams);
                     }
@@ -5850,14 +5853,15 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
          */
         AudioContextImpl.prototype.load = function (url) {
             var _this = this;
+            var toUrl = Environment_4.environment.toCDNHostURL(url);
             // 尝试获取缓存数据
-            var data = this._audioCache[url];
+            var data = this._audioCache[toUrl];
             // 如果没有缓存才去加载
             if (!data) {
                 // 使用AudioContext加载
-                this._audioCache[url] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null };
+                this._audioCache[toUrl] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null };
                 // 开始加载
-                AssetsManager_2.assetsManager.loadAssets(Environment_4.environment.toCDNHostURL(url), function (result) {
+                AssetsManager_2.assetsManager.loadAssets(toUrl, function (result) {
                     if (result instanceof ArrayBuffer) {
                         _this._context.decodeAudioData(result, function (buffer) {
                             data.buffer = buffer;
@@ -5880,13 +5884,14 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
          */
         AudioContextImpl.prototype.play = function (params) {
             var _this = this;
+            var toUrl = Environment_4.environment.toCDNHostURL(params.url);
             // 尝试获取缓存数据
-            var data = this._audioCache[params.url];
+            var data = this._audioCache[toUrl];
             if (!data) {
                 // 没有加载过，开始加载音频
                 this.load(params.url);
                 // 设置播放参数
-                this._audioCache[params.url].playParams = params;
+                this._audioCache[toUrl].playParams = params;
             }
             else {
                 switch (data.status) {
@@ -5911,7 +5916,7 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
                             data.node.connect(this._context.destination);
                             // 监听播放完毕
                             data.node.onended = function () {
-                                var data = _this._audioCache[params.url];
+                                var data = _this._audioCache[toUrl];
                                 if (data) {
                                     // 停止播放
                                     _this.stop(params.url);
@@ -5935,7 +5940,8 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
             }
         };
         AudioContextImpl.prototype._doStop = function (url, time) {
-            var data = this._audioCache[url];
+            var toUrl = Environment_4.environment.toCDNHostURL(url);
+            var data = this._audioCache[toUrl];
             if (data) {
                 // 设置状态
                 data.status = AudioStatus.PAUSED;
@@ -5983,7 +5989,8 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
          * @memberof AudioContextImpl
          */
         AudioContextImpl.prototype.seek = function (url, time) {
-            var data = this._audioCache[url];
+            var toUrl = Environment_4.environment.toCDNHostURL(url);
+            var data = this._audioCache[toUrl];
             if (data) {
                 var params = data.playParams;
                 if (data.status == AudioStatus.PLAYING) {
