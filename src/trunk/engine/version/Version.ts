@@ -132,11 +132,11 @@ export default class Version
         // 去掉version中的非法字符
         version = version.replace(/[^0-9a-z]+/ig, "");
         // 插入版本号
-        var reg:RegExp = /([a-zA-Z]+:\/+[^\/\?#]+\/[^\?#]+)\.([^\?]+)(\?.+)?/;
+        var reg:RegExp = /(([a-zA-Z]+:\/+[^\/\?#]+\/)?[^\?#]+)\.([^\?]+)(\?.+)?/;
         var result:RegExpExecArray = reg.exec(url);
         if(result != null)
         {
-            url = result[1] + "-r_" + version + "." + result[2] + (result[3] || "");
+            url = result[1] + "-r_" + version + "." + result[3] + (result[4] || "");
         }
         return url;
     }
