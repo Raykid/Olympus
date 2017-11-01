@@ -1,7 +1,7 @@
 import { environment } from "engine/env/Environment";
-import { version } from "engine/version/Version";
 import { panelManager } from "engine/panel/PanelManager";
 import { platformManager } from "engine/platform/PlatformManager";
+import VersionUtil from "utils/VersionUtil";
 
 /**
  * @author Raykid
@@ -48,7 +48,7 @@ export class ResourceVersionController extends RES.VersionController
         // 添加imgDomain
         url = environment.toCDNHostURL(url);
         // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
-        url = version.wrapHashUrl(url);
+        url = VersionUtil.wrapHashUrl(url);
         // 返回url
         return url;
     }

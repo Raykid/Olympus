@@ -65839,7 +65839,7 @@ define("egret/RenderMode", ["require", "exports"], function (require, exports) {
     })(RenderMode || (RenderMode = {}));
     exports.default = RenderMode;
 });
-define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/version/Version", "engine/panel/PanelManager", "engine/platform/PlatformManager"], function (require, exports, Environment_1, Version_1, PanelManager_1, PlatformManager_1) {
+define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "engine/panel/PanelManager", "engine/platform/PlatformManager", "utils/VersionUtil"], function (require, exports, Environment_1, PanelManager_1, PlatformManager_1, VersionUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ResourceVersionController = /** @class */ (function (_super) {
@@ -65851,7 +65851,7 @@ define("egret/AssetsLoader", ["require", "exports", "engine/env/Environment", "e
             // 添加imgDomain
             url = Environment_1.environment.toCDNHostURL(url);
             // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
-            url = Version_1.version.wrapHashUrl(url);
+            url = VersionUtil_1.default.wrapHashUrl(url);
             // 返回url
             return url;
         };
