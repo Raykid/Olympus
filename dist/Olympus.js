@@ -7049,6 +7049,8 @@ define("utils/VersionUtil", ["require", "exports", "utils/URLUtil"], function (r
                                     }
                                 }
                             }
+                            // 修改状态
+                            VersionUtil._initStatus = InitStatus.INITIALIZED;
                             // 执行回调
                             for (var j = 0, len = VersionUtil._handlerList.length; j < len; j++) {
                                 var handler = VersionUtil._handlerList.shift();

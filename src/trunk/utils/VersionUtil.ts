@@ -87,6 +87,8 @@ export default class VersionUtil
                                 }
                             }
                         }
+                        // 修改状态
+                        VersionUtil._initStatus = InitStatus.INITIALIZED;
                         // 执行回调
                         for(var j:number = 0, len:number = VersionUtil._handlerList.length; j < len; j++)
                         {

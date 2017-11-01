@@ -3,18 +3,12 @@
     "module": "amd",
     "target": "es5",
     "sourceMap": true,
-    "allowJs": true,
+    "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "outFile": "../../dist/Olympus.js"
+    "outFile": "../../dist/Preloader.js"
   },
   "files": [
-    "libs/Reflect.js",
-    "core/injector/Injector.ts",
-    "engine/injector/Injector.ts",
-    "core/Core.ts",
-    "engine/Engine.ts",
-    "Olympus.ts",
     "preload/Preloader.ts"
   ],
   "exclude": [
