@@ -4188,21 +4188,23 @@ declare module "utils/CookieUtil" {
      *
      * Cookie工具
     */
-    export default class CookieUtil {
-        /**
-         * 获取cookie值
-         * @param name cookie名称
-         * @return cookie值
-         */
-        static getCookie(name: string): string;
-        /**
-         * 获取cookie值
-         * @param name cookie名称
-         * @param value cookie值
-         * @param expire 有效期时长（毫秒）
-         */
-        static setCookie(name: string, value: any, expire?: number): void;
-    }
+    /**
+     * 获取cookie值
+     *
+     * @export
+     * @param {string} name cookie名称
+     * @returns {string} cookie值
+     */
+    export function getCookie(name: string): string;
+    /**
+     * 获取cookie值
+     *
+     * @export
+     * @param {string} name cookie名称
+     * @param {*} value cookie值
+     * @param {number} [expire] 有效期时长（毫秒）
+     */
+    export function setCookie(name: string, value: any, expire?: number): void;
 }
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";

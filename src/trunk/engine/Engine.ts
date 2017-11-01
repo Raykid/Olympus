@@ -29,7 +29,7 @@ import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
 import IPlugin from "./plugin/IPlugin";
 import VersionUtil from "../utils/VersionUtil";
-import CookieUtil from "../utils/CookieUtil";
+import * as CookieUtil from "../utils/CookieUtil";
 
 /**
  * @author Raykid
