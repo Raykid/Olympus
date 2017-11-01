@@ -6930,6 +6930,140 @@ define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/In
     /** 再额外导出一个单例 */
     exports.query = Core_23.core.getInject(Query);
 });
+define("engine/version/Version", ["require", "exports", "core/Core", "core/injector/Injector", "utils/URLUtil"], function (require, exports, Core_24, Injector_18, URLUtil_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-21
+     * @modify date 2017-09-21
+     *
+     * 管理文件哈希版本号
+    */
+    var Version = /** @class */ (function () {
+        function Version() {
+            this._hashDict = {};
+        }
+        /**
+         * 初始化哈希版本工具
+         *
+         * @param {()=>void} handler 回调
+         * @memberof Version
+         */
+        Version.prototype.initialize = function (handler) {
+            var _this = this;
+            // 去加载version.cfg
+            var request = null;
+            if (window["XMLHttpRequest"]) {
+                // code for IE7+, Firefox, Chrome, Opera, Safari
+                request = new XMLHttpRequest();
+            }
+            else if (window["ActiveXObject"]) {
+                // code for IE6, IE5
+                request = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            // 注册回调函数
+            request.onreadystatechange = function (evt) {
+                var request = evt.target;
+                //判断对象状态是交互完成，接收服务器返回的数据
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        var fileName = request["fileName"];
+                        var responseText = request.responseText;
+                        var lines = responseText.split("\n");
+                        for (var i in lines) {
+                            var line = lines[i];
+                            var arr = line.split("  ");
+                            if (arr.length == 2) {
+                                var key = arr[1].substr(2);
+                                var value = arr[0];
+                                _this._hashDict[key] = value;
+                            }
+                        }
+                    }
+                    handler();
+                }
+            };
+            // 设置连接信息
+            request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
+            // 发送数据，开始和服务器进行交互
+            request.send();
+        };
+        /**
+         * 获取文件哈希值，如果没有文件哈希值则返回null
+         *
+         * @param {string} url 文件的URL
+         * @returns {string} 文件的哈希值，或者null
+         * @memberof Version
+         */
+        Version.prototype.getHash = function (url) {
+            url = URLUtil_3.trimURL(url);
+            var result = null;
+            for (var path in this._hashDict) {
+                if (url.indexOf(path) >= 0) {
+                    result = this._hashDict[path];
+                    break;
+                }
+            }
+            return result;
+        };
+        /**
+         * 将url转换为哈希版本url
+         *
+         * @param {string} url 原始url
+         * @returns {string} 哈希版本url
+         * @memberof Version
+         */
+        Version.prototype.wrapHashUrl = function (url) {
+            var hash = this.getHash(url);
+            if (hash != null) {
+                url = this.joinVersion(url, hash);
+            }
+            return url;
+        };
+        /**
+         * 添加-r_XXX形式版本号
+         *
+         * @param {string} url
+         * @param {string} version 版本号，以数字和小写字母组成
+         * @returns {string} 加版本号后的url，如果没有查到版本号则返回原始url
+         * @memberof Version
+         */
+        Version.prototype.joinVersion = function (url, version) {
+            if (version == null)
+                return url;
+            // 去掉version中的非法字符
+            version = version.replace(/[^0-9a-z]+/ig, "");
+            // 插入版本号
+            var reg = /([a-zA-Z]+:\/+[^\/\?#]+\/[^\?#]+)\.([^\?]+)(\?.+)?/;
+            var result = reg.exec(url);
+            if (result != null) {
+                url = result[1] + "-r_" + version + "." + result[2] + (result[3] || "");
+            }
+            return url;
+        };
+        /**
+         * 移除-r_XXX形式版本号
+         *
+         * @param {string} url url
+         * @returns {string} 移除版本号后的url
+         * @memberof Version
+         */
+        Version.prototype.removeVersion = function (url) {
+            // 去掉-r_XXX版本号，如果有
+            url = url.replace(/\-r_[a-z0-9]+\./ig, ".");
+            return url;
+        };
+        Version = __decorate([
+            Injector_18.Injectable
+        ], Version);
+        return Version;
+    }());
+    exports.default = Version;
+    /** 再额外导出一个单例 */
+    exports.version = Core_24.core.getInject(Version);
+});
 define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_2, Environment_5, NetManager_3, ObjectUtil_6) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -6971,175 +7105,6 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
 define("engine/plugin/IPlugin", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("utils/VersionUtil", ["require", "exports", "utils/URLUtil"], function (require, exports, URLUtil_3) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-11-01
-     * @modify date 2017-11-01
-     *
-     * 版本号管理工具，使用静态工具类做是因为可能会在Engine之外使用，例如Preloader中
-    */
-    var InitStatus;
-    (function (InitStatus) {
-        /** 未初始化 */
-        InitStatus[InitStatus["UNINITIALIZED"] = 0] = "UNINITIALIZED";
-        /** 初始化中 */
-        InitStatus[InitStatus["INITIALIZING"] = 1] = "INITIALIZING";
-        /** 已初始化 */
-        InitStatus[InitStatus["INITIALIZED"] = 2] = "INITIALIZED";
-    })(InitStatus || (InitStatus = {}));
-    var VersionUtil = /** @class */ (function () {
-        function VersionUtil() {
-        }
-        /**
-         * 初始化哈希版本工具
-         *
-         * @static
-         * @param {()=>void} [handler] 回调
-         * @memberof VersionUtil
-         */
-        VersionUtil.initialize = function (handler) {
-            var _this = this;
-            switch (VersionUtil._initStatus) {
-                case InitStatus.INITIALIZED:
-                    // 已初始化，直接调用回调
-                    handler && handler();
-                    break;
-                case InitStatus.INITIALIZING:
-                    // 正在初始化，仅记录回调
-                    if (VersionUtil._handlerList.indexOf(handler) < 0)
-                        VersionUtil._handlerList.push(handler);
-                    break;
-                case InitStatus.UNINITIALIZED:
-                    // 尚未初始化
-                    VersionUtil._initStatus = InitStatus.INITIALIZING;
-                    // 记录回调
-                    if (VersionUtil._handlerList.indexOf(handler) < 0)
-                        VersionUtil._handlerList.push(handler);
-                    // 去加载version.cfg
-                    var request = null;
-                    if (window["XMLHttpRequest"]) {
-                        // code for IE7+, Firefox, Chrome, Opera, Safari
-                        request = new XMLHttpRequest();
-                    }
-                    else if (window["ActiveXObject"]) {
-                        // code for IE6, IE5
-                        request = new ActiveXObject("Microsoft.XMLHTTP");
-                    }
-                    // 注册回调函数
-                    request.onreadystatechange = function (evt) {
-                        var request = evt.target;
-                        //判断对象状态是交互完成，接收服务器返回的数据
-                        if (request.readyState == 4) {
-                            if (request.status == 200) {
-                                var fileName = request["fileName"];
-                                var responseText = request.responseText;
-                                var lines = responseText.split("\n");
-                                for (var i in lines) {
-                                    var line = lines[i];
-                                    var arr = line.split("  ");
-                                    if (arr.length == 2) {
-                                        var key = arr[1].substr(2);
-                                        var value = arr[0];
-                                        _this._hashDict[key] = value;
-                                    }
-                                }
-                            }
-                            // 修改状态
-                            VersionUtil._initStatus = InitStatus.INITIALIZED;
-                            // 执行回调
-                            for (var j = 0, len = VersionUtil._handlerList.length; j < len; j++) {
-                                var handler = VersionUtil._handlerList.shift();
-                                handler && handler();
-                            }
-                        }
-                    };
-                    // 设置连接信息
-                    request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
-                    // 发送数据，开始和服务器进行交互
-                    request.send();
-                    break;
-            }
-        };
-        /**
-         * 获取文件哈希值，如果没有文件哈希值则返回null
-         *
-         * @static
-         * @param {string} url 文件的URL
-         * @returns {string} 文件的哈希值，或者null
-         * @memberof VersionUtil
-         */
-        VersionUtil.getHash = function (url) {
-            url = URLUtil_3.trimURL(url);
-            var result = null;
-            for (var path in this._hashDict) {
-                if (url.indexOf(path) >= 0) {
-                    result = this._hashDict[path];
-                    break;
-                }
-            }
-            return result;
-        };
-        /**
-         * 将url转换为哈希版本url
-         *
-         * @static
-         * @param {string} url 原始url
-         * @returns {string} 哈希版本url
-         * @memberof VersionUtil
-         */
-        VersionUtil.wrapHashUrl = function (url) {
-            var hash = this.getHash(url);
-            if (hash != null) {
-                url = this.joinVersion(url, hash);
-            }
-            return url;
-        };
-        /**
-         * 添加-r_XXX形式版本号
-         *
-         * @static
-         * @param {string} url
-         * @param {string} version 版本号，以数字和小写字母组成
-         * @returns {string} 加版本号后的url，如果没有查到版本号则返回原始url
-         * @memberof VersionUtil
-         */
-        VersionUtil.joinVersion = function (url, version) {
-            if (version == null)
-                return url;
-            // 去掉version中的非法字符
-            version = version.replace(/[^0-9a-z]+/ig, "");
-            // 插入版本号
-            var reg = /([a-zA-Z]+:\/+[^\/\?#]+\/[^\?#]+)\.([^\?]+)(\?.+)?/;
-            var result = reg.exec(url);
-            if (result != null) {
-                url = result[1] + "-r_" + version + "." + result[2] + (result[3] || "");
-            }
-            return url;
-        };
-        /**
-         * 移除-r_XXX形式版本号
-         *
-         * @static
-         * @param {string} url url
-         * @returns {string} 移除版本号后的url
-         * @memberof VersionUtil
-         */
-        VersionUtil.removeVersion = function (url) {
-            // 去掉-r_XXX版本号，如果有
-            url = url.replace(/\-r_[a-z0-9]+\./ig, ".");
-            return url;
-        };
-        VersionUtil._initStatus = InitStatus.UNINITIALIZED;
-        VersionUtil._hashDict = {};
-        VersionUtil._handlerList = [];
-        return VersionUtil;
-    }());
-    exports.default = VersionUtil;
 });
 /**
  * @author Raykid
@@ -7192,7 +7157,7 @@ define("utils/CookieUtil", ["require", "exports"], function (require, exports) {
     }
     exports.setCookie = setCookie;
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/module/ModuleMessage", "utils/VersionUtil"], function (require, exports, Core_24, Injector_18, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, ModuleMessage_2, VersionUtil_1) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_25, Injector_19, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, Version_1, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -7230,9 +7195,9 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 // 初始化环境参数
                 Environment_6.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
                 // 初始化版本号工具
-                VersionUtil_1.default.initialize(function () {
+                Version_1.version.initialize(function () {
                     // 监听Bridge初始化完毕事件，显示第一个模块
-                    Core_24.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
+                    Core_25.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                     // 注册并初始化表现层桥实例
                     BridgeManager_4.bridgeManager.registerBridge.apply(BridgeManager_4.bridgeManager, params.bridges);
                 });
@@ -7240,7 +7205,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         };
         Engine.prototype.onAllBridgesInit = function () {
             // 注销监听
-            Core_24.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+            Core_25.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
             // 初始化插件
             if (this._initParams.plugins) {
                 for (var _i = 0, _a = this._initParams.plugins; _i < _a.length; _i++) {
@@ -7265,7 +7230,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             // 调用回调
             this._initParams.onInited && this._initParams.onInited();
             // 监听首个模块开启
-            Core_24.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            Core_25.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
             ModuleManager_4.moduleManager.open(this._initParams.firstModule);
             // 如果有哈希模块则打开之
@@ -7274,7 +7239,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听
-            Core_24.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            Core_25.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 移除loadElement显示
             if (this._loadElement) {
                 var parent = this._loadElement.parentElement;
@@ -7282,13 +7247,13 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             }
         };
         Engine = __decorate([
-            Injector_18.Injectable
+            Injector_19.Injectable
         ], Engine);
         return Engine;
     }());
     exports.default = Engine;
     /** 再额外导出一个单例 */
-    exports.engine = Core_24.core.getInject(Engine);
+    exports.engine = Core_25.core.getInject(Engine);
 });
 define("Olympus", ["require", "exports", "engine/Engine"], function (require, exports, Engine_1) {
     "use strict";
