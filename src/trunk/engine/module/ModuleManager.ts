@@ -12,6 +12,7 @@ import { environment } from "../env/Environment";
 import { maskManager } from "../mask/MaskManager";
 import { assetsManager } from "../assets/AssetsManager";
 import { audioManager } from "../audio/AudioManager";
+import { version } from "../version/Version";
 
 /**
  * @author Raykid
@@ -210,7 +211,7 @@ export default class ModuleManager
                             var cssNode:HTMLLinkElement= document.createElement("link");
                             cssNode.rel = "stylesheet";
                             cssNode.type = "text/css";
-                            cssNode.href = environment.toCDNHostURL(cssFile);
+                            cssNode.href = environment.toCDNHostURL(version.wrapHashUrl(cssFile));
                             document.body.appendChild(cssNode);
                         }
                     }

@@ -4393,7 +4393,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
     /** 再额外导出一个单例 */
     exports.audioManager = Core_11.core.getInject(AudioManager);
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/mask/MaskManager", "engine/assets/AssetsManager", "engine/audio/AudioManager"], function (require, exports, Core_12, Injector_8, NetManager_1, ModuleMessage_1, Environment_4, MaskManager_2, AssetsManager_2, AudioManager_1) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/mask/MaskManager", "engine/assets/AssetsManager", "engine/audio/AudioManager", "engine/version/Version"], function (require, exports, Core_12, Injector_8, NetManager_1, ModuleMessage_1, Environment_4, MaskManager_2, AssetsManager_2, AudioManager_1, Version_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4582,7 +4582,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 var cssNode = document.createElement("link");
                                 cssNode.rel = "stylesheet";
                                 cssNode.type = "text/css";
-                                cssNode.href = Environment_4.environment.toCDNHostURL(cssFile);
+                                cssNode.href = Environment_4.environment.toCDNHostURL(Version_2.version.wrapHashUrl(cssFile));
                                 document.body.appendChild(cssNode);
                             }
                         }
@@ -7166,7 +7166,7 @@ define("utils/CookieUtil", ["require", "exports"], function (require, exports) {
     }
     exports.setCookie = setCookie;
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_25, Injector_19, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, Version_2, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_25, Injector_19, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, Version_3, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -7204,7 +7204,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 // 初始化环境参数
                 Environment_6.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
                 // 初始化版本号工具
-                Version_2.version.initialize(function () {
+                Version_3.version.initialize(function () {
                     // 监听Bridge初始化完毕事件，显示第一个模块
                     Core_25.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                     // 注册并初始化表现层桥实例
