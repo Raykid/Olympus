@@ -4179,6 +4179,31 @@ declare module "utils/VersionUtil" {
         static removeVersion(url: string): string;
     }
 }
+declare module "utils/CookieUtil" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-01
+     * @modify date 2017-11-01
+     *
+     * Cookie工具
+    */
+    export default class CookieUtil {
+        /**
+         * 获取cookie值
+         * @param name cookie名称
+         * @return cookie值
+         */
+        static getCookie(name: string): string;
+        /**
+         * 获取cookie值
+         * @param name cookie名称
+         * @param value cookie值
+         * @param expire 有效期时长（毫秒）
+         */
+        static setCookie(name: string, value: any, expire?: number): void;
+    }
+}
 declare module "engine/Engine" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
     import IBridge from "engine/bridge/IBridge";
