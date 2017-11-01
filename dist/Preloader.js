@@ -177,7 +177,7 @@ var olympus;
                                 }
                             }
                             // 在window上挂一份
-                            window["__Olympus_Version_hashDict__"] = value;
+                            window["__Olympus_Version_hashDict__"] = _this._hashDict;
                         }
                         handler();
                     }
