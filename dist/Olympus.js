@@ -3677,10 +3677,6 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
                                 var handler = value_2[_i];
                                 handler(err);
                             }
-                        },
-                        headerDict: {
-                            // 资源应该都是可以被缓存在本地和CDN上的
-                            "Cache-Control": "public"
                         }
                     });
                 }
@@ -7110,8 +7106,6 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
                 onError: function (err) { return NetManager_3.netManager.__onError(err, request); },
                 headerDict: {}
             }, params);
-            // ajax请求和返回都不应该被缓存，保证请求是最新鲜的
-            httpParams.headerDict["Cache-Control"] = "no-store";
             // ajax请求都统一设置withCredentials
             httpParams.headerDict["withCredentials"] = "true";
             // 发送

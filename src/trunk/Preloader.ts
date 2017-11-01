@@ -325,8 +325,6 @@ namespace olympus
                 xhr.responseType = "text";
                 xhr.onreadystatechange = onReadyStateChange;
                 xhr.open("GET", url, true);
-                // js文件都是允许缓存的，包括缓存在CDN上
-                xhr.setRequestHeader("Cache-Control", "public");
                 xhr.send(null);
             }
         }
