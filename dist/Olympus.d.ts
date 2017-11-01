@@ -4090,61 +4090,6 @@ declare module "engine/env/Query" {
     /** 再额外导出一个单例 */
     export const query: Query;
 }
-declare module "engine/version/Version" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-21
-     * @modify date 2017-09-21
-     *
-     * 管理文件哈希版本号
-    */
-    export default class Version {
-        private _hashDict;
-        /**
-         * 初始化哈希版本工具
-         *
-         * @param {()=>void} handler 回调
-         * @memberof Version
-         */
-        initialize(handler: () => void): void;
-        /**
-         * 获取文件哈希值，如果没有文件哈希值则返回null
-         *
-         * @param {string} url 文件的URL
-         * @returns {string} 文件的哈希值，或者null
-         * @memberof Version
-         */
-        getHash(url: string): string;
-        /**
-         * 将url转换为哈希版本url
-         *
-         * @param {string} url 原始url
-         * @returns {string} 哈希版本url
-         * @memberof Version
-         */
-        wrapHashUrl(url: string): string;
-        /**
-         * 添加-r_XXX形式版本号
-         *
-         * @param {string} url
-         * @param {string} version 版本号，以数字和小写字母组成
-         * @returns {string} 加版本号后的url，如果没有查到版本号则返回原始url
-         * @memberof Version
-         */
-        joinVersion(url: string, version: string): string;
-        /**
-         * 移除-r_XXX形式版本号
-         *
-         * @param {string} url url
-         * @returns {string} 移除版本号后的url
-         * @memberof Version
-         */
-        removeVersion(url: string): string;
-    }
-    /** 再额外导出一个单例 */
-    export const version: Version;
-}
 declare module "engine/net/policies/HTTPRequestPolicy" {
     import IRequestPolicy from "engine/net/IRequestPolicy";
     import RequestData from "engine/net/RequestData";
@@ -4180,6 +4125,58 @@ declare module "engine/plugin/IPlugin" {
     export default interface IPlugin {
         /** 初始化插件，插件会在框架初始化完毕，首个模块打开前调用 */
         initPlugin(): void;
+    }
+}
+declare module "utils/VersionUtil" {
+    export default class VersionUtil {
+        private static _initStatus;
+        private static _hashDict;
+        private static _handlerList;
+        /**
+         * 初始化哈希版本工具
+         *
+         * @static
+         * @param {()=>void} [handler] 回调
+         * @memberof VersionUtil
+         */
+        static initialize(handler?: () => void): void;
+        /**
+         * 获取文件哈希值，如果没有文件哈希值则返回null
+         *
+         * @static
+         * @param {string} url 文件的URL
+         * @returns {string} 文件的哈希值，或者null
+         * @memberof VersionUtil
+         */
+        static getHash(url: string): string;
+        /**
+         * 将url转换为哈希版本url
+         *
+         * @static
+         * @param {string} url 原始url
+         * @returns {string} 哈希版本url
+         * @memberof VersionUtil
+         */
+        static wrapHashUrl(url: string): string;
+        /**
+         * 添加-r_XXX形式版本号
+         *
+         * @static
+         * @param {string} url
+         * @param {string} version 版本号，以数字和小写字母组成
+         * @returns {string} 加版本号后的url，如果没有查到版本号则返回原始url
+         * @memberof VersionUtil
+         */
+        static joinVersion(url: string, version: string): string;
+        /**
+         * 移除-r_XXX形式版本号
+         *
+         * @static
+         * @param {string} url url
+         * @returns {string} 移除版本号后的url
+         * @memberof VersionUtil
+         */
+        static removeVersion(url: string): string;
     }
 }
 declare module "engine/Engine" {

@@ -21,7 +21,6 @@ import WindowExternal from "./env/WindowExternal";
 import Hash, { hash } from "./env/Hash";
 import Query from "./env/Query";
 import Shell from "./env/Shell";
-import Version, { version } from "./version/Version";
 import MaskManager from "./mask/MaskManager";
 import NetManager, { netManager } from "./net/NetManager";
 import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
@@ -29,6 +28,7 @@ import { IResponseDataConstructor } from "./net/ResponseData";
 import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
 import IPlugin from "./plugin/IPlugin";
+import VersionUtil from "../utils/VersionUtil";
 
 /**
  * @author Raykid
@@ -67,8 +67,8 @@ export default class Engine
             self._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
             // 初始化环境参数
             environment.initialize(params.env, params.hostsDict, params.cdnsDict);
-            // 初始化版本号管理器
-            version.initialize(()=>{
+            // 初始化版本号工具
+            VersionUtil.initialize(()=>{
                 // 监听Bridge初始化完毕事件，显示第一个模块
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
