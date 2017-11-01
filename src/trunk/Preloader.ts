@@ -1,5 +1,5 @@
-import { getQueryParams, wrapAbsolutePath, isAbsolutePath } from "../utils/URLUtil";
-import VersionUtil from "../utils/VersionUtil";
+import { getQueryParams, wrapAbsolutePath, isAbsolutePath } from "./utils/URLUtil";
+import VersionUtil from "./utils/VersionUtil";
 
 /**
  * @author Raykid

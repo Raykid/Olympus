@@ -593,7 +593,7 @@ define("utils/VersionUtil", ["require", "exports", "utils/URLUtil"], function (r
     }());
     exports.default = VersionUtil;
 });
-define("preload/Preloader", ["require", "exports", "utils/URLUtil", "utils/VersionUtil"], function (require, exports, URLUtil_2, VersionUtil_1) {
+define("Preloader", ["require", "exports", "utils/URLUtil", "utils/VersionUtil"], function (require, exports, URLUtil_2, VersionUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

@@ -199,7 +199,7 @@ declare module "utils/VersionUtil" {
         static removeVersion(url: string): string;
     }
 }
-declare module "preload/Preloader" {
+declare module "Preloader" {
     /**
      * @author Raykid
      * @email initial_r@qq.com

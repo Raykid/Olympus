@@ -9,7 +9,7 @@
     "outFile": "../../dist/Preloader.js"
   },
   "files": [
-    "preload/Preloader.ts"
+    "Preloader.ts"
   ],
   "exclude": [
     "node_modules"
