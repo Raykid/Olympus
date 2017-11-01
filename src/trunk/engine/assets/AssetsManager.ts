@@ -2,6 +2,7 @@ import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
 import { load } from "../../utils/HTTPUtil";
 import { trimURL } from "../../utils/URLUtil";
+import { version } from "../version/Version";
 
 /**
  * @author Raykid
@@ -121,7 +122,7 @@ export default class AssetsManager
                 // 没有就去加载
                 this._assetsDict[path] = value = [complete];
                 load({
-                    url: path,
+                    url: version.wrapHashUrl(path),
                     useCDN: true,
                     responseType: responseType,
                     onResponse: (result:any)=>{
