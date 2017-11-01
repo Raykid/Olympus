@@ -2186,12 +2186,14 @@ declare module "utils/HTTPUtil" {
          */
         responseType?: XMLHttpRequestResponseType;
         /**
-         * HTTP POST时的Content-Type，默认"application/json"
+         * HTTP请求头字典，如果有需要的请求头则放在这里
          *
-         * @type {string}
+         * @type {{[key:string]:string}}
          * @memberof IHTTPRequestParams
          */
-        contentType?: string;
+        headerDict?: {
+            [key: string]: string;
+        };
         /**
          * 失败重试次数，默认重试2次
          *

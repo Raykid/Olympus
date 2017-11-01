@@ -29,8 +29,13 @@ export class HTTPRequestPolicy implements IRequestPolicy
         var httpParams:IHTTPRequestParams = extendObject({
             url: environment.toHostURL(params.path, params.hostIndex),
             onResponse: result=>netManager.__onResponse(request.__params.response.type, result, request),
-            onError: err=>netManager.__onError(err, request)
+            onError: err=>netManager.__onError(err, request),
+            headerDict: {}
         }, params);
+        // ajax请求和返回都不应该被缓存，保证请求是最新鲜的
+        httpParams.headerDict["Cache-Control"] = "no-store";
+        // ajax请求都统一设置withCredentials
+        httpParams.headerDict["withCredentials"] = "true";
         // 发送
         load(httpParams);
     }

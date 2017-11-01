@@ -142,6 +142,10 @@ export default class AssetsManager
                         {
                             handler(err);
                         }
+                    },
+                    headerDict: {
+                        // 资源应该都是可以被缓存在本地和CDN上的
+                        "Cache-Control": "public"
                     }
                 })
             }

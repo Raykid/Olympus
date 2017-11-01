@@ -3355,25 +3355,28 @@ define("utils/HTTPUtil", ["require", "exports", "engine/env/Environment", "utils
         // 发送
         send();
         function send() {
+            var sendData = null;
             // 根据发送方式组织数据格式
             switch (method) {
                 case "POST":
                     // POST目前规定为JSON格式发送
-                    xhr.open(method, url, true);
-                    xhr.setRequestHeader("Content-Type", params.contentType || "application/json");
-                    xhr.setRequestHeader("withCredentials", "true");
-                    xhr.send(JSON.stringify(data));
+                    sendData = JSON.stringify(data);
                     break;
                 case "GET":
                     // 将数据添加到url上
                     url = URLUtil_2.joinQueryParams(url, data);
-                    xhr.open(method, url, true);
-                    xhr.setRequestHeader("withCredentials", "true");
-                    xhr.send(null);
                     break;
                 default:
                     throw new Error("暂不支持的HTTP Method：" + method);
             }
+            // 打开XHR
+            xhr.open(method, url, true);
+            // 添加自定义请求头
+            for (var key in params.headerDict) {
+                xhr.setRequestHeader(key, params.headerDict[key]);
+            }
+            // 开始发送
+            xhr.send(sendData);
         }
         function onReadyStateChange() {
             switch (xhr.readyState) {
@@ -3674,6 +3677,10 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
                                 var handler = value_2[_i];
                                 handler(err);
                             }
+                        },
+                        headerDict: {
+                            // 资源应该都是可以被缓存在本地和CDN上的
+                            "Cache-Control": "public"
                         }
                     });
                 }
@@ -7100,8 +7107,13 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
             var httpParams = ObjectUtil_6.extendObject({
                 url: Environment_5.environment.toHostURL(params.path, params.hostIndex),
                 onResponse: function (result) { return NetManager_3.netManager.__onResponse(request.__params.response.type, result, request); },
-                onError: function (err) { return NetManager_3.netManager.__onError(err, request); }
+                onError: function (err) { return NetManager_3.netManager.__onError(err, request); },
+                headerDict: {}
             }, params);
+            // ajax请求和返回都不应该被缓存，保证请求是最新鲜的
+            httpParams.headerDict["Cache-Control"] = "no-store";
+            // ajax请求都统一设置withCredentials
+            httpParams.headerDict["withCredentials"] = "true";
             // 发送
             HTTPUtil_2.load(httpParams);
         };
