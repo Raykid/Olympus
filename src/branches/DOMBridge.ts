@@ -63,6 +63,18 @@ export default class DOMBridge implements IBridge
     }
 
     /**
+     * 获取舞台引用，DOM的舞台指向root所在的Document对象
+     * 
+     * @readonly
+     * @type {Document}
+     * @memberof DOMBridge
+     */
+    public get stage():Document
+    {
+        return this.root.ownerDocument;
+    }
+
+    /**
      * 获取背景容器
      * 
      * @readonly

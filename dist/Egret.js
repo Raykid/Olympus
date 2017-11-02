@@ -66440,6 +66440,20 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(EgretBridge.prototype, "stage", {
+            /**
+             * 获取舞台引用
+             *
+             * @readonly
+             * @type {egret.Stage}
+             * @memberof EgretBridge
+             */
+            get: function () {
+                return this._stage;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(EgretBridge.prototype, "bgLayer", {
             /**
              * 获取背景容器
@@ -66590,12 +66604,13 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             // 构建__EgretRoot__类，使得Egret引擎可以通过window寻址的方式找到该类，同时又可以让其将控制权转交给Application
             var self = this;
             window["__EgretRoot__"] = function () {
-                egret.Sprite.call(this);
+                eui.UILayer.call(this);
+                this.touchEnabled = false;
             };
-            window["__EgretRoot__"].prototype = new egret.Sprite();
+            window["__EgretRoot__"].prototype = new eui.UILayer();
             window["__EgretRoot__"].prototype.$onAddToStage = function (stage, nestLevel) {
                 // 调用父类方法
-                egret.Sprite.prototype.$onAddToStage.call(this, stage, nestLevel);
+                eui.UILayer.prototype.$onAddToStage.call(this, stage, nestLevel);
                 // 移除引用
                 delete window["__EgretRoot__"];
                 // 将控制权移交给Application对象
@@ -66620,23 +66635,30 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             }
             function onRootInitialized(root) {
                 self._root = root;
+                self._stage = root.stage;
                 // 创建背景显示层
-                self._bgLayer = new egret.Sprite();
+                self._bgLayer = new eui.UILayer();
+                self._bgLayer.touchEnabled = false;
                 root.addChild(self._bgLayer);
                 // 创建场景显示层
-                self._sceneLayer = new egret.Sprite();
+                self._sceneLayer = new eui.UILayer();
+                self._sceneLayer.touchEnabled = false;
                 root.addChild(self._sceneLayer);
                 // 创建框架显示层
-                self._frameLayer = new egret.Sprite();
+                self._frameLayer = new eui.UILayer();
+                self._frameLayer.touchEnabled = false;
                 root.addChild(self._frameLayer);
                 // 创建弹出层
-                self._panelLayer = new egret.Sprite();
+                self._panelLayer = new eui.UILayer();
+                self._panelLayer.touchEnabled = false;
                 root.addChild(self._panelLayer);
                 // 创建遮罩层
-                self._maskLayer = new egret.Sprite();
+                self._maskLayer = new eui.UILayer();
+                self._maskLayer.touchEnabled = false;
                 root.addChild(self._maskLayer);
                 // 创建顶级显示层
-                self._topLayer = new egret.Sprite();
+                self._topLayer = new eui.UILayer();
+                self._topLayer.touchEnabled = false;
                 root.addChild(self._topLayer);
                 // 设置资源和主题适配器
                 egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());

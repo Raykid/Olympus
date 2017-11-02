@@ -39,6 +39,14 @@ export default interface IBridge
      */
     readonly root:any;
     /**
+     * 获取舞台引用
+     * 
+     * @readonly
+     * @type {*}
+     * @memberof IBridge
+     */
+    readonly stage:any;
+    /**
      * 获取背景容器
      * 
      * @readonly

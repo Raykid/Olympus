@@ -93,6 +93,14 @@ declare module "DOMBridge" {
          */
         readonly root: HTMLElement;
         /**
+         * 获取舞台引用，DOM的舞台指向root所在的Document对象
+         *
+         * @readonly
+         * @type {Document}
+         * @memberof DOMBridge
+         */
+        readonly stage: Document;
+        /**
          * 获取背景容器
          *
          * @readonly

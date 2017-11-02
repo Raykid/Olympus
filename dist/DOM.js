@@ -155,6 +155,20 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/mask/MaskEnt
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(DOMBridge.prototype, "stage", {
+            /**
+             * 获取舞台引用，DOM的舞台指向root所在的Document对象
+             *
+             * @readonly
+             * @type {Document}
+             * @memberof DOMBridge
+             */
+            get: function () {
+                return this.root.ownerDocument;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(DOMBridge.prototype, "bgLayer", {
             /**
              * 获取背景容器

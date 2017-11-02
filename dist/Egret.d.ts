@@ -274,6 +274,15 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         readonly root: egret.DisplayObjectContainer;
+        private _stage;
+        /**
+         * 获取舞台引用
+         *
+         * @readonly
+         * @type {egret.Stage}
+         * @memberof EgretBridge
+         */
+        readonly stage: egret.Stage;
         private _bgLayer;
         /**
          * 获取背景容器
