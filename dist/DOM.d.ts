@@ -2,6 +2,7 @@
 declare module "dom/mask/MaskEntity" {
     import { IMaskEntity } from "engine/mask/MaskManager";
     import IPanel from "engine/panel/IPanel";
+    import IMaskData from "engine/mask/IMaskData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -11,9 +12,10 @@ declare module "dom/mask/MaskEntity" {
      * DOM遮罩实现
     */
     export default class MaskEntityImpl implements IMaskEntity {
-        private _loadingSkin;
         private _showing;
-        constructor(loadingSkin?: HTMLElement | string);
+        loadingSkin: HTMLElement;
+        maskData: MaskData;
+        constructor(params?: MaskData);
         /**
          * 显示遮罩
          */
@@ -41,6 +43,9 @@ declare module "dom/mask/MaskEntity" {
         /** 当前是否在显示模态窗口遮罩 */
         isShowingModalMask(panel: IPanel): boolean;
     }
+    export interface MaskData extends IMaskData {
+        loadingSkin?: HTMLElement | string;
+    }
 }
 declare module "DOMBridge" {
     import IBridge from "engine/bridge/IBridge";
@@ -49,6 +54,7 @@ declare module "DOMBridge" {
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
     import { IMaskEntity } from "engine/mask/MaskManager";
+    import { MaskData } from "dom/mask/MaskEntity";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -303,7 +309,7 @@ declare module "DOMBridge" {
         /** 通用提示框类型 */
         promptClass?: IPromptPanelConstructor;
         /** 遮罩皮肤 */
-        maskSkin?: HTMLElement | string;
+        maskData?: MaskData;
     }
 }
 declare module "dom/utils/SkinUtil" {

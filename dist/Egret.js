@@ -66210,7 +66210,7 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
                 this._maskAlpha = (params.maskAlpha != null ? params.maskAlpha : 0.5);
                 this._loadingAlpha = (params.loadingAlpha != null ? params.loadingAlpha : 0.5);
                 this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
-                this._loadingSkin = params.loadingSkin;
+                this._loadingSkinFactory = params.loadingSkinFactory;
             }
             this._mask = new egret.Shape();
             this._mask.touchEnabled = true;
@@ -66221,6 +66221,16 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
             this._modalPanelMask = new egret.Shape();
             this._modalPanelMask.touchEnabled = true;
         }
+        Object.defineProperty(MaskEntityImpl.prototype, "loadingSkin", {
+            get: function () {
+                // 初始化皮肤
+                if (!this._loadingSkin && this._loadingSkinFactory)
+                    this._loadingSkin = this._loadingSkinFactory();
+                return this._loadingSkin;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 显示遮罩
          */
@@ -66273,8 +66283,9 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
             this._loadingMask.graphics.endFill();
             // 添加显示
             bridge.maskLayer.addChild(this._loadingMask);
-            if (this._loadingSkin != null)
-                bridge.maskLayer.addChild(this._loadingSkin);
+            // 添加loading皮肤
+            if (this.loadingSkin)
+                bridge.maskLayer.addChild(this.loadingSkin);
         };
         /**
          * 隐藏加载图
@@ -66286,8 +66297,8 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
             // 隐藏
             if (this._loadingMask.parent != null)
                 this._loadingMask.parent.removeChild(this._loadingMask);
-            if (this._loadingSkin != null && this._loadingSkin.parent != null)
-                this._loadingSkin.parent.removeChild(this._loadingSkin);
+            if (this.loadingSkin != null && this.loadingSkin.parent != null)
+                this.loadingSkin.parent.removeChild(this._loadingSkin);
         };
         /**当前是否在显示loading*/
         MaskEntityImpl.prototype.isShowingLoading = function () {
@@ -66641,8 +66652,9 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             }
             function onThemeLoadComplete(evt) {
                 evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-                // 调用回调
-                complete(this);
+                // 加载预加载资源组
+                var preloadGroups = this._initParams.preloadGroups;
+                self.loadAssets(preloadGroups, null, function (err) { return complete(self); });
             }
         };
         /**

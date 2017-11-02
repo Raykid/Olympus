@@ -7,7 +7,7 @@ import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
 import { IMaskEntity } from "engine/mask/MaskManager";
-import MaskEntity from "./dom/mask/MaskEntity";
+import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import { assetsManager } from "engine/assets/AssetsManager";
 
 /**
@@ -155,7 +155,7 @@ export default class DOMBridge implements IBridge
      */
     public get maskEntity():IMaskEntity
     {
-        return new MaskEntity(this._initParams.maskSkin);
+        return new MaskEntity(this._initParams.maskData);
     }
     
     /**
@@ -440,5 +440,5 @@ export interface IInitParams
     /** 通用提示框类型 */
     promptClass?:IPromptPanelConstructor;
     /** 遮罩皮肤 */
-    maskSkin?:HTMLElement|string;
+    maskData?:MaskData;
 }

@@ -4,6 +4,7 @@ import IBridge from "engine/bridge/IBridge";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import Dictionary from "utils/Dictionary";
 import EgretBridge from "../../EgretBridge";
+import IMaskData from "engine/mask/IMaskData";
 
 /**
  * @author Raykid
@@ -23,12 +24,22 @@ export default class MaskEntityImpl implements IMaskEntity
     private _mask:egret.Shape;
 
     private _loadingSkin:egret.DisplayObject;
+    private _loadingSkinFactory:()=>egret.DisplayObject;
     private _showingLoading:boolean = false;
     private _loadingMask:egret.Shape;
 
     private _modalPanelDict:Dictionary<IPanel, IPanel>;
     private _modalPanelList:IPanel[];
     private _modalPanelMask:egret.Shape;
+
+    public maskData:MaskData;
+    public get loadingSkin():egret.DisplayObject
+    {
+        // 初始化皮肤
+        if(!this._loadingSkin && this._loadingSkinFactory)
+            this._loadingSkin = this._loadingSkinFactory();
+        return this._loadingSkin;
+    }
 
     public constructor(params?:MaskData)
     {
@@ -37,7 +48,7 @@ export default class MaskEntityImpl implements IMaskEntity
             this._maskAlpha = (params.maskAlpha != null ? params.maskAlpha : 0.5);
             this._loadingAlpha = (params.loadingAlpha != null ? params.loadingAlpha : 0.5);
             this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
-            this._loadingSkin = params.loadingSkin;
+            this._loadingSkinFactory = params.loadingSkinFactory;
         }
 
         this._mask = new egret.Shape();
@@ -105,7 +116,9 @@ export default class MaskEntityImpl implements IMaskEntity
         this._loadingMask.graphics.endFill();
         // 添加显示
         bridge.maskLayer.addChild(this._loadingMask);
-        if(this._loadingSkin != null) bridge.maskLayer.addChild(this._loadingSkin);
+        // 添加loading皮肤
+        if(this.loadingSkin)
+            bridge.maskLayer.addChild(this.loadingSkin);
     }
 
     /**
@@ -117,7 +130,7 @@ export default class MaskEntityImpl implements IMaskEntity
         this._showingLoading = false;
         // 隐藏
         if(this._loadingMask.parent != null) this._loadingMask.parent.removeChild(this._loadingMask);
-        if(this._loadingSkin != null && this._loadingSkin.parent != null) this._loadingSkin.parent.removeChild(this._loadingSkin);
+        if(this.loadingSkin != null && this.loadingSkin.parent != null) this.loadingSkin.parent.removeChild(this._loadingSkin);
     }
 
     /**当前是否在显示loading*/
@@ -188,10 +201,10 @@ export default class MaskEntityImpl implements IMaskEntity
     }
 }
 
-export interface MaskData
+export interface MaskData extends IMaskData
 {
-    maskAlpha?:number,
-    loadingAlpha?:number,
-    modalPanelAlpha?:number,
-    loadingSkin?:egret.DisplayObject
+    maskAlpha?:number;
+    loadingAlpha?:number;
+    modalPanelAlpha?:number;
+    loadingSkinFactory?:()=>egret.DisplayObject;
 }

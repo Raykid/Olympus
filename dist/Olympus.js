@@ -4860,7 +4860,11 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.bridgeManager = Core_13.core.getInject(BridgeManager);
 });
-define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector", "engine/bridge/BridgeManager", "core/Core"], function (require, exports, Injector_10, BridgeManager_2, Core_14) {
+define("engine/mask/IMaskData", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
+define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector", "core/Core", "engine/bridge/BridgeManager"], function (require, exports, Injector_10, Core_14, BridgeManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4916,8 +4920,12 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
         MaskManager.prototype.showMask = function (alpha) {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
-            if (entity != null)
+            if (entity != null) {
+                // 调用回调
+                entity.maskData.onShowMask && entity.maskData.onShowMask();
+                // 显示遮罩
                 entity.showMask(alpha);
+            }
         };
         /**
          * 隐藏遮罩
@@ -4925,8 +4933,12 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
         MaskManager.prototype.hideMask = function () {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
-            if (entity != null)
+            if (entity != null) {
+                // 隐藏遮罩
                 entity.hideMask();
+                // 调用回调
+                entity.maskData.onHideMask && entity.maskData.onHideMask();
+            }
         };
         /**当前是否在显示遮罩*/
         MaskManager.prototype.isShowingMask = function () {
@@ -4945,8 +4957,12 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
             if (this.getLoadingMaskCount() == 0) {
                 var type = BridgeManager_2.bridgeManager.currentBridge.type;
                 var entity = this._entityDict[type];
-                if (entity != null)
+                if (entity != null) {
+                    // 调用回调
+                    entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
+                    // 显示遮罩
                     entity.showLoading(alpha);
+                }
             }
             // 增计数
             this.plusLoadingMaskCount(key);
@@ -4962,8 +4978,12 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
                 // 移除loading
                 var type = BridgeManager_2.bridgeManager.currentBridge.type;
                 var entity = this._entityDict[type];
-                if (entity != null)
+                if (entity != null) {
+                    // 隐藏遮罩
                     entity.hideLoading();
+                    // 调用回调
+                    entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
+                }
             }
         };
         /**当前是否在显示loading*/
@@ -4978,15 +4998,23 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
         MaskManager.prototype.showModalMask = function (popup, alpha) {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
-            if (entity != null)
+            if (entity != null) {
+                // 调用回调
+                entity.maskData.onShowModalMask && entity.maskData.onShowModalMask(popup);
+                // 显示遮罩
                 entity.showModalMask(popup, alpha);
+            }
         };
         /** 隐藏模态窗口遮罩 */
         MaskManager.prototype.hideModalMask = function (popup) {
             var type = BridgeManager_2.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
-            if (entity != null)
+            if (entity != null) {
+                // 隐藏遮罩
                 entity.hideModalMask(popup);
+                // 调用回调
+                entity.maskData.onHideModalMask && entity.maskData.onHideModalMask(popup);
+            }
         };
         /** 当前是否在显示模态窗口遮罩 */
         MaskManager.prototype.isShowingModalMask = function (popup) {

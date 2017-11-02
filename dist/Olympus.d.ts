@@ -2903,8 +2903,28 @@ declare module "engine/bridge/BridgeManager" {
     /** 再额外导出一个单例 */
     export const bridgeManager: BridgeManager;
 }
+declare module "engine/mask/IMaskData" {
+    import IPanel from "engine/panel/IPanel";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-02
+     * @modify date 2017-11-02
+     *
+     * 遮罩数据接口
+    */
+    export default interface IMaskData {
+        onShowMask?(): void;
+        onHideMask?(): void;
+        onShowLoading?(skin: any): void;
+        onHideLoading?(skin: any): void;
+        onShowModalMask?(popup: IPanel): void;
+        onHideModalMask?(popup: IPanel): void;
+    }
+}
 declare module "engine/mask/MaskManager" {
     import IPanel from "engine/panel/IPanel";
+    import IMaskData from "engine/mask/IMaskData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -2953,6 +2973,8 @@ declare module "engine/mask/MaskManager" {
         isShowingModalMask(popup: IPanel): boolean;
     }
     export interface IMaskEntity {
+        readonly maskData: IMaskData;
+        readonly loadingSkin: any;
         showMask(alpha?: number): void;
         hideMask(): void;
         isShowingMask(): boolean;

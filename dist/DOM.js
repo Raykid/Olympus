@@ -10,14 +10,17 @@ define("dom/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeManage
      * DOM遮罩实现
     */
     var MaskEntityImpl = /** @class */ (function () {
-        function MaskEntityImpl(loadingSkin) {
+        function MaskEntityImpl(params) {
             this._showing = false;
-            if (typeof loadingSkin == "string") {
-                var temp = document.createElement("div");
-                temp.innerHTML = loadingSkin;
-                loadingSkin = temp;
+            if (params) {
+                if (typeof params.loadingSkin == "string") {
+                    var temp = document.createElement("div");
+                    temp.innerHTML = params.loadingSkin;
+                    params.loadingSkin = temp;
+                }
+                this.loadingSkin = params.loadingSkin;
+                this.maskData = params;
             }
-            this._loadingSkin = loadingSkin;
         }
         /**
          * 显示遮罩
@@ -40,23 +43,23 @@ define("dom/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeManage
          * 显示加载图
          */
         MaskEntityImpl.prototype.showLoading = function (alpha) {
-            if (this._loadingSkin == null || this._showing)
+            if (this.loadingSkin == null || this._showing)
                 return;
             this._showing = true;
             // 显示
             var bridge = BridgeManager_1.bridgeManager.getBridge(DOMBridge_1.default.TYPE);
-            bridge.maskLayer.addChild(this._loadingSkin);
+            bridge.addChild(bridge.maskLayer, this.loadingSkin);
         };
         /**
          * 隐藏加载图
          */
         MaskEntityImpl.prototype.hideLoading = function () {
-            if (this._loadingSkin == null || !this._showing)
+            if (this.loadingSkin == null || !this._showing)
                 return;
             this._showing = false;
             // 隐藏
             var bridge = BridgeManager_1.bridgeManager.getBridge(DOMBridge_1.default.TYPE);
-            bridge.removeChild(this._loadingSkin.parentElement, this._loadingSkin);
+            bridge.removeChild(bridge.maskLayer, this.loadingSkin);
         };
         /**当前是否在显示loading*/
         MaskEntityImpl.prototype.isShowingLoading = function () {
@@ -259,7 +262,7 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "dom/mask/MaskEnt
              * @memberof DOMBridge
              */
             get: function () {
-                return new MaskEntity_1.default(this._initParams.maskSkin);
+                return new MaskEntity_1.default(this._initParams.maskData);
             },
             enumerable: true,
             configurable: true

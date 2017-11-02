@@ -168,6 +168,7 @@ declare module "egret/utils/UIUtil" {
 declare module "egret/mask/MaskEntity" {
     import { IMaskEntity } from "engine/mask/MaskManager";
     import IPanel from "engine/panel/IPanel";
+    import IMaskData from "engine/mask/IMaskData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -183,11 +184,14 @@ declare module "egret/mask/MaskEntity" {
         private _showingMask;
         private _mask;
         private _loadingSkin;
+        private _loadingSkinFactory;
         private _showingLoading;
         private _loadingMask;
         private _modalPanelDict;
         private _modalPanelList;
         private _modalPanelMask;
+        maskData: MaskData;
+        readonly loadingSkin: egret.DisplayObject;
         constructor(params?: MaskData);
         /**
          * 显示遮罩
@@ -216,11 +220,11 @@ declare module "egret/mask/MaskEntity" {
         /** 当前是否在显示模态窗口遮罩 */
         isShowingModalMask(panel: IPanel): boolean;
     }
-    export interface MaskData {
+    export interface MaskData extends IMaskData {
         maskAlpha?: number;
         loadingAlpha?: number;
         modalPanelAlpha?: number;
-        loadingSkin?: egret.DisplayObject;
+        loadingSkinFactory?: () => egret.DisplayObject;
     }
 }
 declare module "EgretBridge" {
@@ -517,6 +521,8 @@ declare module "EgretBridge" {
         promptClass?: IPromptPanelConstructor;
         /** 遮罩数据 */
         maskData?: MaskData;
+        /** 预加载资源组名 */
+        preloadGroups?: string[];
     }
 }
 declare module "egret/injector/Injector" {

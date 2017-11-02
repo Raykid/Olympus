@@ -319,8 +319,9 @@ export default class EgretBridge implements IBridge
         function onThemeLoadComplete(evt:eui.UIEvent):void
         {
             evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-            // 调用回调
-            complete(this);
+            // 加载预加载资源组
+            var preloadGroups:string[] = this._initParams.preloadGroups;
+            self.loadAssets(preloadGroups, null, err=>complete(self));
         }
     }
     
@@ -558,6 +559,8 @@ export interface IInitParams
     promptClass?:IPromptPanelConstructor;
     /** 遮罩数据 */
     maskData?:MaskData;
+    /** 预加载资源组名 */
+    preloadGroups?:string[];
 }
 
 class AssetAdapter implements eui.IAssetAdapter

@@ -1,7 +1,8 @@
 import { Injectable } from "../../core/injector/Injector";
+import { core } from "../../core/Core";
 import IPanel from "../panel/IPanel";
 import { bridgeManager } from "../bridge/BridgeManager";
-import { core } from "../../core/Core";
+import IMaskData from "./IMaskData";
 
 /**
  * @author Raykid
@@ -63,7 +64,13 @@ export default class MaskManager
     {
         var type:string = bridgeManager.currentBridge.type;
         var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null) entity.showMask(alpha);
+        if(entity != null)
+        {
+            // 调用回调
+            entity.maskData.onShowMask && entity.maskData.onShowMask();
+            // 显示遮罩
+            entity.showMask(alpha);
+        }
     }
 
     /**
@@ -73,7 +80,13 @@ export default class MaskManager
     {
         var type:string = bridgeManager.currentBridge.type;
         var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null) entity.hideMask();
+        if(entity != null)
+        {
+            // 隐藏遮罩
+            entity.hideMask();
+            // 调用回调
+            entity.maskData.onHideMask && entity.maskData.onHideMask();
+        }
     }
 
     /**当前是否在显示遮罩*/
@@ -95,7 +108,13 @@ export default class MaskManager
         {
             var type:string = bridgeManager.currentBridge.type;
             var entity:IMaskEntity = this._entityDict[type];
-            if(entity != null) entity.showLoading(alpha);
+            if(entity != null)
+            {
+                // 调用回调
+                entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
+                // 显示遮罩
+                entity.showLoading(alpha);
+            }
         }
         // 增计数
         this.plusLoadingMaskCount(key);
@@ -113,7 +132,13 @@ export default class MaskManager
             // 移除loading
             var type:string = bridgeManager.currentBridge.type;
             var entity:IMaskEntity = this._entityDict[type];
-            if(entity != null) entity.hideLoading();
+            if(entity != null)
+            {
+                // 隐藏遮罩
+                entity.hideLoading();
+                // 调用回调
+                entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
+            }
         }
     }
 
@@ -131,7 +156,13 @@ export default class MaskManager
     {
         var type:string = bridgeManager.currentBridge.type;
         var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null) entity.showModalMask(popup, alpha);
+        if(entity != null)
+        {
+            // 调用回调
+            entity.maskData.onShowModalMask && entity.maskData.onShowModalMask(popup);
+            // 显示遮罩
+            entity.showModalMask(popup, alpha);
+        }
     }
 
     /** 隐藏模态窗口遮罩 */
@@ -139,7 +170,13 @@ export default class MaskManager
     {
         var type:string = bridgeManager.currentBridge.type;
         var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null) entity.hideModalMask(popup);
+        if(entity != null)
+        {
+            // 隐藏遮罩
+            entity.hideModalMask(popup);
+            // 调用回调
+            entity.maskData.onHideModalMask && entity.maskData.onHideModalMask(popup);
+        }
     }
 
     /** 当前是否在显示模态窗口遮罩 */
@@ -154,6 +191,9 @@ export default class MaskManager
 
 export interface IMaskEntity
 {
+    readonly maskData:IMaskData;
+    readonly loadingSkin:any;
+
     showMask(alpha?:number):void;
     hideMask():void;
     isShowingMask():boolean;
