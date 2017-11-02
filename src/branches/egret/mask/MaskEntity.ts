@@ -50,6 +50,7 @@ export default class MaskEntityImpl implements IMaskEntity
             this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
             this._loadingSkinFactory = params.loadingSkinFactory;
         }
+        this.maskData = params || {};
 
         this._mask = new egret.Shape();
         this._mask.touchEnabled = true;

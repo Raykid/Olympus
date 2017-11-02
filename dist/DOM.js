@@ -19,8 +19,8 @@ define("dom/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeManage
                     params.loadingSkin = temp;
                 }
                 this.loadingSkin = params.loadingSkin;
-                this.maskData = params;
             }
+            this.maskData = params || {};
         }
         /**
          * 显示遮罩

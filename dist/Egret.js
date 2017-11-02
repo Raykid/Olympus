@@ -66212,6 +66212,7 @@ define("egret/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeMana
                 this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
                 this._loadingSkinFactory = params.loadingSkinFactory;
             }
+            this.maskData = params || {};
             this._mask = new egret.Shape();
             this._mask.touchEnabled = true;
             this._loadingMask = new egret.Shape();

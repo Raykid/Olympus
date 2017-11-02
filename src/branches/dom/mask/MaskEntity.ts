@@ -31,8 +31,8 @@ export default class MaskEntityImpl implements IMaskEntity
                 params.loadingSkin = temp;
             }
             this.loadingSkin = params.loadingSkin;
-            this.maskData = params;
         }
+        this.maskData = params || {};
     }
 
     /**
