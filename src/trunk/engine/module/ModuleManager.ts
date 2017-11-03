@@ -80,13 +80,33 @@ export default class ModuleManager
         return this._moduleStack.length;
     }
 
-    private getIndex(cls:IModuleConstructor):number
+    /**
+     * 获取模块在栈中的索引
+     * 
+     * @param {IModuleConstructor} cls 模块类型
+     * @returns {number} 索引值
+     * @memberof ModuleManager
+     */
+    public getIndex(cls:IModuleConstructor):number
     {
         for(var i:number = 0, len:number = this._moduleStack.length; i < len; i++)
         {
             if(this._moduleStack[i][0] == cls) return i;
         }
         return -1;
+    }
+
+    /**
+     * 获取索引处模块类型
+     * 
+     * @param {number} index 模块索引值
+     * @returns {IModuleConstructor} 模块类型
+     * @memberof ModuleManager
+     */
+    public getModule(index:number):IModuleConstructor
+    {
+        var data:[IModuleConstructor, IModule] = this._moduleStack[index];
+        return data && data[0];
     }
 
     private getAfter(cls:IModuleConstructor):[IModuleConstructor, IModule][]|null

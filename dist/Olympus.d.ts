@@ -2827,7 +2827,22 @@ declare module "engine/module/ModuleManager" {
          * @memberof ModuleManager
          */
         readonly activeCount: number;
-        private getIndex(cls);
+        /**
+         * 获取模块在栈中的索引
+         *
+         * @param {IModuleConstructor} cls 模块类型
+         * @returns {number} 索引值
+         * @memberof ModuleManager
+         */
+        getIndex(cls: IModuleConstructor): number;
+        /**
+         * 获取索引处模块类型
+         *
+         * @param {number} index 模块索引值
+         * @returns {IModuleConstructor} 模块类型
+         * @memberof ModuleManager
+         */
+        getModule(index: number): IModuleConstructor;
         private getAfter(cls);
         private getCurrent();
         registerModule(cls: IModuleConstructor): void;

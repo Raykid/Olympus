@@ -4472,12 +4472,30 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             enumerable: true,
             configurable: true
         });
+        /**
+         * 获取模块在栈中的索引
+         *
+         * @param {IModuleConstructor} cls 模块类型
+         * @returns {number} 索引值
+         * @memberof ModuleManager
+         */
         ModuleManager.prototype.getIndex = function (cls) {
             for (var i = 0, len = this._moduleStack.length; i < len; i++) {
                 if (this._moduleStack[i][0] == cls)
                     return i;
             }
             return -1;
+        };
+        /**
+         * 获取索引处模块类型
+         *
+         * @param {number} index 模块索引值
+         * @returns {IModuleConstructor} 模块类型
+         * @memberof ModuleManager
+         */
+        ModuleManager.prototype.getModule = function (index) {
+            var data = this._moduleStack[index];
+            return data && data[0];
         };
         ModuleManager.prototype.getAfter = function (cls) {
             var result = [];
