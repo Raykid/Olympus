@@ -3325,6 +3325,7 @@ declare module "engine/bind/BindManager" {
          * @memberof BindManager
          */
         bindIf(mediator: IMediator, exp: string, ui: any): void;
+        private messageHandler(ui, key, exp);
         /**
          * 绑定全局Message
          *
@@ -3335,6 +3336,7 @@ declare module "engine/bind/BindManager" {
          * @memberof BindManager
          */
         bindMessage(mediator: IMediator, type: IConstructor | string, values: any, ui: any): void;
+        private responseHandler(ui, key, exp);
         /**
          * 绑定全局Response
          *
@@ -3607,7 +3609,7 @@ declare module "engine/injector/Injector" {
     export function BindOn(value: any): PropertyDecorator;
     export function BindIf(exp: string): PropertyDecorator;
     export function BindMessage(type: IConstructor | string, values: any): PropertyDecorator;
-    export function BindReponse(type: IResponseDataConstructor | string, values: any): PropertyDecorator;
+    export function BindResponse(type: IResponseDataConstructor | string, values: any): PropertyDecorator;
 }
 declare module "engine/platform/IPlatform" {
     /**

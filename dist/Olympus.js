@@ -6471,14 +6471,14 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         };
     }
     exports.BindMessage = BindMessage;
-    function BindReponse(type, values) {
+    function BindResponse(type, values) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, function (mediator) {
                 BindManager_2.bindManager.bindResponse(mediator, type, values, mediator[propertyKey]);
             });
         };
     }
-    exports.BindReponse = BindReponse;
+    exports.BindResponse = BindResponse;
 });
 define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
     "use strict";

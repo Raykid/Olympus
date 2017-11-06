@@ -312,7 +312,7 @@ export function BindMessage(type:IConstructor|string, values:any):PropertyDecora
     };
 }
 
-export function BindReponse(type:IResponseDataConstructor|string, values:any):PropertyDecorator
+export function BindResponse(type:IResponseDataConstructor|string, values:any):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
