@@ -291,3 +291,13 @@ export function BindOn(value:any):PropertyDecorator
         });
     };
 }
+
+export function BindIf(exp:string):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+            bindManager.bindIf(mediator, exp, mediator[propertyKey]);
+        });
+    };
+}

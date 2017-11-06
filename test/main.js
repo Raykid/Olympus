@@ -279,6 +279,9 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                     _this.moduleManager.open(SecondModule_1.default);
                 }
             };
+            setTimeout(function () {
+                _this.viewModel.fuckText = "1234";
+            }, 3000);
         };
         FirstMediator.prototype.onModuleChange = function (to, from) {
             if (to == FirstModule)
@@ -307,6 +310,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         ], FirstMediator.prototype, "fuckModel3", void 0);
         __decorate([
             Injector_7.BindOn({ click: "onClick" }),
+            Injector_7.BindIf("fuckText == '1234'"),
             __metadata("design:type", eui.Button)
         ], FirstMediator.prototype, "btn", void 0);
         __decorate([

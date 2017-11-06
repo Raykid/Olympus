@@ -5780,6 +5780,48 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
             });
         };
+        BindManager.prototype.replaceDisplay = function (bridge, ori, cur) {
+            var parent = bridge.getParent(ori);
+            if (parent) {
+                // ori有父级，记录其当前索引
+                var index = bridge.getChildIndex(parent, ori);
+                // 移除ori
+                bridge.removeChild(parent, ori);
+                // 显示cur
+                bridge.addChildAt(parent, cur, index);
+            }
+        };
+        /**
+         * 绑定显示
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {*} values 事件字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        BindManager.prototype.bindIf = function (mediator, exp, ui) {
+            var _this = this;
+            var replacer = mediator.bridge.createEmptyDisplay();
+            var handler = function () {
+                // 判断数据是否合法
+                if (!mediator.viewModel)
+                    return;
+                // 开始绑定
+                var bindData = _this._bindDict.get(mediator);
+                bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
+                    // 如果表达式为true则显示ui，否则移除ui
+                    if (value)
+                        _this.replaceDisplay(mediator.bridge, replacer, ui);
+                    else
+                        _this.replaceDisplay(mediator.bridge, ui, replacer);
+                });
+            };
+            // 添加绑定数据
+            var bindData = this._bindDict.get(mediator);
+            bindData.callbacks.push(handler);
+            // 立即调用一次
+            handler();
+        };
         BindManager = __decorate([
             Injector_12.Injectable
         ], BindManager);
@@ -6347,6 +6389,14 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         };
     }
     exports.BindOn = BindOn;
+    function BindIf(exp) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                BindManager_2.bindManager.bindIf(mediator, exp, mediator[propertyKey]);
+            });
+        };
+    }
+    exports.BindIf = BindIf;
 });
 define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
     "use strict";

@@ -1470,6 +1470,13 @@ declare module "engine/bridge/IBridge" {
          */
         isMySkin(skin: any): boolean;
         /**
+         * 创建一个空的显示对象
+         *
+         * @returns {*}
+         * @memberof IBridge
+         */
+        createEmptyDisplay(): any;
+        /**
          * 添加显示
          *
          * @param {*} parent 要添加到的父容器
@@ -3307,6 +3314,16 @@ declare module "engine/bind/BindManager" {
          * @memberof BindManager
          */
         bindOn(mediator: IMediator, values: any, ui: any): void;
+        private replaceDisplay(bridge, ori, cur);
+        /**
+         * 绑定显示
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {*} values 事件字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        bindIf(mediator: IMediator, exp: string, ui: any): void;
     }
     /** 再额外导出一个单例 */
     export const bindManager: BindManager;
@@ -3567,6 +3584,7 @@ declare module "engine/injector/Injector" {
     export function DelegateMediator(prototype: any, propertyKey: string): any;
     export function BindValue(value: any): PropertyDecorator;
     export function BindOn(value: any): PropertyDecorator;
+    export function BindIf(exp: string): PropertyDecorator;
 }
 declare module "engine/platform/IPlatform" {
     /**

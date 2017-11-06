@@ -66691,6 +66691,15 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
             return (skin instanceof egret.DisplayObject);
         };
         /**
+         * 创建一个空的显示对象
+         *
+         * @returns {egret.Sprite}
+         * @memberof EgretBridge
+         */
+        EgretBridge.prototype.createEmptyDisplay = function () {
+            return new egret.Sprite();
+        };
+        /**
          * 添加显示
          *
          * @param {egret.DisplayObjectContainer} parent 要添加到的父容器

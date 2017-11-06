@@ -3,6 +3,7 @@ import { core } from "../../core/Core";
 import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
+import IBridge from "../bridge/IBridge";
 
 /**
  * @author Raykid
@@ -129,6 +130,49 @@ export default class BindManager
         this.fastSearch(mediator, values, ui, (ui:any, key:string, exp:string)=>{
             mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
         });
+    }
+
+    private replaceDisplay(bridge:IBridge, ori:any, cur:any):void
+    {
+        var parent:any = bridge.getParent(ori);
+        if(parent)
+        {
+            // ori有父级，记录其当前索引
+            var index:number = bridge.getChildIndex(parent, ori);
+            // 移除ori
+            bridge.removeChild(parent, ori);
+            // 显示cur
+            bridge.addChildAt(parent, cur, index);
+        }
+    }
+    
+    /**
+     * 绑定显示
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {*} values 事件字典
+     * @param {*} ui 绑定到的ui实体对象
+     * @memberof BindManager
+     */
+    public bindIf(mediator:IMediator, exp:string, ui:any):void
+    {
+        var replacer:any = mediator.bridge.createEmptyDisplay();
+        var handler:()=>void = ()=>{
+            // 判断数据是否合法
+            if(!mediator.viewModel) return;
+            // 开始绑定
+            var bindData:BindData = this._bindDict.get(mediator);
+            bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:boolean)=>{
+                // 如果表达式为true则显示ui，否则移除ui
+                if(value) this.replaceDisplay(mediator.bridge, replacer, ui);
+                else this.replaceDisplay(mediator.bridge, ui, replacer);
+            });
+        };
+        // 添加绑定数据
+        var bindData:BindData = this._bindDict.get(mediator);
+        bindData.callbacks.push(handler);
+        // 立即调用一次
+        handler();
     }
 }
 

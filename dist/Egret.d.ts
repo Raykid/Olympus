@@ -383,6 +383,13 @@ declare module "EgretBridge" {
          */
         isMySkin(skin: any): boolean;
         /**
+         * 创建一个空的显示对象
+         *
+         * @returns {egret.Sprite}
+         * @memberof EgretBridge
+         */
+        createEmptyDisplay(): egret.Sprite;
+        /**
          * 添加显示
          *
          * @param {egret.DisplayObjectContainer} parent 要添加到的父容器

@@ -133,6 +133,13 @@ export default interface IBridge
      */
     isMySkin(skin:any):boolean;
     /**
+     * 创建一个空的显示对象
+     * 
+     * @returns {*} 
+     * @memberof IBridge
+     */
+    createEmptyDisplay():any;
+    /**
      * 添加显示
      * 
      * @param {*} parent 要添加到的父容器

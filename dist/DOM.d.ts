@@ -194,6 +194,13 @@ declare module "DOMBridge" {
          */
         isMySkin(skin: any): boolean;
         /**
+         * 创建一个空的显示对象
+         *
+         * @returns {HTMLElement}
+         * @memberof DOMBridge
+         */
+        createEmptyDisplay(): HTMLElement;
+        /**
          * 添加显示
          *
          * @param {Element} parent 要添加到的父容器
