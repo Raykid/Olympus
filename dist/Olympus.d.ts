@@ -3268,6 +3268,7 @@ declare module "engine/bind/Mutator" {
 declare module "engine/bind/BindManager" {
     import IMediator from "engine/mediator/IMediator";
     import Bind from "engine/bind/Bind";
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3319,11 +3320,31 @@ declare module "engine/bind/BindManager" {
          * 绑定显示
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} values 事件字典
+         * @param {*} exp 判断表达式
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
         bindIf(mediator: IMediator, exp: string, ui: any): void;
+        /**
+         * 绑定全局Message
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {IConstructor|string} type 绑定的消息类型字符串
+         * @param {*} values 属性字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        bindMessage(mediator: IMediator, type: IConstructor | string, values: any, ui: any): void;
+        /**
+         * 绑定全局Response
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
+         * @param {*} values 属性字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        bindResponse(mediator: IMediator, type: IResponseDataConstructor | string, values: any, ui: any): void;
     }
     /** 再额外导出一个单例 */
     export const bindManager: BindManager;
@@ -3585,6 +3606,8 @@ declare module "engine/injector/Injector" {
     export function BindValue(value: any): PropertyDecorator;
     export function BindOn(value: any): PropertyDecorator;
     export function BindIf(exp: string): PropertyDecorator;
+    export function BindMessage(type: IConstructor | string, values: any): PropertyDecorator;
+    export function BindReponse(type: IResponseDataConstructor | string, values: any): PropertyDecorator;
 }
 declare module "engine/platform/IPlatform" {
     /**

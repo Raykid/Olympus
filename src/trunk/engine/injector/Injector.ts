@@ -301,3 +301,23 @@ export function BindIf(exp:string):PropertyDecorator
         });
     };
 }
+
+export function BindMessage(type:IConstructor|string, values:any):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+            bindManager.bindMessage(mediator, type, values, mediator[propertyKey]);
+        });
+    };
+}
+
+export function BindReponse(type:IResponseDataConstructor|string, values:any):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+            bindManager.bindResponse(mediator, type, values, mediator[propertyKey]);
+        });
+    };
+}

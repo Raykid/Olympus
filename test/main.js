@@ -33,7 +33,7 @@ define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal
     }
     exports.default = getParam;
 });
-define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "engine/scene/SceneMediator", "egret/injector/Injector", "engine/injector/Injector", "core/injector/Injector"], function (require, exports, Module_1, ModuleManager_1, SceneMediator_1, Injector_1, Injector_2, Injector_3) {
+define("modules/SecondModule", ["require", "exports", "engine/module/Module", "engine/scene/SceneMediator", "egret/injector/Injector", "engine/injector/Injector", "core/injector/Injector"], function (require, exports, Module_1, SceneMediator_1, Injector_1, Injector_2, Injector_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -53,14 +53,20 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             return ["preload"];
         };
         SecondMediator.prototype.onOpen = function () {
+            var _this = this;
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
-                ModuleManager_1.moduleManager.close(SecondModule);
+                // moduleManager.close(SecondModule);
+                _this.dispatch("FuckMsg", "Shit!!!");
             });
             // 测试系统消息
             this.dispatch("fuck", 123);
             // 测试模块消息
             this.dispatchModule("fuck", 123);
         };
+        __decorate([
+            Injector_2.BindMessage("FuckMsg", { label: "$arguments[0] + ' - 1'" }),
+            __metadata("design:type", eui.Button)
+        ], SecondMediator.prototype, "btn", void 0);
         SecondMediator = __decorate([
             Injector_1.EgretMediatorClass("Fuck2Skin")
         ], SecondMediator);
@@ -245,7 +251,7 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
     }(IFuckModel));
     exports.default = FuckModel;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel", "dom/injector/Injector"], function (require, exports, Module_2, ModuleManager_2, Injector_6, Injector_7, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, FuckModel_1, Injector_8) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel", "dom/injector/Injector"], function (require, exports, Module_2, ModuleManager_1, Injector_6, Injector_7, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, FuckModel_1, Injector_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -294,7 +300,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         };
         __decorate([
             Injector_6.Inject,
-            __metadata("design:type", ModuleManager_2.default)
+            __metadata("design:type", ModuleManager_1.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
             Injector_6.Inject,

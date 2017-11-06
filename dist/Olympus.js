@@ -5664,7 +5664,7 @@ define("engine/bind/Mutator", ["require", "exports", "utils/ObjectUtil", "engine
         return result;
     }
 });
-define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind"], function (require, exports, Injector_12, Core_16, Dictionary_4, Bind_1) {
+define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind", "engine/bind/Utils", "engine/net/NetManager"], function (require, exports, Injector_12, Core_16, Dictionary_4, Bind_1, Utils_2, NetManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5746,7 +5746,8 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
             };
             // 添加绑定数据
             var bindData = this._bindDict.get(mediator);
-            bindData.callbacks.push(handler);
+            if (bindData.callbacks.indexOf(handler) < 0)
+                bindData.callbacks.push(handler);
             // 立即调用一次
             handler();
         };
@@ -5759,9 +5760,8 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * @memberof BindManager
          */
         BindManager.prototype.bindValue = function (mediator, values, ui) {
-            var _this = this;
+            var bindData = this._bindDict.get(mediator);
             this.fastSearch(mediator, values, ui, function (ui, key, exp) {
-                var bindData = _this._bindDict.get(mediator);
                 bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
                     ui[key] = value;
                 });
@@ -5795,19 +5795,19 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定显示
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} values 事件字典
+         * @param {*} exp 判断表达式
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
         BindManager.prototype.bindIf = function (mediator, exp, ui) {
             var _this = this;
+            var bindData = this._bindDict.get(mediator);
             var replacer = mediator.bridge.createEmptyDisplay();
             var handler = function () {
                 // 判断数据是否合法
                 if (!mediator.viewModel)
                     return;
                 // 开始绑定
-                var bindData = _this._bindDict.get(mediator);
                 bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
                     // 如果表达式为true则显示ui，否则移除ui
                     if (value)
@@ -5817,10 +5817,75 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 });
             };
             // 添加绑定数据
-            var bindData = this._bindDict.get(mediator);
-            bindData.callbacks.push(handler);
+            if (bindData.callbacks.indexOf(handler) < 0)
+                bindData.callbacks.push(handler);
             // 立即调用一次
             handler();
+        };
+        BindManager.prototype.messageHandler = function (ui, key, exp) {
+            // 使用临时ViewModel编译赋值
+            ui[key] = Utils_2.evalExp(exp, viewModel);
+        };
+        /**
+         * 绑定全局Message
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {IConstructor|string} type 绑定的消息类型字符串
+         * @param {*} values 属性字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        BindManager.prototype.bindMessage = function (mediator, type, values, ui) {
+            var _this = this;
+            var bindData = this._bindDict.get(mediator);
+            var handler = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                if (mediator.disposed) {
+                    // mediator已销毁，取消监听
+                    Core_16.core.unlisten(type, handler);
+                }
+                else {
+                    if (args.length == 1 && typeof args[0] == "object" && args[0].type)
+                        viewModel = args[0];
+                    else
+                        viewModel = { $arguments: args };
+                    _this.search(values, ui, _this.messageHandler);
+                }
+            };
+            // 添加监听
+            Core_16.core.listen(type, handler);
+        };
+        BindManager.prototype.responseHandler = function (ui, key, exp) {
+            // 使用response直接编译赋值
+            ui[key] = Utils_2.evalExp(exp, viewModel);
+        };
+        /**
+         * 绑定全局Response
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
+         * @param {*} values 属性字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        BindManager.prototype.bindResponse = function (mediator, type, values, ui) {
+            var _this = this;
+            var bindData = this._bindDict.get(mediator);
+            var handler = function (response) {
+                if (mediator.disposed) {
+                    // mediator已销毁，取消监听
+                    NetManager_2.netManager.unlistenResponse(type, handler);
+                }
+                else {
+                    viewModel = response;
+                    _this.search(values, ui, _this.responseHandler);
+                }
+            };
+            // 添加监听
+            NetManager_2.netManager.listenResponse(type, handler);
         };
         BindManager = __decorate([
             Injector_12.Injectable
@@ -5828,6 +5893,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
         return BindManager;
     }());
     exports.default = BindManager;
+    var viewModel;
     /** 再额外导出一个单例 */
     exports.bindManager = Core_16.core.getInject(BindManager);
 });
@@ -6147,7 +6213,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
     }());
     exports.default = Mediator;
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/bind/BindManager"], function (require, exports, Injector_13, Message_3, ConstructUtil_2, ResponseData_1, NetManager_2, BridgeManager_3, Mediator_1, ModuleManager_2, Dictionary_5, BindManager_2) {
+define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/bind/BindManager"], function (require, exports, Injector_13, Message_3, ConstructUtil_2, ResponseData_1, NetManager_3, BridgeManager_3, Mediator_1, ModuleManager_2, Dictionary_5, BindManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6273,11 +6339,11 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
     function doResponseHandler(cls, key, type) {
         // 监听实例化
         ConstructUtil_2.listenConstruct(cls, function (instance) {
-            NetManager_2.netManager.listenResponse(type, instance[key], instance);
+            NetManager_3.netManager.listenResponse(type, instance[key], instance);
         });
         // 监听销毁
         ConstructUtil_2.listenDispose(cls, function (instance) {
-            NetManager_2.netManager.unlistenResponse(type, instance[key], instance);
+            NetManager_3.netManager.unlistenResponse(type, instance[key], instance);
         });
     }
     var delegateHandlerDict = new Dictionary_5.default();
@@ -6397,6 +6463,22 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         };
     }
     exports.BindIf = BindIf;
+    function BindMessage(type, values) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                BindManager_2.bindManager.bindMessage(mediator, type, values, mediator[propertyKey]);
+            });
+        };
+    }
+    exports.BindMessage = BindMessage;
+    function BindReponse(type, values) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                BindManager_2.bindManager.bindResponse(mediator, type, values, mediator[propertyKey]);
+            });
+        };
+    }
+    exports.BindReponse = BindReponse;
 });
 define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -7801,7 +7883,7 @@ define("engine/env/Query", ["require", "exports", "core/Core", "core/injector/In
     /** 再额外导出一个单例 */
     exports.query = Core_25.core.getInject(Query);
 });
-define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_2, Environment_5, NetManager_3, ObjectUtil_8) {
+define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HTTPUtil", "engine/env/Environment", "engine/net/NetManager", "utils/ObjectUtil"], function (require, exports, HTTPUtil_2, Environment_5, NetManager_4, ObjectUtil_8) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -7827,8 +7909,8 @@ define("engine/net/policies/HTTPRequestPolicy", ["require", "exports", "utils/HT
             // 修改数据
             var httpParams = ObjectUtil_8.extendObject({
                 url: Environment_5.environment.toHostURL(params.path, params.hostIndex),
-                onResponse: function (result) { return NetManager_3.netManager.__onResponse(request.__params.response.type, result, request); },
-                onError: function (err) { return NetManager_3.netManager.__onError(err, request); },
+                onResponse: function (result) { return NetManager_4.netManager.__onResponse(request.__params.response.type, result, request); },
+                onError: function (err) { return NetManager_4.netManager.__onError(err, request); },
                 headerDict: {}
             }, params);
             // ajax请求都统一设置withCredentials

@@ -4,6 +4,9 @@ import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
 import IBridge from "../bridge/IBridge";
+import { evalExp } from "./Utils";
+import { IResponseDataConstructor } from "../net/ResponseData";
+import { netManager } from "../net/NetManager";
 
 /**
  * @author Raykid
@@ -94,7 +97,8 @@ export default class BindManager
         };
         // 添加绑定数据
         var bindData:BindData = this._bindDict.get(mediator);
-        bindData.callbacks.push(handler);
+        if(bindData.callbacks.indexOf(handler) < 0)
+            bindData.callbacks.push(handler);
         // 立即调用一次
         handler();
     }
@@ -109,8 +113,8 @@ export default class BindManager
      */
     public bindValue(mediator:IMediator, values:any, ui:any):void
     {
+        var bindData:BindData = this._bindDict.get(mediator);
         this.fastSearch(mediator, values, ui, (ui:any, key:string, exp:string)=>{
-            var bindData:BindData = this._bindDict.get(mediator);
             bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:any)=>{
                 ui[key] = value;
             });
@@ -150,18 +154,18 @@ export default class BindManager
      * 绑定显示
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} values 事件字典
+     * @param {*} exp 判断表达式
      * @param {*} ui 绑定到的ui实体对象
      * @memberof BindManager
      */
     public bindIf(mediator:IMediator, exp:string, ui:any):void
     {
+        var bindData:BindData = this._bindDict.get(mediator);
         var replacer:any = mediator.bridge.createEmptyDisplay();
         var handler:()=>void = ()=>{
             // 判断数据是否合法
             if(!mediator.viewModel) return;
             // 开始绑定
-            var bindData:BindData = this._bindDict.get(mediator);
             bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
                 if(value) this.replaceDisplay(mediator.bridge, replacer, ui);
@@ -169,12 +173,85 @@ export default class BindManager
             });
         };
         // 添加绑定数据
-        var bindData:BindData = this._bindDict.get(mediator);
-        bindData.callbacks.push(handler);
+        if(bindData.callbacks.indexOf(handler) < 0)
+            bindData.callbacks.push(handler);
         // 立即调用一次
         handler();
     }
+    
+    private messageHandler(ui:any, key:string, exp:string):void
+    {
+        // 使用临时ViewModel编译赋值
+        ui[key] = evalExp(exp, viewModel);
+    }
+
+    /**
+     * 绑定全局Message
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {IConstructor|string} type 绑定的消息类型字符串
+     * @param {*} values 属性字典
+     * @param {*} ui 绑定到的ui实体对象
+     * @memberof BindManager
+     */
+    public bindMessage(mediator:IMediator, type:IConstructor|string, values:any, ui:any):void
+    {
+        var bindData:BindData = this._bindDict.get(mediator);
+        var handler:(...args:any[])=>void = (...args:any[])=>{
+            if(mediator.disposed)
+            {
+                // mediator已销毁，取消监听
+                core.unlisten(type, handler);
+            }
+            else
+            {
+                if(args.length == 1 && typeof args[0] == "object" && args[0].type)
+                    viewModel = args[0];
+                else
+                    viewModel = {$arguments: args};
+                this.search(values, ui, this.messageHandler);
+            }
+        };
+        // 添加监听
+        core.listen(type, handler);
+    }
+
+    private responseHandler(ui:any, key:string, exp:string):void
+    {
+        // 使用response直接编译赋值
+        ui[key] = evalExp(exp, viewModel);
+    }
+    
+    /**
+     * 绑定全局Response
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
+     * @param {*} values 属性字典
+     * @param {*} ui 绑定到的ui实体对象
+     * @memberof BindManager
+     */
+    public bindResponse(mediator:IMediator, type:IResponseDataConstructor|string, values:any, ui:any):void
+    {
+        var bindData:BindData = this._bindDict.get(mediator);
+        var handler:(response:any)=>void = (response:any)=>{
+            if(mediator.disposed)
+            {
+                // mediator已销毁，取消监听
+                netManager.unlistenResponse(type, handler);
+            }
+            else
+            {
+                viewModel = response;
+                this.search(values, ui, this.responseHandler);
+            }
+        };
+        // 添加监听
+        netManager.listenResponse(type, handler);
+    }
 }
+
+var viewModel:any;
 
 interface BindData
 {

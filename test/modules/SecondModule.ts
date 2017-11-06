@@ -3,7 +3,7 @@ import ResponseData from "engine/net/ResponseData";
 import { moduleManager } from "engine/module/ModuleManager";
 import SceneMediator from "engine/scene/SceneMediator";
 import { EgretMediatorClass } from "egret/injector/Injector";
-import { ModuleClass, DelegateMediator, ModuleMessageHandler } from "engine/injector/Injector";
+import { ModuleClass, DelegateMediator, ModuleMessageHandler, BindMessage } from "engine/injector/Injector";
 import { MessageHandler } from "core/injector/Injector";
 
 /**
@@ -18,6 +18,7 @@ import { MessageHandler } from "core/injector/Injector";
 @EgretMediatorClass("Fuck2Skin")
 class SecondMediator extends SceneMediator
 {
+    @BindMessage("FuckMsg", {label: "$arguments[0] + ' - 1'"})
     public btn:eui.Button;
 
     public listAssets():string[]
@@ -28,7 +29,9 @@ class SecondMediator extends SceneMediator
     public onOpen():void
     {
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
-            moduleManager.close(SecondModule);
+            // moduleManager.close(SecondModule);
+
+            this.dispatch("FuckMsg", "Shit!!!");
         });
         // 测试系统消息
         this.dispatch("fuck", 123);
