@@ -5696,8 +5696,8 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
             }
             // 重新绑定所有
             for (var _i = 0, _a = bindData.callbacks; _i < _a.length; _i++) {
-                var temp = _a[_i];
-                temp.callback.apply(temp._this, temp.args);
+                var callback = _a[_i];
+                callback();
             }
             // 返回Bind对象
             return bindData.bind;
@@ -5714,37 +5714,6 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
             if (bindData)
                 this._bindDict.delete(mediator);
             return bindData && bindData.bind;
-        };
-        /**
-         * 绑定属性值
-         *
-         * @param {IMediator} mediator 中介者
-         * @param {*} values 属性字典
-         * @param {*} ui 绑定到的ui实体对象
-         * @memberof BindManager
-         */
-        BindManager.prototype.bindValue = function (mediator, values, ui) {
-            // 添加绑定数据
-            var bindData = this._bindDict.get(mediator);
-            bindData.callbacks.push({
-                callback: this.doBindValue,
-                args: arguments,
-                _this: this
-            });
-            this.doBindValue(mediator, values, ui);
-        };
-        BindManager.prototype.doBindValue = function (mediator, values, ui) {
-            var _this = this;
-            // 判断数据是否合法
-            if (!mediator.viewModel)
-                return;
-            // 开始绑定
-            this.search(values, ui, function (ui, key, exp) {
-                var bindData = _this._bindDict.get(mediator);
-                bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
-                    ui[key] = value;
-                });
-            });
         };
         BindManager.prototype.search = function (values, ui, callback) {
             for (var key in values) {
@@ -5765,6 +5734,51 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     callback(ui, key, value);
                 }
             }
+        };
+        BindManager.prototype.fastSearch = function (mediator, values, ui, callback) {
+            var _this = this;
+            var handler = function () {
+                // 判断数据是否合法
+                if (!mediator.viewModel)
+                    return;
+                // 开始绑定
+                _this.search(values, ui, callback);
+            };
+            // 添加绑定数据
+            var bindData = this._bindDict.get(mediator);
+            bindData.callbacks.push(handler);
+            // 立即调用一次
+            handler();
+        };
+        /**
+         * 绑定属性值
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {*} values 属性字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        BindManager.prototype.bindValue = function (mediator, values, ui) {
+            var _this = this;
+            this.fastSearch(mediator, values, ui, function (ui, key, exp) {
+                var bindData = _this._bindDict.get(mediator);
+                bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
+                    ui[key] = value;
+                });
+            });
+        };
+        /**
+         * 绑定事件
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {*} values 事件字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        BindManager.prototype.bindOn = function (mediator, values, ui) {
+            this.fastSearch(mediator, values, ui, function (ui, key, exp) {
+                mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
+            });
         };
         BindManager = __decorate([
             Injector_12.Injectable
@@ -6325,6 +6339,14 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         };
     }
     exports.BindValue = BindValue;
+    function BindOn(value) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                BindManager_2.bindManager.bindOn(mediator, value, mediator[propertyKey]);
+            });
+        };
+    }
+    exports.BindOn = BindOn;
 });
 define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
     "use strict";

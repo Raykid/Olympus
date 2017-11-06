@@ -281,3 +281,13 @@ export function BindValue(value:any):PropertyDecorator
         });
     };
 }
+
+export function BindOn(value:any):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+            bindManager.bindOn(mediator, value, mediator[propertyKey]);
+        });
+    };
+}

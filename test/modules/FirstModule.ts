@@ -3,7 +3,7 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import { EgretMediatorClass } from "egret/injector/Injector";
 import { Inject, MessageHandler } from "core/injector/Injector";
-import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue } from "engine/injector/Injector";
+import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue, BindOn } from "engine/injector/Injector";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
 import SceneMediator from "engine/scene/SceneMediator";
@@ -34,6 +34,7 @@ class FirstMediator extends SceneMediator
     @Inject(1)
     private fuckModel3:IFuckModel;
 
+    @BindOn({click: "onClick"})
     public btn:eui.Button;
     @BindValue({textContent: "fuckText + ' - 1'"})
     public txt:eui.Label;
@@ -45,20 +46,20 @@ class FirstMediator extends SceneMediator
 
     public onOpen():void
     {
-        this.mapListener(this.btn, "click", function():void
-        {
-            this.txt.textContent = "Fuck you!!!";
-            this.moduleManager.open(SecondModule);
-        }, this);
+        // this.mapListener(this.btn, "click", function():void
+        // {
+        //     this.txt.textContent = "Fuck you!!!";
+        //     this.moduleManager.open(SecondModule);
+        // }, this);
         console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
 
         this.viewModel = {
-            fuckText: "fuck you"
+            fuckText: "fuck you",
+            onClick: ()=>{
+                this.viewModel.fuckText = "clicked";
+                this.moduleManager.open(SecondModule);
+            }
         };
-
-        setTimeout(()=>{
-            this.viewModel.fuckText = "ok?";
-        }, 3000);
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)

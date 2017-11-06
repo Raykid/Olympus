@@ -3287,6 +3287,8 @@ declare module "engine/bind/BindManager" {
          * @memberof BindManager
          */
         unbind(mediator: IMediator): Bind;
+        private search(values, ui, callback);
+        private fastSearch(mediator, values, ui, callback);
         /**
          * 绑定属性值
          *
@@ -3296,8 +3298,15 @@ declare module "engine/bind/BindManager" {
          * @memberof BindManager
          */
         bindValue(mediator: IMediator, values: any, ui: any): void;
-        private doBindValue(mediator, values, ui);
-        private search(values, ui, callback);
+        /**
+         * 绑定事件
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {*} values 事件字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        bindOn(mediator: IMediator, values: any, ui: any): void;
     }
     /** 再额外导出一个单例 */
     export const bindManager: BindManager;
@@ -3557,6 +3566,7 @@ declare module "engine/injector/Injector" {
     /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: any, propertyKey: string): any;
     export function BindValue(value: any): PropertyDecorator;
+    export function BindOn(value: any): PropertyDecorator;
 }
 declare module "engine/platform/IPlatform" {
     /**

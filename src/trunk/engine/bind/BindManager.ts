@@ -35,9 +35,9 @@ export default class BindManager
             });
         }
         // 重新绑定所有
-        for(var temp of bindData.callbacks)
+        for(var callback of bindData.callbacks)
         {
-            temp.callback.apply(temp._this, temp.args);
+            callback();
         }
         // 返回Bind对象
         return bindData.bind;
@@ -56,40 +56,7 @@ export default class BindManager
         if(bindData) this._bindDict.delete(mediator);
         return bindData && bindData.bind;
     }
-
-    /**
-     * 绑定属性值
-     * 
-     * @param {IMediator} mediator 中介者
-     * @param {*} values 属性字典
-     * @param {*} ui 绑定到的ui实体对象
-     * @memberof BindManager
-     */
-    public bindValue(mediator:IMediator, values:any, ui:any):void
-    {
-        // 添加绑定数据
-        var bindData:BindData = this._bindDict.get(mediator);
-        bindData.callbacks.push({
-            callback: this.doBindValue,
-            args: arguments as any,
-            _this: this
-        });
-        this.doBindValue(mediator, values, ui);
-    }
-
-    private doBindValue(mediator:IMediator, values:any, ui:any):void
-    {
-        // 判断数据是否合法
-        if(!mediator.viewModel) return;
-        // 开始绑定
-        this.search(values, ui, (ui:any, key:string, exp:string)=>{
-            var bindData:BindData = this._bindDict.get(mediator);
-            bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:any)=>{
-                ui[key] = value;
-            });
-        });
-    }
-
+    
     private search(values:any, ui:any, callback:(ui:any, key:string, exp:string)=>void):void
     {
         for(var key in values)
@@ -115,12 +82,60 @@ export default class BindManager
             }
         }
     }
+
+    private fastSearch(mediator:IMediator, values:any, ui:any, callback:(ui:any, key:string, exp:string)=>void):void
+    {
+        var handler:()=>void = ()=>{
+            // 判断数据是否合法
+            if(!mediator.viewModel) return;
+            // 开始绑定
+            this.search(values, ui, callback);
+        };
+        // 添加绑定数据
+        var bindData:BindData = this._bindDict.get(mediator);
+        bindData.callbacks.push(handler);
+        // 立即调用一次
+        handler();
+    }
+
+    /**
+     * 绑定属性值
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {*} values 属性字典
+     * @param {*} ui 绑定到的ui实体对象
+     * @memberof BindManager
+     */
+    public bindValue(mediator:IMediator, values:any, ui:any):void
+    {
+        this.fastSearch(mediator, values, ui, (ui:any, key:string, exp:string)=>{
+            var bindData:BindData = this._bindDict.get(mediator);
+            bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:any)=>{
+                ui[key] = value;
+            });
+        });
+    }
+
+    /**
+     * 绑定事件
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {*} values 事件字典
+     * @param {*} ui 绑定到的ui实体对象
+     * @memberof BindManager
+     */
+    public bindOn(mediator:IMediator, values:any, ui:any):void
+    {
+        this.fastSearch(mediator, values, ui, (ui:any, key:string, exp:string)=>{
+            mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
+        });
+    }
 }
 
 interface BindData
 {
     bind:Bind;
-    callbacks:{callback: Function, args:any[], _this:any}[];
+    callbacks:(()=>void)[];
 }
 
 /** 再额外导出一个单例 */
