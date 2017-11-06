@@ -10,7 +10,8 @@ import { getObjectHash } from "./ObjectUtil";
 */
 export default class Dictionary<K, V>
 {
-    private _entity:{[hash:string]:V} = {};
+    private _keyDict:{[hash:string]:K} = {};
+    private _valueDict:{[hash:string]:V} = {};
 
     /**
      * 获取字典内的元素数量
@@ -22,7 +23,7 @@ export default class Dictionary<K, V>
     public get size():number
     {
         var size:number = 0;
-        for(var hash in this._entity) size ++;
+        for(var hash in this._keyDict) size ++;
         return size;
     }
 
@@ -35,7 +36,9 @@ export default class Dictionary<K, V>
      */
     public set(key:K, value:V):void
     {
-        this._entity[getObjectHash(key)] = value;
+        var hash:string = getObjectHash(key);
+        this._keyDict[hash] = key;
+        this._valueDict[hash] = value;
     }
 
     /**
@@ -47,7 +50,8 @@ export default class Dictionary<K, V>
      */
     public get(key:K):V
     {
-        return this._entity[getObjectHash(key)];
+        var hash:string = getObjectHash(key);
+        return this._valueDict[hash];
     }
 
     /**
@@ -58,6 +62,24 @@ export default class Dictionary<K, V>
      */
     public delete(key:K):void
     {
-        delete this._entity[getObjectHash(key)];
+        var hash:string = getObjectHash(key);
+        delete this._keyDict[hash];
+        delete this._valueDict[hash];
+    }
+
+    /**
+     * 遍历字典
+     * 
+     * @param {(key:K, value:V)=>void} callback 每次遍历的回调
+     * @memberof Dictionary
+     */
+    public forEach(callback:(key:K, value:V)=>void):void
+    {
+        for(var hash in this._keyDict)
+        {
+            var key:K = this._keyDict[hash];
+            var value:V = this._valueDict[hash];
+            callback(key, value);
+        }
     }
 }

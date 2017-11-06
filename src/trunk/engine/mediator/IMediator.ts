@@ -27,6 +27,14 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable
      * @memberof IMediator
      */
     readonly data:any;
+
+    /**
+     * ViewModel引用
+     * 
+     * @type {*}
+     * @memberof IMediator
+     */
+    readonly viewModel:any;
     
     /**
      * 皮肤

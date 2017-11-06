@@ -74,7 +74,8 @@ declare module "utils/Dictionary" {
      * 字典，支持key为任意类型的对象
     */
     export default class Dictionary<K, V> {
-        private _entity;
+        private _keyDict;
+        private _valueDict;
         /**
          * 获取字典内的元素数量
          *
@@ -106,6 +107,13 @@ declare module "utils/Dictionary" {
          * @memberof Dictionary
          */
         delete(key: K): void;
+        /**
+         * 遍历字典
+         *
+         * @param {(key:K, value:V)=>void} callback 每次遍历的回调
+         * @memberof Dictionary
+         */
+        forEach(callback: (key: K, value: V) => void): void;
     }
 }
 declare module "core/message/IMessage" {
@@ -1271,6 +1279,13 @@ declare module "engine/mediator/IMediator" {
          * @memberof IMediator
          */
         readonly data: any;
+        /**
+         * ViewModel引用
+         *
+         * @type {*}
+         * @memberof IMediator
+         */
+        readonly viewModel: any;
         /**
          * 皮肤
          *
@@ -3074,6 +3089,219 @@ declare module "engine/net/NetManager" {
     /** 再额外导出一个单例 */
     export const netManager: NetManager;
 }
+declare module "engine/bind/Utils" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-06
+     * @modify date 2017-11-06
+     *
+     * 绑定工具类
+    */
+    /**
+     * 创建一个表达式求值方法，用于未来执行
+     * @param exp 表达式
+     * @returns {Function} 创建的方法
+     */
+    export function createEvalFunc(exp: string): (scope: any) => any;
+    /**
+     * 表达式求值，无法执行多条语句
+     * @param exp 表达式
+     * @param scope 表达式的作用域
+     * @returns {any} 返回值
+     */
+    export function evalExp(exp: string, scope: any): any;
+    /**
+     * 创建一个执行方法，用于未来执行
+     * @param exp 表达式
+     * @returns {Function} 创建的方法
+     */
+    export function createRunFunc(exp: string): (scope: any) => void;
+    /**
+     * 直接执行表达式，不求值。该方法可以执行多条语句
+     * @param exp 表达式
+     * @param scope 表达式的作用域
+     */
+    export function runExp(exp: string, scope: any): void;
+}
+declare module "engine/bind/Bind" {
+    import IMediator from "engine/mediator/IMediator";
+    import { IWatcher, WatcherCallback } from "engine/bind/Watcher";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-06
+     * @modify date 2017-11-06
+     *
+     * 一个绑定
+    */
+    export default class Bind {
+        private _watcherDict;
+        private _mediator;
+        /**
+         * 获取已绑定的中介者实例
+         *
+         * @readonly
+         * @type {IMediator}
+         * @memberof Bind
+         */
+        readonly mediator: IMediator;
+        constructor(mediator: IMediator);
+        /**
+         * 创建一个观察者，在数值变更时会通知回调进行更新
+         *
+         * @param {*} target 作用目标，指表达式所在的显示对象
+         * @param {string} exp 表达式
+         * @param {*} scope 作用域
+         * @param {WatcherCallback} callback 订阅器回调
+         * @returns {IWatcher} 返回观察者本身
+         * @memberof Bind
+         */
+        createWatcher(target: any, exp: string, scope: any, callback: WatcherCallback): IWatcher;
+    }
+}
+declare module "engine/bind/Watcher" {
+    import Bind from "engine/bind/Bind";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-06
+     * @modify date 2017-11-06
+     *
+     * 数据更新订阅者，当依赖的数据有更新时会触发callback通知外面
+    */
+    export default class Watcher implements IWatcher {
+        /** 记录当前正在执行update方法的Watcher引用 */
+        static updating: Watcher;
+        private static _uid;
+        private _value;
+        private _bind;
+        private _target;
+        private _exp;
+        private _scope;
+        private _expFunc;
+        private _callback;
+        private _disposed;
+        constructor(bind: Bind, target: any, exp: string, scope: any, callback: WatcherCallback);
+        /**
+         * 获取到表达式当前最新值
+         * @returns {any} 最新值
+         */
+        getValue(): any;
+        /**
+         * 当依赖的数据有更新时调用该方法
+         * @param extra 可能的额外数据
+         */
+        update(extra?: any): void;
+        /** 销毁订阅者 */
+        dispose(): void;
+        /**
+         * 是否相等，包括基础类型和对象/数组的对比
+         */
+        private static isEqual(a, b);
+        /**
+         * 是否为对象(包括数组、正则等)
+         */
+        private static isObject(obj);
+        /**
+         * 复制对象，若为对象则深度复制
+         */
+        private static deepCopy(from);
+    }
+    export interface IWatcher {
+        /**
+         * 获取到表达式当前最新值
+         * @returns {any} 最新值
+         */
+        getValue(): any;
+        /**
+         * 当依赖的数据有更新时调用该方法
+         * @param extra 可能的额外数据
+         */
+        update(extra?: any): void;
+        /** 销毁订阅者 */
+        dispose(): void;
+    }
+    export interface WatcherCallback {
+        (newValue?: any, oldValue?: any, extra?: any): void;
+    }
+}
+declare module "engine/bind/Dep" {
+    import Watcher from "engine/bind/Watcher";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-06
+     * @modify date 2017-11-06
+     *
+     * 定义一个依赖，一个观察者实现
+    */
+    export default class Dep {
+        private _map;
+        /**
+         * 添加数据变更订阅者
+         * @param watcher 数据变更订阅者
+         */
+        watch(watcher: Watcher): void;
+        /**
+         * 数据变更，通知所有订阅者
+         * @param extra 可能的额外数据
+         */
+        notify(extra?: any): void;
+    }
+}
+declare module "engine/bind/Mutator" {
+    /**
+     * 将用户传进来的数据“变异”成为具有截获数据变更能力的数据
+     * @param data 原始数据
+     * @returns {any} 变异后的数据
+     */
+    export function mutate(data: any): any;
+}
+declare module "engine/bind/BindManager" {
+    import IMediator from "engine/mediator/IMediator";
+    import Bind from "engine/bind/Bind";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-06
+     * @modify date 2017-11-06
+     *
+     * 绑定管理器，可以将数据和显示对象绑定到一起，MVVM书写界面
+    */
+    export default class BindManager {
+        private _bindDict;
+        /**
+         * 绑定数据到UI上
+         *
+         * @param {IMediator} mediator 中介者
+         * @returns {Bind} 返回绑定实例
+         * @memberof BindManager
+         */
+        bind(mediator: IMediator): Bind;
+        /**
+         * 移除绑定
+         *
+         * @param {IMediator} mediator
+         * @returns {Bind}
+         * @memberof BindManager
+         */
+        unbind(mediator: IMediator): Bind;
+        /**
+         * 绑定属性值
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {*} values 属性字典
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        bindValue(mediator: IMediator, values: any, ui: any): void;
+        private doBindValue(mediator, values, ui);
+        private search(values, ui, callback);
+    }
+    /** 再额外导出一个单例 */
+    export const bindManager: BindManager;
+}
 declare module "engine/mediator/Mediator" {
     import IMessage from "core/message/IMessage";
     import IModuleMediator from "engine/mediator/IModuleMediator";
@@ -3097,6 +3325,14 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         bridge: IBridge;
+        private _viewModel;
+        /**
+         * 获取或设置ViewModel
+         *
+         * @type {*}
+         * @memberof Mediator
+         */
+        viewModel: any;
         /**
          * 皮肤
          *
@@ -3320,6 +3556,7 @@ declare module "engine/injector/Injector" {
     export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
     /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: any, propertyKey: string): any;
+    export function BindValue(value: any): PropertyDecorator;
 }
 declare module "engine/platform/IPlatform" {
     /**

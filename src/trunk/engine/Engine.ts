@@ -26,6 +26,7 @@ import MaskManager from "./mask/MaskManager";
 import NetManager, { netManager } from "./net/NetManager";
 import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
 import { IResponseDataConstructor } from "./net/ResponseData";
+import BindManager from "./bind/BindManager";
 import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
 import IPlugin from "./plugin/IPlugin";

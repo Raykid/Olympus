@@ -3,7 +3,7 @@ import ModuleManager from "engine/module/ModuleManager";
 import ResponseData from "engine/net/ResponseData";
 import { EgretMediatorClass } from "egret/injector/Injector";
 import { Inject, MessageHandler } from "core/injector/Injector";
-import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler } from "engine/injector/Injector";
+import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue } from "engine/injector/Injector";
 import SecondModule from "./SecondModule";
 import ModuleMessage from "engine/module/ModuleMessage";
 import SceneMediator from "engine/scene/SceneMediator";
@@ -35,6 +35,7 @@ class FirstMediator extends SceneMediator
     private fuckModel3:IFuckModel;
 
     public btn:eui.Button;
+    @BindValue({textContent: "fuckText + ' - 1'"})
     public txt:eui.Label;
 
     public listAssets():string[]
@@ -50,6 +51,14 @@ class FirstMediator extends SceneMediator
             this.moduleManager.open(SecondModule);
         }, this);
         console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
+
+        this.viewModel = {
+            fuckText: "fuck you"
+        };
+
+        setTimeout(()=>{
+            this.viewModel.fuckText = "ok?";
+        }, 3000);
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)

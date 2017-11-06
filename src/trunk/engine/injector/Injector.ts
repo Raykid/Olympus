@@ -12,6 +12,8 @@ import { moduleManager } from "../module/ModuleManager";
 import IModuleDependent from "../module/IModuleDependent";
 import IModuleMediator from "../mediator/IModuleMediator";
 import Dictionary from "../../utils/Dictionary";
+import { bindManager } from "../bind/BindManager";
+import IMediator from "../mediator/IMediator";
 
 /**
  * @author Raykid
@@ -249,4 +251,33 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
             }
         };
     }
+}
+
+function listenOnOpen(prototype:any, propertyKey:string, callback:(mediator:IMediator)=>void):void
+{
+    listenConstruct(prototype.constructor, function(mediator:IMediator):void
+    {
+        // 篡改onOpen方法
+        var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
+        mediator.onOpen = function(...args:any[]):void
+        {
+            // 调用回调
+            callback(mediator);
+            // 恢复原始方法
+            if(oriFunc) mediator.onOpen = oriFunc;
+            else delete mediator.onOpen;
+            // 调用原始方法
+            mediator.onOpen.apply(this, args);
+        };
+    });
+}
+
+export function BindValue(value:any):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+            bindManager.bindValue(mediator, value, mediator[propertyKey]);
+        });
+    };
 }

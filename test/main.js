@@ -265,11 +265,18 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             return ["./modules/test.html"];
         };
         FirstMediator.prototype.onOpen = function () {
+            var _this = this;
             this.mapListener(this.btn, "click", function () {
                 this.txt.textContent = "Fuck you!!!";
                 this.moduleManager.open(SecondModule_1.default);
             }, this);
             console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
+            this.viewModel = {
+                fuckText: "fuck you"
+            };
+            setTimeout(function () {
+                _this.viewModel.fuckText = "ok?";
+            }, 3000);
         };
         FirstMediator.prototype.onModuleChange = function (to, from) {
             if (to == FirstModule)
@@ -296,6 +303,10 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             Injector_6.Inject(1),
             __metadata("design:type", FuckModel_1.IFuckModel)
         ], FirstMediator.prototype, "fuckModel3", void 0);
+        __decorate([
+            Injector_7.BindValue({ textContent: "fuckText + ' - 1'" }),
+            __metadata("design:type", eui.Label)
+        ], FirstMediator.prototype, "txt", void 0);
         __decorate([
             Injector_6.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
             __metadata("design:type", Function),

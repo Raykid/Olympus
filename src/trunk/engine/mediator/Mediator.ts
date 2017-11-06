@@ -5,7 +5,9 @@ import IModuleMediator from "./IModuleMediator";
 import IBridge from "../bridge/IBridge";
 import IModule from "../module/IModule";
 import IModuleConstructor from "../module/IModuleConstructor";
+import { mutate } from "../bind/Mutator";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
+import { bindManager } from "../bind/BindManager";
 
 /**
  * @author Raykid
@@ -24,6 +26,25 @@ export default class Mediator implements IModuleMediator
      * @memberof Mediator
      */
     public bridge:IBridge;
+    
+    private _viewModel:any;
+    /**
+     * 获取或设置ViewModel
+     * 
+     * @type {*}
+     * @memberof Mediator
+     */
+    public get viewModel():any
+    {
+        return this._viewModel;
+    }
+    public set viewModel(value:any)
+    {
+        // 设置的时候进行一次变异
+        this._viewModel = mutate(value);
+        // 更新绑定
+        bindManager.bind(this);
+    }
 
     /**
      * 皮肤
@@ -89,6 +110,8 @@ export default class Mediator implements IModuleMediator
     public constructor(skin?:any)
     {
         if(skin) this.skin = skin;
+        // 初始化绑定
+        bindManager.bind(this);
     }
 
     /**
@@ -361,6 +384,10 @@ export default class Mediator implements IModuleMediator
         this.unmapAllListeners();
         // 移除表现层桥
         this.bridge = null;
+        // 移除绑定
+        bindManager.unbind(this);
+        // 移除ViewModel
+        this._viewModel = null;
         // 移除皮肤
         this.skin = null;
         // 设置已被销毁
