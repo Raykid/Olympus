@@ -70,6 +70,11 @@ export default class AssetsLoader
     {
         // 调用回调
         this._handler.start && this._handler.start();
+        // 组名如果是空字符串则会导致Egret什么都不干，所以要移除空字符串的组名
+        groups = groups && groups.filter(group=>{
+            if(typeof group == "string") return (group != "");
+            else return (group.name != "");
+        });
         // 开始加载
         var groupDict:IResourceDict = {};
         var pgsDict:{[name:string]:number};
