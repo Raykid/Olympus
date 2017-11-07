@@ -11,6 +11,7 @@ import { moduleManager } from "./ModuleManager";
 import { getConstructor } from "../../utils/ConstructUtil";
 import Shell from "../env/Shell";
 import IModule from "./IModule";
+import IObservable from "../../core/observable/IObservable";
 
 /**
  * @author Raykid
@@ -281,6 +282,18 @@ export default abstract class Module implements IModule
     /*********************** 下面是模块消息系统 ***********************/
 
     private _observable:Observable = new Observable();
+
+    /**
+     * 暴露IObservable接口
+     * 
+     * @readonly
+     * @type {IObservable}
+     * @memberof Module
+     */
+    public get observable():IObservable
+    {
+        return this._observable;
+    }
 
     /**
      * 监听消息

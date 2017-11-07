@@ -7,7 +7,6 @@ import { netManager } from "../net/NetManager";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
 import ModuleMessage from "./ModuleMessage";
-import ModuleObservableTransformer from "./ModuleObservableTransformer";
 import IModuleMediator from "../mediator/IModuleMediator";
 import { environment } from "../env/Environment";
 import { maskManager } from "../mask/MaskManager";
@@ -195,12 +194,10 @@ export default class ModuleManager
         {
             // 尚未打开过，正常开启模块
             var target:IModule = new cls();
-            // 创建内核
-            var observable:IObservable = new ModuleObservableTransformer(target);
             // 赋值打开参数
             target.data = data;
             // 监听通讯消息
-            netManager.listenRequest(observable);
+            netManager.listenRequest(target.observable);
             // 数据先行
             this._moduleStack.unshift([cls, target]);
             // 记一个是否需要遮罩的flag
@@ -278,7 +275,7 @@ export default class ModuleManager
                             // 如果有缓存的模块需要打开则打开之
                             if(this._openCache.length > 0)
                                 this.open.apply(this, this._openCache.shift());
-                        }, this, observable);
+                        }, this, target.observable);
                     });
                 }
             };

@@ -8,6 +8,7 @@ import IModuleConstructor from "../module/IModuleConstructor";
 import { mutate } from "../bind/Mutator";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
 import { bindManager } from "../bind/BindManager";
+import IObservable from "../../core/observable/IObservable";
 
 /**
  * @author Raykid
@@ -293,6 +294,18 @@ export default class Mediator implements IModuleMediator
     }
 
     /*********************** 下面是模块消息系统 ***********************/
+
+    /**
+     * 暴露IObservable
+     * 
+     * @readonly
+     * @type {IObservable}
+     * @memberof Mediator
+     */
+    public get observable():IObservable
+    {
+        return this._dependModuleInstance && this._dependModuleInstance.observable;
+    }
 
     /**
      * 监听消息

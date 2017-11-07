@@ -2903,77 +2903,6 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
     }());
     exports.default = ModuleMessage;
 });
-define("engine/module/ModuleObservableTransformer", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-11-07
-     * @modify date 2017-11-07
-     *
-     * IModuleObservable到IObservable的变压器
-    */
-    var ModuleObservableTransformer = /** @class */ (function () {
-        function ModuleObservableTransformer(module) {
-            this._module = module;
-        }
-        /** dispatch方法实现 */
-        ModuleObservableTransformer.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            (_a = this._module).dispatchModule.apply(_a, [typeOrMsg].concat(params));
-            var _a;
-        };
-        /**
-         * 监听内核消息
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof ModuleObservableTransformer
-         */
-        ModuleObservableTransformer.prototype.listen = function (type, handler, thisArg) {
-            this._module.listenModule(type, handler, thisArg);
-        };
-        /**
-         * 移除内核消息监听
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof ModuleObservableTransformer
-         */
-        ModuleObservableTransformer.prototype.unlisten = function (type, handler, thisArg) {
-            this._module.unlistenModule(type, handler, thisArg);
-        };
-        /**
-         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
-         *
-         * @param {string} type 要注册的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof ModuleObservableTransformer
-         */
-        ModuleObservableTransformer.prototype.mapCommand = function (type, cmd) {
-            this._module.mapCommandModule(type, cmd);
-        };
-        /**
-         * 注销命令
-         *
-         * @param {string} type 要注销的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器
-         * @returns {void}
-         * @memberof ModuleObservableTransformer
-         */
-        ModuleObservableTransformer.prototype.unmapCommand = function (type, cmd) {
-            this._module.unmapCommandModule(type, cmd);
-        };
-        return ModuleObservableTransformer;
-    }());
-    exports.default = ModuleObservableTransformer;
-});
 define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -4493,7 +4422,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
     /** 再额外导出一个单例 */
     exports.audioManager = Core_11.core.getInject(AudioManager);
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/module/ModuleObservableTransformer", "engine/env/Environment", "engine/mask/MaskManager", "engine/assets/AssetsManager", "engine/audio/AudioManager", "engine/version/Version"], function (require, exports, Core_12, Injector_8, NetManager_1, ModuleMessage_1, ModuleObservableTransformer_1, Environment_4, MaskManager_2, AssetsManager_2, AudioManager_1, Version_2) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/mask/MaskManager", "engine/assets/AssetsManager", "engine/audio/AudioManager", "engine/version/Version"], function (require, exports, Core_12, Injector_8, NetManager_1, ModuleMessage_1, Environment_4, MaskManager_2, AssetsManager_2, AudioManager_1, Version_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4664,12 +4593,10 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             if (!after) {
                 // 尚未打开过，正常开启模块
                 var target = new cls();
-                // 创建内核
-                var observable = new ModuleObservableTransformer_1.default(target);
                 // 赋值打开参数
                 target.data = data;
                 // 监听通讯消息
-                NetManager_1.netManager.listenRequest(observable);
+                NetManager_1.netManager.listenRequest(target.observable);
                 // 数据先行
                 this._moduleStack.unshift([cls, target]);
                 // 记一个是否需要遮罩的flag
@@ -4743,7 +4670,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 // 如果有缓存的模块需要打开则打开之
                                 if (this._openCache.length > 0)
                                     this.open.apply(this, this._openCache.shift());
-                            }, _this, observable);
+                            }, _this, target.observable);
                         });
                     }
                 };
@@ -6250,7 +6177,21 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             }
             Core_17.core.dispatch.apply(Core_17.core, [typeOrMsg].concat(params));
         };
-        /*********************** 下面是模块消息系统 ***********************/
+        Object.defineProperty(Mediator.prototype, "observable", {
+            /*********************** 下面是模块消息系统 ***********************/
+            /**
+             * 暴露IObservable
+             *
+             * @readonly
+             * @type {IObservable}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this._dependModuleInstance && this._dependModuleInstance.observable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 监听消息
          *
@@ -7556,6 +7497,20 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
             }
             Core_21.core.dispatch.apply(Core_21.core, [typeOrMsg].concat(params));
         };
+        Object.defineProperty(Module.prototype, "observable", {
+            /**
+             * 暴露IObservable接口
+             *
+             * @readonly
+             * @type {IObservable}
+             * @memberof Module
+             */
+            get: function () {
+                return this._observable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 监听消息
          *

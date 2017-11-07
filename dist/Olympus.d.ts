@@ -1092,6 +1092,7 @@ declare module "engine/scene/IScenePolicy" {
 declare module "engine/module/IModuleObservable" {
     import IMessage from "core/message/IMessage";
     import ICommandConstructor from "core/command/ICommandConstructor";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1101,6 +1102,13 @@ declare module "engine/module/IModuleObservable" {
      * 模块可观察接口
     */
     export default interface IModuleObservable {
+        /**
+         * 将内部的IObservable暴露出来
+         *
+         * @type {IObservable}
+         * @memberof IModuleObservable
+         */
+        readonly observable: IObservable;
         /**
          * 监听消息
          *
@@ -2006,74 +2014,6 @@ declare module "engine/module/ModuleMessage" {
          * @memberof ModuleMessage
          */
         static MODULE_LOAD_ASSETS_ERROR: string;
-    }
-}
-declare module "engine/module/ModuleObservableTransformer" {
-    import IObservable from "core/observable/IObservable";
-    import IModuleObservable from "engine/module/IModuleObservable";
-    import IMessage from "core/message/IMessage";
-    import ICommandConstructor from "core/command/ICommandConstructor";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-11-07
-     * @modify date 2017-11-07
-     *
-     * IModuleObservable到IObservable的变压器
-    */
-    export default class ModuleObservableTransformer implements IObservable {
-        private _module;
-        constructor(module: IModuleObservable);
-        /**
-         * 派发内核消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof ModuleObservableTransformer
-         */
-        dispatch(msg: IMessage): void;
-        /**
-         * 派发内核消息，消息会转变为CommonMessage类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof ModuleObservableTransformer
-         */
-        dispatch(type: string, ...params: any[]): void;
-        /**
-         * 监听内核消息
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof ModuleObservableTransformer
-         */
-        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
-        /**
-         * 移除内核消息监听
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof ModuleObservableTransformer
-         */
-        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
-        /**
-         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
-         *
-         * @param {string} type 要注册的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof ModuleObservableTransformer
-         */
-        mapCommand(type: string, cmd: ICommandConstructor): void;
-        /**
-         * 注销命令
-         *
-         * @param {string} type 要注销的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器
-         * @returns {void}
-         * @memberof ModuleObservableTransformer
-         */
-        unmapCommand(type: string, cmd: ICommandConstructor): void;
     }
 }
 declare module "utils/URLUtil" {
@@ -3468,6 +3408,7 @@ declare module "engine/mediator/Mediator" {
     import IModule from "engine/module/IModule";
     import IModuleConstructor from "engine/module/IModuleConstructor";
     import ICommandConstructor from "core/command/ICommandConstructor";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3632,6 +3573,14 @@ declare module "engine/mediator/Mediator" {
          */
         dispatch(type: string, ...params: any[]): void;
         /*********************** 下面是模块消息系统 ***********************/
+        /**
+         * 暴露IObservable
+         *
+         * @readonly
+         * @type {IObservable}
+         * @memberof Mediator
+         */
+        readonly observable: IObservable;
         /**
          * 监听消息
          *
@@ -4274,6 +4223,7 @@ declare module "engine/module/Module" {
     import IModuleMediator from "engine/mediator/IModuleMediator";
     import IModuleConstructor from "engine/module/IModuleConstructor";
     import IModule from "engine/module/IModule";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -4437,6 +4387,14 @@ declare module "engine/module/Module" {
         dispatch(type: string, ...params: any[]): void;
         /*********************** 下面是模块消息系统 ***********************/
         private _observable;
+        /**
+         * 暴露IObservable接口
+         *
+         * @readonly
+         * @type {IObservable}
+         * @memberof Module
+         */
+        readonly observable: IObservable;
         /**
          * 监听消息
          *

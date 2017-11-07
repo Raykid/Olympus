@@ -1,5 +1,6 @@
 import IMessage from "../../core/message/IMessage";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
+import IObservable from "../../core/observable/IObservable";
 
 /**
  * @author Raykid
@@ -11,6 +12,14 @@ import ICommandConstructor from "../../core/command/ICommandConstructor";
 */
 export default interface IModuleObservable
 {
+    /**
+     * 将内部的IObservable暴露出来
+     * 
+     * @type {IObservable}
+     * @memberof IModuleObservable
+     */
+    readonly observable:IObservable;
+
     /**
      * 监听消息
      * 
