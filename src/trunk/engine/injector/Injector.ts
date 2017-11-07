@@ -447,6 +447,48 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:string}}|IConstru
 }
 
 /**
+ * 一次绑定多个模块消息
+ * 
+ * @export
+ * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindModuleMessage(msgDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
+/**
+ * 一次绑定一个模块消息
+ * 
+ * @export
+ * @param {IConstructor|string} type 消息类型或消息类型名称
+ * @param {string} uiDict ui表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindModuleMessage(type:IConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindModuleMessage(arg1:{[type:string]:{[name:string]:string}}|IConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IModuleMediator)=>{
+            if(typeof arg1 == "string" || arg1 instanceof Function)
+            {
+                // 是类型方式
+                bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+            }
+            else
+            {
+                // 是字典方式
+                for(var type in arg1)
+                {
+                    bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
+                }
+            }
+        });
+    };
+}
+
+/**
  * 一次绑定多个全局通讯消息
  * 
  * @export
@@ -482,6 +524,48 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:string}}|IRespon
                 for(var type in arg1)
                 {
                     bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey]);
+                }
+            }
+        });
+    };
+}
+
+/**
+ * 一次绑定多个模块通讯消息
+ * 
+ * @export
+ * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindModuleResponse(resDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
+/**
+ * 一次绑定一个模块通讯消息
+ * 
+ * @export
+ * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
+ * @param {string} uiDict ui表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindModuleResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindModuleResponse(arg1:{[type:string]:{[name:string]:string}}|IResponseDataConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IModuleMediator)=>{
+            if(typeof arg1 == "string" || arg1 instanceof Function)
+            {
+                // 是类型方式
+                bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+            }
+            else
+            {
+                // 是字典方式
+                for(var type in arg1)
+                {
+                    bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
                 }
             }
         });

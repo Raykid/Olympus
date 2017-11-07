@@ -7,6 +7,7 @@ import IBridge from "../bridge/IBridge";
 import { evalExp } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
+import IObservable from "../../core/observable/IObservable";
 
 /**
  * @author Raykid
@@ -181,16 +182,18 @@ export default class BindManager
      * @param {IConstructor|string} type 绑定的消息类型字符串
      * @param {{[name:string]:string}} uiDict ui表达式字典
      * @param {*} ui 绑定到的ui实体对象
+     * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindMessage(mediator:IMediator, type:IConstructor|string, uiDict:{[name:string]:string}, ui:any):void
+    public bindMessage(mediator:IMediator, type:IConstructor|string, uiDict:{[name:string]:string}, ui:any, observable?:IObservable):void
     {
+        if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
         var handler:(...args:any[])=>void = (...args:any[])=>{
             if(mediator.disposed)
             {
                 // mediator已销毁，取消监听
-                core.unlisten(type, handler);
+                observable.unlisten(type, handler);
             }
             else
             {
@@ -211,7 +214,7 @@ export default class BindManager
             }
         };
         // 添加监听
-        core.listen(type, handler);
+        observable.listen(type, handler);
     }
 
     /**
@@ -221,16 +224,18 @@ export default class BindManager
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
      * @param {{[name:string]:string}} uiDict ui表达式字典
      * @param {*} ui 绑定到的ui实体对象
+     * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindResponse(mediator:IMediator, type:IResponseDataConstructor|string, uiDict:{[name:string]:string}, ui:any):void
+    public bindResponse(mediator:IMediator, type:IResponseDataConstructor|string, uiDict:{[name:string]:string}, ui:any, observable?:IObservable):void
     {
+        if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
         var handler:(response:any)=>void = (response:any)=>{
             if(mediator.disposed)
             {
                 // mediator已销毁，取消监听
-                netManager.unlistenResponse(type, handler);
+                netManager.unlistenResponse(type, handler, null, null, observable);
             }
             else
             {
@@ -246,7 +251,7 @@ export default class BindManager
             }
         };
         // 添加监听
-        netManager.listenResponse(type, handler);
+        netManager.listenResponse(type, handler, null, null, observable);
     }
 }
 

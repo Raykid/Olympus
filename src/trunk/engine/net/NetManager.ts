@@ -73,7 +73,7 @@ export default class NetManager
         this._responseDict[cls.type] = cls;
     }
 
-    private _responseListeners:{[type:string]:[ResponseHandler, any, boolean][]} = {};
+    private _responseListeners:{[type:string]:[ResponseHandler, any, boolean, IObservable][]} = {};
     /**
      * 添加一个通讯返回监听
      * 
@@ -81,19 +81,21 @@ export default class NetManager
      * @param {ResponseHandler} handler 回调函数
      * @param {*} [thisArg] this指向
      * @param {boolean} [once=false] 是否一次性监听
+     * @param {IObservable} [observable] 要发送到的内核
      * @memberof NetManager
      */
-    public listenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false):void
+    public listenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false, observable?:IObservable):void
     {
+        if(!observable) observable = core.observable;
         var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
-        var listeners:[ResponseHandler, any, boolean][] = this._responseListeners[type];
+        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
         if(!listeners) this._responseListeners[type] = listeners = [];
         for(var listener of listeners)
         {
             if(handler == listener[0] && thisArg == listener[1] && once == listener[2])
                 return;
         }
-        listeners.push([handler, thisArg, once]);
+        listeners.push([handler, thisArg, once, observable]);
     }
 
     /**
@@ -103,18 +105,20 @@ export default class NetManager
      * @param {ResponseHandler} handler 回调函数
      * @param {*} [thisArg] this指向
      * @param {boolean} [once=false] 是否一次性监听
+     * @param {IObservable} [observable] 要发送到的内核
      * @memberof NetManager
      */
-    public unlistenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false):void
+    public unlistenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false, observable?:IObservable):void
     {
+        if(!observable) observable = core.observable;
         var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
-        var listeners:[ResponseHandler, any, boolean][] = this._responseListeners[type];
+        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
         if(listeners)
         {
             for(var i:number = 0, len:number = listeners.length; i < len; i++)
             {
-                var listener:[ResponseHandler, any, boolean] = listeners[i];
-                if(handler == listener[0] && thisArg == listener[1] && once == listener[2])
+                var listener:[ResponseHandler, any, boolean, IObservable] = listeners[i];
+                if(handler == listener[0] && thisArg == listener[1] && once == listener[2] && observable == listener[3])
                 {
                     listeners.splice(i, 1);
                     break;
@@ -136,7 +140,7 @@ export default class NetManager
     {
         var responses:(IResponseDataConstructor|ResponseData)[] = [];
         var leftResCount:number = 0;
-        if(!observable) observable = core;
+        if(!observable) observable = core.observable;
         for(var request of requests || [])
         {
             var response:IResponseDataConstructor = request.__params.response;
@@ -192,7 +196,7 @@ export default class NetManager
         {
             var response:ResponseData = new cls();
             // 设置配对请求和发送内核
-            var observable:IObservable = core;
+            var observable:IObservable = core.observable;
             if(request)
             {
                 response.__params.request = request;
@@ -204,15 +208,19 @@ export default class NetManager
             // 派发事件
             observable.dispatch(NetMessage.NET_RESPONSE, response, request);
             // 触发事件形式监听
-            var listeners:[ResponseHandler, any, boolean][] = this._responseListeners[type];
+            var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
             if(listeners)
             {
                 listeners = listeners.concat();
                 for(var listener of listeners)
                 {
-                    listener[0].call(listener[1], response, request);
-                    // 如果是一次性监听则移除之
-                    if(listener[2]) this.unlistenResponse(type, listener[0], listener[1], listener[2]);
+                    if(listener[3] == observable)
+                    {
+                        // 必须是同核消息才能触发回调
+                        listener[0].call(listener[1], response, request);
+                        // 如果是一次性监听则移除之
+                        if(listener[2]) this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
+                    }
                 }
             }
         }

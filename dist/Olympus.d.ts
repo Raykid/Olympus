@@ -479,6 +479,14 @@ declare module "core/Core" {
         /*********************** 下面是内核消息系统 ***********************/
         private _observable;
         /**
+         * 将IObservable暴露出来
+         *
+         * @readonly
+         * @type {IObservable}
+         * @memberof Core
+         */
+        readonly observable: IObservable;
+        /**
          * 派发内核消息
          *
          * @param {IMessage} msg 内核消息实例
@@ -3107,9 +3115,10 @@ declare module "engine/net/NetManager" {
          * @param {ResponseHandler} handler 回调函数
          * @param {*} [thisArg] this指向
          * @param {boolean} [once=false] 是否一次性监听
+         * @param {IObservable} [observable] 要发送到的内核
          * @memberof NetManager
          */
-        listenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        listenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean, observable?: IObservable): void;
         /**
          * 移除一个通讯返回监听
          *
@@ -3117,9 +3126,10 @@ declare module "engine/net/NetManager" {
          * @param {ResponseHandler} handler 回调函数
          * @param {*} [thisArg] this指向
          * @param {boolean} [once=false] 是否一次性监听
+         * @param {IObservable} [observable] 要发送到的内核
          * @memberof NetManager
          */
-        unlistenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean): void;
+        unlistenResponse(clsOrType: IResponseDataConstructor | string, handler: ResponseHandler, thisArg?: any, once?: boolean, observable?: IObservable): void;
         /**
          * 发送多条请求，并且等待返回结果（如果有的话），调用回调
          *
@@ -3311,6 +3321,7 @@ declare module "engine/bind/BindManager" {
     import IMediator from "engine/mediator/IMediator";
     import Bind from "engine/bind/Bind";
     import { IResponseDataConstructor } from "engine/net/ResponseData";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3380,11 +3391,12 @@ declare module "engine/bind/BindManager" {
          * @param {IConstructor|string} type 绑定的消息类型字符串
          * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
+         * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
         bindMessage(mediator: IMediator, type: IConstructor | string, uiDict: {
             [name: string]: string;
-        }, ui: any): void;
+        }, ui: any, observable?: IObservable): void;
         /**
          * 绑定全局Response
          *
@@ -3392,11 +3404,12 @@ declare module "engine/bind/BindManager" {
          * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
          * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
+         * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
         bindResponse(mediator: IMediator, type: IResponseDataConstructor | string, uiDict: {
             [name: string]: string;
-        }, ui: any): void;
+        }, ui: any, observable?: IObservable): void;
     }
     /** 再额外导出一个单例 */
     export const bindManager: BindManager;
@@ -3753,6 +3766,29 @@ declare module "engine/injector/Injector" {
         [name: string]: string;
     }): PropertyDecorator;
     /**
+     * 一次绑定多个模块消息
+     *
+     * @export
+     * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindModuleMessage(msgDict: {
+        [type: string]: {
+            [name: string]: string;
+        };
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个模块消息
+     *
+     * @export
+     * @param {IConstructor|string} type 消息类型或消息类型名称
+     * @param {string} uiDict ui表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindModuleMessage(type: IConstructor | string, uiDict: {
+        [name: string]: string;
+    }): PropertyDecorator;
+    /**
      * 一次绑定多个全局通讯消息
      *
      * @export
@@ -3773,6 +3809,29 @@ declare module "engine/injector/Injector" {
      * @returns {PropertyDecorator}
      */
     export function BindResponse(type: IResponseDataConstructor | string, uiDict: {
+        [name: string]: string;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定多个模块通讯消息
+     *
+     * @export
+     * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindModuleResponse(resDict: {
+        [type: string]: {
+            [name: string]: string;
+        };
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个模块通讯消息
+     *
+     * @export
+     * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
+     * @param {string} uiDict ui表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindModuleResponse(type: IResponseDataConstructor | string, uiDict: {
         [name: string]: string;
     }): PropertyDecorator;
 }

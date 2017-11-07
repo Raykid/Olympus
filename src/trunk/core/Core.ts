@@ -47,6 +47,18 @@ export default class Core implements IObservable
     private _observable:IObservable = new Observable();
 
     /**
+     * 将IObservable暴露出来
+     * 
+     * @readonly
+     * @type {IObservable}
+     * @memberof Core
+     */
+    public get observable():IObservable
+    {
+        return this._observable;
+    }
+
+    /**
      * 派发内核消息
      * 
      * @param {IMessage} msg 内核消息实例

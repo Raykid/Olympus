@@ -56,7 +56,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             var _this = this;
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
                 // moduleManager.close(SecondModule);
-                _this.dispatch("FuckMsg", "Shit!!!");
+                _this.dispatchModule("FuckMsg", "Shit!!!");
             });
             this.viewModel = {
                 onMsg: function (msg) {
@@ -71,7 +71,7 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
             this.dispatchModule("fuck", 123);
         };
         __decorate([
-            Injector_2.BindMessage("FuckMsg", { label: "onMsg($arguments[0])" }),
+            Injector_2.BindModuleMessage("FuckMsg", { label: "onMsg($arguments[0])" }),
             __metadata("design:type", eui.Button)
         ], SecondMediator.prototype, "btn", void 0);
         SecondMediator = __decorate([

@@ -3,7 +3,7 @@ import ResponseData from "engine/net/ResponseData";
 import { moduleManager } from "engine/module/ModuleManager";
 import SceneMediator from "engine/scene/SceneMediator";
 import { EgretMediatorClass } from "egret/injector/Injector";
-import { ModuleClass, DelegateMediator, ModuleMessageHandler, BindMessage } from "engine/injector/Injector";
+import { ModuleClass, DelegateMediator, ModuleMessageHandler, BindMessage, BindModuleMessage } from "engine/injector/Injector";
 import { MessageHandler } from "core/injector/Injector";
 
 /**
@@ -18,7 +18,7 @@ import { MessageHandler } from "core/injector/Injector";
 @EgretMediatorClass("Fuck2Skin")
 class SecondMediator extends SceneMediator
 {
-    @BindMessage("FuckMsg", {label: "onMsg($arguments[0])"})
+    @BindModuleMessage("FuckMsg", {label: "onMsg($arguments[0])"})
     public btn:eui.Button;
 
     public listAssets():string[]
@@ -31,7 +31,7 @@ class SecondMediator extends SceneMediator
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
             // moduleManager.close(SecondModule);
 
-            this.dispatch("FuckMsg", "Shit!!!");
+            this.dispatchModule("FuckMsg", "Shit!!!");
         });
         this.viewModel = {
             onMsg: msg=>{

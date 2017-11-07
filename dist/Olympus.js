@@ -1774,6 +1774,20 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/observable/
             // 注入自身
             this.mapInjectValue(this);
         }
+        Object.defineProperty(Core.prototype, "observable", {
+            /**
+             * 将IObservable暴露出来
+             *
+             * @readonly
+             * @type {IObservable}
+             * @memberof Core
+             */
+            get: function () {
+                return this._observable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /** dispatch方法实现 */
         Core.prototype.dispatch = function () {
             var params = [];
@@ -5128,10 +5142,13 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
          * @param {ResponseHandler} handler 回调函数
          * @param {*} [thisArg] this指向
          * @param {boolean} [once=false] 是否一次性监听
+         * @param {IObservable} [observable] 要发送到的内核
          * @memberof NetManager
          */
-        NetManager.prototype.listenResponse = function (clsOrType, handler, thisArg, once) {
+        NetManager.prototype.listenResponse = function (clsOrType, handler, thisArg, once, observable) {
             if (once === void 0) { once = false; }
+            if (!observable)
+                observable = Core_15.core.observable;
             var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
             var listeners = this._responseListeners[type];
             if (!listeners)
@@ -5141,7 +5158,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 if (handler == listener[0] && thisArg == listener[1] && once == listener[2])
                     return;
             }
-            listeners.push([handler, thisArg, once]);
+            listeners.push([handler, thisArg, once, observable]);
         };
         /**
          * 移除一个通讯返回监听
@@ -5150,16 +5167,19 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
          * @param {ResponseHandler} handler 回调函数
          * @param {*} [thisArg] this指向
          * @param {boolean} [once=false] 是否一次性监听
+         * @param {IObservable} [observable] 要发送到的内核
          * @memberof NetManager
          */
-        NetManager.prototype.unlistenResponse = function (clsOrType, handler, thisArg, once) {
+        NetManager.prototype.unlistenResponse = function (clsOrType, handler, thisArg, once, observable) {
             if (once === void 0) { once = false; }
+            if (!observable)
+                observable = Core_15.core.observable;
             var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
             var listeners = this._responseListeners[type];
             if (listeners) {
                 for (var i = 0, len = listeners.length; i < len; i++) {
                     var listener = listeners[i];
-                    if (handler == listener[0] && thisArg == listener[1] && once == listener[2]) {
+                    if (handler == listener[0] && thisArg == listener[1] && once == listener[2] && observable == listener[3]) {
                         listeners.splice(i, 1);
                         break;
                     }
@@ -5179,7 +5199,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             var responses = [];
             var leftResCount = 0;
             if (!observable)
-                observable = Core_15.core;
+                observable = Core_15.core.observable;
             for (var _i = 0, _a = requests || []; _i < _a.length; _i++) {
                 var request = _a[_i];
                 var response = request.__params.response;
@@ -5224,7 +5244,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             if (cls) {
                 var response = new cls();
                 // 设置配对请求和发送内核
-                var observable = Core_15.core;
+                var observable = Core_15.core.observable;
                 if (request) {
                     response.__params.request = request;
                     // 如果有配对请求，则将返回值发送到请求所在的内核里
@@ -5240,10 +5260,13 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                     listeners = listeners.concat();
                     for (var _i = 0, listeners_3 = listeners; _i < listeners_3.length; _i++) {
                         var listener = listeners_3[_i];
-                        listener[0].call(listener[1], response, request);
-                        // 如果是一次性监听则移除之
-                        if (listener[2])
-                            this.unlistenResponse(type, listener[0], listener[1], listener[2]);
+                        if (listener[3] == observable) {
+                            // 必须是同核消息才能触发回调
+                            listener[0].call(listener[1], response, request);
+                            // 如果是一次性监听则移除之
+                            if (listener[2])
+                                this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
+                        }
                     }
                 }
             }
@@ -5869,10 +5892,13 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * @param {IConstructor|string} type 绑定的消息类型字符串
          * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
+         * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
-        BindManager.prototype.bindMessage = function (mediator, type, uiDict, ui) {
+        BindManager.prototype.bindMessage = function (mediator, type, uiDict, ui, observable) {
             var _this = this;
+            if (!observable)
+                observable = Core_16.core.observable;
             var bindData = this._bindDict.get(mediator);
             var handler = function () {
                 var args = [];
@@ -5881,7 +5907,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 }
                 if (mediator.disposed) {
                     // mediator已销毁，取消监听
-                    Core_16.core.unlisten(type, handler);
+                    observable.unlisten(type, handler);
                 }
                 else {
                     var msg;
@@ -5901,7 +5927,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 }
             };
             // 添加监听
-            Core_16.core.listen(type, handler);
+            observable.listen(type, handler);
         };
         /**
          * 绑定全局Response
@@ -5910,15 +5936,18 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
          * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
+         * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
-        BindManager.prototype.bindResponse = function (mediator, type, uiDict, ui) {
+        BindManager.prototype.bindResponse = function (mediator, type, uiDict, ui, observable) {
             var _this = this;
+            if (!observable)
+                observable = Core_16.core.observable;
             var bindData = this._bindDict.get(mediator);
             var handler = function (response) {
                 if (mediator.disposed) {
                     // mediator已销毁，取消监听
-                    NetManager_2.netManager.unlistenResponse(type, handler);
+                    NetManager_2.netManager.unlistenResponse(type, handler, null, null, observable);
                 }
                 else {
                     _this.search(uiDict, ui, function (ui, key, exp) {
@@ -5933,7 +5962,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 }
             };
             // 添加监听
-            NetManager_2.netManager.listenResponse(type, handler);
+            NetManager_2.netManager.listenResponse(type, handler, null, null, observable);
         };
         BindManager = __decorate([
             Injector_12.Injectable
@@ -6586,6 +6615,26 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
     /**
      * @private
      */
+    function BindModuleMessage(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
+                    }
+                }
+            });
+        };
+    }
+    exports.BindModuleMessage = BindModuleMessage;
+    /**
+     * @private
+     */
     function BindResponse(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, function (mediator) {
@@ -6603,6 +6652,26 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         };
     }
     exports.BindResponse = BindResponse;
+    /**
+     * @private
+     */
+    function BindModuleResponse(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
+                    }
+                }
+            });
+        };
+    }
+    exports.BindModuleResponse = BindModuleResponse;
 });
 define("engine/platform/IPlatform", ["require", "exports"], function (require, exports) {
     "use strict";
