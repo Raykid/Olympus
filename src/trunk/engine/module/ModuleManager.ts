@@ -252,7 +252,7 @@ export default class ModuleManager
                             jsNode.innerHTML = results.join("\n");
                             document.body.appendChild(jsNode);
                         }
-                        // 发送所有模块消息
+                        // 发送所有模块消息，模块消息默认发送全局内核
                         var requests:RequestData[] = target.listInitRequests();
                         netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
                         {
@@ -275,7 +275,7 @@ export default class ModuleManager
                             // 如果有缓存的模块需要打开则打开之
                             if(this._openCache.length > 0)
                                 this.open.apply(this, this._openCache.shift());
-                        }, this, target.observable);
+                        }, this);
                     });
                 }
             };
