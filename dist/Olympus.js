@@ -5963,6 +5963,13 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
             };
             // 添加监听
             NetManager_2.netManager.listenResponse(type, handler, null, null, observable);
+            // 如果mediator所依赖的模块有初始化消息，则要额外触发初始化消息的绑定
+            if (mediator["dependModuleInstance"]) {
+                for (var _i = 0, _a = mediator["dependModuleInstance"].responses; _i < _a.length; _i++) {
+                    var response = _a[_i];
+                    handler(response);
+                }
+            }
         };
         BindManager = __decorate([
             Injector_12.Injectable
@@ -6508,7 +6515,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         }
     }
     exports.DelegateMediator = DelegateMediator;
-    function listenOnOpen(prototype, propertyKey, callback) {
+    function listenOnOpen(prototype, propertyKey, before, after) {
         ConstructUtil_2.listenConstruct(prototype.constructor, function (mediator) {
             // 篡改onOpen方法
             var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
@@ -6518,7 +6525,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     args[_i] = arguments[_i];
                 }
                 // 调用回调
-                callback(mediator);
+                before && before(mediator);
                 // 恢复原始方法
                 if (oriFunc)
                     mediator.onOpen = oriFunc;
@@ -6526,6 +6533,8 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     delete mediator.onOpen;
                 // 调用原始方法
                 mediator.onOpen.apply(this, args);
+                // 调用回调
+                after && after(mediator);
             };
         });
     }
@@ -6637,7 +6646,8 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
      */
     function BindResponse(arg1, arg2) {
         return function (prototype, propertyKey) {
-            listenOnOpen(prototype, propertyKey, function (mediator) {
+            // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
+            listenOnOpen(prototype, propertyKey, null, function (mediator) {
                 if (typeof arg1 == "string" || arg1 instanceof Function) {
                     // 是类型方式
                     BindManager_2.bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey]);

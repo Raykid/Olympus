@@ -253,7 +253,7 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
     }
 }
 
-function listenOnOpen(prototype:any, propertyKey:string, callback:(mediator:IMediator)=>void):void
+function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMediator)=>void, after?:(mediator:IMediator)=>void):void
 {
     listenConstruct(prototype.constructor, function(mediator:IMediator):void
     {
@@ -262,12 +262,14 @@ function listenOnOpen(prototype:any, propertyKey:string, callback:(mediator:IMed
         mediator.onOpen = function(...args:any[]):void
         {
             // 调用回调
-            callback(mediator);
+            before && before(mediator);
             // 恢复原始方法
             if(oriFunc) mediator.onOpen = oriFunc;
             else delete mediator.onOpen;
             // 调用原始方法
             mediator.onOpen.apply(this, args);
+            // 调用回调
+            after && after(mediator);
         };
     });
 }
@@ -512,7 +514,8 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:string}}|IRespon
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
+        listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式

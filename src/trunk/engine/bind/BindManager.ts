@@ -252,6 +252,14 @@ export default class BindManager
         };
         // 添加监听
         netManager.listenResponse(type, handler, null, null, observable);
+        // 如果mediator所依赖的模块有初始化消息，则要额外触发初始化消息的绑定
+        if(mediator["dependModuleInstance"])
+        {
+            for(var response of mediator["dependModuleInstance"].responses)
+            {
+                handler(response);
+            }
+        }
     }
 }
 
