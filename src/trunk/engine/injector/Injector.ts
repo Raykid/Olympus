@@ -408,23 +408,23 @@ export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):Propert
  * 一次绑定多个全局消息
  * 
  * @export
- * @param {{[type:string]:string}} msgDict 消息类型和表达式字典
+ * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindMessage(msgDict:{[type:string]:string}):PropertyDecorator;
+export function BindMessage(msgDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
 /**
  * 一次绑定一个全局消息
  * 
  * @export
  * @param {IConstructor|string} type 消息类型或消息类型名称
- * @param {string} exp 表达式
+ * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindMessage(type:IConstructor|string, exp:string):PropertyDecorator;
+export function BindMessage(type:IConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
 /**
  * @private
  */
-export function BindMessage(arg1:{[type:string]:string}|IConstructor|string, arg2?:string):PropertyDecorator
+export function BindMessage(arg1:{[type:string]:{[name:string]:string}}|IConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -450,23 +450,23 @@ export function BindMessage(arg1:{[type:string]:string}|IConstructor|string, arg
  * 一次绑定多个全局通讯消息
  * 
  * @export
- * @param {{[type:string]:string}} resDict 通讯消息类型和表达式字典
+ * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindResponse(resDict:{[type:string]:string}):PropertyDecorator;
+export function BindResponse(resDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
 /**
  * 一次绑定一个全局通讯消息
  * 
  * @export
  * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
- * @param {string} exp 表达式
+ * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindResponse(type:IResponseDataConstructor|string, exp:string):PropertyDecorator;
+export function BindResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
 /**
  * @private
  */
-export function BindResponse(arg1:{[type:string]:string}|IResponseDataConstructor|string, arg2?:string):PropertyDecorator
+export function BindResponse(arg1:{[type:string]:{[name:string]:string}}|IResponseDataConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {

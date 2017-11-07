@@ -185,11 +185,11 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {IConstructor|string} type 绑定的消息类型字符串
-     * @param {*} values 属性字典
+     * @param {{[name:string]:string}} uiDict ui表达式字典
      * @param {*} ui 绑定到的ui实体对象
      * @memberof BindManager
      */
-    public bindMessage(mediator:IMediator, type:IConstructor|string, values:any, ui:any):void
+    public bindMessage(mediator:IMediator, type:IConstructor|string, uiDict:{[name:string]:string}, ui:any):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         var handler:(...args:any[])=>void = (...args:any[])=>{
@@ -204,7 +204,7 @@ export default class BindManager
                     viewModel = args[0];
                 else
                     viewModel = {$arguments: args};
-                this.search(values, ui, this.messageHandler);
+                this.search(uiDict, ui, this.messageHandler);
             }
         };
         // 添加监听
@@ -222,11 +222,11 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-     * @param {*} values 属性字典
+     * @param {{[name:string]:string}} uiDict ui表达式字典
      * @param {*} ui 绑定到的ui实体对象
      * @memberof BindManager
      */
-    public bindResponse(mediator:IMediator, type:IResponseDataConstructor|string, values:any, ui:any):void
+    public bindResponse(mediator:IMediator, type:IResponseDataConstructor|string, uiDict:{[name:string]:string}, ui:any):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         var handler:(response:any)=>void = (response:any)=>{
@@ -238,7 +238,7 @@ export default class BindManager
             else
             {
                 viewModel = response;
-                this.search(values, ui, this.responseHandler);
+                this.search(uiDict, ui, this.responseHandler);
             }
         };
         // 添加监听

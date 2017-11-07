@@ -3337,22 +3337,26 @@ declare module "engine/bind/BindManager" {
          *
          * @param {IMediator} mediator 中介者
          * @param {IConstructor|string} type 绑定的消息类型字符串
-         * @param {*} values 属性字典
+         * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        bindMessage(mediator: IMediator, type: IConstructor | string, values: any, ui: any): void;
+        bindMessage(mediator: IMediator, type: IConstructor | string, uiDict: {
+            [name: string]: string;
+        }, ui: any): void;
         private responseHandler(ui, key, exp);
         /**
          * 绑定全局Response
          *
          * @param {IMediator} mediator 中介者
          * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-         * @param {*} values 属性字典
+         * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        bindResponse(mediator: IMediator, type: IResponseDataConstructor | string, values: any, ui: any): void;
+        bindResponse(mediator: IMediator, type: IResponseDataConstructor | string, uiDict: {
+            [name: string]: string;
+        }, ui: any): void;
     }
     /** 再额外导出一个单例 */
     export const bindManager: BindManager;
@@ -3680,40 +3684,48 @@ declare module "engine/injector/Injector" {
      * 一次绑定多个全局消息
      *
      * @export
-     * @param {{[type:string]:string}} msgDict 消息类型和表达式字典
+     * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindMessage(msgDict: {
-        [type: string]: string;
+        [type: string]: {
+            [name: string]: string;
+        };
     }): PropertyDecorator;
     /**
      * 一次绑定一个全局消息
      *
      * @export
      * @param {IConstructor|string} type 消息类型或消息类型名称
-     * @param {string} exp 表达式
+     * @param {string} uiDict ui表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindMessage(type: IConstructor | string, exp: string): PropertyDecorator;
+    export function BindMessage(type: IConstructor | string, uiDict: {
+        [name: string]: string;
+    }): PropertyDecorator;
     /**
      * 一次绑定多个全局通讯消息
      *
      * @export
-     * @param {{[type:string]:string}} resDict 通讯消息类型和表达式字典
+     * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindResponse(resDict: {
-        [type: string]: string;
+        [type: string]: {
+            [name: string]: string;
+        };
     }): PropertyDecorator;
     /**
      * 一次绑定一个全局通讯消息
      *
      * @export
      * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
-     * @param {string} exp 表达式
+     * @param {string} uiDict ui表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindResponse(type: IResponseDataConstructor | string, exp: string): PropertyDecorator;
+    export function BindResponse(type: IResponseDataConstructor | string, uiDict: {
+        [name: string]: string;
+    }): PropertyDecorator;
 }
 declare module "engine/platform/IPlatform" {
     /**

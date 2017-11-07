@@ -5825,11 +5825,11 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {IConstructor|string} type 绑定的消息类型字符串
-         * @param {*} values 属性字典
+         * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        BindManager.prototype.bindMessage = function (mediator, type, values, ui) {
+        BindManager.prototype.bindMessage = function (mediator, type, uiDict, ui) {
             var _this = this;
             var bindData = this._bindDict.get(mediator);
             var handler = function () {
@@ -5846,7 +5846,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                         viewModel = args[0];
                     else
                         viewModel = { $arguments: args };
-                    _this.search(values, ui, _this.messageHandler);
+                    _this.search(uiDict, ui, _this.messageHandler);
                 }
             };
             // 添加监听
@@ -5861,11 +5861,11 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-         * @param {*} values 属性字典
+         * @param {{[name:string]:string}} uiDict ui表达式字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        BindManager.prototype.bindResponse = function (mediator, type, values, ui) {
+        BindManager.prototype.bindResponse = function (mediator, type, uiDict, ui) {
             var _this = this;
             var bindData = this._bindDict.get(mediator);
             var handler = function (response) {
@@ -5875,7 +5875,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 }
                 else {
                     viewModel = response;
-                    _this.search(values, ui, _this.responseHandler);
+                    _this.search(uiDict, ui, _this.responseHandler);
                 }
             };
             // 添加监听

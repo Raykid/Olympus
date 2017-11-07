@@ -316,7 +316,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
         ], FirstMediator.prototype, "fuckModel3", void 0);
         __decorate([
             Injector_7.BindOn({ click: "onClick" }),
-            Injector_7.BindIf("fuckText == '1234'"),
+            Injector_7.BindIf({ "labelDisplay": "fuckText == '1234'" }),
             __metadata("design:type", eui.Button)
         ], FirstMediator.prototype, "btn", void 0);
         __decorate([
