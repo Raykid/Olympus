@@ -32,4 +32,12 @@ export default class AudioMessage
      * @memberof AudioMessage
      */
     public static AUDIO_PLAY_ENDED:string = "audioPlayEnded";
+    /**
+     * 音频播放进度事件
+     * 
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    public static AUDIO_PLAY_PROGRESS:string = "audioPlayProgress";
 }

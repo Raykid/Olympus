@@ -3,6 +3,7 @@ import { assetsManager } from "../assets/AssetsManager";
 import { core } from "../../core/Core";
 import AudioMessage from "./AudioMessage";
 import { environment } from "../env/Environment";
+import { system, ICancelable } from "../system/System";
 
 /**
  * @author Raykid
@@ -64,7 +65,7 @@ export default class AudioContextImpl implements IAudio
         if(!data)
         {
             // 使用AudioContext加载
-            this._audioCache[toUrl] = data = {buffer: null, status: AudioStatus.LOADING, playParams: null};
+            this._audioCache[toUrl] = data = {buffer: null, status: AudioStatus.LOADING, playParams: null, progress: null};
             // 开始加载
             assetsManager.loadAssets(toUrl, (result:ArrayBuffer) => {
                 if(result instanceof ArrayBuffer)
@@ -140,6 +141,20 @@ export default class AudioContextImpl implements IAudio
                         else playTime = data.playTime;
                         delete data.playTime;
                         data.node.start(playTime);
+                        // 开始播放进度监测
+                        var lastTime:number = this._context.currentTime;
+                        var curTime:number = playTime || 0;
+                        data.progress = system.enterFrame(()=>{
+                            var nowTime:number = this._context.currentTime;
+                            var deltaTime:number = nowTime - lastTime;
+                            lastTime = nowTime;
+                            if(data.status == AudioStatus.PLAYING)
+                            {
+                                curTime += deltaTime * 1000;
+                                var totalTime:number = data.node.buffer.duration * 1000;
+                                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, curTime, totalTime);
+                            }
+                        });
                         // 派发播放开始事件
                         core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
                     }
@@ -156,6 +171,8 @@ export default class AudioContextImpl implements IAudio
         {
             // 设置状态
             data.status = AudioStatus.PAUSED;
+            // 取消进度监测
+            if(data.progress) data.progress.cancel();
             // 结束播放
             if(data.node)
             {
@@ -283,4 +300,11 @@ interface AudioData
      * @memberof AudioData
      */
     playTime?:number;
+    /**
+     * 播放的取消句柄
+     * 
+     * @type {ICancelable}
+     * @memberof AudioData
+     */
+    progress:ICancelable;
 }

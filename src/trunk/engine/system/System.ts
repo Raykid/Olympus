@@ -91,6 +91,35 @@ export default class System
     }
 
     /**
+     * 每帧执行某个方法，直到取消位置
+     * 
+     * @param {Function} handler 每帧执行的某个方法
+     * @param {*} [thisArg] this指向
+     * @param {...any[]} args 方法参数列表
+     * @returns {ICancelable} 可取消的句柄
+     * @memberof System
+     */
+    public enterFrame(handler:Function, thisArg?:any, ...args:any[]):ICancelable
+    {
+        var self:System = this;
+        var cancelable:ICancelable = this.nextFrame(wrapHandler, thisArg, ...args);
+
+        return {
+            cancel: ()=>{
+                cancelable.cancel();
+            }
+        };
+
+        function wrapHandler(...args:any[]):void
+        {
+            // 调用回调
+            handler.apply(this, args);
+            // 执行下一帧
+            cancelable = self.nextFrame(wrapHandler, this, ...args);
+        }
+    }
+
+    /**
      * 设置延迟回调
      * 
      * @param {number} duration 延迟毫秒值

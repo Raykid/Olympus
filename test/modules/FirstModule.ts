@@ -12,6 +12,7 @@ import TestRequest from "../net/request/TestRequest";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
 import { DOMMediatorClass } from "dom/injector/Injector";
+import { audioManager } from "engine/audio/AudioManager";
 
 /**
  * @author Raykid
@@ -61,6 +62,10 @@ class FirstMediator extends SceneMediator
                 this.moduleManager.open(SecondModule);
             }
         };
+
+        audioManager.playMusic({
+            url: "./test.mp3"
+        });
 
         setTimeout(()=>{
             this.viewModel.fuckText = "1234";

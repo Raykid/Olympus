@@ -1854,6 +1854,16 @@ declare module "engine/system/System" {
          */
         nextFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
         /**
+         * 每帧执行某个方法，直到取消位置
+         *
+         * @param {Function} handler 每帧执行的某个方法
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 方法参数列表
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        enterFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+        /**
          * 设置延迟回调
          *
          * @param {number} duration 延迟毫秒值
@@ -2619,6 +2629,14 @@ declare module "engine/audio/AudioMessage" {
          * @memberof AudioMessage
          */
         static AUDIO_PLAY_ENDED: string;
+        /**
+         * 音频播放进度事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        static AUDIO_PLAY_PROGRESS: string;
     }
 }
 declare module "engine/audio/AudioTagImpl" {

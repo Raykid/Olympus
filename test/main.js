@@ -258,7 +258,7 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
     }(IFuckModel));
     exports.default = FuckModel;
 });
-define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel", "dom/injector/Injector"], function (require, exports, Module_2, ModuleManager_1, Injector_6, Injector_7, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, FuckModel_1, Injector_8) {
+define("modules/FirstModule", ["require", "exports", "engine/module/Module", "engine/module/ModuleManager", "core/injector/Injector", "engine/injector/Injector", "modules/SecondModule", "engine/module/ModuleMessage", "engine/scene/SceneMediator", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel", "dom/injector/Injector", "engine/audio/AudioManager"], function (require, exports, Module_2, ModuleManager_1, Injector_6, Injector_7, SecondModule_1, ModuleMessage_1, SceneMediator_2, TestResponse_2, TestRequest_1, FuckModel_1, Injector_8, AudioManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -292,6 +292,9 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
                     _this.moduleManager.open(SecondModule_1.default);
                 }
             };
+            AudioManager_1.audioManager.playMusic({
+                url: "./test.mp3"
+            });
             setTimeout(function () {
                 _this.viewModel.fuckText = "1234";
             }, 3000);

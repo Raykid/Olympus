@@ -2573,6 +2573,38 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
             };
         };
         /**
+         * 每帧执行某个方法，直到取消位置
+         *
+         * @param {Function} handler 每帧执行的某个方法
+         * @param {*} [thisArg] this指向
+         * @param {...any[]} args 方法参数列表
+         * @returns {ICancelable} 可取消的句柄
+         * @memberof System
+         */
+        System.prototype.enterFrame = function (handler, thisArg) {
+            var args = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                args[_i - 2] = arguments[_i];
+            }
+            var self = this;
+            var cancelable = this.nextFrame.apply(this, [wrapHandler, thisArg].concat(args));
+            return {
+                cancel: function () {
+                    cancelable.cancel();
+                }
+            };
+            function wrapHandler() {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                // 调用回调
+                handler.apply(this, args);
+                // 执行下一帧
+                cancelable = self.nextFrame.apply(self, [wrapHandler, this].concat(args));
+            }
+        };
+        /**
          * 设置延迟回调
          *
          * @param {number} duration 延迟毫秒值
@@ -3903,6 +3935,14 @@ define("engine/audio/AudioMessage", ["require", "exports"], function (require, e
          * @memberof AudioMessage
          */
         AudioMessage.AUDIO_PLAY_ENDED = "audioPlayEnded";
+        /**
+         * 音频播放进度事件
+         *
+         * @static
+         * @type {string}
+         * @memberof AudioMessage
+         */
+        AudioMessage.AUDIO_PLAY_PROGRESS = "audioPlayProgress";
         return AudioMessage;
     }());
     exports.default = AudioMessage;
@@ -3990,6 +4030,15 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
                             data.node.loop = params.loop;
                         if (params.time != null)
                             data.node.currentTime = params.time * 0.001;
+                        // 监听播放进度
+                        data.node.ontimeupdate = function (evt) {
+                            // 我们规定使用毫秒值作为单位
+                            var curTime = data.node.currentTime * 1000;
+                            var totalTime = data.node.duration * 1000;
+                            // 派发播放进度事件
+                            Core_9.core.dispatch(AudioMessage_1.default.AUDIO_PLAY_PROGRESS, curTime, totalTime);
+                        };
+                        // 开始播放
                         data.node.play();
                         // 设置状态
                         data.status = AudioStatus.PLAYING;
@@ -4073,7 +4122,7 @@ define("engine/audio/AudioTagImpl", ["require", "exports", "core/Core", "engine/
         AudioStatus[AudioStatus["PLAYING"] = 2] = "PLAYING";
     })(AudioStatus || (AudioStatus = {}));
 });
-define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/AssetsManager", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment"], function (require, exports, AssetsManager_1, Core_10, AudioMessage_2, Environment_3) {
+define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/AssetsManager", "core/Core", "engine/audio/AudioMessage", "engine/env/Environment", "engine/system/System"], function (require, exports, AssetsManager_1, Core_10, AudioMessage_2, Environment_3, System_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4129,7 +4178,7 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
             // 如果没有缓存才去加载
             if (!data) {
                 // 使用AudioContext加载
-                this._audioCache[toUrl] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null };
+                this._audioCache[toUrl] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null, progress: null };
                 // 开始加载
                 AssetsManager_1.assetsManager.loadAssets(toUrl, function (result) {
                     if (result instanceof ArrayBuffer) {
@@ -4202,6 +4251,19 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
                                 playTime = data.playTime;
                             delete data.playTime;
                             data.node.start(playTime);
+                            // 开始播放进度监测
+                            var lastTime = this._context.currentTime;
+                            var curTime = playTime || 0;
+                            data.progress = System_1.system.enterFrame(function () {
+                                var nowTime = _this._context.currentTime;
+                                var deltaTime = nowTime - lastTime;
+                                lastTime = nowTime;
+                                if (data.status == AudioStatus.PLAYING) {
+                                    curTime += deltaTime * 1000;
+                                    var totalTime = data.node.buffer.duration * 1000;
+                                    Core_10.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_PROGRESS, curTime, totalTime);
+                                }
+                            });
                             // 派发播放开始事件
                             Core_10.core.dispatch(AudioMessage_2.default.AUDIO_PLAY_STARTED, params.url);
                         }
@@ -4215,6 +4277,9 @@ define("engine/audio/AudioContextImpl", ["require", "exports", "engine/assets/As
             if (data) {
                 // 设置状态
                 data.status = AudioStatus.PAUSED;
+                // 取消进度监测
+                if (data.progress)
+                    data.progress.cancel();
                 // 结束播放
                 if (data.node) {
                     data.node.stop(time);
