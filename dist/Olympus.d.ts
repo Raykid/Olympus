@@ -3296,35 +3296,41 @@ declare module "engine/bind/BindManager" {
          */
         unbind(mediator: IMediator): Bind;
         private search(values, ui, callback);
-        private fastSearch(mediator, values, ui, callback);
+        private delaySearch(mediator, values, ui, callback);
         /**
          * 绑定属性值
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} values 属性字典
+         * @param {{[name:string]:string}} uiDict ui属性字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        bindValue(mediator: IMediator, values: any, ui: any): void;
+        bindValue(mediator: IMediator, uiDict: {
+            [name: string]: string;
+        }, ui: any): void;
         /**
          * 绑定事件
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} values 事件字典
+         * @param {{[type:string]:string}} evtDict 事件字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        bindOn(mediator: IMediator, values: any, ui: any): void;
+        bindOn(mediator: IMediator, evtDict: {
+            [type: string]: string;
+        }, ui: any): void;
         private replaceDisplay(bridge, ori, cur);
         /**
          * 绑定显示
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} exp 判断表达式
+         * @param {{[name:string]:string}} uiDict 判断字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        bindIf(mediator: IMediator, exp: string, ui: any): void;
+        bindIf(mediator: IMediator, uiDict: {
+            [name: string]: string;
+        }, ui: any): void;
         private messageHandler(ui, key, exp);
         /**
          * 绑定全局Message
@@ -3605,11 +3611,109 @@ declare module "engine/injector/Injector" {
     export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
     /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: any, propertyKey: string): any;
-    export function BindValue(value: any): PropertyDecorator;
-    export function BindOn(value: any): PropertyDecorator;
+    /**
+     * 一次绑定多个属性
+     *
+     * @export
+     * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindValue(uiDict: {
+        [name: string]: string;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个属性
+     *
+     * @export
+     * @param {string} name ui属性名称
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
+    export function BindValue(name: string, exp: string): PropertyDecorator;
+    /**
+     * 一次绑定多个事件
+     *
+     * @export
+     * @param {{[type:string]:string}} evtDict 事件类型和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindOn(evtDict: {
+        [type: string]: string;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个事件
+     *
+     * @export
+     * @param {string} type 事件类型
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
+    export function BindOn(type: string, exp: string): PropertyDecorator;
+    /**
+     * 一次绑定多个显示判断，如果要指定当前显示对象请使用$this作为key
+     *
+     * @export
+     * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindIf(uiDict: {
+        [name: string]: string;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个显示判断
+     *
+     * @export
+     * @param {string} name ui属性名称
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
+    export function BindIf(name: string, exp: string): PropertyDecorator;
+    /**
+     * 绑定当前对象的显示判断
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
     export function BindIf(exp: string): PropertyDecorator;
-    export function BindMessage(type: IConstructor | string, values: any): PropertyDecorator;
-    export function BindResponse(type: IResponseDataConstructor | string, values: any): PropertyDecorator;
+    /**
+     * 一次绑定多个全局消息
+     *
+     * @export
+     * @param {{[type:string]:string}} msgDict 消息类型和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindMessage(msgDict: {
+        [type: string]: string;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个全局消息
+     *
+     * @export
+     * @param {IConstructor|string} type 消息类型或消息类型名称
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
+    export function BindMessage(type: IConstructor | string, exp: string): PropertyDecorator;
+    /**
+     * 一次绑定多个全局通讯消息
+     *
+     * @export
+     * @param {{[type:string]:string}} resDict 通讯消息类型和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindResponse(resDict: {
+        [type: string]: string;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个全局通讯消息
+     *
+     * @export
+     * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
+    export function BindResponse(type: IResponseDataConstructor | string, exp: string): PropertyDecorator;
 }
 declare module "engine/platform/IPlatform" {
     /**

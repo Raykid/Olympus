@@ -5735,7 +5735,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 }
             }
         };
-        BindManager.prototype.fastSearch = function (mediator, values, ui, callback) {
+        BindManager.prototype.delaySearch = function (mediator, values, ui, callback) {
             var _this = this;
             var handler = function () {
                 // 判断数据是否合法
@@ -5755,13 +5755,13 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定属性值
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} values 属性字典
+         * @param {{[name:string]:string}} uiDict ui属性字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        BindManager.prototype.bindValue = function (mediator, values, ui) {
+        BindManager.prototype.bindValue = function (mediator, uiDict, ui) {
             var bindData = this._bindDict.get(mediator);
-            this.fastSearch(mediator, values, ui, function (ui, key, exp) {
+            this.delaySearch(mediator, uiDict, ui, function (ui, key, exp) {
                 bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
                     ui[key] = value;
                 });
@@ -5771,12 +5771,12 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定事件
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} values 事件字典
+         * @param {{[type:string]:string}} evtDict 事件字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        BindManager.prototype.bindOn = function (mediator, values, ui) {
-            this.fastSearch(mediator, values, ui, function (ui, key, exp) {
+        BindManager.prototype.bindOn = function (mediator, evtDict, ui) {
+            this.delaySearch(mediator, evtDict, ui, function (ui, key, exp) {
                 mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
             });
         };
@@ -5795,19 +5795,18 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定显示
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} exp 判断表达式
+         * @param {{[name:string]:string}} uiDict 判断字典
          * @param {*} ui 绑定到的ui实体对象
          * @memberof BindManager
          */
-        BindManager.prototype.bindIf = function (mediator, exp, ui) {
+        BindManager.prototype.bindIf = function (mediator, uiDict, ui) {
             var _this = this;
             var bindData = this._bindDict.get(mediator);
             var replacer = mediator.bridge.createEmptyDisplay();
-            var handler = function () {
-                // 判断数据是否合法
-                if (!mediator.viewModel)
-                    return;
-                // 开始绑定
+            this.delaySearch(mediator, uiDict, ui, function (ui, key, exp) {
+                // 寻址到指定目标
+                ui = ui[key] || ui;
+                // 绑定表达式
                 bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
                     // 如果表达式为true则显示ui，否则移除ui
                     if (value)
@@ -5815,12 +5814,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     else
                         _this.replaceDisplay(mediator.bridge, ui, replacer);
                 });
-            };
-            // 添加绑定数据
-            if (bindData.callbacks.indexOf(handler) < 0)
-                bindData.callbacks.push(handler);
-            // 立即调用一次
-            handler();
+            });
         };
         BindManager.prototype.messageHandler = function (ui, key, exp) {
             // 使用临时ViewModel编译赋值
@@ -6439,42 +6433,105 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
             };
         });
     }
-    function BindValue(value) {
+    /**
+     * @private
+     */
+    function BindValue(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, function (mediator) {
-                BindManager_2.bindManager.bindValue(mediator, value, mediator[propertyKey]);
+                // 组织参数字典
+                var uiDict;
+                if (typeof arg1 == "string") {
+                    uiDict = {};
+                    uiDict[arg1] = arg2;
+                }
+                else {
+                    uiDict = arg1;
+                }
+                BindManager_2.bindManager.bindValue(mediator, uiDict, mediator[propertyKey]);
             });
         };
     }
     exports.BindValue = BindValue;
-    function BindOn(value) {
+    /**
+     * @private
+     */
+    function BindOn(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, function (mediator) {
-                BindManager_2.bindManager.bindOn(mediator, value, mediator[propertyKey]);
+                // 组织参数字典
+                var evtDict;
+                if (typeof arg1 == "string") {
+                    evtDict = {};
+                    evtDict[arg1] = arg2;
+                }
+                else {
+                    evtDict = arg1;
+                }
+                BindManager_2.bindManager.bindOn(mediator, evtDict, mediator[propertyKey]);
             });
         };
     }
     exports.BindOn = BindOn;
-    function BindIf(exp) {
+    /**
+     * @private
+     */
+    function BindIf(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, function (mediator) {
-                BindManager_2.bindManager.bindIf(mediator, exp, mediator[propertyKey]);
+                // 组织参数字典
+                var uiDict;
+                if (typeof arg1 == "string") {
+                    uiDict = {};
+                    if (arg2)
+                        uiDict[arg1] = arg2; // 有name寻址
+                    else
+                        uiDict["$this"] = arg1; // 没有name寻址，直接绑定表达式
+                }
+                else {
+                    uiDict = arg1;
+                }
+                BindManager_2.bindManager.bindIf(mediator, uiDict, mediator[propertyKey]);
             });
         };
     }
     exports.BindIf = BindIf;
-    function BindMessage(type, values) {
+    /**
+     * @private
+     */
+    function BindMessage(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, function (mediator) {
-                BindManager_2.bindManager.bindMessage(mediator, type, values, mediator[propertyKey]);
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey]);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey]);
+                    }
+                }
             });
         };
     }
     exports.BindMessage = BindMessage;
-    function BindResponse(type, values) {
+    /**
+     * @private
+     */
+    function BindResponse(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, function (mediator) {
-                BindManager_2.bindManager.bindResponse(mediator, type, values, mediator[propertyKey]);
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey]);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey]);
+                    }
+                }
             });
         };
     }

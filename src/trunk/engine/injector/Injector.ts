@@ -272,52 +272,218 @@ function listenOnOpen(prototype:any, propertyKey:string, callback:(mediator:IMed
     });
 }
 
-export function BindValue(value:any):PropertyDecorator
+/**
+ * 一次绑定多个属性
+ * 
+ * @export
+ * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindValue(uiDict:{[name:string]:string}):PropertyDecorator;
+/**
+ * 一次绑定一个属性
+ * 
+ * @export
+ * @param {string} name ui属性名称
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindValue(name:string, exp:string):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindValue(arg1:{[name:string]:string}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
-            bindManager.bindValue(mediator, value, mediator[propertyKey]);
+            // 组织参数字典
+            var uiDict:{[name:string]:string};
+            if(typeof arg1 == "string")
+            {
+                uiDict = {};
+                uiDict[arg1] = arg2;
+            }
+            else
+            {
+                uiDict = arg1;
+            }
+            bindManager.bindValue(mediator, uiDict, mediator[propertyKey]);
         });
     };
 }
 
-export function BindOn(value:any):PropertyDecorator
+/**
+ * 一次绑定多个事件
+ * 
+ * @export
+ * @param {{[type:string]:string}} evtDict 事件类型和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindOn(evtDict:{[type:string]:string}):PropertyDecorator;
+/**
+ * 一次绑定一个事件
+ * 
+ * @export
+ * @param {string} type 事件类型
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindOn(type:string, exp:string):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindOn(arg1:{[type:string]:string}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
-            bindManager.bindOn(mediator, value, mediator[propertyKey]);
+            // 组织参数字典
+            var evtDict:{[name:string]:string};
+            if(typeof arg1 == "string")
+            {
+                evtDict = {};
+                evtDict[arg1] = arg2;
+            }
+            else
+            {
+                evtDict = arg1;
+            }
+            bindManager.bindOn(mediator, evtDict, mediator[propertyKey]);
         });
     };
 }
 
-export function BindIf(exp:string):PropertyDecorator
+/**
+ * 一次绑定多个显示判断，如果要指定当前显示对象请使用$this作为key
+ * 
+ * @export
+ * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindIf(uiDict:{[name:string]:string}):PropertyDecorator;
+/**
+ * 一次绑定一个显示判断
+ * 
+ * @export
+ * @param {string} name ui属性名称
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindIf(name:string, exp:string):PropertyDecorator;
+/**
+ * 绑定当前对象的显示判断
+ * 
+ * @export
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindIf(exp:string):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
-            bindManager.bindIf(mediator, exp, mediator[propertyKey]);
+            // 组织参数字典
+            var uiDict:{[name:string]:string};
+            if(typeof arg1 == "string")
+            {
+                uiDict = {};
+                if(arg2) uiDict[arg1] = arg2;// 有name寻址
+                else uiDict["$this"] = arg1;// 没有name寻址，直接绑定表达式
+            }
+            else
+            {
+                uiDict = arg1;
+            }
+            bindManager.bindIf(mediator, uiDict, mediator[propertyKey]);
         });
     };
 }
 
-export function BindMessage(type:IConstructor|string, values:any):PropertyDecorator
+/**
+ * 一次绑定多个全局消息
+ * 
+ * @export
+ * @param {{[type:string]:string}} msgDict 消息类型和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindMessage(msgDict:{[type:string]:string}):PropertyDecorator;
+/**
+ * 一次绑定一个全局消息
+ * 
+ * @export
+ * @param {IConstructor|string} type 消息类型或消息类型名称
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindMessage(type:IConstructor|string, exp:string):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindMessage(arg1:{[type:string]:string}|IConstructor|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
-            bindManager.bindMessage(mediator, type, values, mediator[propertyKey]);
+            if(typeof arg1 == "string" || arg1 instanceof Function)
+            {
+                // 是类型方式
+                bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey]);
+            }
+            else
+            {
+                // 是字典方式
+                for(var type in arg1)
+                {
+                    bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey]);
+                }
+            }
         });
     };
 }
 
-export function BindResponse(type:IResponseDataConstructor|string, values:any):PropertyDecorator
+/**
+ * 一次绑定多个全局通讯消息
+ * 
+ * @export
+ * @param {{[type:string]:string}} resDict 通讯消息类型和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindResponse(resDict:{[type:string]:string}):PropertyDecorator;
+/**
+ * 一次绑定一个全局通讯消息
+ * 
+ * @export
+ * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindResponse(type:IResponseDataConstructor|string, exp:string):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindResponse(arg1:{[type:string]:string}|IResponseDataConstructor|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
-            bindManager.bindResponse(mediator, type, values, mediator[propertyKey]);
+            if(typeof arg1 == "string" || arg1 instanceof Function)
+            {
+                // 是类型方式
+                bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey]);
+            }
+            else
+            {
+                // 是字典方式
+                for(var type in arg1)
+                {
+                    bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey]);
+                }
+            }
         });
     };
 }

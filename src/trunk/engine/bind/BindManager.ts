@@ -87,7 +87,7 @@ export default class BindManager
         }
     }
 
-    private fastSearch(mediator:IMediator, values:any, ui:any, callback:(ui:any, key:string, exp:string)=>void):void
+    private delaySearch(mediator:IMediator, values:any, ui:any, callback:(ui:any, key:string, exp:string)=>void):void
     {
         var handler:()=>void = ()=>{
             // 判断数据是否合法
@@ -107,14 +107,14 @@ export default class BindManager
      * 绑定属性值
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} values 属性字典
+     * @param {{[name:string]:string}} uiDict ui属性字典
      * @param {*} ui 绑定到的ui实体对象
      * @memberof BindManager
      */
-    public bindValue(mediator:IMediator, values:any, ui:any):void
+    public bindValue(mediator:IMediator, uiDict:{[name:string]:string}, ui:any):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
-        this.fastSearch(mediator, values, ui, (ui:any, key:string, exp:string)=>{
+        this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
             bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:any)=>{
                 ui[key] = value;
             });
@@ -125,13 +125,13 @@ export default class BindManager
      * 绑定事件
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} values 事件字典
+     * @param {{[type:string]:string}} evtDict 事件字典
      * @param {*} ui 绑定到的ui实体对象
      * @memberof BindManager
      */
-    public bindOn(mediator:IMediator, values:any, ui:any):void
+    public bindOn(mediator:IMediator, evtDict:{[type:string]:string}, ui:any):void
     {
-        this.fastSearch(mediator, values, ui, (ui:any, key:string, exp:string)=>{
+        this.delaySearch(mediator, evtDict, ui, (ui:any, key:string, exp:string)=>{
             mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
         });
     }
@@ -154,29 +154,24 @@ export default class BindManager
      * 绑定显示
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} exp 判断表达式
+     * @param {{[name:string]:string}} uiDict 判断字典
      * @param {*} ui 绑定到的ui实体对象
      * @memberof BindManager
      */
-    public bindIf(mediator:IMediator, exp:string, ui:any):void
+    public bindIf(mediator:IMediator, uiDict:{[name:string]:string}, ui:any):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         var replacer:any = mediator.bridge.createEmptyDisplay();
-        var handler:()=>void = ()=>{
-            // 判断数据是否合法
-            if(!mediator.viewModel) return;
-            // 开始绑定
+        this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
+            // 寻址到指定目标
+            ui = ui[key] || ui;
+            // 绑定表达式
             bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
                 if(value) this.replaceDisplay(mediator.bridge, replacer, ui);
                 else this.replaceDisplay(mediator.bridge, ui, replacer);
             });
-        };
-        // 添加绑定数据
-        if(bindData.callbacks.indexOf(handler) < 0)
-            bindData.callbacks.push(handler);
-        // 立即调用一次
-        handler();
+        });
     }
     
     private messageHandler(ui:any, key:string, exp:string):void
