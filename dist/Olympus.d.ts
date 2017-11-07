@@ -3098,38 +3098,39 @@ declare module "engine/net/NetManager" {
 }
 declare module "engine/bind/Utils" {
     /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-11-06
-     * @modify date 2017-11-06
-     *
-     * 绑定工具类
-    */
-    /**
      * 创建一个表达式求值方法，用于未来执行
-     * @param exp 表达式
-     * @returns {Function} 创建的方法
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {number} [scopeCount=0] 所需的域的数量
+     * @returns {(...scopes:any[])=>any} 创建的方法
      */
-    export function createEvalFunc(exp: string): (scope: any) => any;
+    export function createEvalFunc(exp: string, scopeCount?: number): (...scopes: any[]) => any;
     /**
      * 表达式求值，无法执行多条语句
-     * @param exp 表达式
-     * @param scope 表达式的作用域
-     * @returns {any} 返回值
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {...any[]} scopes 表达式的作用域列表
+     * @returns {*} 返回值
      */
-    export function evalExp(exp: string, scope: any): any;
+    export function evalExp(exp: string, ...scopes: any[]): any;
     /**
      * 创建一个执行方法，用于未来执行
-     * @param exp 表达式
-     * @returns {Function} 创建的方法
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @returns {(...scopes:any[])=>any} 创建的方法
      */
-    export function createRunFunc(exp: string): (scope: any) => void;
+    export function createRunFunc(exp: string): (...scopes: any[]) => any;
     /**
      * 直接执行表达式，不求值。该方法可以执行多条语句
-     * @param exp 表达式
-     * @param scope 表达式的作用域
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {...any[]} scopes 表达式的作用域列表
      */
-    export function runExp(exp: string, scope: any): void;
+    export function runExp(exp: string, ...scopes: any[]): void;
 }
 declare module "engine/bind/Bind" {
     import IMediator from "engine/mediator/IMediator";
@@ -3331,7 +3332,6 @@ declare module "engine/bind/BindManager" {
         bindIf(mediator: IMediator, uiDict: {
             [name: string]: string;
         }, ui: any): void;
-        private messageHandler(ui, key, exp);
         /**
          * 绑定全局Message
          *
@@ -3344,7 +3344,6 @@ declare module "engine/bind/BindManager" {
         bindMessage(mediator: IMediator, type: IConstructor | string, uiDict: {
             [name: string]: string;
         }, ui: any): void;
-        private responseHandler(ui, key, exp);
         /**
          * 绑定全局Response
          *
@@ -3654,7 +3653,7 @@ declare module "engine/injector/Injector" {
      */
     export function BindOn(type: string, exp: string): PropertyDecorator;
     /**
-     * 一次绑定多个显示判断，如果要指定当前显示对象请使用$this作为key
+     * 一次绑定多个显示判断，如果要指定当前显示对象请使用$target作为key
      *
      * @export
      * @param {{[name:string]:string}} uiDict ui属性和表达式字典

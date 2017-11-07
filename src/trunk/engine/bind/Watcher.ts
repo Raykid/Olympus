@@ -36,7 +36,7 @@ export default class Watcher implements IWatcher
         this._exp = exp;
         this._scope = scope;
         // 将表达式和作用域解析为一个Function
-        this._expFunc = createEvalFunc(exp);
+        this._expFunc = createEvalFunc(exp, 2);
         // 记录回调函数
         this._callback = callback;
         // 进行首次更新
@@ -54,24 +54,15 @@ export default class Watcher implements IWatcher
         // 记录自身
         Watcher.updating = this;
         // 设置通用属性
-        // 这里一定要用defineProperty将目标定义在当前节点上，否则会影响context.scope
-        Object.defineProperty(this._scope, "$bridge", {
-            configurable: true,
-            enumerable: false,
-            value: this._bind.mediator.bridge,
-            writable: false
-        });
-        // 这里一定要用defineProperty将目标定义在当前节点上，否则会影响context.scope
-        Object.defineProperty(this._scope, "$target", {
-            configurable: true,
-            enumerable: false,
-            value: this._target,
-            writable: false
-        });
+        var commonScope:any = {
+            $this: this._bind.mediator,
+            $bridge: this._bind.mediator.bridge,
+            $target: this._target
+        };
         // 表达式求值
         try
         {
-            value = this._expFunc.call(this._scope, this._scope);
+            value = this._expFunc.call(this._scope, commonScope, this._scope);
         }
         catch(err)
         {

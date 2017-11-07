@@ -5252,15 +5252,28 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
 define("engine/bind/Utils", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    function wrapEvalFuncExp(exp, scopeCount) {
+        var argList = [];
+        var expStr = "return " + exp;
+        for (var i = 0; i < scopeCount; i++) {
+            argList.push("s" + i);
+            expStr = "with(s" + i + "){" + expStr + "}";
+        }
+        return Function(argList.join(","), expStr);
+    }
     /**
      * 创建一个表达式求值方法，用于未来执行
-     * @param exp 表达式
-     * @returns {Function} 创建的方法
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {number} [scopeCount=0] 所需的域的数量
+     * @returns {(...scopes:any[])=>any} 创建的方法
      */
-    function createEvalFunc(exp) {
+    function createEvalFunc(exp, scopeCount) {
+        if (scopeCount === void 0) { scopeCount = 0; }
         var func;
         try {
-            func = Function("scope", "with(scope){return " + exp + "}");
+            func = wrapEvalFuncExp(exp, scopeCount);
         }
         catch (err) {
             // 可能是某些版本的解释器不认识模板字符串，将模板字符串变成普通字符串
@@ -5272,25 +5285,33 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
             reg = /\$\{(.*?)\}/g;
             exp = exp.replace(reg, sepStr + "+($1)+" + sepStr);
             // 重新生成方法并返回
-            func = Function("scope", "with(scope){return " + exp + "}");
+            func = wrapEvalFuncExp(exp, scopeCount);
         }
         return func;
     }
     exports.createEvalFunc = createEvalFunc;
     /**
      * 表达式求值，无法执行多条语句
-     * @param exp 表达式
-     * @param scope 表达式的作用域
-     * @returns {any} 返回值
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {...any[]} scopes 表达式的作用域列表
+     * @returns {*} 返回值
      */
-    function evalExp(exp, scope) {
-        return createEvalFunc(exp)(scope);
+    function evalExp(exp) {
+        var scopes = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            scopes[_i - 1] = arguments[_i];
+        }
+        return createEvalFunc(exp, scopes.length).apply(null, scopes);
     }
     exports.evalExp = evalExp;
     /**
      * 创建一个执行方法，用于未来执行
-     * @param exp 表达式
-     * @returns {Function} 创建的方法
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @returns {(...scopes:any[])=>any} 创建的方法
      */
     function createRunFunc(exp) {
         return createEvalFunc("(function(){" + exp + "})()");
@@ -5298,11 +5319,17 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
     exports.createRunFunc = createRunFunc;
     /**
      * 直接执行表达式，不求值。该方法可以执行多条语句
-     * @param exp 表达式
-     * @param scope 表达式的作用域
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {...any[]} scopes 表达式的作用域列表
      */
-    function runExp(exp, scope) {
-        createRunFunc(exp)(scope);
+    function runExp(exp) {
+        var scopes = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            scopes[_i - 1] = arguments[_i];
+        }
+        createRunFunc(exp).apply(null, scopes);
     }
     exports.runExp = runExp;
 });
@@ -5378,7 +5405,7 @@ define("engine/bind/Watcher", ["require", "exports", "engine/bind/Utils"], funct
             this._exp = exp;
             this._scope = scope;
             // 将表达式和作用域解析为一个Function
-            this._expFunc = Utils_1.createEvalFunc(exp);
+            this._expFunc = Utils_1.createEvalFunc(exp, 2);
             // 记录回调函数
             this._callback = callback;
             // 进行首次更新
@@ -5395,23 +5422,14 @@ define("engine/bind/Watcher", ["require", "exports", "engine/bind/Utils"], funct
             // 记录自身
             Watcher.updating = this;
             // 设置通用属性
-            // 这里一定要用defineProperty将目标定义在当前节点上，否则会影响context.scope
-            Object.defineProperty(this._scope, "$bridge", {
-                configurable: true,
-                enumerable: false,
-                value: this._bind.mediator.bridge,
-                writable: false
-            });
-            // 这里一定要用defineProperty将目标定义在当前节点上，否则会影响context.scope
-            Object.defineProperty(this._scope, "$target", {
-                configurable: true,
-                enumerable: false,
-                value: this._target,
-                writable: false
-            });
+            var commonScope = {
+                $this: this._bind.mediator,
+                $bridge: this._bind.mediator.bridge,
+                $target: this._target
+            };
             // 表达式求值
             try {
-                value = this._expFunc.call(this._scope, this._scope);
+                value = this._expFunc.call(this._scope, commonScope, this._scope);
             }
             catch (err) {
                 // 输出错误日志
@@ -5816,10 +5834,6 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 });
             });
         };
-        BindManager.prototype.messageHandler = function (ui, key, exp) {
-            // 使用临时ViewModel编译赋值
-            ui[key] = Utils_2.evalExp(exp, viewModel);
-        };
         /**
          * 绑定全局Message
          *
@@ -5842,19 +5856,24 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     Core_16.core.unlisten(type, handler);
                 }
                 else {
+                    var msg;
                     if (args.length == 1 && typeof args[0] == "object" && args[0].type)
-                        viewModel = args[0];
+                        msg = args[0];
                     else
-                        viewModel = { $arguments: args };
-                    _this.search(uiDict, ui, _this.messageHandler);
+                        msg = { $arguments: args };
+                    _this.search(uiDict, ui, function (ui, key, exp) {
+                        // 设置通用属性
+                        var commonScope = {
+                            $this: mediator,
+                            $bridge: mediator.bridge,
+                            $target: ui
+                        };
+                        ui[key] = Utils_2.evalExp(exp, commonScope, msg, mediator.viewModel);
+                    });
                 }
             };
             // 添加监听
             Core_16.core.listen(type, handler);
-        };
-        BindManager.prototype.responseHandler = function (ui, key, exp) {
-            // 使用response直接编译赋值
-            ui[key] = Utils_2.evalExp(exp, viewModel);
         };
         /**
          * 绑定全局Response
@@ -5874,8 +5893,15 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     NetManager_2.netManager.unlistenResponse(type, handler);
                 }
                 else {
-                    viewModel = response;
-                    _this.search(uiDict, ui, _this.responseHandler);
+                    _this.search(uiDict, ui, function (ui, key, exp) {
+                        // 设置通用属性
+                        var commonScope = {
+                            $this: mediator,
+                            $bridge: mediator.bridge,
+                            $target: ui
+                        };
+                        ui[key] = Utils_2.evalExp(exp, commonScope, response, mediator.viewModel);
+                    });
                 }
             };
             // 添加监听
@@ -5887,7 +5913,6 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
         return BindManager;
     }());
     exports.default = BindManager;
-    var viewModel;
     /** 再额外导出一个单例 */
     exports.bindManager = Core_16.core.getInject(BindManager);
 });
@@ -6486,7 +6511,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                     if (arg2)
                         uiDict[arg1] = arg2; // 有name寻址
                     else
-                        uiDict["$this"] = arg1; // 没有name寻址，直接绑定表达式
+                        uiDict["$target"] = arg1; // 没有name寻址，直接绑定表达式
                 }
                 else {
                     uiDict = arg1;

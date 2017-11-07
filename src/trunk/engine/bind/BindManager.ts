@@ -174,12 +174,6 @@ export default class BindManager
         });
     }
     
-    private messageHandler(ui:any, key:string, exp:string):void
-    {
-        // 使用临时ViewModel编译赋值
-        ui[key] = evalExp(exp, viewModel);
-    }
-
     /**
      * 绑定全局Message
      * 
@@ -200,23 +194,26 @@ export default class BindManager
             }
             else
             {
+                var msg:any;
                 if(args.length == 1 && typeof args[0] == "object" && args[0].type)
-                    viewModel = args[0];
+                    msg = args[0];
                 else
-                    viewModel = {$arguments: args};
-                this.search(uiDict, ui, this.messageHandler);
+                    msg = {$arguments: args};
+                this.search(uiDict, ui, (ui:any, key:string, exp:string)=>{
+                    // 设置通用属性
+                    var commonScope:any = {
+                        $this: mediator,
+                        $bridge: mediator.bridge,
+                        $target: ui
+                    };
+                    ui[key] = evalExp(exp, commonScope, msg, mediator.viewModel);
+                });
             }
         };
         // 添加监听
         core.listen(type, handler);
     }
 
-    private responseHandler(ui:any, key:string, exp:string):void
-    {
-        // 使用response直接编译赋值
-        ui[key] = evalExp(exp, viewModel);
-    }
-    
     /**
      * 绑定全局Response
      * 
@@ -237,16 +234,21 @@ export default class BindManager
             }
             else
             {
-                viewModel = response;
-                this.search(uiDict, ui, this.responseHandler);
+                this.search(uiDict, ui, (ui:any, key:string, exp:string)=>{
+                    // 设置通用属性
+                    var commonScope:any = {
+                        $this: mediator,
+                        $bridge: mediator.bridge,
+                        $target: ui
+                    };
+                    ui[key] = evalExp(exp, commonScope, response, mediator.viewModel);
+                });
             }
         };
         // 添加监听
         netManager.listenResponse(type, handler);
     }
 }
-
-var viewModel:any;
 
 interface BindData
 {

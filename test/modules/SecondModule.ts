@@ -18,7 +18,7 @@ import { MessageHandler } from "core/injector/Injector";
 @EgretMediatorClass("Fuck2Skin")
 class SecondMediator extends SceneMediator
 {
-    @BindMessage("FuckMsg", {label: "$arguments[0] + ' - 1'"})
+    @BindMessage("FuckMsg", {label: "onMsg($arguments[0])"})
     public btn:eui.Button;
 
     public listAssets():string[]
@@ -33,6 +33,13 @@ class SecondMediator extends SceneMediator
 
             this.dispatch("FuckMsg", "Shit!!!");
         });
+        this.viewModel = {
+            onMsg: msg=>{
+                // 表达式里使用函数可以在函数里执行复杂逻辑，并且具有代码提示
+                console.log(msg);
+                return msg + " - 1";
+            }
+        };
         // 测试系统消息
         this.dispatch("fuck", 123);
         // 测试模块消息

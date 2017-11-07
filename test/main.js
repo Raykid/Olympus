@@ -58,13 +58,20 @@ define("modules/SecondModule", ["require", "exports", "engine/module/Module", "e
                 // moduleManager.close(SecondModule);
                 _this.dispatch("FuckMsg", "Shit!!!");
             });
+            this.viewModel = {
+                onMsg: function (msg) {
+                    // 表达式里使用函数可以在函数里执行复杂逻辑，并且具有代码提示
+                    console.log(msg);
+                    return msg + " - 1";
+                }
+            };
             // 测试系统消息
             this.dispatch("fuck", 123);
             // 测试模块消息
             this.dispatchModule("fuck", 123);
         };
         __decorate([
-            Injector_2.BindMessage("FuckMsg", { label: "$arguments[0] + ' - 1'" }),
+            Injector_2.BindMessage("FuckMsg", { label: "onMsg($arguments[0])" }),
             __metadata("design:type", eui.Button)
         ], SecondMediator.prototype, "btn", void 0);
         SecondMediator = __decorate([

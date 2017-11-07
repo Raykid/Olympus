@@ -355,7 +355,7 @@ export function BindOn(arg1:{[type:string]:string}|string, arg2?:string):Propert
 }
 
 /**
- * 一次绑定多个显示判断，如果要指定当前显示对象请使用$this作为key
+ * 一次绑定多个显示判断，如果要指定当前显示对象请使用$target作为key
  * 
  * @export
  * @param {{[name:string]:string}} uiDict ui属性和表达式字典
@@ -393,7 +393,7 @@ export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):Propert
             {
                 uiDict = {};
                 if(arg2) uiDict[arg1] = arg2;// 有name寻址
-                else uiDict["$this"] = arg1;// 没有name寻址，直接绑定表达式
+                else uiDict["$target"] = arg1;// 没有name寻址，直接绑定表达式
             }
             else
             {
