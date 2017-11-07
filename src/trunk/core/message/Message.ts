@@ -1,4 +1,5 @@
 import IMessage from "./IMessage"
+import IObservable from "../observable/IObservable";
 
 /**
  * @author Raykid
@@ -22,6 +23,14 @@ export default abstract class Message implements IMessage
     {
         return this._type;
     }
+    
+    /**
+     * 消息所属内核
+     * 
+     * @type {IObservable}
+     * @memberof RequestData
+     */
+    public __observable:IObservable;
 
     public constructor(type:string)
     {

@@ -1419,7 +1419,8 @@ define("utils/Dictionary", ["require", "exports", "utils/ObjectUtil"], function 
     }());
     exports.default = Dictionary;
 });
-define("core/message/IMessage", ["require", "exports"], function (require, exports) {
+/// <reference path="../../core/global/IConstructor.ts"/>
+define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -1453,12 +1454,11 @@ define("core/command/ICommandConstructor", ["require", "exports"], function (req
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-/// <reference path="../../core/global/IConstructor.ts"/>
-define("core/interfaces/IConstructor", ["require", "exports"], function (require, exports) {
+define("core/observable/IObservable", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("core/observable/IObservable", ["require", "exports"], function (require, exports) {
+define("core/message/IMessage", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -1594,6 +1594,13 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
             var _a;
         };
         Observable.prototype.doDispatch = function (msg) {
+            // 设置所属内核
+            Object.defineProperty(msg, "__observable", {
+                configurable: true,
+                enumerable: false,
+                value: this,
+                writable: false
+            });
             // 触发命令
             this.handleCommands(msg);
             // 触发用listen形式监听的消息
@@ -2895,6 +2902,77 @@ define("engine/module/ModuleMessage", ["require", "exports"], function (require,
         return ModuleMessage;
     }());
     exports.default = ModuleMessage;
+});
+define("engine/module/ModuleObservableTransformer", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-07
+     * @modify date 2017-11-07
+     *
+     * IModuleObservable到IObservable的变压器
+    */
+    var ModuleObservableTransformer = /** @class */ (function () {
+        function ModuleObservableTransformer(module) {
+            this._module = module;
+        }
+        /** dispatch方法实现 */
+        ModuleObservableTransformer.prototype.dispatch = function (typeOrMsg) {
+            var params = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                params[_i - 1] = arguments[_i];
+            }
+            (_a = this._module).dispatchModule.apply(_a, [typeOrMsg].concat(params));
+            var _a;
+        };
+        /**
+         * 监听内核消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof ModuleObservableTransformer
+         */
+        ModuleObservableTransformer.prototype.listen = function (type, handler, thisArg) {
+            this._module.listenModule(type, handler, thisArg);
+        };
+        /**
+         * 移除内核消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof ModuleObservableTransformer
+         */
+        ModuleObservableTransformer.prototype.unlisten = function (type, handler, thisArg) {
+            this._module.unlistenModule(type, handler, thisArg);
+        };
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof ModuleObservableTransformer
+         */
+        ModuleObservableTransformer.prototype.mapCommand = function (type, cmd) {
+            this._module.mapCommandModule(type, cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof ModuleObservableTransformer
+         */
+        ModuleObservableTransformer.prototype.unmapCommand = function (type, cmd) {
+            this._module.unmapCommandModule(type, cmd);
+        };
+        return ModuleObservableTransformer;
+    }());
+    exports.default = ModuleObservableTransformer;
 });
 define("utils/URLUtil", ["require", "exports", "utils/ObjectUtil"], function (require, exports, ObjectUtil_3) {
     "use strict";
@@ -4415,7 +4493,7 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
     /** 再额外导出一个单例 */
     exports.audioManager = Core_11.core.getInject(AudioManager);
 });
-define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/env/Environment", "engine/mask/MaskManager", "engine/assets/AssetsManager", "engine/audio/AudioManager", "engine/version/Version"], function (require, exports, Core_12, Injector_8, NetManager_1, ModuleMessage_1, Environment_4, MaskManager_2, AssetsManager_2, AudioManager_1, Version_2) {
+define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/net/NetManager", "engine/module/ModuleMessage", "engine/module/ModuleObservableTransformer", "engine/env/Environment", "engine/mask/MaskManager", "engine/assets/AssetsManager", "engine/audio/AudioManager", "engine/version/Version"], function (require, exports, Core_12, Injector_8, NetManager_1, ModuleMessage_1, ModuleObservableTransformer_1, Environment_4, MaskManager_2, AssetsManager_2, AudioManager_1, Version_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -4661,7 +4739,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 // 如果有缓存的模块需要打开则打开之
                                 if (this._openCache.length > 0)
                                     this.open.apply(this, this._openCache.shift());
-                            }, _this);
+                            }, _this, new ModuleObservableTransformer_1.default(target));
                         });
                     }
                 };
@@ -5077,9 +5155,10 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
         function NetManager() {
             this._responseDict = {};
             this._responseListeners = {};
-            Core_15.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
+            this.listenRequest(Core_15.core);
         }
         NetManager.prototype.onMsgDispatched = function (msg) {
+            var observable = this;
             // 如果消息是通讯消息则做处理
             if (msg instanceof RequestData_1.default) {
                 // 添加遮罩
@@ -5089,8 +5168,17 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 发送消息
                 msg.__policy.sendRequest(msg);
                 // 派发系统消息
-                Core_15.core.dispatch(NetMessage_1.default.NET_REQUEST, msg);
+                observable.dispatch(NetMessage_1.default.NET_REQUEST, msg);
             }
+        };
+        /**
+         * 添加内核消息监听，遇到通讯消息则发送到后端，接到返回值后会将其发送到指定内核里
+         *
+         * @param {IObservable} observable 内核
+         * @memberof NetManager
+         */
+        NetManager.prototype.listenRequest = function (observable) {
+            observable.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, observable);
         };
         /**
          * 注册一个返回结构体
@@ -5153,11 +5241,14 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
          * @param {RequestData[]} [requests 要发送的请求列表
          * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
          * @param {*} [thisArg] this指向
+         * @param {IObservable} [observable] 要发送到的内核
          * @memberof NetManager
          */
-        NetManager.prototype.sendMultiRequests = function (requests, handler, thisArg) {
+        NetManager.prototype.sendMultiRequests = function (requests, handler, thisArg, observable) {
             var responses = [];
             var leftResCount = 0;
+            if (!observable)
+                observable = Core_15.core;
             for (var _i = 0, _a = requests || []; _i < _a.length; _i++) {
                 var request = _a[_i];
                 var response = request.__params.response;
@@ -5170,7 +5261,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                     leftResCount++;
                 }
                 // 发送请求
-                Core_15.core.dispatch(request);
+                observable.dispatch(request);
             }
             // 测试回调
             testCallback();
@@ -5201,13 +5292,17 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             var cls = this._responseDict[type];
             if (cls) {
                 var response = new cls();
-                // 设置配对请求
-                if (request)
+                // 设置配对请求和发送内核
+                var observable = Core_15.core;
+                if (request) {
                     response.__params.request = request;
+                    // 如果有配对请求，则将返回值发送到请求所在的内核里
+                    observable = request.__observable;
+                }
                 // 执行解析
                 response.parse(result);
                 // 派发事件
-                Core_15.core.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
+                observable.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
                 // 触发事件形式监听
                 var listeners = this._responseListeners[type];
                 if (listeners) {
@@ -5228,8 +5323,10 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
         NetManager.prototype.__onError = function (err, request) {
             // 移除遮罩
             MaskManager_4.maskManager.hideLoading("net");
+            // 如果有配对请求，则将返回值发送到请求所在的内核里
+            var observable = request ? request.__observable : Core_15.core;
             // 派发事件
-            Core_15.core.dispatch(NetMessage_1.default.NET_ERROR, err, request);
+            observable.dispatch(NetMessage_1.default.NET_ERROR, err, request);
         };
         NetManager = __decorate([
             Injector_11.Injectable,

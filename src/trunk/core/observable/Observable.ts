@@ -40,6 +40,13 @@ export default class Observable implements IObservable, IDisposable
 
     private doDispatch(msg:IMessage):void
     {
+        // 设置所属内核
+        Object.defineProperty(msg, "__observable", {
+            configurable: true,
+            enumerable: false,
+            value: this,
+            writable: false
+        });
         // 触发命令
         this.handleCommands(msg);
         // 触发用listen形式监听的消息

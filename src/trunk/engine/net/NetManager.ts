@@ -8,6 +8,7 @@ import ResponseData, { IResponseDataConstructor } from "./ResponseData";
 import NetMessage from "./NetMessage";
 import * as NetUtil from "./NetUtil";
 import { maskManager } from "../mask/MaskManager";
+import IObservable from "../../core/observable/IObservable";
 
 /**
  * @author Raykid
@@ -28,11 +29,12 @@ export default class NetManager
 {
     public constructor()
     {
-        core.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, this);
+        this.listenRequest(core);
     }
     
     private onMsgDispatched(msg:IMessage):void
     {
+        var observable:IObservable = this as any;
         // 如果消息是通讯消息则做处理
         if(msg instanceof RequestData)
         {
@@ -43,8 +45,19 @@ export default class NetManager
             // 发送消息
             msg.__policy.sendRequest(msg);
             // 派发系统消息
-            core.dispatch(NetMessage.NET_REQUEST, msg);
+            observable.dispatch(NetMessage.NET_REQUEST, msg);
         }
+    }
+
+    /**
+     * 添加内核消息监听，遇到通讯消息则发送到后端，接到返回值后会将其发送到指定内核里
+     * 
+     * @param {IObservable} observable 内核
+     * @memberof NetManager
+     */
+    public listenRequest(observable:IObservable):void
+    {
+        observable.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, observable);
     }
 
     private _responseDict:{[type:string]:IResponseDataConstructor} = {};
@@ -116,12 +129,14 @@ export default class NetManager
      * @param {RequestData[]} [requests 要发送的请求列表
      * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
      * @param {*} [thisArg] this指向
+     * @param {IObservable} [observable] 要发送到的内核
      * @memberof NetManager
      */
-    public sendMultiRequests(requests?:RequestData[], handler?:(responses?:ResponseData[])=>void, thisArg?:any):void
+    public sendMultiRequests(requests?:RequestData[], handler?:(responses?:ResponseData[])=>void, thisArg?:any, observable?:IObservable):void
     {
         var responses:(IResponseDataConstructor|ResponseData)[] = [];
         var leftResCount:number = 0;
+        if(!observable) observable = core;
         for(var request of requests || [])
         {
             var response:IResponseDataConstructor = request.__params.response;
@@ -135,7 +150,7 @@ export default class NetManager
                 leftResCount ++;
             }
             // 发送请求
-            core.dispatch(request);
+            observable.dispatch(request);
         }
         // 测试回调
         testCallback();
@@ -176,12 +191,18 @@ export default class NetManager
         if(cls)
         {
             var response:ResponseData = new cls();
-            // 设置配对请求
-            if(request) response.__params.request = request;
+            // 设置配对请求和发送内核
+            var observable:IObservable = core;
+            if(request)
+            {
+                response.__params.request = request;
+                // 如果有配对请求，则将返回值发送到请求所在的内核里
+                observable = request.__observable;
+            }
             // 执行解析
             response.parse(result);
             // 派发事件
-            core.dispatch(NetMessage.NET_RESPONSE, response, request);
+            observable.dispatch(NetMessage.NET_RESPONSE, response, request);
             // 触发事件形式监听
             var listeners:[ResponseHandler, any, boolean][] = this._responseListeners[type];
             if(listeners)
@@ -205,8 +226,10 @@ export default class NetManager
     {
         // 移除遮罩
         maskManager.hideLoading("net");
+        // 如果有配对请求，则将返回值发送到请求所在的内核里
+        var observable:IObservable = request ? request.__observable : core;
         // 派发事件
-        core.dispatch(NetMessage.NET_ERROR, err, request);
+        observable.dispatch(NetMessage.NET_ERROR, err, request);
     }
 }
 /** 再额外导出一个单例 */

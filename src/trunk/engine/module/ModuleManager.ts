@@ -6,7 +6,8 @@ import ResponseData from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IModule from "./IModule";
 import IModuleConstructor from "./IModuleConstructor";
-import ModuleMessage from "./ModuleMessage"
+import ModuleMessage from "./ModuleMessage";
+import ModuleObservableTransformer from "./ModuleObservableTransformer";
 import IModuleMediator from "../mediator/IModuleMediator";
 import { environment } from "../env/Environment";
 import { maskManager } from "../mask/MaskManager";
@@ -272,7 +273,7 @@ export default class ModuleManager
                             // 如果有缓存的模块需要打开则打开之
                             if(this._openCache.length > 0)
                                 this.open.apply(this, this._openCache.shift());
-                        }, this);
+                        }, this, new ModuleObservableTransformer(target));
                     });
                 }
             };

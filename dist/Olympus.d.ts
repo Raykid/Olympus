@@ -116,25 +116,19 @@ declare module "utils/Dictionary" {
         forEach(callback: (key: K, value: V) => void): void;
     }
 }
-declare module "core/message/IMessage" {
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-01
-     * @modify date 2017-09-01
-     *
-     * 框架内核消息接口
-    */
-    export default interface IMessage {
-        /**
-         * 获取消息类型
-         *
-         * @readonly
-         * @type {string}
-         * @memberof IMessage
-         */
-        readonly type: string;
-    }
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-09-18
+ * @modify date 2017-09-18
+ *
+ * 这个文件是给全局设置一个IConstructor接口而设计的
+*/
+interface IConstructor extends Function {
+    new (...args: any[]): any;
+}
+declare module "core/interfaces/IConstructor" {
+    export default IConstructor;
 }
 declare module "core/command/Command" {
     import IMessage from "core/message/IMessage";
@@ -193,20 +187,6 @@ declare module "core/command/ICommandConstructor" {
     export default interface ICommandConstructor {
         new (msg: IMessage): Command;
     }
-}
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-18
- * @modify date 2017-09-18
- *
- * 这个文件是给全局设置一个IConstructor接口而设计的
-*/
-interface IConstructor extends Function {
-    new (...args: any[]): any;
-}
-declare module "core/interfaces/IConstructor" {
-    export default IConstructor;
 }
 declare module "core/observable/IObservable" {
     import IConstructor from "core/interfaces/IConstructor";
@@ -273,6 +253,34 @@ declare module "core/observable/IObservable" {
         unmapCommand(type: string, cmd: ICommandConstructor): void;
     }
 }
+declare module "core/message/IMessage" {
+    import IObservable from "core/observable/IObservable";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-01
+     * @modify date 2017-09-01
+     *
+     * 框架内核消息接口
+    */
+    export default interface IMessage {
+        /**
+         * 获取消息类型
+         *
+         * @readonly
+         * @type {string}
+         * @memberof IMessage
+         */
+        readonly type: string;
+        /**
+         * 消息所属内核
+         *
+         * @type {IObservable}
+         * @memberof IMessage
+         */
+        readonly __observable: IObservable;
+    }
+}
 declare module "core/interfaces/IDisposable" {
     /**
      * @author Raykid
@@ -291,6 +299,7 @@ declare module "core/interfaces/IDisposable" {
 }
 declare module "core/message/Message" {
     import IMessage from "core/message/IMessage";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -309,6 +318,13 @@ declare module "core/message/Message" {
          * @memberof Message
          */
         readonly type: string;
+        /**
+         * 消息所属内核
+         *
+         * @type {IObservable}
+         * @memberof RequestData
+         */
+        __observable: IObservable;
         constructor(type: string);
     }
 }
@@ -693,6 +709,7 @@ declare module "engine/net/RequestData" {
     import IMessage from "core/message/IMessage";
     import IRequestPolicy from "engine/net/IRequestPolicy";
     import { IResponseDataConstructor } from "engine/net/ResponseData";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -753,6 +770,13 @@ declare module "engine/net/RequestData" {
          * @memberof RequestData
          */
         __userData: any;
+        /**
+         * 请求所属内核
+         *
+         * @type {IObservable}
+         * @memberof RequestData
+         */
+        __observable: IObservable;
         /**
          * 请求参数，可以运行时修改
          *
@@ -1984,6 +2008,74 @@ declare module "engine/module/ModuleMessage" {
         static MODULE_LOAD_ASSETS_ERROR: string;
     }
 }
+declare module "engine/module/ModuleObservableTransformer" {
+    import IObservable from "core/observable/IObservable";
+    import IModuleObservable from "engine/module/IModuleObservable";
+    import IMessage from "core/message/IMessage";
+    import ICommandConstructor from "core/command/ICommandConstructor";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-07
+     * @modify date 2017-11-07
+     *
+     * IModuleObservable到IObservable的变压器
+    */
+    export default class ModuleObservableTransformer implements IObservable {
+        private _module;
+        constructor(module: IModuleObservable);
+        /**
+         * 派发内核消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof ModuleObservableTransformer
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发内核消息，消息会转变为CommonMessage类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof ModuleObservableTransformer
+         */
+        dispatch(type: string, ...params: any[]): void;
+        /**
+         * 监听内核消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof ModuleObservableTransformer
+         */
+        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 移除内核消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof ModuleObservableTransformer
+         */
+        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof ModuleObservableTransformer
+         */
+        mapCommand(type: string, cmd: ICommandConstructor): void;
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof ModuleObservableTransformer
+         */
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
+    }
+}
 declare module "utils/URLUtil" {
     /**
      * 规整url
@@ -3036,6 +3128,7 @@ declare module "engine/mask/MaskManager" {
 declare module "engine/net/NetManager" {
     import RequestData from "engine/net/RequestData";
     import ResponseData, { IResponseDataConstructor } from "engine/net/ResponseData";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3050,6 +3143,13 @@ declare module "engine/net/NetManager" {
     export default class NetManager {
         constructor();
         private onMsgDispatched(msg);
+        /**
+         * 添加内核消息监听，遇到通讯消息则发送到后端，接到返回值后会将其发送到指定内核里
+         *
+         * @param {IObservable} observable 内核
+         * @memberof NetManager
+         */
+        listenRequest(observable: IObservable): void;
         private _responseDict;
         /**
          * 注册一个返回结构体
@@ -3086,9 +3186,10 @@ declare module "engine/net/NetManager" {
          * @param {RequestData[]} [requests 要发送的请求列表
          * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
          * @param {*} [thisArg] this指向
+         * @param {IObservable} [observable] 要发送到的内核
          * @memberof NetManager
          */
-        sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any): void;
+        sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any, observable?: IObservable): void;
         /** 这里导出不希望用户使用的方法，供框架内使用 */
         __onResponse(type: string, result: any, request?: RequestData): void | never;
         __onError(err: Error, request?: RequestData): void;

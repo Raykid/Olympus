@@ -1,3 +1,5 @@
+import IObservable from "../observable/IObservable";
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -16,4 +18,11 @@ export default interface IMessage
      * @memberof IMessage
      */
     readonly type:string;
+    /**
+     * 消息所属内核
+     * 
+     * @type {IObservable}
+     * @memberof IMessage
+     */
+    readonly __observable:IObservable;
 }

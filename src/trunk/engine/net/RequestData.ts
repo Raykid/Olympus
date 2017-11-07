@@ -1,6 +1,7 @@
 import IMessage from "../../core/message/IMessage";
 import IRequestPolicy from "./IRequestPolicy";
 import { IResponseDataConstructor } from "./ResponseData";
+import IObservable from "../../core/observable/IObservable";
 
 /**
  * @author Raykid
@@ -66,6 +67,13 @@ export default abstract class RequestData implements IMessage
      * @memberof RequestData
      */
     public __userData:any = {};
+    /**
+     * 请求所属内核
+     * 
+     * @type {IObservable}
+     * @memberof RequestData
+     */
+    public __observable:IObservable;
     /**
      * 请求参数，可以运行时修改
      * 
