@@ -4664,8 +4664,12 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             if (!after) {
                 // 尚未打开过，正常开启模块
                 var target = new cls();
+                // 创建内核
+                var observable = new ModuleObservableTransformer_1.default(target);
                 // 赋值打开参数
                 target.data = data;
+                // 监听通讯消息
+                NetManager_1.netManager.listenRequest(observable);
                 // 数据先行
                 this._moduleStack.unshift([cls, target]);
                 // 记一个是否需要遮罩的flag
@@ -4739,7 +4743,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 // 如果有缓存的模块需要打开则打开之
                                 if (this._openCache.length > 0)
                                     this.open.apply(this, this._openCache.shift());
-                            }, _this, new ModuleObservableTransformer_1.default(target));
+                            }, _this, observable);
                         });
                     }
                 };
