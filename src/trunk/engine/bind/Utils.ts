@@ -55,12 +55,13 @@ export function createEvalFunc(exp:string, scopeCount:number = 0):(...scopes:any
  * 
  * @export
  * @param {string} exp 表达式
+ * @param {*} [thisArg] this指向
  * @param {...any[]} scopes 表达式的作用域列表
  * @returns {*} 返回值
  */
-export function evalExp(exp:string, ...scopes:any[]):any
+export function evalExp(exp:string, thisArg?:any, ...scopes:any[]):any
 {
-    return createEvalFunc(exp, scopes.length).apply(null, scopes);
+    return createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
 }
 
 /**
@@ -68,11 +69,12 @@ export function evalExp(exp:string, ...scopes:any[]):any
  * 
  * @export
  * @param {string} exp 表达式
+ * @param {number} [scopeCount=0] 所需的域的数量
  * @returns {(...scopes:any[])=>any} 创建的方法
  */
-export function createRunFunc(exp:string):(...scopes:any[])=>any
+export function createRunFunc(exp:string, scopeCount:number=0):(...scopes:any[])=>any
 {
-    return createEvalFunc("(function(){" + exp + "})()");
+    return createEvalFunc("(function(){" + exp + "}).call(this)", scopeCount);
 }
 
 /**
@@ -80,9 +82,10 @@ export function createRunFunc(exp:string):(...scopes:any[])=>any
  * 
  * @export
  * @param {string} exp 表达式
+ * @param {*} [thisArg] this指向
  * @param {...any[]} scopes 表达式的作用域列表
  */
-export function runExp(exp:string, ...scopes:any[]):void
+export function runExp(exp:string, thisArg?:any, ...scopes:any[]):void
 {
-    createRunFunc(exp).apply(null, scopes);
+    createRunFunc(exp, scopes.length).apply(thisArg, scopes);
 }

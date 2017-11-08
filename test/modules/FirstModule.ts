@@ -35,7 +35,7 @@ class FirstMediator extends SceneMediator
     @Inject(1)
     private fuckModel3:IFuckModel;
 
-    @BindOn("click", "alert('fuck')")
+    @BindOn({click: "onClick"})
     @BindIf({"labelDisplay": "fuckText == '1234'"})
     public btn:eui.Button;
     @BindValue({textContent: "fuckText + ' - 1'"})

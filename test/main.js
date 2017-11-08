@@ -325,7 +325,7 @@ define("modules/FirstModule", ["require", "exports", "engine/module/Module", "en
             __metadata("design:type", FuckModel_1.IFuckModel)
         ], FirstMediator.prototype, "fuckModel3", void 0);
         __decorate([
-            Injector_7.BindOn("click", "alert('fuck')"),
+            Injector_7.BindOn({ click: "onClick" }),
             Injector_7.BindIf({ "labelDisplay": "fuckText == '1234'" }),
             __metadata("design:type", eui.Button)
         ], FirstMediator.prototype, "btn", void 0);

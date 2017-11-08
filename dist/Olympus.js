@@ -5411,15 +5411,16 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
      *
      * @export
      * @param {string} exp 表达式
+     * @param {*} [thisArg] this指向
      * @param {...any[]} scopes 表达式的作用域列表
      * @returns {*} 返回值
      */
-    function evalExp(exp) {
+    function evalExp(exp, thisArg) {
         var scopes = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            scopes[_i - 1] = arguments[_i];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            scopes[_i - 2] = arguments[_i];
         }
-        return createEvalFunc(exp, scopes.length).apply(null, scopes);
+        return createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
     }
     exports.evalExp = evalExp;
     /**
@@ -5427,10 +5428,12 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
      *
      * @export
      * @param {string} exp 表达式
+     * @param {number} [scopeCount=0] 所需的域的数量
      * @returns {(...scopes:any[])=>any} 创建的方法
      */
-    function createRunFunc(exp) {
-        return createEvalFunc("(function(){" + exp + "})()");
+    function createRunFunc(exp, scopeCount) {
+        if (scopeCount === void 0) { scopeCount = 0; }
+        return createEvalFunc("(function(){" + exp + "}).call(this)", scopeCount);
     }
     exports.createRunFunc = createRunFunc;
     /**
@@ -5438,14 +5441,15 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
      *
      * @export
      * @param {string} exp 表达式
+     * @param {*} [thisArg] this指向
      * @param {...any[]} scopes 表达式的作用域列表
      */
-    function runExp(exp) {
+    function runExp(exp, thisArg) {
         var scopes = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            scopes[_i - 1] = arguments[_i];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            scopes[_i - 2] = arguments[_i];
         }
-        createRunFunc(exp).apply(null, scopes);
+        createRunFunc(exp, scopes.length).apply(thisArg, scopes);
     }
     exports.runExp = runExp;
 });
@@ -5912,9 +5916,17 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
         BindManager.prototype.bindOn = function (mediator, evtDict, ui) {
             this.delaySearch(mediator, evtDict, ui, function (ui, key, exp) {
                 var handler = mediator.viewModel[exp];
+                var commonScope = {
+                    $this: mediator,
+                    $bridge: mediator.bridge,
+                    $target: ui
+                };
+                var func = Utils_2.createRunFunc(exp, 1);
                 // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
                 if (!handler)
-                    handler = Utils_2.createRunFunc(exp);
+                    handler = function () {
+                        func.call(this, commonScope);
+                    };
                 mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
             });
         };
@@ -5991,7 +6003,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                             $bridge: mediator.bridge,
                             $target: ui
                         };
-                        ui[key] = Utils_2.evalExp(exp, commonScope, msg, mediator.viewModel);
+                        ui[key] = Utils_2.evalExp(exp, mediator.viewModel, commonScope, msg, mediator.viewModel);
                     });
                 }
             };
@@ -6026,7 +6038,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                             $bridge: mediator.bridge,
                             $target: ui
                         };
-                        ui[key] = Utils_2.evalExp(exp, commonScope, response, mediator.viewModel);
+                        ui[key] = Utils_2.evalExp(exp, mediator.viewModel, commonScope, response, mediator.viewModel);
                     });
                 }
             };

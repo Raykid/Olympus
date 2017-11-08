@@ -4,7 +4,7 @@ import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
 import IBridge from "../bridge/IBridge";
-import { evalExp, createRunFunc } from "./Utils";
+import { evalExp, runExp, createRunFunc } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
@@ -134,8 +134,17 @@ export default class BindManager
     {
         this.delaySearch(mediator, evtDict, ui, (ui:any, key:string, exp:string)=>{
             var handler:Function = mediator.viewModel[exp];
+            var commonScope:any = {
+                $this: mediator,
+                $bridge: mediator.bridge,
+                $target: ui
+            };
+            var func:Function = createRunFunc(exp, 1);
             // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
-            if(!handler) handler = createRunFunc(exp);
+            if(!handler) handler = function():void
+            {
+                func.call(this, commonScope);
+            };
             mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
         });
     }
@@ -212,7 +221,7 @@ export default class BindManager
                         $bridge: mediator.bridge,
                         $target: ui
                     };
-                    ui[key] = evalExp(exp, commonScope, msg, mediator.viewModel);
+                    ui[key] = evalExp(exp, mediator.viewModel, commonScope, msg, mediator.viewModel);
                 });
             }
         };
@@ -249,7 +258,7 @@ export default class BindManager
                         $bridge: mediator.bridge,
                         $target: ui
                     };
-                    ui[key] = evalExp(exp, commonScope, response, mediator.viewModel);
+                    ui[key] = evalExp(exp, mediator.viewModel, commonScope, response, mediator.viewModel);
                 });
             }
         };
