@@ -10,7 +10,7 @@
 function wrapEvalFuncExp(exp:string, scopeCount:number):(...scopes:any[])=>any
 {
     var argList:string[] = [];
-    var expStr:string = "return " + exp;
+    var expStr:string = exp;
     for(var i:number = 0; i < scopeCount; i++)
     {
         argList.push("s" + i);
@@ -20,14 +20,14 @@ function wrapEvalFuncExp(exp:string, scopeCount:number):(...scopes:any[])=>any
 }
 
 /**
- * 创建一个表达式求值方法，用于未来执行
+ * 创建一个执行方法，用于未来执行
  * 
  * @export
  * @param {string} exp 表达式
  * @param {number} [scopeCount=0] 所需的域的数量
- * @returns {(...scopes:any[])=>any} 创建的方法
+ * @returns {(...scopes:any[])=>void} 创建的方法
  */
-export function createEvalFunc(exp:string, scopeCount:number = 0):(...scopes:any[])=>any
+export function createRunFunc(exp:string, scopeCount:number=0):(...scopes:any[])=>void
 {
     var func:(...scopes:any[])=>any;
     try
@@ -51,6 +51,32 @@ export function createEvalFunc(exp:string, scopeCount:number = 0):(...scopes:any
 }
 
 /**
+ * 直接执行表达式，不求值。该方法可以执行多条语句
+ * 
+ * @export
+ * @param {string} exp 表达式
+ * @param {*} [thisArg] this指向
+ * @param {...any[]} scopes 表达式的作用域列表
+ */
+export function runExp(exp:string, thisArg?:any, ...scopes:any[]):void
+{
+    createRunFunc(exp, scopes.length).apply(thisArg, scopes);
+}
+
+/**
+ * 创建一个表达式求值方法，用于未来执行
+ * 
+ * @export
+ * @param {string} exp 表达式
+ * @param {number} [scopeCount=0] 所需的域的数量
+ * @returns {(...scopes:any[])=>any} 创建的方法
+ */
+export function createEvalFunc(exp:string, scopeCount:number = 0):(...scopes:any[])=>any
+{
+    return createRunFunc("return " + exp, scopeCount);
+}
+
+/**
  * 表达式求值，无法执行多条语句
  * 
  * @export
@@ -62,17 +88,4 @@ export function createEvalFunc(exp:string, scopeCount:number = 0):(...scopes:any
 export function evalExp(exp:string, thisArg?:any, ...scopes:any[]):any
 {
     return createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
-}
-
-/**
- * 直接执行表达式，不求值。该方法可以执行多条语句
- * 
- * @export
- * @param {string} exp 表达式
- * @param {*} [thisArg] this指向
- * @param {...any[]} scopes 表达式的作用域列表
- */
-export function runExp(exp:string, thisArg?:any, ...scopes:any[]):void
-{
-    createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
 }

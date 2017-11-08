@@ -5370,7 +5370,7 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
     Object.defineProperty(exports, "__esModule", { value: true });
     function wrapEvalFuncExp(exp, scopeCount) {
         var argList = [];
-        var expStr = "return " + exp;
+        var expStr = exp;
         for (var i = 0; i < scopeCount; i++) {
             argList.push("s" + i);
             expStr = "with(s" + i + "||{}){" + expStr + "}";
@@ -5378,14 +5378,14 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
         return Function(argList.join(","), expStr);
     }
     /**
-     * 创建一个表达式求值方法，用于未来执行
+     * 创建一个执行方法，用于未来执行
      *
      * @export
      * @param {string} exp 表达式
      * @param {number} [scopeCount=0] 所需的域的数量
-     * @returns {(...scopes:any[])=>any} 创建的方法
+     * @returns {(...scopes:any[])=>void} 创建的方法
      */
-    function createEvalFunc(exp, scopeCount) {
+    function createRunFunc(exp, scopeCount) {
         if (scopeCount === void 0) { scopeCount = 0; }
         var func;
         try {
@@ -5405,6 +5405,35 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
         }
         return func;
     }
+    exports.createRunFunc = createRunFunc;
+    /**
+     * 直接执行表达式，不求值。该方法可以执行多条语句
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {*} [thisArg] this指向
+     * @param {...any[]} scopes 表达式的作用域列表
+     */
+    function runExp(exp, thisArg) {
+        var scopes = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            scopes[_i - 2] = arguments[_i];
+        }
+        createRunFunc(exp, scopes.length).apply(thisArg, scopes);
+    }
+    exports.runExp = runExp;
+    /**
+     * 创建一个表达式求值方法，用于未来执行
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @param {number} [scopeCount=0] 所需的域的数量
+     * @returns {(...scopes:any[])=>any} 创建的方法
+     */
+    function createEvalFunc(exp, scopeCount) {
+        if (scopeCount === void 0) { scopeCount = 0; }
+        return createRunFunc("return " + exp, scopeCount);
+    }
     exports.createEvalFunc = createEvalFunc;
     /**
      * 表达式求值，无法执行多条语句
@@ -5423,22 +5452,6 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
         return createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
     }
     exports.evalExp = evalExp;
-    /**
-     * 直接执行表达式，不求值。该方法可以执行多条语句
-     *
-     * @export
-     * @param {string} exp 表达式
-     * @param {*} [thisArg] this指向
-     * @param {...any[]} scopes 表达式的作用域列表
-     */
-    function runExp(exp, thisArg) {
-        var scopes = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            scopes[_i - 2] = arguments[_i];
-        }
-        createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
-    }
-    exports.runExp = runExp;
 });
 define("engine/bind/Bind", ["require", "exports", "engine/bind/Watcher", "utils/ObjectUtil"], function (require, exports, Watcher_1, ObjectUtil_6) {
     "use strict";
@@ -5908,12 +5921,13 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     $bridge: mediator.bridge,
                     $target: ui
                 };
-                var func = Utils_2.createEvalFunc(exp, 2);
                 // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
-                if (!handler)
+                if (!handler) {
+                    var func = Utils_2.createRunFunc(exp, 2);
                     handler = function () {
                         func.call(this, commonScope, mediator.viewModel);
                     };
+                }
                 mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
             });
         };
