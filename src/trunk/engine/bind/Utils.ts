@@ -65,19 +65,6 @@ export function evalExp(exp:string, thisArg?:any, ...scopes:any[]):any
 }
 
 /**
- * 创建一个执行方法，用于未来执行
- * 
- * @export
- * @param {string} exp 表达式
- * @param {number} [scopeCount=0] 所需的域的数量
- * @returns {(...scopes:any[])=>any} 创建的方法
- */
-export function createRunFunc(exp:string, scopeCount:number=0):(...scopes:any[])=>any
-{
-    return createEvalFunc("(function(){" + exp + "}).call(this)", scopeCount);
-}
-
-/**
  * 直接执行表达式，不求值。该方法可以执行多条语句
  * 
  * @export
@@ -87,5 +74,5 @@ export function createRunFunc(exp:string, scopeCount:number=0):(...scopes:any[])
  */
 export function runExp(exp:string, thisArg?:any, ...scopes:any[]):void
 {
-    createRunFunc(exp, scopes.length).apply(thisArg, scopes);
+    createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
 }

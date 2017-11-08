@@ -5424,19 +5424,6 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
     }
     exports.evalExp = evalExp;
     /**
-     * 创建一个执行方法，用于未来执行
-     *
-     * @export
-     * @param {string} exp 表达式
-     * @param {number} [scopeCount=0] 所需的域的数量
-     * @returns {(...scopes:any[])=>any} 创建的方法
-     */
-    function createRunFunc(exp, scopeCount) {
-        if (scopeCount === void 0) { scopeCount = 0; }
-        return createEvalFunc("(function(){" + exp + "}).call(this)", scopeCount);
-    }
-    exports.createRunFunc = createRunFunc;
-    /**
      * 直接执行表达式，不求值。该方法可以执行多条语句
      *
      * @export
@@ -5449,7 +5436,7 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
         for (var _i = 2; _i < arguments.length; _i++) {
             scopes[_i - 2] = arguments[_i];
         }
-        createRunFunc(exp, scopes.length).apply(thisArg, scopes);
+        createEvalFunc(exp, scopes.length).apply(thisArg, scopes);
     }
     exports.runExp = runExp;
 });
@@ -5921,11 +5908,11 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     $bridge: mediator.bridge,
                     $target: ui
                 };
-                var func = Utils_2.createRunFunc(exp, 1);
+                var func = Utils_2.createEvalFunc(exp, 2);
                 // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
                 if (!handler)
                     handler = function () {
-                        func.call(this, commonScope);
+                        func.call(this, commonScope, mediator.viewModel);
                     };
                 mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
             });

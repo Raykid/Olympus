@@ -4,7 +4,7 @@ import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
 import IBridge from "../bridge/IBridge";
-import { evalExp, runExp, createRunFunc } from "./Utils";
+import { evalExp, runExp, createEvalFunc } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
@@ -139,11 +139,11 @@ export default class BindManager
                 $bridge: mediator.bridge,
                 $target: ui
             };
-            var func:Function = createRunFunc(exp, 1);
+            var func:Function = createEvalFunc(exp, 2);
             // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
             if(!handler) handler = function():void
             {
-                func.call(this, commonScope);
+                func.call(this, commonScope, mediator.viewModel);
             };
             mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
         });
