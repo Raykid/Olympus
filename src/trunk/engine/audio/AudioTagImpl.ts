@@ -86,11 +86,15 @@ export default class AudioTagImpl implements IAudio
                     if(params.time != null) data.node.currentTime = params.time * 0.001;
                     // 监听播放进度
                     data.node.ontimeupdate = (evt:Event)=>{
-                        // 我们规定使用毫秒值作为单位
-                        var curTime:number = data.node.currentTime * 1000;
-                        var totalTime:number = data.node.duration * 1000;
-                        // 派发播放进度事件
-                        core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, curTime, totalTime);
+                        // 只有播放状态可以派发PROGRESS事件
+                        if(data.status == AudioStatus.PLAYING)
+                        {
+                            // 我们规定使用毫秒值作为单位
+                            var curTime:number = data.node.currentTime * 1000;
+                            var totalTime:number = data.node.duration * 1000;
+                            // 派发播放进度事件
+                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, curTime, totalTime);
+                        }
                     };
                     // 开始播放
                     data.node.play();
