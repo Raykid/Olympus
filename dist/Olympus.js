@@ -5911,7 +5911,11 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          */
         BindManager.prototype.bindOn = function (mediator, evtDict, ui) {
             this.delaySearch(mediator, evtDict, ui, function (ui, key, exp) {
-                mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
+                var handler = mediator.viewModel[exp];
+                // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
+                if (!handler)
+                    handler = Utils_2.createRunFunc(exp);
+                mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
             });
         };
         BindManager.prototype.replaceDisplay = function (bridge, ori, cur) {

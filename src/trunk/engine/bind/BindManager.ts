@@ -4,7 +4,7 @@ import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
 import IBridge from "../bridge/IBridge";
-import { evalExp } from "./Utils";
+import { evalExp, createRunFunc } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
@@ -133,7 +133,10 @@ export default class BindManager
     public bindOn(mediator:IMediator, evtDict:{[type:string]:string}, ui:any):void
     {
         this.delaySearch(mediator, evtDict, ui, (ui:any, key:string, exp:string)=>{
-            mediator.bridge.mapListener(ui, key, mediator.viewModel[exp], mediator.viewModel);
+            var handler:Function = mediator.viewModel[exp];
+            // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
+            if(!handler) handler = createRunFunc(exp);
+            mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
         });
     }
 
