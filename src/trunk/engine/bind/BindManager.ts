@@ -4,7 +4,7 @@ import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
 import IBridge from "../bridge/IBridge";
-import { evalExp, runExp, createRunFunc } from "./Utils";
+import { evalExp, createRunFunc } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
@@ -145,7 +145,7 @@ export default class BindManager
                 var func:Function = createRunFunc(exp, 2);
                 handler = function():void
                 {
-                    func.call(this, commonScope, mediator.viewModel);
+                    func.call(this, mediator.viewModel, commonScope);
                 };
             }
             mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
@@ -224,7 +224,7 @@ export default class BindManager
                         $bridge: mediator.bridge,
                         $target: ui
                     };
-                    ui[key] = evalExp(exp, mediator.viewModel, commonScope, msg, mediator.viewModel);
+                    ui[key] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, commonScope);
                 });
             }
         };
@@ -261,7 +261,7 @@ export default class BindManager
                         $bridge: mediator.bridge,
                         $target: ui
                     };
-                    ui[key] = evalExp(exp, mediator.viewModel, commonScope, response, mediator.viewModel);
+                    ui[key] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, commonScope);
                 });
             }
         };

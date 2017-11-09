@@ -5928,7 +5928,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 if (!handler) {
                     var func = Utils_2.createRunFunc(exp, 2);
                     handler = function () {
-                        func.call(this, commonScope, mediator.viewModel);
+                        func.call(this, mediator.viewModel, commonScope);
                     };
                 }
                 mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
@@ -6007,7 +6007,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                             $bridge: mediator.bridge,
                             $target: ui
                         };
-                        ui[key] = Utils_2.evalExp(exp, mediator.viewModel, commonScope, msg, mediator.viewModel);
+                        ui[key] = Utils_2.evalExp(exp, mediator.viewModel, msg, mediator.viewModel, commonScope);
                     });
                 }
             };
@@ -6042,7 +6042,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                             $bridge: mediator.bridge,
                             $target: ui
                         };
-                        ui[key] = Utils_2.evalExp(exp, mediator.viewModel, commonScope, response, mediator.viewModel);
+                        ui[key] = Utils_2.evalExp(exp, mediator.viewModel, response, mediator.viewModel, commonScope);
                     });
                 }
             };
