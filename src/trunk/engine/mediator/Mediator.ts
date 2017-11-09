@@ -112,7 +112,7 @@ export default class Mediator implements IModuleMediator
     {
         if(skin) this.skin = skin;
         // 初始化绑定
-        bindManager.bind(this);
+        this.viewModel = {};
     }
 
     /**

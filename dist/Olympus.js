@@ -6083,7 +6083,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             if (skin)
                 this.skin = skin;
             // 初始化绑定
-            BindManager_1.bindManager.bind(this);
+            this.viewModel = {};
         }
         Object.defineProperty(Mediator.prototype, "viewModel", {
             /**
