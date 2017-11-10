@@ -59,6 +59,18 @@ export default class AudioManager
     }
 
     /**
+     * 跳转Sound音频进度
+     * 
+     * @param {string} url 音频URL
+     * @param {number} time 要跳转到的音频位置，毫秒值
+     * @memberof AudioManager
+     */
+    public seekSound(url:string, time:number):void
+    {
+        this._soundImpl.seek(url, time);
+    }
+
+    /**
      * 停止Sound音频
      * 
      * @param {string} url 音频地址
@@ -128,6 +140,18 @@ export default class AudioManager
             this.stopAllMusics();
         }
         this._musicImpl.play(params);
+    }
+    
+    /**
+     * 跳转Music音频进度
+     * 
+     * @param {string} url 音频URL
+     * @param {number} time 要跳转到的音频位置，毫秒值
+     * @memberof AudioManager
+     */
+    public seekMusic(url:string, time:number):void
+    {
+        this._musicImpl.seek(url, time);
     }
 
     /**
