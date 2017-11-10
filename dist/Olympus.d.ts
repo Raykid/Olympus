@@ -2794,6 +2794,14 @@ declare module "engine/audio/AudioManager" {
          */
         playSound(params: AudioPlayParams): void;
         /**
+         * 跳转Sound音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioManager
+         */
+        seekSound(url: string, time: number): void;
+        /**
          * 停止Sound音频
          *
          * @param {string} url 音频地址
@@ -2835,6 +2843,14 @@ declare module "engine/audio/AudioManager" {
          * @memberof AudioManager
          */
         playMusic(params: AudioPlayParams): void;
+        /**
+         * 跳转Music音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioManager
+         */
+        seekMusic(url: string, time: number): void;
         /**
          * 停止Music音频
          *

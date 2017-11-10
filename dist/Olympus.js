@@ -4412,6 +4412,16 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
             this._soundImpl.play(params);
         };
         /**
+         * 跳转Sound音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.seekSound = function (url, time) {
+            this._soundImpl.seek(url, time);
+        };
+        /**
          * 停止Sound音频
          *
          * @param {string} url 音频地址
@@ -4468,6 +4478,16 @@ define("engine/audio/AudioManager", ["require", "exports", "core/injector/Inject
                 this.stopAllMusics();
             }
             this._musicImpl.play(params);
+        };
+        /**
+         * 跳转Music音频进度
+         *
+         * @param {string} url 音频URL
+         * @param {number} time 要跳转到的音频位置，毫秒值
+         * @memberof AudioManager
+         */
+        AudioManager.prototype.seekMusic = function (url, time) {
+            this._musicImpl.seek(url, time);
         };
         /**
          * 停止Music音频
