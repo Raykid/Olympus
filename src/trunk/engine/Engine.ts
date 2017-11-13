@@ -67,6 +67,8 @@ export default class Engine
             self._initParams = params;
             // 加载页
             self._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
+            // 监听错误事件
+            if(params.onError) self.listenError(params.onError);
             // 初始化环境参数
             environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 初始化版本号工具
@@ -77,6 +79,17 @@ export default class Engine
                 bridgeManager.registerBridge(...params.bridges);
             });
         }
+    }
+
+    /**
+     * 添加错误监听函数
+     * 
+     * @param {(evt?:ErrorEvent)=>void} handler 错误监听函数
+     * @memberof Engine
+     */
+    public listenError(handler:(evt?:ErrorEvent)=>void):void
+    {
+        if(handler) window.addEventListener("error", handler);
     }
 
     private onAllBridgesInit():void
@@ -208,4 +221,10 @@ export interface IInitParams
      * @memberof IInitParams
      */
     onInited?:()=>void;
+    /**
+     * 项目出现报错时调用，提供Error对象和ErrorEvent对象
+     * 
+     * @memberof IInitParams
+     */
+    onError?:(evt?:ErrorEvent)=>void;
 }

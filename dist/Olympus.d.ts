@@ -4839,6 +4839,13 @@ declare module "engine/Engine" {
          * @memberof Engine
          */
         initialize(params: IInitParams): void;
+        /**
+         * 添加错误监听函数
+         *
+         * @param {(evt?:ErrorEvent)=>void} handler 错误监听函数
+         * @memberof Engine
+         */
+        listenError(handler: (evt?: ErrorEvent) => void): void;
         private onAllBridgesInit();
         private onPreloadOK();
         private onModuleChange(from);
@@ -4923,6 +4930,12 @@ declare module "engine/Engine" {
          * @memberof IInitParams
          */
         onInited?: () => void;
+        /**
+         * 项目出现报错时调用，提供Error对象和ErrorEvent对象
+         *
+         * @memberof IInitParams
+         */
+        onError?: (evt?: ErrorEvent) => void;
     }
 }
 declare module "Olympus" {

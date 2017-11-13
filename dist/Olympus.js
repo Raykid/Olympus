@@ -8336,6 +8336,9 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 self._initParams = params;
                 // 加载页
                 self._loadElement = (typeof params.loadElement == "string" ? document.querySelector(params.loadElement) : params.loadElement);
+                // 监听错误事件
+                if (params.onError)
+                    self.listenError(params.onError);
                 // 初始化环境参数
                 Environment_6.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
                 // 初始化版本号工具
@@ -8346,6 +8349,16 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                     BridgeManager_4.bridgeManager.registerBridge.apply(BridgeManager_4.bridgeManager, params.bridges);
                 });
             }
+        };
+        /**
+         * 添加错误监听函数
+         *
+         * @param {(evt?:ErrorEvent)=>void} handler 错误监听函数
+         * @memberof Engine
+         */
+        Engine.prototype.listenError = function (handler) {
+            if (handler)
+                window.addEventListener("error", handler);
         };
         Engine.prototype.onAllBridgesInit = function () {
             // 注销监听
