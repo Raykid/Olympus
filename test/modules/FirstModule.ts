@@ -1,18 +1,18 @@
-import Module from "engine/module/Module";
-import ModuleManager from "engine/module/ModuleManager";
-import ResponseData from "engine/net/ResponseData";
-import { EgretMediatorClass } from "egret/injector/Injector";
-import { Inject, MessageHandler } from "core/injector/Injector";
-import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue, BindOn, BindIf } from "engine/injector/Injector";
+import Module from "../../src/trunk/engine/module/Module";
+import ModuleManager from "../../src/trunk/engine/module/ModuleManager";
+import ResponseData from "../../src/trunk/engine/net/ResponseData";
+import { EgretMediatorClass } from "../../src/branches/egret/injector/Injector";
+import { Inject, MessageHandler } from "../../src/trunk/core/injector/Injector";
+import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue, BindOn, BindIf } from "../../src/trunk/engine/injector/Injector";
 import SecondModule from "./SecondModule";
-import ModuleMessage from "engine/module/ModuleMessage";
-import SceneMediator from "engine/scene/SceneMediator";
+import ModuleMessage from "../../src/trunk/engine/module/ModuleMessage";
+import SceneMediator from "../../src/trunk/engine/scene/SceneMediator";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
-import { bridgeManager } from "engine/bridge/BridgeManager";
+import { bridgeManager } from "../../src/trunk/engine/bridge/BridgeManager";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
-import { DOMMediatorClass } from "dom/injector/Injector";
-import { audioManager } from "engine/audio/AudioManager";
+import { DOMMediatorClass } from "../../src/branches/dom/injector/Injector";
+import { audioManager } from "../../src/trunk/engine/audio/AudioManager";
 
 /**
  * @author Raykid

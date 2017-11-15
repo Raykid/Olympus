@@ -1,6 +1,6 @@
-import ResponseData, { IResponseParams } from "engine/net/ResponseData";
-import { netManager } from "engine/net/NetManager";
-import * as NetUtil from "engine/net/NetUtil";
+import ResponseData, { IResponseParams } from "../../../src/trunk/engine/net/ResponseData";
+import { netManager } from "../../../src/trunk/engine/net/NetManager";
+import * as NetUtil from "../../../src/trunk/engine/net/NetUtil";
 import Test from "../type/Test";
 
 /**

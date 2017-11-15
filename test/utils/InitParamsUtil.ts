@@ -1,5 +1,5 @@
-import { windowExternal } from "engine/env/WindowExternal";
-import { query } from "engine/env/Query";
+import { windowExternal } from "../../src/trunk/engine/env/WindowExternal";
+import { query } from "../../src/trunk/engine/env/Query";
 
 /**
  * @author Raykid

@@ -5,10 +5,17 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "allowJs": true,
     "outFile": "main.js"
   },
   "files": [
-    "main.ts"
+    "../src/trunk/libs/Reflect.js",
+    "../src/branches/egret/egret-libs/egret/egret.js",
+    "../src/branches/egret/egret-libs/egret/egret.web.js",
+    "../src/branches/egret/egret-libs/res/res.js",
+    "../src/branches/egret/egret-libs/eui/eui.js",
+    "../src/branches/egret/egret-libs/tween/tween.js",
+    "main"
   ],
   "exclude": [
     "node_modules"

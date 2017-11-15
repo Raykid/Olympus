@@ -1,10 +1,10 @@
-import Module from "engine/module/Module";
-import ResponseData from "engine/net/ResponseData";
-import { moduleManager } from "engine/module/ModuleManager";
-import SceneMediator from "engine/scene/SceneMediator";
-import { EgretMediatorClass } from "egret/injector/Injector";
-import { ModuleClass, DelegateMediator, ModuleMessageHandler, BindMessage, BindModuleMessage } from "engine/injector/Injector";
-import { MessageHandler } from "core/injector/Injector";
+import Module from "../../src/trunk/engine/module/Module";
+import ResponseData from "../../src/trunk/engine/net/ResponseData";
+import { moduleManager } from "../../src/trunk/engine/module/ModuleManager";
+import SceneMediator from "../../src/trunk/engine/scene/SceneMediator";
+import { EgretMediatorClass } from "../../src/branches/egret/injector/Injector";
+import { ModuleClass, DelegateMediator, ModuleMessageHandler, BindMessage, BindModuleMessage } from "../../src/trunk/engine/injector/Injector";
+import { MessageHandler } from "../../src/trunk/core/injector/Injector";
 
 /**
  * @author Raykid

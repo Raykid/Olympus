@@ -1,7 +1,7 @@
-import { environment } from "engine/env/Environment";
-import { panelManager } from "engine/panel/PanelManager";
-import { platformManager } from "engine/platform/PlatformManager";
-import { version } from "engine/version/Version";
+import { environment } from "../../trunk/engine/env/Environment";
+import { panelManager } from "../../trunk/engine/panel/PanelManager";
+import { platformManager } from "../../trunk/engine/platform/PlatformManager";
+import { version } from "../../trunk/engine/version/Version";
 
 /**
  * @author Raykid

@@ -1,7 +1,7 @@
-import { listenConstruct } from "utils/ConstructUtil";
-import { MediatorClass } from "engine/injector/Injector";
+import { listenConstruct } from "../../../trunk/utils/ConstructUtil";
+import { MediatorClass } from "../../../trunk/engine/injector/Injector";
+import { bridgeManager } from "../../../trunk/engine/bridge/BridgeManager";
 import { wrapSkin } from "../utils/SkinUtil";
-import { bridgeManager } from "engine/bridge/BridgeManager";
 import EgretBridge from "../../EgretBridge";
 
 /**

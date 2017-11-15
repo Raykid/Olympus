@@ -1,0 +1,35 @@
+define(["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-18
+     * @modify date 2017-09-18
+     *
+     * 模块消息
+    */
+    var ModuleMessage = /** @class */ (function () {
+        function ModuleMessage() {
+        }
+        /**
+         * 切换模块消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        ModuleMessage.MODULE_CHANGE = "moduleChange";
+        /**
+         * 加载模块失败消息
+         *
+         * @static
+         * @type {string}
+         * @memberof ModuleMessage
+         */
+        ModuleMessage.MODULE_LOAD_ASSETS_ERROR = "moduleLoadAssetsError";
+        return ModuleMessage;
+    }());
+    exports.default = ModuleMessage;
+});
+//# sourceMappingURL=ModuleMessage.js.map
