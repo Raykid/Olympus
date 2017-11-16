@@ -15,7 +15,7 @@
     "../src/branches/egret/egret-libs/res/res.js",
     "../src/branches/egret/egret-libs/eui/eui.js",
     "../src/branches/egret/egret-libs/tween/tween.js",
-    "main"
+    "main.ts"
   ],
   "exclude": [
     "node_modules"

@@ -1,5 +1,6 @@
 import { core } from "../core/Core";
 import { Injectable } from "../core/injector/Injector";
+import * as CookieUtil from "../utils/CookieUtil";
 import BridgeManager, { bridgeManager } from "./bridge/BridgeManager";
 import BridgeMessage from "./bridge/BridgeMessage";
 import PlatformManager from "./platform/PlatformManager"
@@ -30,7 +31,7 @@ import BindManager from "./bind/BindManager";
 import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
 import IPlugin from "./plugin/IPlugin";
-import * as CookieUtil from "../utils/CookieUtil";
+import * as Injector from "./injector/Injector";
 
 /**
  * @author Raykid

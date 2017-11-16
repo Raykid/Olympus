@@ -2,7 +2,7 @@ import { listenConstruct } from "../../../trunk/utils/ConstructUtil";
 import { MediatorClass } from "../../../trunk/engine/injector/Injector";
 import { bridgeManager } from "../../../trunk/engine/bridge/BridgeManager";
 import { wrapSkin } from "../utils/SkinUtil";
-import EgretBridge from "../../EgretBridge";
+import EgretBridge from "../EgretBridge";
 
 /**
  * @author Raykid

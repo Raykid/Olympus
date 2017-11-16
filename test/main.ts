@@ -4,8 +4,8 @@
 
 import Olympus from "../src/trunk/Olympus";
 import { environment } from "../src/trunk/engine/env/Environment";
-import DOMBridge from "../src/branches/DOMBridge";
-import EgretBridge from "../src/branches/EgretBridge";
+import DOMBridge from "../src/branches/dom/DOMBridge";
+import EgretBridge from "../src/branches/egret/EgretBridge";
 import getParam from "./utils/InitParamsUtil";
 import FirstModule from "./modules/FirstModule";
 

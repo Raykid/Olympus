@@ -1,3 +1,5 @@
+/// <amd-module name="Olympus"/>
+
 import { engine, IInitParams } from "./engine/Engine";
 
 /**

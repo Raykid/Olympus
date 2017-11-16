@@ -1,8 +1,8 @@
 import { listenConstruct } from "../../../trunk/utils/ConstructUtil";
 import { MediatorClass } from "../../../trunk/engine/injector/Injector";
 import { bridgeManager } from "../../../trunk/engine/bridge/BridgeManager";
-import DOMBridge from "../../DOMBridge";
 import { wrapSkin } from "../utils/SkinUtil";
+import DOMBridge from "../DOMBridge";
 
 /**
  * @author Raykid

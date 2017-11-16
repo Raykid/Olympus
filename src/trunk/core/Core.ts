@@ -6,6 +6,7 @@ import IMessage from "./message/IMessage";
 import ICommandConstructor from "./command/ICommandConstructor";
 import IObservable from "./observable/IObservable";
 import Observable from "./observable/Observable";
+import * as Injector from "./injector/Injector";
 
 /**
  * @author Raykid

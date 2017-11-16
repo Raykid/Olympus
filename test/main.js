@@ -67502,175 +67502,7 @@ define("src/trunk/core/observable/Observable", ["require", "exports", "src/trunk
     }());
     exports.default = Observable;
 });
-/// <reference path="../libs/Reflect.d.ts"/>
-/// <reference path="./global/Patch.ts"/>
-define("src/trunk/core/Core", ["require", "exports", "src/trunk/utils/Dictionary", "src/trunk/core/observable/Observable"], function (require, exports, Dictionary_1, Observable_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
-     *
-     * @export
-     * @class Core
-     */
-    var Core = /** @class */ (function () {
-        function Core() {
-            /*********************** 下面是内核消息系统 ***********************/
-            this._observable = new Observable_1.default();
-            /*********************** 下面是依赖注入系统 ***********************/
-            /**
-             * 记录已经注入过的对象单例
-             *
-             * @private
-             * @type {Dictionary<Function, any>}
-             * @memberof Core
-             */
-            this._injectDict = new Dictionary_1.default();
-            /**
-             * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
-             *
-             * @private
-             * @type {Dictionary<any, IConstructor>}
-             * @memberof Core
-             */
-            this._injectStrDict = new Dictionary_1.default();
-            // 进行单例判断
-            if (Core._instance)
-                throw new Error("已生成过Core实例，不允许多次生成");
-            // 赋值单例
-            Core._instance = this;
-            // 注入自身
-            this.mapInjectValue(this);
-        }
-        Object.defineProperty(Core.prototype, "observable", {
-            /**
-             * 将IObservable暴露出来
-             *
-             * @readonly
-             * @type {IObservable}
-             * @memberof Core
-             */
-            get: function () {
-                return this._observable;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /** dispatch方法实现 */
-        Core.prototype.dispatch = function () {
-            var params = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                params[_i] = arguments[_i];
-            }
-            this._observable.dispatch.apply(this._observable, params);
-        };
-        /**
-         * 监听内核消息
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof Core
-         */
-        Core.prototype.listen = function (type, handler, thisArg) {
-            this._observable.listen(type, handler, thisArg);
-        };
-        /**
-         * 移除内核消息监听
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof Core
-         */
-        Core.prototype.unlisten = function (type, handler, thisArg) {
-            this._observable.unlisten(type, handler, thisArg);
-        };
-        /**
-         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
-         *
-         * @param {string} type 要注册的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof Core
-         */
-        Core.prototype.mapCommand = function (type, cmd) {
-            this._observable.mapCommand(type, cmd);
-        };
-        /**
-         * 注销命令
-         *
-         * @param {string} type 要注销的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器
-         * @returns {void}
-         * @memberof Core
-         */
-        Core.prototype.unmapCommand = function (type, cmd) {
-            this._observable.unmapCommand(type, cmd);
-        };
-        /**
-         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
-         *
-         * @param {IConstructor} target 要注入的类型（注意不是实例）
-         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
-         * @memberof Core
-         */
-        Core.prototype.mapInject = function (target, type) {
-            // 如果已经注入过了，则使用已经注入的单例再次注入
-            var oriTarget = target["__ori_constructor__"] || target;
-            var value = this._injectDict.get(oriTarget) || new target();
-            this.mapInjectValue(value, type);
-        };
-        /**
-         * 注入一个对象实例
-         *
-         * @param {*} value 要注入的对象实例
-         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
-         * @memberof Core
-         */
-        Core.prototype.mapInjectValue = function (value, type) {
-            // 如果是字符串则记录类型构造函数映射
-            if (!(type instanceof Function) || !type.prototype)
-                type = this._injectStrDict[type] = value.constructor;
-            // 记录已注入的单例
-            this._injectDict.set(value.constructor, value);
-            // 开始注入
-            Reflect.defineMetadata("design:type", value, type || value.constructor);
-        };
-        /**
-         * 移除类型注入
-         *
-         * @param {*} type 要移除注入的类型
-         * @memberof Core
-         */
-        Core.prototype.unmapInject = function (type) {
-            // 如果是字符串则记录类型构造函数映射
-            if (!(type instanceof Function) || !type.prototype)
-                type = this._injectStrDict[type];
-            Reflect.deleteMetadata("design:type", type);
-        };
-        /**
-         * 获取注入的对象实例
-         *
-         * @param {*} type 注入对象的类型
-         * @returns {*} 注入的对象实例
-         * @memberof Core
-         */
-        Core.prototype.getInject = function (type) {
-            if (!(type instanceof Function) || !type.prototype)
-                type = this._injectStrDict[type];
-            if (type) {
-                // 需要用原始的构造函数取
-                type = type["__ori_constructor__"] || type;
-                return Reflect.getMetadata("design:type", type);
-            }
-        };
-        return Core;
-    }());
-    exports.default = Core;
-    /** 再额外导出一个单例 */
-    exports.core = new Core();
-});
-define("src/trunk/utils/ConstructUtil", ["require", "exports", "src/trunk/utils/ObjectUtil", "src/trunk/utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_2) {
+define("src/trunk/utils/ConstructUtil", ["require", "exports", "src/trunk/utils/ObjectUtil", "src/trunk/utils/Dictionary"], function (require, exports, ObjectUtil_2, Dictionary_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -67681,7 +67513,7 @@ define("src/trunk/utils/ConstructUtil", ["require", "exports", "src/trunk/utils/
      *
      * 装饰器工具集
     */
-    var instanceDict = new Dictionary_2.default();
+    var instanceDict = new Dictionary_1.default();
     function handleInstance(instance) {
         var cls = instance.constructor;
         cls = cls["__ori_constructor__"] || cls;
@@ -67873,6 +67705,225 @@ define("src/trunk/core/injector/Injector", ["require", "exports", "src/trunk/cor
             Core_2.core.unlisten(type, instance[key], instance);
         });
     }
+});
+/// <reference path="../libs/Reflect.d.ts"/>
+/// <reference path="./global/Patch.ts"/>
+define("src/trunk/core/Core", ["require", "exports", "src/trunk/utils/Dictionary", "src/trunk/core/observable/Observable"], function (require, exports, Dictionary_2, Observable_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
+     *
+     * @export
+     * @class Core
+     */
+    var Core = /** @class */ (function () {
+        function Core() {
+            /*********************** 下面是内核消息系统 ***********************/
+            this._observable = new Observable_1.default();
+            /*********************** 下面是依赖注入系统 ***********************/
+            /**
+             * 记录已经注入过的对象单例
+             *
+             * @private
+             * @type {Dictionary<Function, any>}
+             * @memberof Core
+             */
+            this._injectDict = new Dictionary_2.default();
+            /**
+             * 注入字符串类型字典，记录注入字符串和类型构造函数的映射
+             *
+             * @private
+             * @type {Dictionary<any, IConstructor>}
+             * @memberof Core
+             */
+            this._injectStrDict = new Dictionary_2.default();
+            // 进行单例判断
+            if (Core._instance)
+                throw new Error("已生成过Core实例，不允许多次生成");
+            // 赋值单例
+            Core._instance = this;
+            // 注入自身
+            this.mapInjectValue(this);
+        }
+        Object.defineProperty(Core.prototype, "observable", {
+            /**
+             * 将IObservable暴露出来
+             *
+             * @readonly
+             * @type {IObservable}
+             * @memberof Core
+             */
+            get: function () {
+                return this._observable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /** dispatch方法实现 */
+        Core.prototype.dispatch = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            this._observable.dispatch.apply(this._observable, params);
+        };
+        /**
+         * 监听内核消息
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Core
+         */
+        Core.prototype.listen = function (type, handler, thisArg) {
+            this._observable.listen(type, handler, thisArg);
+        };
+        /**
+         * 移除内核消息监听
+         *
+         * @param {string} type 消息类型
+         * @param {Function} handler 消息处理函数
+         * @param {*} [thisArg] 消息this指向
+         * @memberof Core
+         */
+        Core.prototype.unlisten = function (type, handler, thisArg) {
+            this._observable.unlisten(type, handler, thisArg);
+        };
+        /**
+         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
+         *
+         * @param {string} type 要注册的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
+         * @memberof Core
+         */
+        Core.prototype.mapCommand = function (type, cmd) {
+            this._observable.mapCommand(type, cmd);
+        };
+        /**
+         * 注销命令
+         *
+         * @param {string} type 要注销的消息类型
+         * @param {(ICommandConstructor)} cmd 命令处理器
+         * @returns {void}
+         * @memberof Core
+         */
+        Core.prototype.unmapCommand = function (type, cmd) {
+            this._observable.unmapCommand(type, cmd);
+        };
+        /**
+         * 添加一个类型注入，会立即生成一个实例并注入到框架内核中
+         *
+         * @param {IConstructor} target 要注入的类型（注意不是实例）
+         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入类型自身作为key
+         * @memberof Core
+         */
+        Core.prototype.mapInject = function (target, type) {
+            // 如果已经注入过了，则使用已经注入的单例再次注入
+            var oriTarget = target["__ori_constructor__"] || target;
+            var value = this._injectDict.get(oriTarget) || new target();
+            this.mapInjectValue(value, type);
+        };
+        /**
+         * 注入一个对象实例
+         *
+         * @param {*} value 要注入的对象实例
+         * @param {*} [type] 如果提供该参数，则使用该类型代替注入类型的key，否则使用注入实例的构造函数作为key
+         * @memberof Core
+         */
+        Core.prototype.mapInjectValue = function (value, type) {
+            // 如果是字符串则记录类型构造函数映射
+            if (!(type instanceof Function) || !type.prototype)
+                type = this._injectStrDict[type] = value.constructor;
+            // 记录已注入的单例
+            this._injectDict.set(value.constructor, value);
+            // 开始注入
+            Reflect.defineMetadata("design:type", value, type || value.constructor);
+        };
+        /**
+         * 移除类型注入
+         *
+         * @param {*} type 要移除注入的类型
+         * @memberof Core
+         */
+        Core.prototype.unmapInject = function (type) {
+            // 如果是字符串则记录类型构造函数映射
+            if (!(type instanceof Function) || !type.prototype)
+                type = this._injectStrDict[type];
+            Reflect.deleteMetadata("design:type", type);
+        };
+        /**
+         * 获取注入的对象实例
+         *
+         * @param {*} type 注入对象的类型
+         * @returns {*} 注入的对象实例
+         * @memberof Core
+         */
+        Core.prototype.getInject = function (type) {
+            if (!(type instanceof Function) || !type.prototype)
+                type = this._injectStrDict[type];
+            if (type) {
+                // 需要用原始的构造函数取
+                type = type["__ori_constructor__"] || type;
+                return Reflect.getMetadata("design:type", type);
+            }
+        };
+        return Core;
+    }());
+    exports.default = Core;
+    /** 再额外导出一个单例 */
+    exports.core = new Core();
+});
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2017-11-01
+ * @modify date 2017-11-01
+ *
+ * Cookie工具
+*/
+define("src/trunk/utils/CookieUtil", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * 获取cookie值
+     *
+     * @export
+     * @param {string} name cookie名称
+     * @returns {string} cookie值
+     */
+    function getCookie(name) {
+        if (document.cookie.length > 0) {
+            var start = document.cookie.indexOf(name + "=");
+            if (start != -1) {
+                start = start + name.length + 1;
+                var end = document.cookie.indexOf(";", start);
+                if (end == -1)
+                    end = document.cookie.length;
+                return decodeURIComponent(document.cookie.substring(start, end));
+            }
+        }
+        return "";
+    }
+    exports.getCookie = getCookie;
+    /**
+     * 获取cookie值
+     *
+     * @export
+     * @param {string} name cookie名称
+     * @param {*} value cookie值
+     * @param {number} [expire] 有效期时长（毫秒）
+     */
+    function setCookie(name, value, expire) {
+        var exstr = "";
+        if (expire != null) {
+            var exdate = new Date();
+            exdate.setMilliseconds(exdate.getMilliseconds() + expire);
+            exstr = ";expires=" + exdate.toUTCString();
+        }
+        document.cookie = name + "=" + encodeURIComponent(value) + exstr;
+    }
+    exports.setCookie = setCookie;
 });
 define("src/trunk/engine/bridge/IHasBridge", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -73645,58 +73696,380 @@ define("src/trunk/engine/plugin/IPlugin", ["require", "exports"], function (requ
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-11-01
- * @modify date 2017-11-01
- *
- * Cookie工具
-*/
-define("src/trunk/utils/CookieUtil", ["require", "exports"], function (require, exports) {
+define("src/trunk/engine/injector/Injector", ["require", "exports", "src/trunk/core/injector/Injector", "src/trunk/core/message/Message", "src/trunk/utils/ConstructUtil", "src/trunk/engine/net/ResponseData", "src/trunk/engine/net/NetManager", "src/trunk/engine/bridge/BridgeManager", "src/trunk/engine/mediator/Mediator", "src/trunk/engine/module/ModuleManager", "src/trunk/utils/Dictionary", "src/trunk/engine/bind/BindManager"], function (require, exports, Injector_19, Message_3, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_6, BindManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
-     * 获取cookie值
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-19
+     * @modify date 2017-09-19
      *
-     * @export
-     * @param {string} name cookie名称
-     * @returns {string} cookie值
-     */
-    function getCookie(name) {
-        if (document.cookie.length > 0) {
-            var start = document.cookie.indexOf(name + "=");
-            if (start != -1) {
-                start = start + name.length + 1;
-                var end = document.cookie.indexOf(";", start);
-                if (end == -1)
-                    end = document.cookie.length;
-                return decodeURIComponent(document.cookie.substring(start, end));
+     * 负责注入的模块
+    */
+    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
+    function ModelClass() {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        // 转调Injectable方法
+        if (this === undefined) {
+            var cls = ConstructUtil_3.wrapConstruct(args[0]);
+            Injector_19.Injectable.call(this, cls);
+            return cls;
+        }
+        else {
+            var result = Injector_19.Injectable.apply(this, args);
+            return function (realCls) {
+                realCls = ConstructUtil_3.wrapConstruct(realCls);
+                result.call(this, realCls);
+                return realCls;
+            };
+        }
+    }
+    exports.ModelClass = ModelClass;
+    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
+    function MediatorClass(cls) {
+        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+        // 监听实例化
+        ConstructUtil_3.listenConstruct(cls, function (instance) {
+            // 替换setSkin方法
+            var $skin;
+            Object.defineProperty(instance, "skin", {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                    return $skin;
+                },
+                set: function (value) {
+                    // 记录值
+                    $skin = value;
+                    // 根据skin类型选取表现层桥
+                    this.bridge = BridgeManager_3.bridgeManager.getBridgeBySkin(value);
+                }
+            });
+        });
+        return ConstructUtil_3.wrapConstruct(cls);
+    }
+    exports.MediatorClass = MediatorClass;
+    /** 定义模块，支持实例注入 */
+    function ModuleClass(cls) {
+        // 判断一下Module是否有dispose方法，没有的话弹一个警告
+        if (!cls.prototype.dispose)
+            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
+        // 包装类
+        var wrapperCls = ConstructUtil_3.wrapConstruct(cls);
+        // 注册模块
+        ModuleManager_3.moduleManager.registerModule(wrapperCls);
+        // 返回包装类
+        return wrapperCls;
+    }
+    exports.ModuleClass = ModuleClass;
+    function ModuleMessageHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof Message_3.default))
+                throw new Error("@ModuleMessageHandler装饰器装饰的方法的首个参数必须是Message");
+            doModuleMessageHandler(target.constructor, key, resClass);
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                doModuleMessageHandler(prototype.constructor, propertyKey, target);
+            };
+        }
+    }
+    exports.ModuleMessageHandler = ModuleMessageHandler;
+    ;
+    function doModuleMessageHandler(cls, key, type) {
+        // 监听实例化
+        ConstructUtil_3.listenConstruct(cls, function (instance) {
+            if (instance instanceof Mediator_3.default) {
+                // 如果是Mediator，则需要等到被托管后再执行注册
+                addDelegateHandler(instance, function () {
+                    instance.dependModuleInstance.listenModule(type, instance[key], instance);
+                });
             }
-        }
-        return "";
+            else {
+                var module = instance.dependModuleInstance;
+                module && module.listenModule(type, instance[key], instance);
+            }
+        });
+        // 监听销毁
+        ConstructUtil_3.listenDispose(cls, function (instance) {
+            var module = instance.dependModuleInstance;
+            module && module.unlistenModule(type, instance[key], instance);
+        });
     }
-    exports.getCookie = getCookie;
+    function ResponseHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof ResponseData_1.default))
+                throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
+            doResponseHandler(target.constructor, key, defs[0]);
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                doResponseHandler(prototype.constructor, propertyKey, target);
+            };
+        }
+    }
+    exports.ResponseHandler = ResponseHandler;
+    function doResponseHandler(cls, key, type) {
+        // 监听实例化
+        ConstructUtil_3.listenConstruct(cls, function (instance) {
+            NetManager_4.netManager.listenResponse(type, instance[key], instance);
+        });
+        // 监听销毁
+        ConstructUtil_3.listenDispose(cls, function (instance) {
+            NetManager_4.netManager.unlistenResponse(type, instance[key], instance);
+        });
+    }
+    var delegateHandlerDict = new Dictionary_6.default();
+    function addDelegateHandler(instance, handler) {
+        if (!instance)
+            return;
+        var handlers = delegateHandlerDict.get(instance);
+        if (!handlers)
+            delegateHandlerDict.set(instance, handlers = []);
+        if (handlers.indexOf(handler) < 0)
+            handlers.push(handler);
+    }
+    /** 在Module内托管Mediator */
+    function DelegateMediator(prototype, propertyKey) {
+        if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
+            // 监听实例化
+            ConstructUtil_3.listenConstruct(prototype.constructor, function (instance) {
+                // 实例化
+                var mediator = instance[propertyKey];
+                if (mediator === undefined) {
+                    var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
+                    instance[propertyKey] = mediator = new cls();
+                }
+                // 赋值所属模块
+                mediator["_dependModuleInstance"] = instance;
+                mediator["_dependModule"] = ConstructUtil_3.getConstructor(prototype.constructor);
+                // 执行回调
+                var handlers = delegateHandlerDict.get(mediator);
+                if (handlers) {
+                    for (var _i = 0, handlers_1 = handlers; _i < handlers_1.length; _i++) {
+                        var handler = handlers_1[_i];
+                        handler(mediator);
+                    }
+                    // 移除记录
+                    delegateHandlerDict.delete(mediator);
+                }
+            });
+            // 监听销毁
+            ConstructUtil_3.listenDispose(prototype.constructor, function (instance) {
+                var mediator = instance[propertyKey];
+                if (mediator) {
+                    // 移除所属模块
+                    mediator["_dependModuleInstance"] = undefined;
+                    mediator["_dependModule"] = undefined;
+                    // 移除实例
+                    instance[propertyKey] = undefined;
+                }
+            });
+            // 篡改属性
+            var mediator;
+            return {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                    return mediator;
+                },
+                set: function (value) {
+                    if (value == mediator)
+                        return;
+                    // 取消托管中介者
+                    if (mediator) {
+                        this.undelegateMediator(mediator);
+                    }
+                    // 设置中介者
+                    mediator = value;
+                    // 托管新的中介者
+                    if (mediator) {
+                        this.delegateMediator(mediator);
+                    }
+                }
+            };
+        }
+    }
+    exports.DelegateMediator = DelegateMediator;
+    function listenOnOpen(prototype, propertyKey, before, after) {
+        ConstructUtil_3.listenConstruct(prototype.constructor, function (mediator) {
+            // 篡改onOpen方法
+            var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
+            mediator.onOpen = function () {
+                var args = [];
+                for (var _i = 0; _i < arguments.length; _i++) {
+                    args[_i] = arguments[_i];
+                }
+                // 调用回调
+                before && before(mediator);
+                // 恢复原始方法
+                if (oriFunc)
+                    mediator.onOpen = oriFunc;
+                else
+                    delete mediator.onOpen;
+                // 调用原始方法
+                mediator.onOpen.apply(this, args);
+                // 调用回调
+                after && after(mediator);
+            };
+        });
+    }
     /**
-     * 获取cookie值
-     *
-     * @export
-     * @param {string} name cookie名称
-     * @param {*} value cookie值
-     * @param {number} [expire] 有效期时长（毫秒）
+     * @private
      */
-    function setCookie(name, value, expire) {
-        var exstr = "";
-        if (expire != null) {
-            var exdate = new Date();
-            exdate.setMilliseconds(exdate.getMilliseconds() + expire);
-            exstr = ";expires=" + exdate.toUTCString();
-        }
-        document.cookie = name + "=" + encodeURIComponent(value) + exstr;
+    function BindValue(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                // 组织参数字典
+                var uiDict;
+                if (typeof arg1 == "string") {
+                    uiDict = {};
+                    uiDict[arg1] = arg2;
+                }
+                else {
+                    uiDict = arg1;
+                }
+                BindManager_2.bindManager.bindValue(mediator, uiDict, mediator[propertyKey]);
+            });
+        };
     }
-    exports.setCookie = setCookie;
+    exports.BindValue = BindValue;
+    /**
+     * @private
+     */
+    function BindOn(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                // 组织参数字典
+                var evtDict;
+                if (typeof arg1 == "string") {
+                    evtDict = {};
+                    evtDict[arg1] = arg2;
+                }
+                else {
+                    evtDict = arg1;
+                }
+                BindManager_2.bindManager.bindOn(mediator, evtDict, mediator[propertyKey]);
+            });
+        };
+    }
+    exports.BindOn = BindOn;
+    /**
+     * @private
+     */
+    function BindIf(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                // 组织参数字典
+                var uiDict;
+                if (typeof arg1 == "string") {
+                    uiDict = {};
+                    if (arg2)
+                        uiDict[arg1] = arg2; // 有name寻址
+                    else
+                        uiDict["$target"] = arg1; // 没有name寻址，直接绑定表达式
+                }
+                else {
+                    uiDict = arg1;
+                }
+                BindManager_2.bindManager.bindIf(mediator, uiDict, mediator[propertyKey]);
+            });
+        };
+    }
+    exports.BindIf = BindIf;
+    /**
+     * @private
+     */
+    function BindMessage(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey]);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey]);
+                    }
+                }
+            });
+        };
+    }
+    exports.BindMessage = BindMessage;
+    /**
+     * @private
+     */
+    function BindModuleMessage(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
+                    }
+                }
+            });
+        };
+    }
+    exports.BindModuleMessage = BindModuleMessage;
+    /**
+     * @private
+     */
+    function BindResponse(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
+            listenOnOpen(prototype, propertyKey, null, function (mediator) {
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey]);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey]);
+                    }
+                }
+            });
+        };
+    }
+    exports.BindResponse = BindResponse;
+    /**
+     * @private
+     */
+    function BindModuleResponse(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindManager_2.bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindManager_2.bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
+                    }
+                }
+            });
+        };
+    }
+    exports.BindModuleResponse = BindModuleResponse;
 });
-define("src/trunk/engine/Engine", ["require", "exports", "src/trunk/core/Core", "src/trunk/core/injector/Injector", "src/trunk/engine/bridge/BridgeManager", "src/trunk/engine/bridge/BridgeMessage", "src/trunk/engine/module/ModuleManager", "src/trunk/engine/assets/AssetsManager", "src/trunk/engine/env/Environment", "src/trunk/engine/env/Hash", "src/trunk/engine/version/Version", "src/trunk/engine/module/ModuleMessage"], function (require, exports, Core_26, Injector_19, BridgeManager_3, BridgeMessage_2, ModuleManager_3, AssetsManager_3, Environment_6, Hash_1, Version_3, ModuleMessage_2) {
+define("src/trunk/engine/Engine", ["require", "exports", "src/trunk/core/Core", "src/trunk/core/injector/Injector", "src/trunk/engine/bridge/BridgeManager", "src/trunk/engine/bridge/BridgeMessage", "src/trunk/engine/module/ModuleManager", "src/trunk/engine/assets/AssetsManager", "src/trunk/engine/env/Environment", "src/trunk/engine/env/Hash", "src/trunk/engine/version/Version", "src/trunk/engine/module/ModuleMessage"], function (require, exports, Core_26, Injector_20, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, Version_3, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -73741,7 +74114,7 @@ define("src/trunk/engine/Engine", ["require", "exports", "src/trunk/core/Core", 
                     // 监听Bridge初始化完毕事件，显示第一个模块
                     Core_26.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                     // 注册并初始化表现层桥实例
-                    BridgeManager_3.bridgeManager.registerBridge.apply(BridgeManager_3.bridgeManager, params.bridges);
+                    BridgeManager_4.bridgeManager.registerBridge.apply(BridgeManager_4.bridgeManager, params.bridges);
                 });
             }
         };
@@ -73784,10 +74157,10 @@ define("src/trunk/engine/Engine", ["require", "exports", "src/trunk/core/Core", 
             // 监听首个模块开启
             Core_26.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
-            ModuleManager_3.moduleManager.open(this._initParams.firstModule);
+            ModuleManager_4.moduleManager.open(this._initParams.firstModule);
             // 如果有哈希模块则打开之
             if (Hash_1.hash.moduleName)
-                ModuleManager_3.moduleManager.open(Hash_1.hash.moduleName, Hash_1.hash.params, Hash_1.hash.direct);
+                ModuleManager_4.moduleManager.open(Hash_1.hash.moduleName, Hash_1.hash.params, Hash_1.hash.direct);
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听
@@ -73799,7 +74172,7 @@ define("src/trunk/engine/Engine", ["require", "exports", "src/trunk/core/Core", 
             }
         };
         Engine = __decorate([
-            Injector_19.Injectable
+            Injector_20.Injectable
         ], Engine);
         return Engine;
     }());
@@ -73807,7 +74180,8 @@ define("src/trunk/engine/Engine", ["require", "exports", "src/trunk/core/Core", 
     /** 再额外导出一个单例 */
     exports.engine = Core_26.core.getInject(Engine);
 });
-define("src/trunk/Olympus", ["require", "exports", "src/trunk/engine/Engine"], function (require, exports, Engine_1) {
+/// <amd-module name="Olympus"/>
+define("Olympus", ["require", "exports", "src/trunk/engine/Engine"], function (require, exports, Engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -73836,7 +74210,7 @@ define("src/trunk/Olympus", ["require", "exports", "src/trunk/engine/Engine"], f
     }());
     exports.default = Olympus;
 });
-define("src/branches/dom/mask/MaskEntity", ["require", "exports", "src/trunk/engine/bridge/BridgeManager", "src/branches/DOMBridge"], function (require, exports, BridgeManager_4, DOMBridge_1) {
+define("src/branches/dom/mask/MaskEntity", ["require", "exports", "src/trunk/engine/bridge/BridgeManager", "DOMBridge"], function (require, exports, BridgeManager_5, DOMBridge_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -73885,7 +74259,7 @@ define("src/branches/dom/mask/MaskEntity", ["require", "exports", "src/trunk/eng
                 return;
             this._showing = true;
             // 显示
-            var bridge = BridgeManager_4.bridgeManager.getBridge(DOMBridge_1.default.TYPE);
+            var bridge = BridgeManager_5.bridgeManager.getBridge(DOMBridge_1.default.TYPE);
             bridge.addChild(bridge.maskLayer, this.loadingSkin);
         };
         /**
@@ -73896,7 +74270,7 @@ define("src/branches/dom/mask/MaskEntity", ["require", "exports", "src/trunk/eng
                 return;
             this._showing = false;
             // 隐藏
-            var bridge = BridgeManager_4.bridgeManager.getBridge(DOMBridge_1.default.TYPE);
+            var bridge = BridgeManager_5.bridgeManager.getBridge(DOMBridge_1.default.TYPE);
             bridge.removeChild(bridge.maskLayer, this.loadingSkin);
         };
         /**当前是否在显示loading*/
@@ -73920,7 +74294,8 @@ define("src/branches/dom/mask/MaskEntity", ["require", "exports", "src/trunk/eng
     }());
     exports.default = MaskEntityImpl;
 });
-define("src/branches/DOMBridge", ["require", "exports", "src/trunk/utils/ObjectUtil", "src/trunk/engine/assets/AssetsManager", "src/branches/dom/mask/MaskEntity"], function (require, exports, ObjectUtil_9, AssetsManager_4, MaskEntity_1) {
+/// <amd-module name="DOMBridge"/>
+define("DOMBridge", ["require", "exports", "src/trunk/utils/ObjectUtil", "src/trunk/engine/assets/AssetsManager", "src/branches/dom/mask/MaskEntity"], function (require, exports, ObjectUtil_9, AssetsManager_4, MaskEntity_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -74720,7 +75095,7 @@ define("src/branches/egret/utils/UIUtil", ["require", "exports"], function (requ
         return ItemRenderer;
     }(eui.ItemRenderer));
 });
-define("src/branches/egret/mask/MaskEntity", ["require", "exports", "src/trunk/engine/bridge/BridgeManager", "src/trunk/utils/Dictionary", "src/branches/EgretBridge"], function (require, exports, BridgeManager_5, Dictionary_6, EgretBridge_1) {
+define("src/branches/egret/mask/MaskEntity", ["require", "exports", "src/trunk/engine/bridge/BridgeManager", "src/trunk/utils/Dictionary", "EgretBridge"], function (require, exports, BridgeManager_6, Dictionary_7, EgretBridge_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -74749,7 +75124,7 @@ define("src/branches/egret/mask/MaskEntity", ["require", "exports", "src/trunk/e
             this._mask.touchEnabled = true;
             this._loadingMask = new egret.Shape();
             this._loadingMask.touchEnabled = true;
-            this._modalPanelDict = new Dictionary_6.default();
+            this._modalPanelDict = new Dictionary_7.default();
             this._modalPanelList = [];
             this._modalPanelMask = new egret.Shape();
             this._modalPanelMask.touchEnabled = true;
@@ -74772,7 +75147,7 @@ define("src/branches/egret/mask/MaskEntity", ["require", "exports", "src/trunk/e
                 return;
             this._showingMask = true;
             // 显示
-            var bridge = BridgeManager_5.bridgeManager.getBridge(EgretBridge_1.default.TYPE);
+            var bridge = BridgeManager_6.bridgeManager.getBridge(EgretBridge_1.default.TYPE);
             // 绘制遮罩
             if (alpha == null)
                 alpha = this._maskAlpha;
@@ -74806,7 +75181,7 @@ define("src/branches/egret/mask/MaskEntity", ["require", "exports", "src/trunk/e
                 return;
             this._showingLoading = true;
             // 显示
-            var bridge = BridgeManager_5.bridgeManager.getBridge(EgretBridge_1.default.TYPE);
+            var bridge = BridgeManager_6.bridgeManager.getBridge(EgretBridge_1.default.TYPE);
             // 绘制遮罩
             if (alpha == null)
                 alpha = this._loadingAlpha;
@@ -74844,7 +75219,7 @@ define("src/branches/egret/mask/MaskEntity", ["require", "exports", "src/trunk/e
             this._modalPanelDict.set(panel, panel);
             this._modalPanelList.push(panel);
             // 显示
-            var bridge = BridgeManager_5.bridgeManager.getBridge(EgretBridge_1.default.TYPE);
+            var bridge = BridgeManager_6.bridgeManager.getBridge(EgretBridge_1.default.TYPE);
             // 绘制遮罩
             if (alpha == null)
                 alpha = this._modalPanelAlpha;
@@ -74896,11 +75271,8 @@ define("src/branches/egret/mask/MaskEntity", ["require", "exports", "src/trunk/e
     }());
     exports.default = MaskEntityImpl;
 });
-/// <reference path="./egret/egret-libs/egret/egret.d.ts"/>
-/// <reference path="./egret/egret-libs/eui/eui.d.ts"/>
-/// <reference path="./egret/egret-libs/res/res.d.ts"/>
-/// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
-define("src/branches/EgretBridge", ["require", "exports", "src/trunk/core/Core", "src/trunk/engine/module/ModuleMessage", "src/branches/egret/RenderMode", "src/branches/egret/AssetsLoader", "src/branches/egret/panel/BackPanelPolicy", "src/branches/egret/scene/FadeScenePolicy", "src/branches/egret/mask/MaskEntity"], function (require, exports, Core_27, ModuleMessage_3, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1, MaskEntity_2) {
+/// <amd-module name="EgretBridge"/>
+define("EgretBridge", ["require", "exports", "src/trunk/core/Core", "src/trunk/engine/module/ModuleMessage", "src/branches/egret/RenderMode", "src/branches/egret/AssetsLoader", "src/branches/egret/panel/BackPanelPolicy", "src/branches/egret/scene/FadeScenePolicy", "src/branches/egret/mask/MaskEntity"], function (require, exports, Core_27, ModuleMessage_3, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1, MaskEntity_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -75484,379 +75856,6 @@ define("test/utils/InitParamsUtil", ["require", "exports", "src/trunk/engine/env
     }
     exports.default = getParam;
 });
-define("src/trunk/engine/injector/Injector", ["require", "exports", "src/trunk/core/injector/Injector", "src/trunk/core/message/Message", "src/trunk/utils/ConstructUtil", "src/trunk/engine/net/ResponseData", "src/trunk/engine/net/NetManager", "src/trunk/engine/bridge/BridgeManager", "src/trunk/engine/mediator/Mediator", "src/trunk/engine/module/ModuleManager", "src/trunk/utils/Dictionary", "src/trunk/engine/bind/BindManager"], function (require, exports, Injector_20, Message_3, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_6, Mediator_3, ModuleManager_4, Dictionary_7, BindManager_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-19
-     * @modify date 2017-09-19
-     *
-     * 负责注入的模块
-    */
-    /** 定义数据模型，支持实例注入，并且自身也会被注入 */
-    function ModelClass() {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        // 转调Injectable方法
-        if (this === undefined) {
-            var cls = ConstructUtil_3.wrapConstruct(args[0]);
-            Injector_20.Injectable.call(this, cls);
-            return cls;
-        }
-        else {
-            var result = Injector_20.Injectable.apply(this, args);
-            return function (realCls) {
-                realCls = ConstructUtil_3.wrapConstruct(realCls);
-                result.call(this, realCls);
-                return realCls;
-            };
-        }
-    }
-    exports.ModelClass = ModelClass;
-    /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-    function MediatorClass(cls) {
-        // 判断一下Mediator是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
-        // 监听实例化
-        ConstructUtil_3.listenConstruct(cls, function (instance) {
-            // 替换setSkin方法
-            var $skin;
-            Object.defineProperty(instance, "skin", {
-                configurable: true,
-                enumerable: true,
-                get: function () {
-                    return $skin;
-                },
-                set: function (value) {
-                    // 记录值
-                    $skin = value;
-                    // 根据skin类型选取表现层桥
-                    this.bridge = BridgeManager_6.bridgeManager.getBridgeBySkin(value);
-                }
-            });
-        });
-        return ConstructUtil_3.wrapConstruct(cls);
-    }
-    exports.MediatorClass = MediatorClass;
-    /** 定义模块，支持实例注入 */
-    function ModuleClass(cls) {
-        // 判断一下Module是否有dispose方法，没有的话弹一个警告
-        if (!cls.prototype.dispose)
-            console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
-        // 包装类
-        var wrapperCls = ConstructUtil_3.wrapConstruct(cls);
-        // 注册模块
-        ModuleManager_4.moduleManager.registerModule(wrapperCls);
-        // 返回包装类
-        return wrapperCls;
-    }
-    exports.ModuleClass = ModuleClass;
-    function ModuleMessageHandler(target, key) {
-        if (key) {
-            var defs = Reflect.getMetadata("design:paramtypes", target, key);
-            var resClass = defs[0];
-            if (!(resClass.prototype instanceof Message_3.default))
-                throw new Error("@ModuleMessageHandler装饰器装饰的方法的首个参数必须是Message");
-            doModuleMessageHandler(target.constructor, key, resClass);
-        }
-        else {
-            return function (prototype, propertyKey, descriptor) {
-                doModuleMessageHandler(prototype.constructor, propertyKey, target);
-            };
-        }
-    }
-    exports.ModuleMessageHandler = ModuleMessageHandler;
-    ;
-    function doModuleMessageHandler(cls, key, type) {
-        // 监听实例化
-        ConstructUtil_3.listenConstruct(cls, function (instance) {
-            if (instance instanceof Mediator_3.default) {
-                // 如果是Mediator，则需要等到被托管后再执行注册
-                addDelegateHandler(instance, function () {
-                    instance.dependModuleInstance.listenModule(type, instance[key], instance);
-                });
-            }
-            else {
-                var module = instance.dependModuleInstance;
-                module && module.listenModule(type, instance[key], instance);
-            }
-        });
-        // 监听销毁
-        ConstructUtil_3.listenDispose(cls, function (instance) {
-            var module = instance.dependModuleInstance;
-            module && module.unlistenModule(type, instance[key], instance);
-        });
-    }
-    function ResponseHandler(target, key) {
-        if (key) {
-            var defs = Reflect.getMetadata("design:paramtypes", target, key);
-            var resClass = defs[0];
-            if (!(resClass.prototype instanceof ResponseData_1.default))
-                throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-            doResponseHandler(target.constructor, key, defs[0]);
-        }
-        else {
-            return function (prototype, propertyKey, descriptor) {
-                doResponseHandler(prototype.constructor, propertyKey, target);
-            };
-        }
-    }
-    exports.ResponseHandler = ResponseHandler;
-    function doResponseHandler(cls, key, type) {
-        // 监听实例化
-        ConstructUtil_3.listenConstruct(cls, function (instance) {
-            NetManager_4.netManager.listenResponse(type, instance[key], instance);
-        });
-        // 监听销毁
-        ConstructUtil_3.listenDispose(cls, function (instance) {
-            NetManager_4.netManager.unlistenResponse(type, instance[key], instance);
-        });
-    }
-    var delegateHandlerDict = new Dictionary_7.default();
-    function addDelegateHandler(instance, handler) {
-        if (!instance)
-            return;
-        var handlers = delegateHandlerDict.get(instance);
-        if (!handlers)
-            delegateHandlerDict.set(instance, handlers = []);
-        if (handlers.indexOf(handler) < 0)
-            handlers.push(handler);
-    }
-    /** 在Module内托管Mediator */
-    function DelegateMediator(prototype, propertyKey) {
-        if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
-            // 监听实例化
-            ConstructUtil_3.listenConstruct(prototype.constructor, function (instance) {
-                // 实例化
-                var mediator = instance[propertyKey];
-                if (mediator === undefined) {
-                    var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
-                    instance[propertyKey] = mediator = new cls();
-                }
-                // 赋值所属模块
-                mediator["_dependModuleInstance"] = instance;
-                mediator["_dependModule"] = ConstructUtil_3.getConstructor(prototype.constructor);
-                // 执行回调
-                var handlers = delegateHandlerDict.get(mediator);
-                if (handlers) {
-                    for (var _i = 0, handlers_1 = handlers; _i < handlers_1.length; _i++) {
-                        var handler = handlers_1[_i];
-                        handler(mediator);
-                    }
-                    // 移除记录
-                    delegateHandlerDict.delete(mediator);
-                }
-            });
-            // 监听销毁
-            ConstructUtil_3.listenDispose(prototype.constructor, function (instance) {
-                var mediator = instance[propertyKey];
-                if (mediator) {
-                    // 移除所属模块
-                    mediator["_dependModuleInstance"] = undefined;
-                    mediator["_dependModule"] = undefined;
-                    // 移除实例
-                    instance[propertyKey] = undefined;
-                }
-            });
-            // 篡改属性
-            var mediator;
-            return {
-                configurable: true,
-                enumerable: true,
-                get: function () {
-                    return mediator;
-                },
-                set: function (value) {
-                    if (value == mediator)
-                        return;
-                    // 取消托管中介者
-                    if (mediator) {
-                        this.undelegateMediator(mediator);
-                    }
-                    // 设置中介者
-                    mediator = value;
-                    // 托管新的中介者
-                    if (mediator) {
-                        this.delegateMediator(mediator);
-                    }
-                }
-            };
-        }
-    }
-    exports.DelegateMediator = DelegateMediator;
-    function listenOnOpen(prototype, propertyKey, before, after) {
-        ConstructUtil_3.listenConstruct(prototype.constructor, function (mediator) {
-            // 篡改onOpen方法
-            var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-            mediator.onOpen = function () {
-                var args = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    args[_i] = arguments[_i];
-                }
-                // 调用回调
-                before && before(mediator);
-                // 恢复原始方法
-                if (oriFunc)
-                    mediator.onOpen = oriFunc;
-                else
-                    delete mediator.onOpen;
-                // 调用原始方法
-                mediator.onOpen.apply(this, args);
-                // 调用回调
-                after && after(mediator);
-            };
-        });
-    }
-    /**
-     * @private
-     */
-    function BindValue(arg1, arg2) {
-        return function (prototype, propertyKey) {
-            listenOnOpen(prototype, propertyKey, function (mediator) {
-                // 组织参数字典
-                var uiDict;
-                if (typeof arg1 == "string") {
-                    uiDict = {};
-                    uiDict[arg1] = arg2;
-                }
-                else {
-                    uiDict = arg1;
-                }
-                BindManager_2.bindManager.bindValue(mediator, uiDict, mediator[propertyKey]);
-            });
-        };
-    }
-    exports.BindValue = BindValue;
-    /**
-     * @private
-     */
-    function BindOn(arg1, arg2) {
-        return function (prototype, propertyKey) {
-            listenOnOpen(prototype, propertyKey, function (mediator) {
-                // 组织参数字典
-                var evtDict;
-                if (typeof arg1 == "string") {
-                    evtDict = {};
-                    evtDict[arg1] = arg2;
-                }
-                else {
-                    evtDict = arg1;
-                }
-                BindManager_2.bindManager.bindOn(mediator, evtDict, mediator[propertyKey]);
-            });
-        };
-    }
-    exports.BindOn = BindOn;
-    /**
-     * @private
-     */
-    function BindIf(arg1, arg2) {
-        return function (prototype, propertyKey) {
-            listenOnOpen(prototype, propertyKey, function (mediator) {
-                // 组织参数字典
-                var uiDict;
-                if (typeof arg1 == "string") {
-                    uiDict = {};
-                    if (arg2)
-                        uiDict[arg1] = arg2; // 有name寻址
-                    else
-                        uiDict["$target"] = arg1; // 没有name寻址，直接绑定表达式
-                }
-                else {
-                    uiDict = arg1;
-                }
-                BindManager_2.bindManager.bindIf(mediator, uiDict, mediator[propertyKey]);
-            });
-        };
-    }
-    exports.BindIf = BindIf;
-    /**
-     * @private
-     */
-    function BindMessage(arg1, arg2) {
-        return function (prototype, propertyKey) {
-            listenOnOpen(prototype, propertyKey, function (mediator) {
-                if (typeof arg1 == "string" || arg1 instanceof Function) {
-                    // 是类型方式
-                    BindManager_2.bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey]);
-                }
-                else {
-                    // 是字典方式
-                    for (var type in arg1) {
-                        BindManager_2.bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey]);
-                    }
-                }
-            });
-        };
-    }
-    exports.BindMessage = BindMessage;
-    /**
-     * @private
-     */
-    function BindModuleMessage(arg1, arg2) {
-        return function (prototype, propertyKey) {
-            listenOnOpen(prototype, propertyKey, function (mediator) {
-                if (typeof arg1 == "string" || arg1 instanceof Function) {
-                    // 是类型方式
-                    BindManager_2.bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
-                }
-                else {
-                    // 是字典方式
-                    for (var type in arg1) {
-                        BindManager_2.bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
-                    }
-                }
-            });
-        };
-    }
-    exports.BindModuleMessage = BindModuleMessage;
-    /**
-     * @private
-     */
-    function BindResponse(arg1, arg2) {
-        return function (prototype, propertyKey) {
-            // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
-            listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                if (typeof arg1 == "string" || arg1 instanceof Function) {
-                    // 是类型方式
-                    BindManager_2.bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey]);
-                }
-                else {
-                    // 是字典方式
-                    for (var type in arg1) {
-                        BindManager_2.bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey]);
-                    }
-                }
-            });
-        };
-    }
-    exports.BindResponse = BindResponse;
-    /**
-     * @private
-     */
-    function BindModuleResponse(arg1, arg2) {
-        return function (prototype, propertyKey) {
-            listenOnOpen(prototype, propertyKey, function (mediator) {
-                if (typeof arg1 == "string" || arg1 instanceof Function) {
-                    // 是类型方式
-                    BindManager_2.bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
-                }
-                else {
-                    // 是字典方式
-                    for (var type in arg1) {
-                        BindManager_2.bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
-                    }
-                }
-            });
-        };
-    }
-    exports.BindModuleResponse = BindModuleResponse;
-});
 define("src/branches/egret/utils/SkinUtil", ["require", "exports", "src/trunk/engine/scene/SceneMediator"], function (require, exports, SceneMediator_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -75901,7 +75900,7 @@ define("src/branches/egret/utils/SkinUtil", ["require", "exports", "src/trunk/en
     }
     exports.wrapSkin = wrapSkin;
 });
-define("src/branches/egret/injector/Injector", ["require", "exports", "src/trunk/utils/ConstructUtil", "src/trunk/engine/injector/Injector", "src/trunk/engine/bridge/BridgeManager", "src/branches/egret/utils/SkinUtil", "src/branches/EgretBridge"], function (require, exports, ConstructUtil_4, Injector_21, BridgeManager_7, SkinUtil_1, EgretBridge_2) {
+define("src/branches/egret/injector/Injector", ["require", "exports", "src/trunk/utils/ConstructUtil", "src/trunk/engine/injector/Injector", "src/trunk/engine/bridge/BridgeManager", "src/branches/egret/utils/SkinUtil", "EgretBridge"], function (require, exports, ConstructUtil_4, Injector_21, BridgeManager_7, SkinUtil_1, EgretBridge_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -76239,7 +76238,7 @@ define("src/branches/dom/utils/SkinUtil", ["require", "exports", "src/trunk/engi
         }
     }
 });
-define("src/branches/dom/injector/Injector", ["require", "exports", "src/trunk/utils/ConstructUtil", "src/trunk/engine/injector/Injector", "src/trunk/engine/bridge/BridgeManager", "src/branches/DOMBridge", "src/branches/dom/utils/SkinUtil"], function (require, exports, ConstructUtil_5, Injector_27, BridgeManager_8, DOMBridge_2, SkinUtil_2) {
+define("src/branches/dom/injector/Injector", ["require", "exports", "src/trunk/utils/ConstructUtil", "src/trunk/engine/injector/Injector", "src/trunk/engine/bridge/BridgeManager", "src/branches/dom/utils/SkinUtil", "DOMBridge"], function (require, exports, ConstructUtil_5, Injector_27, BridgeManager_8, SkinUtil_2, DOMBridge_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function DOMMediatorClass() {
@@ -76390,7 +76389,7 @@ define("test/modules/FirstModule", ["require", "exports", "src/trunk/engine/modu
     exports.default = FirstModule;
 });
 /// <amd-module name="main"/>
-define("main", ["require", "exports", "src/trunk/Olympus", "src/trunk/engine/env/Environment", "src/branches/DOMBridge", "src/branches/EgretBridge", "test/utils/InitParamsUtil", "test/modules/FirstModule"], function (require, exports, Olympus_1, Environment_8, DOMBridge_3, EgretBridge_3, InitParamsUtil_1, FirstModule_1) {
+define("main", ["require", "exports", "Olympus", "src/trunk/engine/env/Environment", "DOMBridge", "EgretBridge", "test/utils/InitParamsUtil", "test/modules/FirstModule"], function (require, exports, Olympus_1, Environment_8, DOMBridge_3, EgretBridge_3, InitParamsUtil_1, FirstModule_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
