@@ -2,7 +2,7 @@ import { listenConstruct } from "utils/ConstructUtil";
 import { MediatorClass } from "engine/injector/Injector";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import { wrapSkin } from "../utils/SkinUtil";
-import EgretBridge from "../EgretBridge";
+import DOMBridge from "../../DOMBridge";
 
 /**
  * @author Raykid
@@ -12,26 +12,16 @@ import EgretBridge from "../EgretBridge";
  * 
  * 负责注入的模块
 */
-
-export function EgretSkin(skin:any):ClassDecorator
+export function DOMMediatorClass(cls:IConstructor):any
+export function DOMMediatorClass(...skins:string[]):ClassDecorator
+export function DOMMediatorClass(...args:any[]):any
 {
-    return function(cls:IConstructor):void
-    {
-        // 监听类型实例化，转换皮肤格式
-        listenConstruct(cls, mediator=>wrapSkin(mediator, skin));
-    } as ClassDecorator;
-}
-
-export function EgretMediatorClass(cls:IConstructor):any
-export function EgretMediatorClass(skin:string):ClassDecorator
-export function EgretMediatorClass(target:IConstructor|string):any
-{
-    if(target instanceof Function)
+    if(args[0] instanceof Function)
     {
         // 调用MediatorClass方法
-        var cls = MediatorClass(target);
+        var cls = MediatorClass(args[0]);
         // 监听类型实例化，赋值表现层桥
-        listenConstruct(cls, mediator=>mediator.bridge = bridgeManager.getBridge(EgretBridge.TYPE));
+        listenConstruct(cls, mediator=>mediator.bridge = bridgeManager.getBridge(DOMBridge.TYPE));
         // 返回结果类型
         return cls;
     }
@@ -42,7 +32,7 @@ export function EgretMediatorClass(target:IConstructor|string):any
             // 调用MediatorClass方法
             cls = MediatorClass(cls);
             // 监听类型实例化，转换皮肤格式
-            listenConstruct(cls, mediator=>wrapSkin(mediator, target));
+            listenConstruct(cls, mediator=>wrapSkin(mediator, args));
             // 返回结果类型
             return cls;
         } as ClassDecorator;

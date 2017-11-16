@@ -1,9 +1,9 @@
-/// <reference path="../src/egret-libs/egret/egret.d.ts" />
-/// <reference path="../src/egret-libs/eui/eui.d.ts" />
-/// <reference path="../src/egret-libs/res/res.d.ts" />
-/// <reference path="../src/egret-libs/tween/tween.d.ts" />
+/// <reference path="../src/egret/egret-libs/egret/egret.d.ts" />
+/// <reference path="../src/egret/egret-libs/eui/eui.d.ts" />
+/// <reference path="../src/egret/egret-libs/res/res.d.ts" />
+/// <reference path="../src/egret/egret-libs/tween/tween.d.ts" />
 /// <reference types="olympus-r" />
-declare module "RenderMode" {
+declare module "egret/RenderMode" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -19,7 +19,7 @@ declare module "RenderMode" {
     }
     export default RenderMode;
 }
-declare module "AssetsLoader" {
+declare module "egret/AssetsLoader" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -60,7 +60,7 @@ declare module "AssetsLoader" {
         loadGroups(groups: (string | IGroupParams)[]): void;
     }
 }
-declare module "utils/TweenUtil" {
+declare module "egret/utils/TweenUtil" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -72,7 +72,7 @@ declare module "utils/TweenUtil" {
     export function tweenTo(target: any, props: any, duration?: number, ease?: Function): egret.Tween;
     export function tweenFrom(target: any, props: any, duration?: number, ease?: Function): egret.Tween;
 }
-declare module "panel/BackPanelPolicy" {
+declare module "egret/panel/BackPanelPolicy" {
     import IPanelPolicy from "engine/panel/IPanelPolicy";
     import IPanel from "engine/panel/IPanel";
     /**
@@ -106,7 +106,7 @@ declare module "panel/BackPanelPolicy" {
         }): void;
     }
 }
-declare module "scene/FadeScenePolicy" {
+declare module "egret/scene/FadeScenePolicy" {
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IScene from "engine/scene/IScene";
     /**
@@ -135,7 +135,7 @@ declare module "scene/FadeScenePolicy" {
         switch(from: IScene, to: IScene, callback: () => void): void;
     }
 }
-declare module "utils/UIUtil" {
+declare module "egret/utils/UIUtil" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -153,7 +153,7 @@ declare module "utils/UIUtil" {
      */
     export function wrapEUIList(group: eui.DataGroup, rendererHandler: (data?: any, renderer?: any) => void): void;
 }
-declare module "mask/MaskEntity" {
+declare module "egret/mask/MaskEntity" {
     import { IMaskEntity } from "engine/mask/MaskManager";
     import IPanel from "engine/panel/IPanel";
     import IMaskData from "engine/mask/IMaskData";
@@ -215,6 +215,31 @@ declare module "mask/MaskEntity" {
         loadingSkinFactory?: () => egret.DisplayObject;
     }
 }
+declare module "egret/utils/SkinUtil" {
+    import IMediator from "engine/mediator/IMediator";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * Egret皮肤工具集
+    */
+    export function wrapSkin(mediator: IMediator, skin: any): eui.Component;
+}
+declare module "egret/injector/Injector" {
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-09
+     * @modify date 2017-10-09
+     *
+     * 负责注入的模块
+    */
+    export function EgretSkin(skin: any): ClassDecorator;
+    export function EgretMediatorClass(cls: IConstructor): any;
+    export function EgretMediatorClass(skin: string): ClassDecorator;
+}
 declare module "EgretBridge" {
     import IBridge from "engine/bridge/IBridge";
     import { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
@@ -222,8 +247,8 @@ declare module "EgretBridge" {
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
     import { IMaskEntity } from "engine/mask/MaskManager";
-    import RenderMode from "RenderMode";
-    import { MaskData } from "mask/MaskEntity";
+    import RenderMode from "egret/RenderMode";
+    import { MaskData } from "egret/mask/MaskEntity";
     /**
      * @author Raykid
      * @email initial_r@qq.com

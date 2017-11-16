@@ -4,7 +4,7 @@ import IBridge from "engine/bridge/IBridge";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import Dictionary from "utils/Dictionary";
 import IMaskData from "engine/mask/IMaskData";
-import EgretBridge from "../EgretBridge";
+import EgretBridge from "../../EgretBridge";
 
 /**
  * @author Raykid

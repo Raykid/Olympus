@@ -1,9 +1,9 @@
 /// <amd-module name="EgretBridge"/>
 /// <reference types="olympus-r"/>
-/// <reference path="./egret-libs/egret/egret.d.ts"/>
-/// <reference path="./egret-libs/eui/eui.d.ts"/>
-/// <reference path="./egret-libs/res/res.d.ts"/>
-/// <reference path="./egret-libs/tween/tween.d.ts"/>
+/// <reference path="./egret/egret-libs/egret/egret.d.ts"/>
+/// <reference path="./egret/egret-libs/eui/eui.d.ts"/>
+/// <reference path="./egret/egret-libs/res/res.d.ts"/>
+/// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
 
 import { core } from "core/Core";
 import IBridge from "engine/bridge/IBridge";
@@ -13,12 +13,13 @@ import IPanelPolicy from "engine/panel/IPanelPolicy";
 import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
 import { IMaskEntity } from "engine/mask/MaskManager";
-import RenderMode from "./RenderMode";
-import AssetsLoader, { IItemDict, IResourceDict } from "./AssetsLoader";
-import BackPanelPolicy from "./panel/BackPanelPolicy";
-import FadeScenePolicy from "./scene/FadeScenePolicy";
-import * as UIUtil from "./utils/UIUtil";
-import MaskEntity, { MaskData } from "./mask/MaskEntity";
+import RenderMode from "./egret/RenderMode";
+import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
+import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
+import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
+import * as UIUtil from "./egret/utils/UIUtil";
+import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
+import * as Injector from "./egret/injector/Injector";
 
 /**
  * @author Raykid

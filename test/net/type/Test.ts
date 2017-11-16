@@ -1,5 +1,4 @@
-import DataType from "../../../src/trunk/engine/net/DataType";
-import * as NetUtil from "../../../src/trunk/engine/net/NetUtil";
+import DataType from "engine/net/DataType";
 
 /**
  * @author TemplateGenerator

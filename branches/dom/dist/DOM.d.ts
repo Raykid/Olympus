@@ -1,5 +1,5 @@
 /// <reference types="olympus-r" />
-declare module "mask/MaskEntity" {
+declare module "dom/mask/MaskEntity" {
     import { IMaskEntity } from "engine/mask/MaskManager";
     import IPanel from "engine/panel/IPanel";
     import IMaskData from "engine/mask/IMaskData";
@@ -47,7 +47,7 @@ declare module "mask/MaskEntity" {
         loadingSkin?: HTMLElement | string;
     }
 }
-declare module "utils/SkinUtil" {
+declare module "dom/utils/SkinUtil" {
     import IMediator from "engine/mediator/IMediator";
     /**
      * @author Raykid
@@ -67,7 +67,7 @@ declare module "utils/SkinUtil" {
      */
     export function wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
 }
-declare module "injector/Injector" {
+declare module "dom/injector/Injector" {
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -86,7 +86,7 @@ declare module "DOMBridge" {
     import IScenePolicy from "engine/scene/IScenePolicy";
     import IMediator from "engine/mediator/IMediator";
     import { IMaskEntity } from "engine/mask/MaskManager";
-    import { MaskData } from "mask/MaskEntity";
+    import { MaskData } from "dom/mask/MaskEntity";
     /**
      * @author Raykid
      * @email initial_r@qq.com

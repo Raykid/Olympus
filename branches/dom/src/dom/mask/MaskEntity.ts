@@ -3,7 +3,7 @@ import IBridge from "engine/bridge/IBridge";
 import { bridgeManager } from "engine/bridge/BridgeManager";
 import IPanel from "engine/panel/IPanel";
 import IMaskData from "engine/mask/IMaskData";
-import DOMBridge from "../DOMBridge";
+import DOMBridge from "../../DOMBridge";
 
 /**
  * @author Raykid

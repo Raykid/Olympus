@@ -1,6 +1,6 @@
-import { ModelClass } from "../../src/trunk/engine/injector/Injector";
-import { Inject } from "../../src/trunk/core/injector/Injector";
-import Hash from "../../src/trunk/engine/env/Hash";
+import { ModelClass } from "engine/injector/Injector";
+import { Inject } from "core/injector/Injector";
+import Hash from "engine/env/Hash";
 
 export class IFuckModel
 {

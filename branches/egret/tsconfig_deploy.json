@@ -8,10 +8,11 @@
     "outFile": "dist/Egret.js"
   },
   "files": [
-    "src/egret-libs/egret/egret.js",
-    "src/egret-libs/res/res.js",
-    "src/egret-libs/eui/eui.js",
-    "src/egret-libs/tween/tween.js",
+    "src/egret/egret-libs/egret/egret.js",
+    "src/egret/egret-libs/egret/egret.web.js",
+    "src/egret/egret-libs/res/res.js",
+    "src/egret/egret-libs/eui/eui.js",
+    "src/egret/egret-libs/tween/tween.js",
     "src/EgretBridge.ts"
   ],
   "exclude": [

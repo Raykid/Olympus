@@ -1,4 +1,4 @@
-define("mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeManager", "DOMBridge"], function (require, exports, BridgeManager_1, DOMBridge_1) {
+define("dom/mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeManager", "DOMBridge"], function (require, exports, BridgeManager_1, DOMBridge_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -82,7 +82,7 @@ define("mask/MaskEntity", ["require", "exports", "engine/bridge/BridgeManager", 
     }());
     exports.default = MaskEntityImpl;
 });
-define("utils/SkinUtil", ["require", "exports", "engine/assets/AssetsManager"], function (require, exports, AssetsManager_1) {
+define("dom/utils/SkinUtil", ["require", "exports", "engine/assets/AssetsManager"], function (require, exports, AssetsManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -155,7 +155,7 @@ define("utils/SkinUtil", ["require", "exports", "engine/assets/AssetsManager"], 
         }
     }
 });
-define("injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager", "utils/SkinUtil", "DOMBridge"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_2, SkinUtil_1, DOMBridge_2) {
+define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "engine/injector/Injector", "engine/bridge/BridgeManager", "dom/utils/SkinUtil", "DOMBridge"], function (require, exports, ConstructUtil_1, Injector_1, BridgeManager_2, SkinUtil_1, DOMBridge_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function DOMMediatorClass() {
@@ -186,7 +186,7 @@ define("injector/Injector", ["require", "exports", "utils/ConstructUtil", "engin
 });
 /// <amd-module name="DOMBridge"/>
 /// <reference types="olympus-r"/>
-define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/AssetsManager", "mask/MaskEntity"], function (require, exports, ObjectUtil_1, AssetsManager_2, MaskEntity_1) {
+define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/AssetsManager", "dom/mask/MaskEntity"], function (require, exports, ObjectUtil_1, AssetsManager_2, MaskEntity_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

@@ -1,13 +1,15 @@
 /// <amd-module name="main"/>
-
+/// <reference path="../trunk/dist/Olympus.d.ts"/>
+/// <reference path="../branches/dom/dist/DOM.d.ts"/>
+/// <reference path="../branches/egret/dist/Egret.d.ts"/>
 /// <reference path="egret/libs/exml.e.d.ts"/>
 
-import Olympus from "../trunk/src/Olympus";
-import { environment } from "../trunk/src/engine/env/Environment";
-import DOMBridge from "../branches/dom/src/DOMBridge";
-import EgretBridge from "../branches/egret/src/EgretBridge";
 import getParam from "./utils/InitParamsUtil";
 import FirstModule from "./modules/FirstModule";
+import Olympus from "Olympus";
+import { environment } from "engine/env/Environment";
+import DOMBridge from "DOMBridge";
+import EgretBridge from "EgretBridge";
 
 /**
  * @author Raykid

@@ -9,12 +9,9 @@
     "outFile": "main.js"
   },
   "files": [
-    "../src/trunk/libs/Reflect.js",
-    "../src/branches/egret/egret-libs/egret/egret.js",
-    "../src/branches/egret/egret-libs/egret/egret.web.js",
-    "../src/branches/egret/egret-libs/res/res.js",
-    "../src/branches/egret/egret-libs/eui/eui.js",
-    "../src/branches/egret/egret-libs/tween/tween.js",
+    "../trunk/dist/Olympus.js",
+    "../branches/dom/dist/DOM.js",
+    "../branches/egret/dist/Egret.js",
     "main.ts"
   ],
   "exclude": [

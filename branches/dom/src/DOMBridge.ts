@@ -9,8 +9,8 @@ import IScenePolicy from "engine/scene/IScenePolicy";
 import IMediator from "engine/mediator/IMediator";
 import { IMaskEntity } from "engine/mask/MaskManager";
 import { assetsManager } from "engine/assets/AssetsManager";
-import MaskEntity, { MaskData } from "./mask/MaskEntity";
-import * as Injector from "./injector/Injector";
+import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
+import * as Injector from "./dom/injector/Injector";
 
 /**
  * @author Raykid
