@@ -1,5 +1,5 @@
-import IMediator from "../../../trunk/engine/mediator/IMediator";
-import { assetsManager } from "../../../trunk/engine/assets/AssetsManager";
+import IMediator from "engine/mediator/IMediator";
+import { assetsManager } from "engine/assets/AssetsManager";
 
 /**
  * @author Raykid

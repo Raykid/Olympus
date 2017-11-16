@@ -1,18 +1,18 @@
 /// <amd-module name="EgretBridge"/>
-
+/// <reference path="../../../dist/Olympus.d.ts"/>
 /// <reference path="./egret-libs/egret/egret.d.ts"/>
 /// <reference path="./egret-libs/eui/eui.d.ts"/>
 /// <reference path="./egret-libs/res/res.d.ts"/>
 /// <reference path="./egret-libs/tween/tween.d.ts"/>
 
-import { core } from "../../trunk/core/Core";
-import IBridge from "../../trunk/engine/bridge/IBridge";
-import ModuleMessage from "../../trunk/engine/module/ModuleMessage";
-import IPromptPanel, { IPromptPanelConstructor } from "../../trunk/engine/panel/IPromptPanel";
-import IPanelPolicy from "../../trunk/engine/panel/IPanelPolicy";
-import IScenePolicy from "../../trunk/engine/scene/IScenePolicy";
-import IMediator from "../../trunk/engine/mediator/IMediator";
-import { IMaskEntity } from "../../trunk/engine/mask/MaskManager";
+import { core } from "core/Core";
+import IBridge from "engine/bridge/IBridge";
+import ModuleMessage from "engine/module/ModuleMessage";
+import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
+import IPanelPolicy from "engine/panel/IPanelPolicy";
+import IScenePolicy from "engine/scene/IScenePolicy";
+import IMediator from "engine/mediator/IMediator";
+import { IMaskEntity } from "engine/mask/MaskManager";
 import RenderMode from "./RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./AssetsLoader";
 import BackPanelPolicy from "./panel/BackPanelPolicy";

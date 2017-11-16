@@ -1,5 +1,5 @@
-import IScenePolicy from "../../../trunk/engine/scene/IScenePolicy";
-import IScene from "../../../trunk/engine/scene/IScene";
+import IScenePolicy from "engine/scene/IScenePolicy";
+import IScene from "engine/scene/IScene";
 
 /**
  * @author Raykid

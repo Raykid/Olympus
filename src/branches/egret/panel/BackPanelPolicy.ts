@@ -1,5 +1,5 @@
-import IPanelPolicy from "../../../trunk/engine/panel/IPanelPolicy";
-import IPanel from "../../../trunk/engine/panel/IPanel";
+import IPanelPolicy from "engine/panel/IPanelPolicy";
+import IPanel from "engine/panel/IPanel";
 import { tweenFrom, tweenTo } from "../utils/TweenUtil";
 
 /**

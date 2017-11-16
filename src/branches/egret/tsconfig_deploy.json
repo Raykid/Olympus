@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowJs": true,
+    "outFile": "../../../dist/Egret.js"
+  },
+  "files": [
+    "egret-libs/egret/egret.js",
+    "egret-libs/res/res.js",
+    "egret-libs/eui/eui.js",
+    "egret-libs/tween/tween.js",
+    "EgretBridge.ts"
+  ],
+  "exclude": [
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowJs": true,
+    "outFile": "../dist/index.js"
+  },
+  "include": [
+    "trunk/libs/Reflect.js",
+    "branches/egret/egret-libs/egret/egret.js",
+    "branches/egret/egret-libs/res/res.js",
+    "branches/egret/egret-libs/eui/eui.js",
+    "branches/egret/egret-libs/tween/tween.js",
+    "index.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

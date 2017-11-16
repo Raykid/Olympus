@@ -1,9 +1,9 @@
-import { IMaskEntity } from "../../../trunk/engine/mask/MaskManager";
-import IPanel from "../../../trunk/engine/panel/IPanel";
-import IBridge from "../../../trunk/engine/bridge/IBridge";
-import { bridgeManager } from "../../../trunk/engine/bridge/BridgeManager";
-import Dictionary from "../../../trunk/utils/Dictionary";
-import IMaskData from "../../../trunk/engine/mask/IMaskData";
+import { IMaskEntity } from "engine/mask/MaskManager";
+import IPanel from "engine/panel/IPanel";
+import IBridge from "engine/bridge/IBridge";
+import { bridgeManager } from "engine/bridge/BridgeManager";
+import Dictionary from "utils/Dictionary";
+import IMaskData from "engine/mask/IMaskData";
 import EgretBridge from "../EgretBridge";
 
 /**

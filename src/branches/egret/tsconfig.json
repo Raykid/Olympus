@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "outFile": "../../../dist/Egret.js"
+  },
+  "files": [
+    "EgretBridge.ts"
+  ],
+  "exclude": [
+  ]
+}

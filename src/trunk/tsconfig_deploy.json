@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "target": "es5",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowJs": true,
+    "outFile": "../../dist/Olympus.js"
+  },
+  "files": [
+    "libs/Reflect.js",
+    "Olympus.ts"
+  ],
+  "exclude": [
+  ]
+}
