@@ -5,10 +5,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "declaration": true,
-    "outFile": "../../../dist/Egret.js"
+    "outFile": "dist/DOM.js"
   },
   "files": [
-    "EgretBridge.ts"
+    "src/DOMBridge.ts"
   ],
   "exclude": [
   ]

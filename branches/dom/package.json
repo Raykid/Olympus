@@ -1,0 +1,27 @@
+{
+  "name": "olympus-r-dom",
+  "version": "0.0.2",
+  "description": "Olympus的DOM表现层库",
+  "main": "dist/DOM.js",
+  "types": "dist/DOM.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Raykid/Olympus.git"
+  },
+  "keywords": [
+    "Olympus",
+    "DOM"
+  ],
+  "author": "raykid",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Raykid/Olympus/issues"
+  },
+  "homepage": "https://github.com/Raykid/Olympus#readme",
+  "dependencies": {
+    "olympus-r": "0.0.7"
+  }
+}

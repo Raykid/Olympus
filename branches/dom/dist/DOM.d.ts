@@ -1,4 +1,4 @@
-/// <reference path="Olympus.d.ts" />
+/// <reference types="olympus-r" />
 declare module "mask/MaskEntity" {
     import { IMaskEntity } from "engine/mask/MaskManager";
     import IPanel from "engine/panel/IPanel";

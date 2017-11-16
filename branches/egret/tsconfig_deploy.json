@@ -5,14 +5,14 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "allowJs": true,
-    "outFile": "../../../dist/Egret.js"
+    "outFile": "dist/Egret.js"
   },
   "files": [
-    "egret-libs/egret/egret.js",
-    "egret-libs/res/res.js",
-    "egret-libs/eui/eui.js",
-    "egret-libs/tween/tween.js",
-    "EgretBridge.ts"
+    "src/egret-libs/egret/egret.js",
+    "src/egret-libs/res/res.js",
+    "src/egret-libs/eui/eui.js",
+    "src/egret-libs/tween/tween.js",
+    "src/EgretBridge.ts"
   ],
   "exclude": [
   ]

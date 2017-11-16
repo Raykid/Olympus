@@ -1,5 +1,5 @@
 /// <amd-module name="EgretBridge"/>
-/// <reference path="../../../dist/Olympus.d.ts"/>
+/// <reference types="olympus-r"/>
 /// <reference path="./egret-libs/egret/egret.d.ts"/>
 /// <reference path="./egret-libs/eui/eui.d.ts"/>
 /// <reference path="./egret-libs/res/res.d.ts"/>

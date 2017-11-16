@@ -1,5 +1,5 @@
 /// <amd-module name="DOMBridge"/>
-/// <reference path="../../../dist/Olympus.d.ts"/>
+/// <reference types="olympus-r"/>
 
 import IBridge from "engine/bridge/IBridge";
 import { getObjectHashs } from "utils/ObjectUtil";

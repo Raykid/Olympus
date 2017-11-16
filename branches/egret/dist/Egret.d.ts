@@ -1,8 +1,8 @@
-/// <reference path="Olympus.d.ts" />
-/// <reference path="../src/branches/egret/egret-libs/egret/egret.d.ts" />
-/// <reference path="../src/branches/egret/egret-libs/eui/eui.d.ts" />
-/// <reference path="../src/branches/egret/egret-libs/res/res.d.ts" />
-/// <reference path="../src/branches/egret/egret-libs/tween/tween.d.ts" />
+/// <reference path="../src/egret-libs/egret/egret.d.ts" />
+/// <reference path="../src/egret-libs/eui/eui.d.ts" />
+/// <reference path="../src/egret-libs/res/res.d.ts" />
+/// <reference path="../src/egret-libs/tween/tween.d.ts" />
+/// <reference types="olympus-r" />
 declare module "RenderMode" {
     /**
      * @author Raykid

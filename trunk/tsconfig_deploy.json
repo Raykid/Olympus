@@ -4,13 +4,13 @@
     "target": "es5",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "declaration": true,
-    "outFile": "../dist/index.js"
+    "allowJs": true,
+    "outFile": "dist/Olympus.js"
   },
-  "include": [
-    "index.ts"
+  "files": [
+    "src/libs/Reflect.js",
+    "src/Olympus.ts"
   ],
   "exclude": [
-    "node_modules"
   ]
 }

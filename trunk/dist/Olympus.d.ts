@@ -1,4 +1,4 @@
-/// <reference path="../src/trunk/libs/Reflect.d.ts" />
+/// <reference path="../src/libs/Reflect.d.ts" />
 declare module "utils/ObjectUtil" {
     /**
      * @author Raykid

@@ -2,10 +2,10 @@
 
 /// <reference path="egret/libs/exml.e.d.ts"/>
 
-import Olympus from "../src/trunk/Olympus";
-import { environment } from "../src/trunk/engine/env/Environment";
-import DOMBridge from "../src/branches/dom/DOMBridge";
-import EgretBridge from "../src/branches/egret/EgretBridge";
+import Olympus from "../trunk/src/Olympus";
+import { environment } from "../trunk/src/engine/env/Environment";
+import DOMBridge from "../branches/dom/src/DOMBridge";
+import EgretBridge from "../branches/egret/src/EgretBridge";
 import getParam from "./utils/InitParamsUtil";
 import FirstModule from "./modules/FirstModule";
 

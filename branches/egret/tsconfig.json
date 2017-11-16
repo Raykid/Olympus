@@ -5,10 +5,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "declaration": true,
-    "outFile": "../../dist/Olympus.js"
+    "outFile": "dist/Egret.js"
   },
   "files": [
-    "Olympus.ts"
+    "src/EgretBridge.ts"
   ],
   "exclude": [
   ]

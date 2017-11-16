@@ -5,10 +5,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "declaration": true,
-    "outFile": "../../../dist/DOM.js"
+    "outFile": "dist/Olympus.js"
   },
   "files": [
-    "DOMBridge.ts"
+    "src/Olympus.ts"
   ],
   "exclude": [
   ]

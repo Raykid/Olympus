@@ -185,7 +185,7 @@ define("injector/Injector", ["require", "exports", "utils/ConstructUtil", "engin
     exports.DOMMediatorClass = DOMMediatorClass;
 });
 /// <amd-module name="DOMBridge"/>
-/// <reference path="../../../dist/Olympus.d.ts"/>
+/// <reference types="olympus-r"/>
 define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/AssetsManager", "mask/MaskEntity"], function (require, exports, ObjectUtil_1, AssetsManager_2, MaskEntity_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
