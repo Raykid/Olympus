@@ -66130,10 +66130,23 @@ define("egret/utils/UIUtil", ["require", "exports"], function (require, exports)
      *
      * @export
      * @param {eui.DataGroup} group 被包装的DataGroup组件
-     * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器处理函数，每次数据更新时会被调用
+     * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器处理函数，每次数据更新时会被调用，处理单个渲染器的渲染逻辑
+     * @param {(datas?:eui.ICollection, group?:eui.DataGroup)=>void} [updateHandler] 数据更新处理函数，每次显示更新时会被调用，处理列表显示更新后的渲染逻辑
      */
-    function wrapEUIList(group, rendererHandler) {
+    function wrapEUIList(group, rendererHandler, updateHandler) {
         group.itemRenderer = ItemRenderer.bind(null, group.itemRendererSkinName, rendererHandler);
+        if (updateHandler) {
+            // 监听group尺寸是否改变
+            var enterFrameHandler = function () {
+                if (group.contentWidth > 0 || group.contentHeight > 0) {
+                    // 移除事件监听
+                    group.removeEventListener(egret.Event.ENTER_FRAME, enterFrameHandler, this);
+                    // 调用回调
+                    updateHandler(group.dataProvider, group);
+                }
+            };
+            group.addEventListener(egret.Event.ENTER_FRAME, enterFrameHandler, this);
+        }
     }
     exports.wrapEUIList = wrapEUIList;
     var ItemRenderer = /** @class */ (function (_super) {
