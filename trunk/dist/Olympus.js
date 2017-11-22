@@ -5743,7 +5743,7 @@ define("engine/bind/Watcher", ["require", "exports", "engine/bind/Utils"], funct
         Watcher.prototype.getValue = function () {
             if (this._disposed)
                 return null;
-            var value = null;
+            var value;
             // 记录自身
             Watcher.updating = this;
             // 设置通用属性
@@ -6068,7 +6068,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     newValue[key.substr(index + 1)] = value;
                     this.search(newValue, ui[key.substring(0, index)], callback);
                 }
-                else if (typeof value != "string") {
+                else if (typeof value == "object" && !(value instanceof Array)) {
                     // 是子对象寻址，递归寻址
                     this.search(value, ui[key], callback);
                 }
@@ -6108,6 +6108,81 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 bindData.bind.createWatcher(ui, exp, mediator.viewModel, function (value) {
                     ui[key] = value;
                 });
+            });
+        };
+        /**
+         * 绑定方法执行
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {{[name:string]:string[]|string|undefined}} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        BindManager.prototype.bindFunc = function (mediator, funcDict, ui) {
+            var _this = this;
+            var bindData = this._bindDict.get(mediator);
+            this.delaySearch(mediator, funcDict, ui, function (ui, key, exp) {
+                if (exp) {
+                    var exps;
+                    if (typeof exp == "string") {
+                        // 将裸的表达式形式参数转换为表达式参数数组形式
+                        exps = [exp];
+                    }
+                    else {
+                        // 本来就是表达式参数数组，直接赋值即可
+                        exps = exp;
+                    }
+                    // 将表达式中所有undefined和null变为内部值
+                    var undefinedValue = Date.now() * Math.random() + "_undefined";
+                    var nullValue = Date.now() * Math.random() + "_null";
+                    exps = exps.map(function (value) {
+                        if (value === undefined)
+                            return "'" + undefinedValue + "'";
+                        else if (value === null)
+                            return "'" + nullValue + "'";
+                        else
+                            return value;
+                    });
+                    // 绑定表达式参数数组
+                    var initValue = {};
+                    var args = [];
+                    var argsInited = false;
+                    var handler = function (index, value) {
+                        // 将value中的undefined和null恢复回去
+                        if (value === undefinedValue)
+                            value = undefined;
+                        else if (value == nullValue)
+                            value = null;
+                        // 设置参数值
+                        args[index] = value;
+                        // 判断参数是否齐全
+                        if (!argsInited) {
+                            for (var _i = 0, args_2 = args; _i < args_2.length; _i++) {
+                                var arg = args_2[_i];
+                                // 如果列表里存在初始值，表示没有赋值完毕，直接返回
+                                if (arg === initValue)
+                                    return;
+                            }
+                            // 设置初始化完毕状态
+                            argsInited = true;
+                        }
+                        // 赋值已经完毕了，调用方法，this指向ui本身
+                        ui[key].apply(ui, args);
+                    };
+                    // 循环绑定表达式到handler
+                    for (var i = 0, len = exps.length; i < len; i++) {
+                        // 记录一个初始值，用于判断参数列表是否已赋值完毕
+                        args.push(initValue);
+                    }
+                    for (var i = 0, len = exps.length; i < len; i++) {
+                        // 绑定表达式
+                        bindData.bind.createWatcher(ui, exps[i], mediator.viewModel, handler.bind(_this, i));
+                    }
+                }
+                else {
+                    // 无参数执行，无需绑定，一次性执行即可
+                    ui[key]();
+                }
             });
         };
         /**
@@ -8176,6 +8251,26 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         };
     }
     exports.BindValue = BindValue;
+    /**
+     * @private
+     */
+    function BindFunc(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, function (mediator) {
+                // 组织参数字典
+                var funcDict;
+                if (typeof arg1 == "string") {
+                    funcDict = {};
+                    funcDict[arg1] = arg2;
+                }
+                else {
+                    funcDict = arg1;
+                }
+                BindManager_2.bindManager.bindFunc(mediator, funcDict, mediator[propertyKey]);
+            });
+        };
+    }
+    exports.BindFunc = BindFunc;
     /**
      * @private
      */

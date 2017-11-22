@@ -316,6 +316,47 @@ export function BindValue(arg1:{[name:string]:string}|string, arg2?:string):Prop
 }
 
 /**
+ * 一次绑定多个方法
+ * 
+ * @export
+ * @param {{[name:string]:string}} funcDict ui方法和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindFunc(funcDict:{[name:string]:string[]|string|undefined}):PropertyDecorator;
+/**
+ * 一次绑定一个方法
+ * 
+ * @export
+ * @param {string} name ui方法名称
+ * @param {string[]|string} [exp] 参数表达式或参数表达式数组
+ * @returns {PropertyDecorator} 
+ */
+export function BindFunc(name:string, exp?:string[]|string):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindFunc(arg1:{[name:string]:string[]|string|undefined}|string, arg2?:string[]|string):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+            // 组织参数字典
+            var funcDict:{[name:string]:string[]|string|undefined};
+            if(typeof arg1 == "string")
+            {
+                funcDict = {};
+                funcDict[arg1] = arg2;
+            }
+            else
+            {
+                funcDict = arg1;
+            }
+            bindManager.bindFunc(mediator, funcDict, mediator[propertyKey]);
+        });
+    };
+}
+
+/**
  * 一次绑定多个事件
  * 
  * @export

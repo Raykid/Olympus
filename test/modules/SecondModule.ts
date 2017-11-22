@@ -1,7 +1,7 @@
 import SceneMediator from "engine/scene/SceneMediator";
 import Module from "engine/module/Module";
 import { MessageHandler } from "core/injector/Injector";
-import { BindModuleMessage, ModuleClass, DelegateMediator, ModuleMessageHandler } from "engine/injector/Injector";
+import { BindModuleMessage, ModuleClass, DelegateMediator, ModuleMessageHandler, BindFunc } from "engine/injector/Injector";
 import { EgretMediatorClass } from "egret/injector/Injector";
 
 /**
@@ -17,6 +17,7 @@ import { EgretMediatorClass } from "egret/injector/Injector";
 class SecondMediator extends SceneMediator
 {
     @BindModuleMessage("FuckMsg", {label: "onMsg($arguments[0])"})
+    @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
 
     public listAssets():string[]
@@ -36,7 +37,8 @@ class SecondMediator extends SceneMediator
                 // 表达式里使用函数可以在函数里执行复杂逻辑，并且具有代码提示
                 console.log(msg);
                 return msg + " - 1";
-            }
+            },
+            fuck: "you"
         };
         // 测试系统消息
         this.dispatch("fuck", 123);

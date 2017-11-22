@@ -50,7 +50,7 @@ export default class Watcher implements IWatcher
     public getValue():any
     {
         if(this._disposed) return null;
-        var value:any = null;
+        var value:any;
         // 记录自身
         Watcher.updating = this;
         // 设置通用属性

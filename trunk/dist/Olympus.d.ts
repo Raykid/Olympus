@@ -3551,6 +3551,17 @@ declare module "engine/bind/BindManager" {
             [name: string]: string;
         }, ui: any): void;
         /**
+         * 绑定方法执行
+         *
+         * @param {IMediator} mediator 中介者
+         * @param {{[name:string]:string[]|string|undefined}} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
+         * @param {*} ui 绑定到的ui实体对象
+         * @memberof BindManager
+         */
+        bindFunc(mediator: IMediator, funcDict: {
+            [name: string]: string[] | string | undefined;
+        }, ui: any): void;
+        /**
          * 绑定事件
          *
          * @param {IMediator} mediator 中介者
@@ -4677,6 +4688,25 @@ declare module "engine/injector/Injector" {
      * @returns {PropertyDecorator}
      */
     export function BindValue(name: string, exp: string): PropertyDecorator;
+    /**
+     * 一次绑定多个方法
+     *
+     * @export
+     * @param {{[name:string]:string}} funcDict ui方法和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindFunc(funcDict: {
+        [name: string]: string[] | string | undefined;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个方法
+     *
+     * @export
+     * @param {string} name ui方法名称
+     * @param {string[]|string} [exp] 参数表达式或参数表达式数组
+     * @returns {PropertyDecorator}
+     */
+    export function BindFunc(name: string, exp?: string[] | string): PropertyDecorator;
     /**
      * 一次绑定多个事件
      *
