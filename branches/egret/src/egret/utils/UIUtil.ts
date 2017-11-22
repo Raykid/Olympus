@@ -44,6 +44,8 @@ class ItemRenderer extends eui.ItemRenderer
         super();
         this.skinName = skinName;
         this._rendererHandler = rendererHandler;
+        // 默认自身不可点击
+        this.touchEnabled = false;
     }
 
     protected dataChanged(): void
