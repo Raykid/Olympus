@@ -112,7 +112,7 @@ export default class Mediator implements IModuleMediator
     {
         if(skin) this.skin = skin;
         // 初始化绑定
-        this.viewModel = {};
+        bindManager.bind(this);
     }
 
     /**
@@ -167,6 +167,8 @@ export default class Mediator implements IModuleMediator
     {
         this._data = data;
         this.onOpen(data);
+        // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+        if(!this._viewModel) this.viewModel = {};
         return this;
     }
 

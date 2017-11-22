@@ -6416,7 +6416,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             if (skin)
                 this.skin = skin;
             // 初始化绑定
-            this.viewModel = {};
+            BindManager_1.bindManager.bind(this);
         }
         Object.defineProperty(Mediator.prototype, "viewModel", {
             /**
@@ -6537,6 +6537,9 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
         Mediator.prototype.open = function (data) {
             this._data = data;
             this.onOpen(data);
+            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+            if (!this._viewModel)
+                this.viewModel = {};
             return this;
         };
         /**
@@ -75354,11 +75357,7 @@ define("egret/utils/UIUtil", ["require", "exports"], function (require, exports)
      * @param {(datas?:eui.ICollection, group?:eui.DataGroup)=>void} [updateHandler] 数据更新处理函数，每次显示更新时会被调用，处理列表显示更新后的渲染逻辑
      */
     function wrapEUIList(group, rendererHandler, updateHandler) {
-        group.itemRenderer = ItemRenderer.bind(null, group.itemRendererSkinName, function (data, renderer) {
-            // 判断数值改变，以触发
-            // 调用回调
-            rendererHandler.call(this, data, renderer);
-        });
+        group.itemRenderer = ItemRenderer.bind(null, group.itemRendererSkinName, rendererHandler);
         if (updateHandler) {
             // 监听group尺寸是否改变
             var enterFrameHandler = function () {

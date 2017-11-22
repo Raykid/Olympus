@@ -6360,7 +6360,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             if (skin)
                 this.skin = skin;
             // 初始化绑定
-            this.viewModel = {};
+            BindManager_1.bindManager.bind(this);
         }
         Object.defineProperty(Mediator.prototype, "viewModel", {
             /**
@@ -6481,6 +6481,9 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
         Mediator.prototype.open = function (data) {
             this._data = data;
             this.onOpen(data);
+            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+            if (!this._viewModel)
+                this.viewModel = {};
             return this;
         };
         /**
