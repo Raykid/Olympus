@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-egret",
-  "version": "0.0.4",
+  "version": "0.0.9",
   "description": "Olympus的Egret表现层库",
   "main": "dist/Egret.js",
   "types": "dist/Egret.d.ts",
@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
   "dependencies": {
-    "olympus-r": "0.0.8"
+    "olympus-r": "0.0.9"
   }
 }
