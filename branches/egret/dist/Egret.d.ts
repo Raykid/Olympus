@@ -523,11 +523,11 @@ declare module "EgretBridge" {
          * 为绑定的列表显示对象包装一个渲染器创建回调
          *
          * @param {eui.DataGroup} target BindFor指令指向的显示对象
-         * @param {(data?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
+         * @param {(key?:any, value?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
          * @returns {*} 返回一个备忘录对象，会在赋值时提供
          * @memberof IBridge
          */
-        wrapBindFor(target: eui.DataGroup, rendererHandler: (data?: any, renderer?: eui.IItemRenderer) => void): any;
+        wrapBindFor(target: eui.DataGroup, rendererHandler: (key?: any, value?: any, renderer?: eui.IItemRenderer) => void): any;
         /**
          * 为列表显示对象赋值
          *

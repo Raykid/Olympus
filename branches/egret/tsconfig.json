@@ -4,6 +4,7 @@
     "target": "es5",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "sourceMap": true,
     "declaration": true,
     "outFile": "dist/Egret.js"
   },

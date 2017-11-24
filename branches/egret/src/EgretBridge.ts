@@ -565,13 +565,31 @@ export default class EgretBridge implements IBridge
      * 为绑定的列表显示对象包装一个渲染器创建回调
      * 
      * @param {eui.DataGroup} target BindFor指令指向的显示对象
-     * @param {(data?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
+     * @param {(key?:any, value?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
      * @returns {*} 返回一个备忘录对象，会在赋值时提供
      * @memberof IBridge
      */
-    public wrapBindFor(target:eui.DataGroup, rendererHandler:(data?:any, renderer?:eui.IItemRenderer)=>void):any
+    public wrapBindFor(target:eui.DataGroup, rendererHandler:(key?:any, value?:any, renderer?:eui.IItemRenderer)=>void):any
     {
-        wrapEUIList(target, rendererHandler);
+        var memento:any = {};
+        wrapEUIList(target, (data:any, renderer:any)=>{
+            // 取出key
+            var key:string;
+            var datas:any = memento.datas;
+            // 遍历memento的datas属性（在valuateBindFor时被赋值）
+            for(var i in datas)
+            {
+                if(datas[i] == data)
+                {
+                    // 这就是我们要找的key
+                    key = i;
+                    break;
+                }
+            }
+            // 调用回调
+            rendererHandler(key, data, renderer);
+        });
+        return memento;
     }
 
     /**
@@ -599,6 +617,8 @@ export default class EgretBridge implements IBridge
             }
             provider = new eui.ArrayCollection(list);
         }
+        // 设置memento
+        memento.datas = datas;
         // 赋值
         target.dataProvider = provider;
     }

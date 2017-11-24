@@ -259,11 +259,11 @@ export default interface IBridge
      * 为绑定的列表显示对象包装一个渲染器创建回调
      * 
      * @param {*} target BindFor指令指向的显示对象
-     * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器创建回调
+     * @param {(key?:any, value?:any, renderer?:any)=>void} rendererHandler 渲染器创建回调
      * @returns {*} 返回一个备忘录对象，会在赋值时提供
      * @memberof IBridge
      */
-    wrapBindFor(target:any, rendererHandler:(data?:any, renderer?:any)=>void):any;
+    wrapBindFor(target:any, rendererHandler:(key?:any, value?:any, renderer?:any)=>void):any;
     /**
      * 为列表显示对象赋值
      * 

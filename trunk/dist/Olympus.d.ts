@@ -1771,11 +1771,11 @@ declare module "engine/bridge/IBridge" {
          * 为绑定的列表显示对象包装一个渲染器创建回调
          *
          * @param {*} target BindFor指令指向的显示对象
-         * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器创建回调
+         * @param {(key?:any, value?:any, renderer?:any)=>void} rendererHandler 渲染器创建回调
          * @returns {*} 返回一个备忘录对象，会在赋值时提供
          * @memberof IBridge
          */
-        wrapBindFor(target: any, rendererHandler: (data?: any, renderer?: any) => void): any;
+        wrapBindFor(target: any, rendererHandler: (key?: any, value?: any, renderer?: any) => void): any;
         /**
          * 为列表显示对象赋值
          *
@@ -3418,12 +3418,12 @@ declare module "engine/bind/Bind" {
          *
          * @param {*} target 作用目标，指表达式所在的显示对象
          * @param {string} exp 表达式
-         * @param {*} scope 作用域
          * @param {WatcherCallback} callback 订阅器回调
+         * @param {...any[]} scopes 作用域列表，首个作用域会被当做this指向
          * @returns {IWatcher} 返回观察者本身
          * @memberof Bind
          */
-        createWatcher(target: any, exp: string, scope: any, callback: WatcherCallback): IWatcher;
+        createWatcher(target: any, exp: string, callback: WatcherCallback, ...scopes: any[]): IWatcher;
     }
 }
 declare module "engine/bind/Watcher" {
@@ -3444,11 +3444,11 @@ declare module "engine/bind/Watcher" {
         private _bind;
         private _target;
         private _exp;
-        private _scope;
+        private _scopes;
         private _expFunc;
         private _callback;
         private _disposed;
-        constructor(bind: Bind, target: any, exp: string, scope: any, callback: WatcherCallback);
+        constructor(bind: Bind, target: any, exp: string, callback: WatcherCallback, ...scopes: any[]);
         /**
          * 获取到表达式当前最新值
          * @returns {any} 最新值
@@ -3539,6 +3539,7 @@ declare module "engine/bind/BindManager" {
     */
     export default class BindManager {
         private _bindDict;
+        private _envModel;
         /**
          * 绑定数据到UI上
          *
@@ -3609,11 +3610,13 @@ declare module "engine/bind/BindManager" {
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {string} exp 循环表达式，格式如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
+         * @param {{[name:string]:string}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
          * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
          * @memberof BindManager
          */
-        bindFor(mediator: IMediator, ui: any, exp: string, callback?: (data?: any, renderer?: any) => void): void;
+        bindFor(mediator: IMediator, ui: any, uiDict: {
+            [name: string]: string;
+        }, callback?: (data?: any, renderer?: any) => void): void;
         /**
          * 绑定全局Message
          *
@@ -4742,6 +4745,13 @@ declare module "engine/injector/BindUtil" {
      */
     export function addCompileCommand(target: ICompileTarget, cmd: IBindCommand, ...args: any[]): void;
     /**
+     * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
+     *
+     * @export
+     * @param {ICompileTarget} target
+     */
+    export function reverseCompileCommand(target: ICompileTarget): void;
+    /**
      * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
      *
      * @export
@@ -4784,7 +4794,9 @@ declare module "engine/injector/BindUtil" {
     /**
      * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
      */
-    export function compileFor(mediator: IMediator, target: ICompileTarget, exp: string): void;
+    export function compileFor(mediator: IMediator, target: ICompileTarget, uiDict: {
+        [name: string]: string;
+    }): void;
     /**
      * 编译bindMessage命令，不会中止编译
      */
@@ -4911,7 +4923,26 @@ declare module "engine/injector/Injector" {
      */
     export function BindIf(exp: string): PropertyDecorator;
     /**
-     * 遍历一个数据集合绑定当前显示对象
+     * 一次绑定多个数据集合，如果要指定当前显示对象请使用$target作为key
+     *
+     * @export
+     * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindFor(uiDict: {
+        [name: string]: string;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个数据集合
+     *
+     * @export
+     * @param {string} name ui属性名称
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
+    export function BindFor(name: string, exp: string): PropertyDecorator;
+    /**
+     * 绑定数据集合到当前显示对象
      *
      * @export
      * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）

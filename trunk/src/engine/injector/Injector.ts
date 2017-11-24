@@ -275,6 +275,7 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
     }
 }
 
+var onOpenDict:Dictionary<any, number> = new Dictionary();
 function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMediator)=>void, after?:(mediator:IMediator)=>void):void
 {
     listenConstruct(prototype.constructor, function(mediator:IMediator):void
@@ -283,6 +284,10 @@ function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMedi
         var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
         mediator.onOpen = function(...args:any[]):void
         {
+            // 注册到字典中
+            var target:any = mediator[propertyKey];
+            var count:number = onOpenDict.get(target) || 0;
+            onOpenDict.set(target, ++ count);
             // 调用回调
             before && before(mediator);
             // 恢复原始方法
@@ -292,6 +297,18 @@ function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMedi
             mediator.onOpen.apply(this, args);
             // 调用回调
             after && after(mediator);
+            // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
+            count = onOpenDict.get(target);
+            onOpenDict.set(target, -- count);
+            if(count == 0)
+            {
+                // 编译顺序反向
+                BindUtil.reverseCompileCommand(target);
+                // 全调用完毕了，启动编译
+                BindUtil.compile(mediator, target);
+                // 删除引用
+                onOpenDict.delete(target);
+            }
         };
     });
 }
@@ -336,8 +353,6 @@ export function BindValue(arg1:{[name:string]:string}|string, arg2?:string):Prop
             var target:any = mediator[propertyKey];
             // 添加编译指令
             BindUtil.addCompileCommand(target, BindUtil.compileValue, uiDict);
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -382,8 +397,6 @@ export function BindFunc(arg1:{[name:string]:string[]|string|undefined}|string, 
             var target:any = mediator[propertyKey];
             // 添加编译指令
             BindUtil.addCompileCommand(target, BindUtil.compileFunc, funcDict);
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -428,8 +441,6 @@ export function BindOn(arg1:{[type:string]:string}|string, arg2?:string):Propert
             var target:any = mediator[propertyKey];
             // 添加编译指令
             BindUtil.addCompileCommand(target, BindUtil.compileOn, evtDict);
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -483,30 +494,60 @@ export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):Propert
             var target:any = mediator[propertyKey];
             // 添加编译指令
             BindUtil.addCompileCommand(target, BindUtil.compileIf, uiDict);
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }
 
+
 /**
- * 遍历一个数据集合绑定当前显示对象
+ * 一次绑定多个数据集合，如果要指定当前显示对象请使用$target作为key
+ * 
+ * @export
+ * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+ * @returns {PropertyDecorator} 
+ */
+export function BindFor(uiDict:{[name:string]:string}):PropertyDecorator;
+/**
+ * 一次绑定一个数据集合
+ * 
+ * @export
+ * @param {string} name ui属性名称
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindFor(name:string, exp:string):PropertyDecorator;
+/**
+ * 绑定数据集合到当前显示对象
  * 
  * @export
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @returns {PropertyDecorator} 
  */
-export function BindFor(exp:string):PropertyDecorator
+export function BindFor(exp:string):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindFor(arg1:{[name:string]:string}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
+            // 组织参数字典
+            var uiDict:{[name:string]:string};
+            if(typeof arg1 == "string")
+            {
+                uiDict = {};
+                if(arg2) uiDict[arg1] = arg2;// 有name寻址
+                else uiDict["$target"] = arg1;// 没有name寻址，直接绑定表达式
+            }
+            else
+            {
+                uiDict = arg1;
+            }
             // 获取编译启动目标
             var target:any = mediator[propertyKey];
             // 添加编译指令
-            BindUtil.addCompileCommand(target, BindUtil.compileFor, exp);
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
+            BindUtil.addCompileCommand(target, BindUtil.compileFor, uiDict);
         });
     };
 }
@@ -552,8 +593,6 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:string}}|IConstru
                     BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type]);
                 }
             }
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -598,8 +637,6 @@ export function BindModuleMessage(arg1:{[type:string]:{[name:string]:string}}|IC
                     BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type], mediator.observable);
                 }
             }
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -645,8 +682,6 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:string}}|IRespon
                     BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type]);
                 }
             }
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -691,8 +726,6 @@ export function BindModuleResponse(arg1:{[type:string]:{[name:string]:string}}|I
                     BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type], mediator.observable);
                 }
             }
-            // 马上启动一次编译
-            BindUtil.compile(mediator, target);
         });
     };
 }

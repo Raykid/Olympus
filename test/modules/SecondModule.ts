@@ -1,7 +1,7 @@
 import SceneMediator from "engine/scene/SceneMediator";
 import Module from "engine/module/Module";
 import { MessageHandler } from "core/injector/Injector";
-import { BindModuleMessage, ModuleClass, DelegateMediator, ModuleMessageHandler, BindFunc } from "engine/injector/Injector";
+import { BindModuleMessage, ModuleClass, DelegateMediator, ModuleMessageHandler, BindFunc, BindFor, BindValue } from "engine/injector/Injector";
 import { EgretMediatorClass } from "egret/injector/Injector";
 
 /**
@@ -19,6 +19,11 @@ class SecondMediator extends SceneMediator
     @BindModuleMessage("FuckMsg", {label: "onMsg($arguments[0])"})
     @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
+    @BindFor("i in fuckList")
+    @BindValue("txt.text", "i")
+    @BindFor("lst", "value of fuckList")
+    @BindValue("txt.text", "value")
+    public lst:eui.DataGroup;
 
     public listAssets():string[]
     {
@@ -38,7 +43,8 @@ class SecondMediator extends SceneMediator
                 console.log(msg);
                 return msg + " - 1";
             },
-            fuck: "you"
+            fuck: "you",
+            fuckList: ["fuck", "shit", "you", "!!!"]
         };
         // 测试系统消息
         this.dispatch("fuck", 123);

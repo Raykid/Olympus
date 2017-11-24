@@ -609,25 +609,47 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/As
          * 为绑定的列表显示对象包装一个渲染器创建回调
          *
          * @param {HTMLElement} target BindFor指令指向的显示对象
-         * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler 渲染器创建回调
+         * @param {(key?:any, value?:any, renderer?:HTMLElement)=>void} handler 渲染器创建回调
          * @returns {*} 返回一个备忘录对象，会在赋值时提供
          * @memberof IBridge
          */
-        DOMBridge.prototype.wrapBindFor = function (target, rendererHandler) {
-            return rendererHandler;
+        DOMBridge.prototype.wrapBindFor = function (target, handler) {
+            var parent = target.parentElement;
+            // 生成一个from节点和一个to节点，用来占位
+            var from = document.createElement("div");
+            var to = document.createElement("div");
+            parent && parent.insertBefore(from, target);
+            parent && parent.insertBefore(to, target);
+            // 移除显示
+            parent && parent.removeChild(target);
+            // 返回备忘录
+            return { parent: parent, from: from, to: to, handler: handler };
         };
         /**
          * 为列表显示对象赋值
          *
          * @param {HTMLElement} target BindFor指令指向的显示对象
          * @param {*} datas 数据集合
-         * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler wrapBindFor返回的备忘录对象
+         * @param {*} memento wrapBindFor返回的备忘录对象
          * @memberof IBridge
          */
-        DOMBridge.prototype.valuateBindFor = function (target, datas, rendererHandler) {
+        DOMBridge.prototype.valuateBindFor = function (target, datas, memento) {
+            // 移除已有的列表项显示
+            var parent = memento.parent;
+            if (parent) {
+                var fromIndex = this.getChildIndex(parent, memento.from);
+                var toIndex = this.getChildIndex(parent, memento.to);
+                for (var i = fromIndex + 1; i < toIndex; i++) {
+                    this.removeChildAt(parent, fromIndex + 1);
+                }
+            }
+            // 添加新的渲染器
             for (var key in datas) {
+                var newElement = target.cloneNode(true);
+                // 添加显示
+                parent && parent.insertBefore(newElement, memento.to);
                 // 使用cloneNode方法复制渲染器
-                rendererHandler(datas[key], target.cloneNode(true));
+                memento.handler(key, datas[key], newElement);
             }
         };
         /** 提供静态类型常量 */
@@ -636,3 +658,4 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/As
     }());
     exports.default = DOMBridge;
 });
+//# sourceMappingURL=DOM.js.map

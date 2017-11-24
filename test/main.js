@@ -64,7 +64,8 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
                     console.log(msg);
                     return msg + " - 1";
                 },
-                fuck: "you"
+                fuck: "you",
+                fuckList: ["fuck", "shit", "you", "!!!"]
             };
             // 测试系统消息
             this.dispatch("fuck", 123);
@@ -76,6 +77,13 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
             Injector_2.BindFunc("getCurrentState", ["fuck", "onMsg", undefined]),
             __metadata("design:type", eui.Button)
         ], SecondMediator.prototype, "btn", void 0);
+        __decorate([
+            Injector_2.BindFor("i in fuckList"),
+            Injector_2.BindValue("txt.text", "i"),
+            Injector_2.BindFor("lst", "value of fuckList"),
+            Injector_2.BindValue("txt.text", "value"),
+            __metadata("design:type", eui.DataGroup)
+        ], SecondMediator.prototype, "lst", void 0);
         SecondMediator = __decorate([
             Injector_3.EgretMediatorClass("Fuck2Skin")
         ], SecondMediator);
@@ -288,6 +296,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             // }, this);
             console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
             this.viewModel = {
+                fuckList: [1, 2, "shit", "you"],
                 fuckText: "fuck you",
                 onClick: function () {
                     _this.viewModel.fuckText = "clicked";
@@ -299,6 +308,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             });
             setTimeout(function () {
                 _this.viewModel.fuckText = "1234";
+                _this.viewModel.fuckList = ["hello", "world"];
             }, 3000);
         };
         FirstMediator.prototype.onModuleChange = function (to, from) {
@@ -332,7 +342,8 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             __metadata("design:type", eui.Button)
         ], FirstMediator.prototype, "btn", void 0);
         __decorate([
-            Injector_8.BindValue({ textContent: "fuckText + ' - 1'" }),
+            Injector_8.BindFor("fuck in fuckList"),
+            Injector_8.BindValue({ textContent: "fuck + ' - ' + fuckText + ' - 1'" }),
             __metadata("design:type", eui.Label)
         ], FirstMediator.prototype, "txt", void 0);
         __decorate([

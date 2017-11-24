@@ -353,20 +353,20 @@ declare module "DOMBridge" {
          * 为绑定的列表显示对象包装一个渲染器创建回调
          *
          * @param {HTMLElement} target BindFor指令指向的显示对象
-         * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler 渲染器创建回调
+         * @param {(key?:any, value?:any, renderer?:HTMLElement)=>void} handler 渲染器创建回调
          * @returns {*} 返回一个备忘录对象，会在赋值时提供
          * @memberof IBridge
          */
-        wrapBindFor(target: HTMLElement, rendererHandler: (data?: any, renderer?: HTMLElement) => void): any;
+        wrapBindFor(target: HTMLElement, handler: (key?: any, value?: any, renderer?: HTMLElement) => void): any;
         /**
          * 为列表显示对象赋值
          *
          * @param {HTMLElement} target BindFor指令指向的显示对象
          * @param {*} datas 数据集合
-         * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler wrapBindFor返回的备忘录对象
+         * @param {*} memento wrapBindFor返回的备忘录对象
          * @memberof IBridge
          */
-        valuateBindFor(target: HTMLElement, datas: any, rendererHandler: (data?: any, renderer?: HTMLElement) => void): void;
+        valuateBindFor(target: HTMLElement, datas: any, memento: any): void;
     }
     export interface IInitParams {
         /** DOM容器名称或引用，不传递则自动生成一个 */

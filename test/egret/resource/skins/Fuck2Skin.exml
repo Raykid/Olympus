@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <e:Skin class="Fuck2Skin" width="720" height="1280" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
-	<e:Image width="506" height="610" x="107" y="102" source="egret_icon_png" anchorOffsetX="0" anchorOffsetY="0"/>
-	<e:Button id="btn" label="返回" x="310" y="856"/>
+	<e:Image width="194" height="268" x="263" y="28" source="egret_icon_png" anchorOffsetX="0" anchorOffsetY="0"/>
+	<e:Button id="btn" label="返回" x="310" y="1196"/>
+	<e:DataGroup id="lst" height="806" y="330" anchorOffsetX="0" anchorOffsetY="0" itemRendererSkinName="ListRenderer" left="0" right="0">
+		<e:layout>
+			<e:VerticalLayout/>
+		</e:layout>
+	</e:DataGroup>
 </e:Skin>

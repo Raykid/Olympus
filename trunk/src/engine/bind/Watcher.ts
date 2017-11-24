@@ -21,22 +21,22 @@ export default class Watcher implements IWatcher
     private _bind:Bind;
     private _target:any;
     private _exp:string;
-    private _scope:any;
-    private _expFunc:(scope:any)=>any;
+    private _scopes:any[];
+    private _expFunc:(...scopes:any[])=>any;
     private _callback:WatcherCallback;
 
     private _disposed:boolean = false;
 
-    public constructor(bind:Bind, target:any, exp:string, scope:any, callback:WatcherCallback)
+    public constructor(bind:Bind, target:any, exp:string, callback:WatcherCallback, ...scopes:any[])
     {
         // 记录Bind实例
         this._bind = bind;
         // 记录作用目标、表达式和作用域
         this._target = target;
         this._exp = exp;
-        this._scope = scope;
+        this._scopes = scopes;
         // 将表达式和作用域解析为一个Function
-        this._expFunc = createEvalFunc(exp, 2);
+        this._expFunc = createEvalFunc(exp, 1 + scopes.length);
         // 记录回调函数
         this._callback = callback;
         // 进行首次更新
@@ -62,16 +62,13 @@ export default class Watcher implements IWatcher
         // 表达式求值
         try
         {
-            value = this._expFunc.call(this._scope, commonScope, this._scope);
+            value = this._expFunc.call(this._scopes[0], commonScope, ...this._scopes);
         }
         catch(err)
         {
             // 输出错误日志
-            console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp + "，scope：" + JSON.stringify(this._scope));
+            console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp + "，scopes：" + JSON.stringify(this._scopes));
         }
-        // 移除通用属性
-        delete this._scope["$root"];
-        delete this._scope["$target"];
         // 移除自身记录
         Watcher.updating = null;
         return value;
@@ -98,7 +95,7 @@ export default class Watcher implements IWatcher
         this._value = null;
         this._target = null;
         this._exp = null;
-        this._scope = null;
+        this._scopes = null;
         this._expFunc = null;
         this._callback = null;
         this._disposed = true;

@@ -21,6 +21,7 @@ import IObservable from "../../core/observable/IObservable";
 export default class BindManager
 {
     private _bindDict:Dictionary<IMediator, BindData> = new Dictionary();
+    private _envModel:any[] = [];
 
     /**
      * 绑定数据到UI上
@@ -116,9 +117,9 @@ export default class BindManager
     {
         var bindData:BindData = this._bindDict.get(mediator);
         this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
-            bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:any)=>{
+            bindData.bind.createWatcher(ui, exp, (value:any)=>{
                 ui[key] = value;
-            });
+            }, mediator.viewModel, ...this._envModel);
         });
     }
 
@@ -188,7 +189,7 @@ export default class BindManager
                 for(var i:number = 0, len:number = exps.length; i < len; i++)
                 {
                     // 绑定表达式
-                    bindData.bind.createWatcher(ui, exps[i], mediator.viewModel, handler.bind(this, i));
+                    bindData.bind.createWatcher(ui, exps[i], handler.bind(this, i), mediator.viewModel, ...this._envModel);
                 }
             }
             else
@@ -219,10 +220,10 @@ export default class BindManager
             // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
             if(!handler)
             {
-                var func:Function = createRunFunc(exp, 2);
+                var func:Function = createRunFunc(exp, 2 + this._envModel.length);
                 handler = function():void
                 {
-                    func.call(this, mediator.viewModel, commonScope);
+                    func.call(this, mediator.viewModel, ...this._envModel, commonScope);
                 };
             }
             mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
@@ -260,40 +261,58 @@ export default class BindManager
             // 寻址到指定目标
             ui = ui[key] || ui;
             // 绑定表达式
-            bindData.bind.createWatcher(ui, exp, mediator.viewModel, (value:boolean)=>{
+            bindData.bind.createWatcher(ui, exp, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
                 if(value) this.replaceDisplay(mediator.bridge, replacer, ui);
                 else this.replaceDisplay(mediator.bridge, ui, replacer);
                 // 触发回调
                 callback && callback(value);
-            });
+            }, mediator.viewModel, ...this._envModel);
         });
     }
 
-    private _regExp:RegExp = /(\w+)\s+((in)|(of))\s+(\w+)/;
+    private _regExp:RegExp = /^\s*(\w+)\s+((in)|(of))\s+(.+?)\s*$/;
     /**
      * 绑定循环
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {string} exp 循环表达式，格式如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
+     * @param {{[name:string]:string}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
      * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    public bindFor(mediator:IMediator, ui:any, exp:string, callback?:(data?:any, renderer?:any)=>void):void
+    public bindFor(mediator:IMediator, ui:any, uiDict:{[name:string]:string}, callback?:(data?:any, renderer?:any)=>void):void
     {
-        var res:RegExpExecArray = this._regExp.exec(exp);
-        if(!res) return;
-        // 获得要遍历的数据集合
         var bindData:BindData = this._bindDict.get(mediator);
-        bindData.bind.createWatcher(ui, res[5], mediator.viewModel, (datas:any)=>{
+        var replacer:any = mediator.bridge.createEmptyDisplay();
+        this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
+            // 寻址到指定目标
+            ui = ui[key] || ui;
+            // 解析表达式
+            var res:RegExpExecArray = this._regExp.exec(exp);
+            if(!res) return;
             // 包装渲染器创建回调
-            var memento:any = mediator.bridge.wrapBindFor(ui, (data:any, renderer:any)=>{
+            var memento:any = mediator.bridge.wrapBindFor(ui, (key:any, value:any, renderer:any)=>{
+                // 设置环境变量
+                var commonScope:any = {
+                    $key: key,
+                    $value: value
+                };
+                // 填入用户声明的属性
+                commonScope[res[1]] = (res[2] == "in" ? key : value);
+                // 插入环境变量
+                this._envModel.push(commonScope);
                 // 触发回调
-                callback && callback(data, renderer);
+                callback && callback(value, renderer);
+                // 移除环境变量
+                this._envModel.splice(this._envModel.indexOf(commonScope), 1);
             });
-            // 赋值
-            mediator.bridge.valuateBindFor(ui, datas, memento);
+            // 获得要遍历的数据集合
+            var bindData:BindData = this._bindDict.get(mediator);
+            bindData.bind.createWatcher(ui, res[5], (datas:any)=>{
+                // 赋值
+                mediator.bridge.valuateBindFor(ui, datas, memento);
+            }, mediator.viewModel, ...this._envModel);
         });
     }
     
@@ -331,7 +350,7 @@ export default class BindManager
                         $bridge: mediator.bridge,
                         $target: ui
                     };
-                    ui[key] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, commonScope);
+                    ui[key] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, ...this._envModel, commonScope);
                 });
             }
         };
@@ -368,7 +387,7 @@ export default class BindManager
                         $bridge: mediator.bridge,
                         $target: ui
                     };
-                    ui[key] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, commonScope);
+                    ui[key] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, ...this._envModel, commonScope);
                 });
             }
         };

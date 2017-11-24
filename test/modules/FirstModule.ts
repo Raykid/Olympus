@@ -9,7 +9,7 @@ import ModuleManager from "engine/module/ModuleManager";
 import { audioManager } from "engine/audio/AudioManager";
 import ModuleMessage from "engine/module/ModuleMessage";
 import Module from "engine/module/Module";
-import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue, BindOn, BindIf } from "engine/injector/Injector";
+import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue, BindOn, BindIf, BindFor } from "engine/injector/Injector";
 
 /**
  * @author Raykid
@@ -35,7 +35,8 @@ class FirstMediator extends SceneMediator
     @BindOn({click: "onClick"})
     @BindIf({"labelDisplay": "fuckText == '1234'"})
     public btn:eui.Button;
-    @BindValue({textContent: "fuckText + ' - 1'"})
+    @BindFor("fuck in fuckList")
+    @BindValue({textContent: "fuck + ' - ' + fuckText + ' - 1'"})
     public txt:eui.Label;
 
     public listAssets():string[]
@@ -53,6 +54,7 @@ class FirstMediator extends SceneMediator
         console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
 
         this.viewModel = {
+            fuckList: [1, 2, "shit", "you"],
             fuckText: "fuck you",
             onClick: ()=>{
                 this.viewModel.fuckText = "clicked";
@@ -66,6 +68,7 @@ class FirstMediator extends SceneMediator
 
         setTimeout(()=>{
             this.viewModel.fuckText = "1234";
+            this.viewModel.fuckList = ["hello", "world"];
         }, 3000);
     }
     

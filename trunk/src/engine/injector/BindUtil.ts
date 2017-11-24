@@ -81,6 +81,18 @@ export function addCompileCommand(target:ICompileTarget, cmd:IBindCommand, ...ar
 }
 
 /**
+ * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
+ * 
+ * @export
+ * @param {ICompileTarget} target 
+ */
+export function reverseCompileCommand(target:ICompileTarget):void
+{
+    var bindParams:IBindParams[] = target.__bind_commands__;
+    bindParams && bindParams.reverse();
+}
+
+/**
  * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
  * 
  * @export
@@ -112,7 +124,7 @@ export function compile(mediator:IMediator, target:ICompileTarget):void
     var bindParams:IBindParams[] = target.__bind_commands__;
     if(!bindParams) return;
     // 这里没有提前读取出length属性，因为需要动态判断数组长度
-    for(var i:number = 0; i < bindParams.length; i++)
+    for(var i:number = 0; i < bindParams.length; )
     {
         // 使用shift按顺序取出编译命令
         var params:IBindParams = bindParams.shift();
@@ -172,13 +184,13 @@ export function compileIf(mediator:IMediator, target:ICompileTarget, uiDict:{[na
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export function compileFor(mediator:IMediator, target:ICompileTarget, exp:string):void
+export function compileFor(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:string}):void
 {
     // 将后面的编译命令缓存起来
     var bindParams:IBindParams[] = target.__bind_commands__;
     var cached:IBindParams[] = bindParams.splice(0, bindParams.length);
     // 绑定if命令
-    bindManager.bindFor(mediator, target, exp, (data:any, renderer:ICompileTarget)=>{
+    bindManager.bindFor(mediator, target, uiDict, (data:any, renderer:ICompileTarget)=>{
         // 将缓存的命令复制到新的renderer实例中
         renderer.__bind_commands__ = cached.concat();
         // 编译renderer实例

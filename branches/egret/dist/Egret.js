@@ -66929,12 +66929,28 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
          * 为绑定的列表显示对象包装一个渲染器创建回调
          *
          * @param {eui.DataGroup} target BindFor指令指向的显示对象
-         * @param {(data?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
+         * @param {(key?:any, value?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
          * @returns {*} 返回一个备忘录对象，会在赋值时提供
          * @memberof IBridge
          */
         EgretBridge.prototype.wrapBindFor = function (target, rendererHandler) {
-            UIUtil_1.wrapEUIList(target, rendererHandler);
+            var memento = {};
+            UIUtil_1.wrapEUIList(target, function (data, renderer) {
+                // 取出key
+                var key;
+                var datas = memento.datas;
+                // 遍历memento的datas属性（在valuateBindFor时被赋值）
+                for (var i in datas) {
+                    if (datas[i] == data) {
+                        // 这就是我们要找的key
+                        key = i;
+                        break;
+                    }
+                }
+                // 调用回调
+                rendererHandler(key, data, renderer);
+            });
+            return memento;
         };
         /**
          * 为列表显示对象赋值
@@ -66957,6 +66973,8 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
                 }
                 provider = new eui.ArrayCollection(list);
             }
+            // 设置memento
+            memento.datas = datas;
             // 赋值
             target.dataProvider = provider;
         };
@@ -67035,3 +67053,4 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
         return ThemeAdapter;
     }());
 });
+//# sourceMappingURL=Egret.js.map

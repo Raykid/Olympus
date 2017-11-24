@@ -54,3 +54,7 @@ declare class Fuck2Skin extends eui.Skin{
 }
 declare class FuckSkin extends eui.Skin{
 }
+declare class ListRenderer extends eui.Skin{
+}
+declare class ListRenderer2 extends eui.Skin{
+}

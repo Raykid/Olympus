@@ -30,6 +30,8 @@
     "resource/eui_skins/VScrollBarSkin.exml",
     "resource/eui_skins/VSliderSkin.exml",
     "resource/skins/Fuck2Skin.exml",
-    "resource/skins/FuckSkin.exml"
+    "resource/skins/FuckSkin.exml",
+    "resource/skins/ListRenderer.exml",
+    "resource/skins/ListRenderer2.exml"
   ]
 }

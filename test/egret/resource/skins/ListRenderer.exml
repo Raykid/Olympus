@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="ListRenderer" width="300" height="283" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+	<e:Label id="txt" text="Label" textAlign="center" verticalAlign="middle" anchorOffsetX="0" width="35" top="0" bottom="0" left="0"/>
+	<e:DataGroup id="lst" width="265" top="0" bottom="0" right="0" itemRendererSkinName="ListRenderer2"/>
+</e:Skin>

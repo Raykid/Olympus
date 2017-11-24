@@ -37,16 +37,16 @@ export default class Bind
      * 
      * @param {*} target 作用目标，指表达式所在的显示对象
      * @param {string} exp 表达式
-     * @param {*} scope 作用域
      * @param {WatcherCallback} callback 订阅器回调
+     * @param {...any[]} scopes 作用域列表，首个作用域会被当做this指向
      * @returns {IWatcher} 返回观察者本身
      * @memberof Bind
      */
-    public createWatcher(target:any, exp:string, scope:any, callback:WatcherCallback):IWatcher
+    public createWatcher(target:any, exp:string, callback:WatcherCallback, ...scopes:any[]):IWatcher
     {
-        var key:string = getObjectHashs(target, exp, scope);
+        var key:string = getObjectHashs(target, exp, ...scopes);
         var watcher:Watcher = this._watcherDict[key];
-        if(!watcher) this._watcherDict[key] = watcher = new Watcher(this, target, exp, scope, callback);
+        if(!watcher) this._watcherDict[key] = watcher = new Watcher(this, target, exp, callback, ...scopes);
         return watcher;
     }
 }
