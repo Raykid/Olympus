@@ -1,6 +1,7 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import Message from "../../core/message/Message";
+import IObservable from "../../core/observable/IObservable";
 import { wrapConstruct, listenConstruct, listenDispose, getConstructor } from "../../utils/ConstructUtil";
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
@@ -148,27 +149,48 @@ export function ResponseHandler(target:any, key?:string):MethodDecorator|void
         var resClass:IResponseDataConstructor = defs[0];
         if(!(resClass.prototype instanceof ResponseData))
             throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-        doResponseHandler(target.constructor, key, defs[0]);
+        doResponseHandler(target.constructor, key, defs[0], false);
     }
     else
     {
         return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
         {
-            doResponseHandler(prototype.constructor, propertyKey, target);
+            doResponseHandler(prototype.constructor, propertyKey, target, false);
         };
     }
 }
-function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConstructor):void
+/** 处理模块通讯消息返回 */
+export function ModuleResponseHandler(prototype:any, propertyKey:string):void;
+export function ModuleResponseHandler(cls:IResponseDataConstructor):MethodDecorator;
+export function ModuleResponseHandler(target:any, key?:string):MethodDecorator|void
+{
+    if(key)
+    {
+        var defs:[IResponseDataConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
+        var resClass:IResponseDataConstructor = defs[0];
+        if(!(resClass.prototype instanceof ResponseData))
+            throw new Error("无参数@ModuleResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
+        doResponseHandler(target.constructor, key, defs[0], true);
+    }
+    else
+    {
+        return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+        {
+            doResponseHandler(prototype.constructor, propertyKey, target, true);
+        };
+    }
+}
+function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConstructor, inModule:boolean):void
 {
     // 监听实例化
-    listenConstruct(cls, function(instance:any):void
+    listenConstruct(cls, function(instance:{observable:IObservable}):void
     {
-        netManager.listenResponse(type, instance[key], instance);
+        netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
     });
     // 监听销毁
-    listenDispose(cls, function(instance:any):void
+    listenDispose(cls, function(instance:{observable:IObservable}):void
     {
-        netManager.unlistenResponse(type, instance[key], instance);
+        netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
     });
 }
 
