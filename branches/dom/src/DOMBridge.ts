@@ -1,5 +1,5 @@
 /// <amd-module name="DOMBridge"/>
-/// <reference types="olympus-r"/>
+/// <reference path="../../../trunk/dist/Olympus.d.ts"/>
 
 import IBridge from "engine/bridge/IBridge";
 import { getObjectHashs } from "utils/ObjectUtil";
@@ -454,6 +454,36 @@ export default class DOMBridge implements IBridge
             target.removeEventListener(type, listener);
             // 移除记录
             delete this._listenerDict[key];
+        }
+    }
+
+    /**
+     * 为绑定的列表显示对象包装一个渲染器创建回调
+     * 
+     * @param {HTMLElement} target BindFor指令指向的显示对象
+     * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler 渲染器创建回调
+     * @returns {*} 返回一个备忘录对象，会在赋值时提供
+     * @memberof IBridge
+     */
+    public wrapBindFor(target:HTMLElement, rendererHandler:(data?:any, renderer?:HTMLElement)=>void):any
+    {
+        return rendererHandler;
+    }
+
+    /**
+     * 为列表显示对象赋值
+     * 
+     * @param {HTMLElement} target BindFor指令指向的显示对象
+     * @param {*} datas 数据集合
+     * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler wrapBindFor返回的备忘录对象
+     * @memberof IBridge
+     */
+    public valuateBindFor(target:HTMLElement, datas:any, rendererHandler:(data?:any, renderer?:HTMLElement)=>void):void
+    {
+        for(var key in datas)
+        {
+            // 使用cloneNode方法复制渲染器
+            rendererHandler(datas[key], target.cloneNode(true) as HTMLElement);
         }
     }
 }

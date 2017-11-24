@@ -9,9 +9,6 @@
     "outFile": "main.js"
   },
   "files": [
-    "../trunk/dist/Olympus.js",
-    "../branches/dom/dist/DOM.js",
-    "../branches/egret/dist/Egret.js",
     "main.ts"
   ],
   "exclude": [

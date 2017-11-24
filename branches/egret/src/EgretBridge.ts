@@ -1,5 +1,5 @@
 /// <amd-module name="EgretBridge"/>
-/// <reference types="olympus-r"/>
+/// <reference path="../../../trunk/dist/Olympus.d.ts"/>
 /// <reference path="./egret/egret-libs/egret/egret.d.ts"/>
 /// <reference path="./egret/egret-libs/eui/eui.d.ts"/>
 /// <reference path="./egret/egret-libs/res/res.d.ts"/>
@@ -20,6 +20,7 @@ import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
 import * as UIUtil from "./egret/utils/UIUtil";
 import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
 import * as Injector from "./egret/injector/Injector";
+import { wrapEUIList } from "./egret/utils/UIUtil";
 
 /**
  * @author Raykid
@@ -558,6 +559,48 @@ export default class EgretBridge implements IBridge
     public unmapListener(target:egret.EventDispatcher, type:string, handler:Function, thisArg?:any):void
     {
         target.removeEventListener(type, handler, thisArg);
+    }
+
+    /**
+     * 为绑定的列表显示对象包装一个渲染器创建回调
+     * 
+     * @param {eui.DataGroup} target BindFor指令指向的显示对象
+     * @param {(data?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
+     * @returns {*} 返回一个备忘录对象，会在赋值时提供
+     * @memberof IBridge
+     */
+    public wrapBindFor(target:eui.DataGroup, rendererHandler:(data?:any, renderer?:eui.IItemRenderer)=>void):any
+    {
+        wrapEUIList(target, rendererHandler);
+    }
+
+    /**
+     * 为列表显示对象赋值
+     * 
+     * @param {eui.DataGroup} target BindFor指令指向的显示对象
+     * @param {*} datas 数据集合
+     * @param {*} memento wrapBindFor返回的备忘录对象
+     * @memberof IBridge
+     */
+    public valuateBindFor(target:eui.DataGroup, datas:any, memento:any):void
+    {
+        var provider:eui.ICollection;
+        if(datas instanceof Array)
+        {
+            provider = new eui.ArrayCollection(datas);
+        }
+        else
+        {
+            // 是字典，将其变为数组
+            var list:any[] = [];
+            for(var key in datas)
+            {
+                list.push(datas[key]);
+            }
+            provider = new eui.ArrayCollection(list);
+        }
+        // 赋值
+        target.dataProvider = provider;
     }
 }
 

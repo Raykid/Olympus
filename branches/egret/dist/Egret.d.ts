@@ -1,8 +1,8 @@
+/// <reference path="../../../trunk/dist/Olympus.d.ts" />
 /// <reference path="../src/egret/egret-libs/egret/egret.d.ts" />
 /// <reference path="../src/egret/egret-libs/eui/eui.d.ts" />
 /// <reference path="../src/egret/egret-libs/res/res.d.ts" />
 /// <reference path="../src/egret/egret-libs/tween/tween.d.ts" />
-/// <reference types="olympus-r" />
 declare module "egret/RenderMode" {
     /**
      * @author Raykid
@@ -519,6 +519,24 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         unmapListener(target: egret.EventDispatcher, type: string, handler: Function, thisArg?: any): void;
+        /**
+         * 为绑定的列表显示对象包装一个渲染器创建回调
+         *
+         * @param {eui.DataGroup} target BindFor指令指向的显示对象
+         * @param {(data?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
+         * @returns {*} 返回一个备忘录对象，会在赋值时提供
+         * @memberof IBridge
+         */
+        wrapBindFor(target: eui.DataGroup, rendererHandler: (data?: any, renderer?: eui.IItemRenderer) => void): any;
+        /**
+         * 为列表显示对象赋值
+         *
+         * @param {eui.DataGroup} target BindFor指令指向的显示对象
+         * @param {*} datas 数据集合
+         * @param {*} memento wrapBindFor返回的备忘录对象
+         * @memberof IBridge
+         */
+        valuateBindFor(target: eui.DataGroup, datas: any, memento: any): void;
     }
     export interface IInitParams {
         /** 舞台宽度 */

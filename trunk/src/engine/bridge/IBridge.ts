@@ -256,6 +256,24 @@ export default interface IBridge
      */
     unmapListener(target:any, type:string, handler:Function, thisArg?:any):void;
     /**
+     * 为绑定的列表显示对象包装一个渲染器创建回调
+     * 
+     * @param {*} target BindFor指令指向的显示对象
+     * @param {(data?:any, renderer?:any)=>void} rendererHandler 渲染器创建回调
+     * @returns {*} 返回一个备忘录对象，会在赋值时提供
+     * @memberof IBridge
+     */
+    wrapBindFor(target:any, rendererHandler:(data?:any, renderer?:any)=>void):any;
+    /**
+     * 为列表显示对象赋值
+     * 
+     * @param {*} target BindFor指令指向的显示对象
+     * @param {*} datas 数据集合
+     * @param {*} memento wrapBindFor返回的备忘录对象
+     * @memberof IBridge
+     */
+    valuateBindFor(target:any, datas:any, memento:any):void;
+    /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * 
      * @param {()=>void} complete 初始化完毕后的回调

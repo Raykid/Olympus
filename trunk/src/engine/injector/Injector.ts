@@ -13,8 +13,8 @@ import { moduleManager } from "../module/ModuleManager";
 import IModuleDependent from "../module/IModuleDependent";
 import IModuleMediator from "../mediator/IModuleMediator";
 import Dictionary from "../../utils/Dictionary";
-import { bindManager } from "../bind/BindManager";
 import IMediator from "../mediator/IMediator";
+import * as BindUtil from "./BindUtil";
 
 /**
  * @author Raykid
@@ -320,7 +320,7 @@ export function BindValue(arg1:{[name:string]:string}|string, arg2?:string):Prop
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
             var uiDict:{[name:string]:string};
             if(typeof arg1 == "string")
@@ -332,7 +332,12 @@ export function BindValue(arg1:{[name:string]:string}|string, arg2?:string):Prop
             {
                 uiDict = arg1;
             }
-            bindManager.bindValue(mediator, uiDict, mediator[propertyKey]);
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
+            // 添加编译指令
+            BindUtil.addCompileCommand(target, BindUtil.compileValue, uiDict);
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -361,7 +366,7 @@ export function BindFunc(arg1:{[name:string]:string[]|string|undefined}|string, 
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
             var funcDict:{[name:string]:string[]|string|undefined};
             if(typeof arg1 == "string")
@@ -373,7 +378,12 @@ export function BindFunc(arg1:{[name:string]:string[]|string|undefined}|string, 
             {
                 funcDict = arg1;
             }
-            bindManager.bindFunc(mediator, funcDict, mediator[propertyKey]);
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
+            // 添加编译指令
+            BindUtil.addCompileCommand(target, BindUtil.compileFunc, funcDict);
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -402,7 +412,7 @@ export function BindOn(arg1:{[type:string]:string}|string, arg2?:string):Propert
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
             var evtDict:{[name:string]:string};
             if(typeof arg1 == "string")
@@ -414,7 +424,12 @@ export function BindOn(arg1:{[type:string]:string}|string, arg2?:string):Propert
             {
                 evtDict = arg1;
             }
-            bindManager.bindOn(mediator, evtDict, mediator[propertyKey]);
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
+            // 添加编译指令
+            BindUtil.addCompileCommand(target, BindUtil.compileOn, evtDict);
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -451,7 +466,7 @@ export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):Propert
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
             var uiDict:{[name:string]:string};
             if(typeof arg1 == "string")
@@ -464,7 +479,34 @@ export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):Propert
             {
                 uiDict = arg1;
             }
-            bindManager.bindIf(mediator, uiDict, mediator[propertyKey]);
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
+            // 添加编译指令
+            BindUtil.addCompileCommand(target, BindUtil.compileIf, uiDict);
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
+        });
+    };
+}
+
+/**
+ * 遍历一个数据集合绑定当前显示对象
+ * 
+ * @export
+ * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
+ * @returns {PropertyDecorator} 
+ */
+export function BindFor(exp:string):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
+            // 添加编译指令
+            BindUtil.addCompileCommand(target, BindUtil.compileFor, exp);
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -493,20 +535,25 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:string}}|IConstru
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey]);
+                BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2);
             }
             else
             {
                 // 是字典方式
                 for(var type in arg1)
                 {
-                    bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey]);
+                    // 添加编译指令
+                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type]);
                 }
             }
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -535,20 +582,24 @@ export function BindModuleMessage(arg1:{[type:string]:{[name:string]:string}}|IC
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IModuleMediator)=>{
+        listenOnOpen(prototype, propertyKey, null, (mediator:IModuleMediator)=>{
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                bindManager.bindMessage(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+                BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2, mediator.observable);
             }
             else
             {
                 // 是字典方式
                 for(var type in arg1)
                 {
-                    bindManager.bindMessage(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
+                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type], mediator.observable);
                 }
             }
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -579,19 +630,23 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:string}}|IRespon
     {
         // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey]);
+                BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2);
             }
             else
             {
                 // 是字典方式
                 for(var type in arg1)
                 {
-                    bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey]);
+                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type]);
                 }
             }
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }
@@ -620,20 +675,24 @@ export function BindModuleResponse(arg1:{[type:string]:{[name:string]:string}}|I
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IModuleMediator)=>{
+        listenOnOpen(prototype, propertyKey, null, (mediator:IModuleMediator)=>{
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                bindManager.bindResponse(mediator, arg1, arg2, mediator[propertyKey], mediator.observable);
+                BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2, mediator.observable);
             }
             else
             {
                 // 是字典方式
                 for(var type in arg1)
                 {
-                    bindManager.bindResponse(mediator, type, arg1[type], mediator[propertyKey], mediator.observable);
+                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type], mediator.observable);
                 }
             }
+            // 马上启动一次编译
+            BindUtil.compile(mediator, target);
         });
     };
 }

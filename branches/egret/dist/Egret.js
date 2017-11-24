@@ -66427,12 +66427,12 @@ define("egret/injector/Injector", ["require", "exports", "utils/ConstructUtil", 
     exports.EgretMediatorClass = EgretMediatorClass;
 });
 /// <amd-module name="EgretBridge"/>
-/// <reference types="olympus-r"/>
+/// <reference path="../../../trunk/dist/Olympus.d.ts"/>
 /// <reference path="./egret/egret-libs/egret/egret.d.ts"/>
 /// <reference path="./egret/egret-libs/eui/eui.d.ts"/>
 /// <reference path="./egret/egret-libs/res/res.d.ts"/>
 /// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
-define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy", "egret/mask/MaskEntity"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1, MaskEntity_1) {
+define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleMessage", "egret/RenderMode", "egret/AssetsLoader", "egret/panel/BackPanelPolicy", "egret/scene/FadeScenePolicy", "egret/mask/MaskEntity", "egret/utils/UIUtil"], function (require, exports, Core_1, ModuleMessage_1, RenderMode_1, AssetsLoader_1, BackPanelPolicy_1, FadeScenePolicy_1, MaskEntity_1, UIUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -66924,6 +66924,41 @@ define("EgretBridge", ["require", "exports", "core/Core", "engine/module/ModuleM
          */
         EgretBridge.prototype.unmapListener = function (target, type, handler, thisArg) {
             target.removeEventListener(type, handler, thisArg);
+        };
+        /**
+         * 为绑定的列表显示对象包装一个渲染器创建回调
+         *
+         * @param {eui.DataGroup} target BindFor指令指向的显示对象
+         * @param {(data?:any, renderer?:eui.IItemRenderer)=>void} rendererHandler 渲染器创建回调
+         * @returns {*} 返回一个备忘录对象，会在赋值时提供
+         * @memberof IBridge
+         */
+        EgretBridge.prototype.wrapBindFor = function (target, rendererHandler) {
+            UIUtil_1.wrapEUIList(target, rendererHandler);
+        };
+        /**
+         * 为列表显示对象赋值
+         *
+         * @param {eui.DataGroup} target BindFor指令指向的显示对象
+         * @param {*} datas 数据集合
+         * @param {*} memento wrapBindFor返回的备忘录对象
+         * @memberof IBridge
+         */
+        EgretBridge.prototype.valuateBindFor = function (target, datas, memento) {
+            var provider;
+            if (datas instanceof Array) {
+                provider = new eui.ArrayCollection(datas);
+            }
+            else {
+                // 是字典，将其变为数组
+                var list = [];
+                for (var key in datas) {
+                    list.push(datas[key]);
+                }
+                provider = new eui.ArrayCollection(list);
+            }
+            // 赋值
+            target.dataProvider = provider;
         };
         /** 提供静态类型常量 */
         EgretBridge.TYPE = "Egret";

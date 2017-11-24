@@ -185,7 +185,7 @@ define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "e
     exports.DOMMediatorClass = DOMMediatorClass;
 });
 /// <amd-module name="DOMBridge"/>
-/// <reference types="olympus-r"/>
+/// <reference path="../../../trunk/dist/Olympus.d.ts"/>
 define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/AssetsManager", "dom/mask/MaskEntity"], function (require, exports, ObjectUtil_1, AssetsManager_2, MaskEntity_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -603,6 +603,31 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/As
                 target.removeEventListener(type, listener);
                 // 移除记录
                 delete this._listenerDict[key];
+            }
+        };
+        /**
+         * 为绑定的列表显示对象包装一个渲染器创建回调
+         *
+         * @param {HTMLElement} target BindFor指令指向的显示对象
+         * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler 渲染器创建回调
+         * @returns {*} 返回一个备忘录对象，会在赋值时提供
+         * @memberof IBridge
+         */
+        DOMBridge.prototype.wrapBindFor = function (target, rendererHandler) {
+            return rendererHandler;
+        };
+        /**
+         * 为列表显示对象赋值
+         *
+         * @param {HTMLElement} target BindFor指令指向的显示对象
+         * @param {*} datas 数据集合
+         * @param {(data?:any, renderer?:HTMLElement)=>void} rendererHandler wrapBindFor返回的备忘录对象
+         * @memberof IBridge
+         */
+        DOMBridge.prototype.valuateBindFor = function (target, datas, rendererHandler) {
+            for (var key in datas) {
+                // 使用cloneNode方法复制渲染器
+                rendererHandler(datas[key], target.cloneNode(true));
             }
         };
         /** 提供静态类型常量 */
