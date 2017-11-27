@@ -297,7 +297,8 @@ export default class BindManager
                 // 设置环境变量
                 var commonScope:any = {
                     $key: key,
-                    $value: value
+                    $value: value,
+                    $item: renderer
                 };
                 // 填入用户声明的属性
                 commonScope[res[1]] = (res[2] == "in" ? key : value);

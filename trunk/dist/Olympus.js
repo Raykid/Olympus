@@ -5817,13 +5817,14 @@ define("engine/bind/Watcher", ["require", "exports", "engine/bind/Utils"], funct
          */
         Watcher.deepCopy = function (from) {
             if (Watcher.isObject(from)) {
-                // 复杂类型对象，先字符串化，再对象化
-                return JSON.parse(JSON.stringify(from));
+                try {
+                    // 复杂类型对象，先字符串化，再对象化
+                    return JSON.parse(JSON.stringify(from));
+                }
+                catch (err) { }
             }
-            else {
-                // 基本类型对象，直接返回之
-                return from;
-            }
+            // 基本类型对象和无法复制的对象，直接返回之
+            return from;
         };
         /** 记录当前正在执行update方法的Watcher引用 */
         Watcher.updating = null;
@@ -6289,7 +6290,8 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     // 设置环境变量
                     var commonScope = {
                         $key: key,
-                        $value: value
+                        $value: value,
+                        $item: renderer
                     };
                     // 填入用户声明的属性
                     commonScope[res[1]] = (res[2] == "in" ? key : value);

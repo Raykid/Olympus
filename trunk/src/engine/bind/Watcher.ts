@@ -128,14 +128,15 @@ export default class Watcher implements IWatcher
     {
         if (Watcher.isObject(from))
         {
-            // 复杂类型对象，先字符串化，再对象化
-            return JSON.parse(JSON.stringify(from));
+            try
+            {
+                // 复杂类型对象，先字符串化，再对象化
+                return JSON.parse(JSON.stringify(from));
+            }
+            catch(err){}
         }
-        else
-        {
-            // 基本类型对象，直接返回之
-            return from;
-        }
+        // 基本类型对象和无法复制的对象，直接返回之
+        return from;
     }
 }
 
