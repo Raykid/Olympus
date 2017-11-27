@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-egret",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Olympus的Egret表现层库",
   "main": "dist/Egret.js",
   "types": "dist/Egret.d.ts",
