@@ -210,7 +210,6 @@ export default class BindManager
      */
     public bindOn(mediator:IMediator, ui:any, evtDict:{[type:string]:any}):void
     {
-        var self:BindManager = this;
         this.delaySearch(mediator, evtDict, ui, (ui:any, key:string, exp:string)=>{
             var handler:Function = mediator.viewModel[exp];
             var commonScope:any = {
@@ -222,9 +221,11 @@ export default class BindManager
             if(!handler)
             {
                 var func:Function = createRunFunc(exp, 2 + this._envModel.length);
+                // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
+                var envModel:any[] = this._envModel.concat();
                 handler = function():void
                 {
-                    func.call(this, mediator.viewModel, ...self._envModel, commonScope);
+                    func.call(this, mediator.viewModel, ...envModel, commonScope);
                 };
             }
             mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);

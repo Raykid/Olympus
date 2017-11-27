@@ -6207,7 +6207,6 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          */
         BindManager.prototype.bindOn = function (mediator, ui, evtDict) {
             var _this = this;
-            var self = this;
             this.delaySearch(mediator, evtDict, ui, function (ui, key, exp) {
                 var handler = mediator.viewModel[exp];
                 var commonScope = {
@@ -6218,8 +6217,10 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
                 if (!handler) {
                     var func = Utils_2.createRunFunc(exp, 2 + _this._envModel.length);
+                    // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
+                    var envModel = _this._envModel.concat();
                     handler = function () {
-                        func.call.apply(func, [this, mediator.viewModel].concat(self._envModel, [commonScope]));
+                        func.call.apply(func, [this, mediator.viewModel].concat(envModel, [commonScope]));
                     };
                 }
                 mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
