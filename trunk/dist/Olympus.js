@@ -6108,7 +6108,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string}} uiDict ui属性字典
+         * @param {{[name:string]:any}} uiDict ui属性字典
          * @memberof BindManager
          */
         BindManager.prototype.bindValue = function (mediator, ui, uiDict) {
@@ -6126,7 +6126,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string[]|string|undefined}} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
+         * @param {BindFuncDict} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
          * @memberof BindManager
          */
         BindManager.prototype.bindFunc = function (mediator, ui, funcDict) {
@@ -6202,7 +6202,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[type:string]:string}} evtDict 事件字典
+         * @param {{[type:string]:any}} evtDict 事件字典
          * @memberof BindManager
          */
         BindManager.prototype.bindOn = function (mediator, ui, evtDict) {
@@ -6241,7 +6241,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string}} uiDict 判断字典
+         * @param {{[name:string]:any}} uiDict 判断字典
          * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
          * @memberof BindManager
          */
@@ -6270,7 +6270,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
+         * @param {{[name:string]:any}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
          * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
          * @memberof BindManager
          */
@@ -6317,7 +6317,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
          * @param {IConstructor|string} type 绑定的消息类型字符串
-         * @param {{[name:string]:string}} uiDict ui表达式字典
+         * @param {{[name:string]:any}} uiDict ui表达式字典
          * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
@@ -6361,7 +6361,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
          * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-         * @param {{[name:string]:string}} uiDict ui表达式字典
+         * @param {{[name:string]:any}} uiDict ui表达式字典
          * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */

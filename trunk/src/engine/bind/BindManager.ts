@@ -110,10 +110,10 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {{[name:string]:string}} uiDict ui属性字典
+     * @param {{[name:string]:any}} uiDict ui属性字典
      * @memberof BindManager
      */
-    public bindValue(mediator:IMediator, ui:any, uiDict:{[name:string]:string}):void
+    public bindValue(mediator:IMediator, ui:any, uiDict:{[name:string]:any}):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
@@ -128,10 +128,10 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {{[name:string]:string[]|string|undefined}} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
+     * @param {BindFuncDict} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
      * @memberof BindManager
      */
-    public bindFunc(mediator:IMediator, ui:any, funcDict:{[name:string]:string[]|string|undefined}):void
+    public bindFunc(mediator:IMediator, ui:any, funcDict:BindFuncDict):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         this.delaySearch(mediator, funcDict, ui, (ui:any, key:string, exp:string[]|string|undefined)=>{
@@ -205,10 +205,10 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {{[type:string]:string}} evtDict 事件字典
+     * @param {{[type:string]:any}} evtDict 事件字典
      * @memberof BindManager
      */
-    public bindOn(mediator:IMediator, ui:any, evtDict:{[type:string]:string}):void
+    public bindOn(mediator:IMediator, ui:any, evtDict:{[type:string]:any}):void
     {
         var self:BindManager = this;
         this.delaySearch(mediator, evtDict, ui, (ui:any, key:string, exp:string)=>{
@@ -250,11 +250,11 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {{[name:string]:string}} uiDict 判断字典
+     * @param {{[name:string]:any}} uiDict 判断字典
      * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
      * @memberof BindManager
      */
-    public bindIf(mediator:IMediator, ui:any, uiDict:{[name:string]:string}, callback?:(value:boolean)=>void):void
+    public bindIf(mediator:IMediator, ui:any, uiDict:{[name:string]:any}, callback?:(value:boolean)=>void):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         var replacer:any = mediator.bridge.createEmptyDisplay();
@@ -278,11 +278,11 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {{[name:string]:string}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
+     * @param {{[name:string]:any}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
      * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    public bindFor(mediator:IMediator, ui:any, uiDict:{[name:string]:string}, callback?:(data?:any, renderer?:any)=>void):void
+    public bindFor(mediator:IMediator, ui:any, uiDict:{[name:string]:any}, callback?:(data?:any, renderer?:any)=>void):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         var replacer:any = mediator.bridge.createEmptyDisplay();
@@ -324,11 +324,11 @@ export default class BindManager
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
      * @param {IConstructor|string} type 绑定的消息类型字符串
-     * @param {{[name:string]:string}} uiDict ui表达式字典
+     * @param {{[name:string]:any}} uiDict ui表达式字典
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindMessage(mediator:IMediator, ui:any, type:IConstructor|string, uiDict:{[name:string]:string}, observable?:IObservable):void
+    public bindMessage(mediator:IMediator, ui:any, type:IConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -366,11 +366,11 @@ export default class BindManager
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-     * @param {{[name:string]:string}} uiDict ui表达式字典
+     * @param {{[name:string]:any}} uiDict ui表达式字典
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindResponse(mediator:IMediator, ui:any, type:IResponseDataConstructor|string, uiDict:{[name:string]:string}, observable?:IObservable):void
+    public bindResponse(mediator:IMediator, ui:any, type:IResponseDataConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -404,6 +404,11 @@ export default class BindManager
             }
         }
     }
+}
+
+export interface BindFuncDict
+{
+    [name:string]:string[]|string|undefined|BindFuncDict;
 }
 
 interface BindData

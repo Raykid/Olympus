@@ -3563,33 +3563,31 @@ declare module "engine/bind/BindManager" {
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string}} uiDict ui属性字典
+         * @param {{[name:string]:any}} uiDict ui属性字典
          * @memberof BindManager
          */
         bindValue(mediator: IMediator, ui: any, uiDict: {
-            [name: string]: string;
+            [name: string]: any;
         }): void;
         /**
          * 绑定方法执行
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string[]|string|undefined}} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
+         * @param {BindFuncDict} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
          * @memberof BindManager
          */
-        bindFunc(mediator: IMediator, ui: any, funcDict: {
-            [name: string]: string[] | string | undefined;
-        }): void;
+        bindFunc(mediator: IMediator, ui: any, funcDict: BindFuncDict): void;
         /**
          * 绑定事件
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[type:string]:string}} evtDict 事件字典
+         * @param {{[type:string]:any}} evtDict 事件字典
          * @memberof BindManager
          */
         bindOn(mediator: IMediator, ui: any, evtDict: {
-            [type: string]: string;
+            [type: string]: any;
         }): void;
         private replaceDisplay(bridge, ori, cur);
         /**
@@ -3597,12 +3595,12 @@ declare module "engine/bind/BindManager" {
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string}} uiDict 判断字典
+         * @param {{[name:string]:any}} uiDict 判断字典
          * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
          * @memberof BindManager
          */
         bindIf(mediator: IMediator, ui: any, uiDict: {
-            [name: string]: string;
+            [name: string]: any;
         }, callback?: (value: boolean) => void): void;
         private _regExp;
         /**
@@ -3610,12 +3608,12 @@ declare module "engine/bind/BindManager" {
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:string}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
+         * @param {{[name:string]:any}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
          * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
          * @memberof BindManager
          */
         bindFor(mediator: IMediator, ui: any, uiDict: {
-            [name: string]: string;
+            [name: string]: any;
         }, callback?: (data?: any, renderer?: any) => void): void;
         /**
          * 绑定全局Message
@@ -3623,12 +3621,12 @@ declare module "engine/bind/BindManager" {
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
          * @param {IConstructor|string} type 绑定的消息类型字符串
-         * @param {{[name:string]:string}} uiDict ui表达式字典
+         * @param {{[name:string]:any}} uiDict ui表达式字典
          * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
         bindMessage(mediator: IMediator, ui: any, type: IConstructor | string, uiDict: {
-            [name: string]: string;
+            [name: string]: any;
         }, observable?: IObservable): void;
         /**
          * 绑定全局Response
@@ -3636,13 +3634,16 @@ declare module "engine/bind/BindManager" {
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
          * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-         * @param {{[name:string]:string}} uiDict ui表达式字典
+         * @param {{[name:string]:any}} uiDict ui表达式字典
          * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
         bindResponse(mediator: IMediator, ui: any, type: IResponseDataConstructor | string, uiDict: {
-            [name: string]: string;
+            [name: string]: any;
         }, observable?: IObservable): void;
+    }
+    export interface BindFuncDict {
+        [name: string]: string[] | string | undefined | BindFuncDict;
     }
     /** 再额外导出一个单例 */
     export const bindManager: BindManager;
@@ -4680,6 +4681,7 @@ declare module "engine/plugin/IPlugin" {
 declare module "engine/injector/BindUtil" {
     import IObservable from "core/observable/IObservable";
     import { IResponseDataConstructor } from "engine/net/ResponseData";
+    import { BindFuncDict } from "engine/bind/BindManager";
     import IMediator from "engine/mediator/IMediator";
     /**
      * @author Raykid
@@ -4771,48 +4773,47 @@ declare module "engine/injector/BindUtil" {
      * 编译bindValue命令，不会中止编译
      */
     export function compileValue(mediator: IMediator, target: ICompileTarget, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): void;
     /**
      * 编译bindFunc命令，不会中止编译
      */
-    export function compileFunc(mediator: IMediator, target: ICompileTarget, funcDict: {
-        [name: string]: string[] | string | undefined;
-    }): void;
+    export function compileFunc(mediator: IMediator, target: ICompileTarget, funcDict: BindFuncDict): void;
     /**
      * 编译bindOn命令，不会中止编译
      */
     export function compileOn(mediator: IMediator, target: ICompileTarget, evtDict: {
-        [type: string]: string;
+        [type: string]: any;
     }): void;
     /**
      * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
      */
     export function compileIf(mediator: IMediator, target: ICompileTarget, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): void;
     /**
      * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
      */
     export function compileFor(mediator: IMediator, target: ICompileTarget, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): void;
     /**
      * 编译bindMessage命令，不会中止编译
      */
     export function compileMessage(mediator: IMediator, target: ICompileTarget, type: IConstructor | string, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }, observable?: IObservable): void;
     /**
      * 编译bindResponse命令，不会中止编译
      */
     export function compileResponse(mediator: IMediator, target: ICompileTarget, type: IResponseDataConstructor | string, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }, observable?: IObservable): void;
 }
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
     import IModuleConstructor from "engine/module/IModuleConstructor";
+    import { BindFuncDict } from "engine/bind/BindManager";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -4842,11 +4843,11 @@ declare module "engine/injector/Injector" {
      * 一次绑定多个属性
      *
      * @export
-     * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+     * @param {{[name:string]:any}} uiDict ui属性和表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindValue(uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): PropertyDecorator;
     /**
      * 一次绑定一个属性
@@ -4861,12 +4862,10 @@ declare module "engine/injector/Injector" {
      * 一次绑定多个方法
      *
      * @export
-     * @param {{[name:string]:string}} funcDict ui方法和表达式字典
+     * @param {BindFuncDict} funcDict ui方法和表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindFunc(funcDict: {
-        [name: string]: string[] | string | undefined;
-    }): PropertyDecorator;
+    export function BindFunc(funcDict: BindFuncDict): PropertyDecorator;
     /**
      * 一次绑定一个方法
      *
@@ -4880,11 +4879,11 @@ declare module "engine/injector/Injector" {
      * 一次绑定多个事件
      *
      * @export
-     * @param {{[type:string]:string}} evtDict 事件类型和表达式字典
+     * @param {{[type:string]:any}} evtDict 事件类型和表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindOn(evtDict: {
-        [type: string]: string;
+        [type: string]: any;
     }): PropertyDecorator;
     /**
      * 一次绑定一个事件
@@ -4899,11 +4898,11 @@ declare module "engine/injector/Injector" {
      * 一次绑定多个显示判断，如果要指定当前显示对象请使用$target作为key
      *
      * @export
-     * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+     * @param {{[name:string]:any}} uiDict ui属性和表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindIf(uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): PropertyDecorator;
     /**
      * 一次绑定一个显示判断
@@ -4926,11 +4925,11 @@ declare module "engine/injector/Injector" {
      * 一次绑定多个数据集合，如果要指定当前显示对象请使用$target作为key
      *
      * @export
-     * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+     * @param {{[name:string]:any}} uiDict ui属性和表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindFor(uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): PropertyDecorator;
     /**
      * 一次绑定一个数据集合
@@ -4953,12 +4952,12 @@ declare module "engine/injector/Injector" {
      * 一次绑定多个全局消息
      *
      * @export
-     * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
+     * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindMessage(msgDict: {
         [type: string]: {
-            [name: string]: string;
+            [name: string]: any;
         };
     }): PropertyDecorator;
     /**
@@ -4970,18 +4969,18 @@ declare module "engine/injector/Injector" {
      * @returns {PropertyDecorator}
      */
     export function BindMessage(type: IConstructor | string, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): PropertyDecorator;
     /**
      * 一次绑定多个模块消息
      *
      * @export
-     * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
+     * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindModuleMessage(msgDict: {
         [type: string]: {
-            [name: string]: string;
+            [name: string]: any;
         };
     }): PropertyDecorator;
     /**
@@ -4993,18 +4992,18 @@ declare module "engine/injector/Injector" {
      * @returns {PropertyDecorator}
      */
     export function BindModuleMessage(type: IConstructor | string, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): PropertyDecorator;
     /**
      * 一次绑定多个全局通讯消息
      *
      * @export
-     * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
+     * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindResponse(resDict: {
         [type: string]: {
-            [name: string]: string;
+            [name: string]: any;
         };
     }): PropertyDecorator;
     /**
@@ -5016,18 +5015,18 @@ declare module "engine/injector/Injector" {
      * @returns {PropertyDecorator}
      */
     export function BindResponse(type: IResponseDataConstructor | string, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): PropertyDecorator;
     /**
      * 一次绑定多个模块通讯消息
      *
      * @export
-     * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
+     * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindModuleResponse(resDict: {
         [type: string]: {
-            [name: string]: string;
+            [name: string]: any;
         };
     }): PropertyDecorator;
     /**
@@ -5039,7 +5038,7 @@ declare module "engine/injector/Injector" {
      * @returns {PropertyDecorator}
      */
     export function BindModuleResponse(type: IResponseDataConstructor | string, uiDict: {
-        [name: string]: string;
+        [name: string]: any;
     }): PropertyDecorator;
 }
 declare module "engine/Engine" {

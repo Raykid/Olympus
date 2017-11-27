@@ -81,7 +81,11 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
             Injector_2.BindFor("i in fuckList"),
             Injector_2.BindValue("txt.text", "i"),
             Injector_2.BindFor("lst", "value of fuckList"),
-            Injector_2.BindValue("txt.text", "$item.$hashCode"),
+            Injector_2.BindValue({
+                txt: {
+                    text: "$item.$hashCode"
+                }
+            }),
             __metadata("design:type", eui.DataGroup)
         ], SecondMediator.prototype, "lst", void 0);
         SecondMediator = __decorate([

@@ -1,6 +1,6 @@
 import IObservable from "../../core/observable/IObservable";
 import { IResponseDataConstructor } from "../net/ResponseData";
-import { bindManager } from "../bind/BindManager";
+import { bindManager, BindFuncDict } from "../bind/BindManager";
 import IMediator from "../mediator/IMediator";
 
 /**
@@ -136,7 +136,7 @@ export function compile(mediator:IMediator, target:ICompileTarget):void
 /**
  * 编译bindValue命令，不会中止编译
  */
-export function compileValue(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:string}):void
+export function compileValue(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:any}):void
 {
     bindManager.bindValue(mediator, target, uiDict);
 }
@@ -144,7 +144,7 @@ export function compileValue(mediator:IMediator, target:ICompileTarget, uiDict:{
 /**
  * 编译bindFunc命令，不会中止编译
  */
-export function compileFunc(mediator:IMediator, target:ICompileTarget, funcDict:{[name:string]:string[]|string|undefined}):void
+export function compileFunc(mediator:IMediator, target:ICompileTarget, funcDict:BindFuncDict):void
 {
     bindManager.bindFunc(mediator, target, funcDict);
 }
@@ -152,7 +152,7 @@ export function compileFunc(mediator:IMediator, target:ICompileTarget, funcDict:
 /**
  * 编译bindOn命令，不会中止编译
  */
-export function compileOn(mediator:IMediator, target:ICompileTarget, evtDict:{[type:string]:string}):void
+export function compileOn(mediator:IMediator, target:ICompileTarget, evtDict:{[type:string]:any}):void
 {
     bindManager.bindOn(mediator, target, evtDict);
 }
@@ -160,7 +160,7 @@ export function compileOn(mediator:IMediator, target:ICompileTarget, evtDict:{[t
 /**
  * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
  */
-export function compileIf(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:string}):void
+export function compileIf(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:any}):void
 {
     // 将后面的编译命令缓存起来
     var bindParams:IBindParams[] = target.__bind_commands__;
@@ -184,7 +184,7 @@ export function compileIf(mediator:IMediator, target:ICompileTarget, uiDict:{[na
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export function compileFor(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:string}):void
+export function compileFor(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:any}):void
 {
     // 将后面的编译命令缓存起来
     var bindParams:IBindParams[] = target.__bind_commands__;
@@ -201,7 +201,7 @@ export function compileFor(mediator:IMediator, target:ICompileTarget, uiDict:{[n
 /**
  * 编译bindMessage命令，不会中止编译
  */
-export function compileMessage(mediator:IMediator, target:ICompileTarget, type:IConstructor|string, uiDict:{[name:string]:string}, observable?:IObservable):void
+export function compileMessage(mediator:IMediator, target:ICompileTarget, type:IConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
 {
     bindManager.bindMessage(mediator, target, type, uiDict, observable);
 }
@@ -209,7 +209,7 @@ export function compileMessage(mediator:IMediator, target:ICompileTarget, type:I
 /**
  * 编译bindResponse命令，不会中止编译
  */
-export function compileResponse(mediator:IMediator, target:ICompileTarget, type:IResponseDataConstructor|string, uiDict:{[name:string]:string}, observable?:IObservable):void
+export function compileResponse(mediator:IMediator, target:ICompileTarget, type:IResponseDataConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
 {
     bindManager.bindResponse(mediator, target, type, uiDict, observable);
 }

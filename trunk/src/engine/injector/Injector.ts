@@ -14,6 +14,7 @@ import IModuleDependent from "../module/IModuleDependent";
 import IModuleMediator from "../mediator/IModuleMediator";
 import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
+import { BindFuncDict } from "../bind/BindManager";
 import * as BindUtil from "./BindUtil";
 
 /**
@@ -317,10 +318,10 @@ function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMedi
  * 一次绑定多个属性
  * 
  * @export
- * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+ * @param {{[name:string]:any}} uiDict ui属性和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindValue(uiDict:{[name:string]:string}):PropertyDecorator;
+export function BindValue(uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * 一次绑定一个属性
  * 
@@ -333,13 +334,13 @@ export function BindValue(name:string, exp:string):PropertyDecorator;
 /**
  * @private
  */
-export function BindValue(arg1:{[name:string]:string}|string, arg2?:string):PropertyDecorator
+export function BindValue(arg1:{[name:string]:any}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
-            var uiDict:{[name:string]:string};
+            var uiDict:{[name:string]:any};
             if(typeof arg1 == "string")
             {
                 uiDict = {};
@@ -361,10 +362,10 @@ export function BindValue(arg1:{[name:string]:string}|string, arg2?:string):Prop
  * 一次绑定多个方法
  * 
  * @export
- * @param {{[name:string]:string}} funcDict ui方法和表达式字典
+ * @param {BindFuncDict} funcDict ui方法和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindFunc(funcDict:{[name:string]:string[]|string|undefined}):PropertyDecorator;
+export function BindFunc(funcDict:BindFuncDict):PropertyDecorator;
 /**
  * 一次绑定一个方法
  * 
@@ -377,13 +378,13 @@ export function BindFunc(name:string, exp?:string[]|string):PropertyDecorator;
 /**
  * @private
  */
-export function BindFunc(arg1:{[name:string]:string[]|string|undefined}|string, arg2?:string[]|string):PropertyDecorator
+export function BindFunc(arg1:BindFuncDict|string, arg2?:string[]|string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
-            var funcDict:{[name:string]:string[]|string|undefined};
+            var funcDict:BindFuncDict;
             if(typeof arg1 == "string")
             {
                 funcDict = {};
@@ -405,10 +406,10 @@ export function BindFunc(arg1:{[name:string]:string[]|string|undefined}|string, 
  * 一次绑定多个事件
  * 
  * @export
- * @param {{[type:string]:string}} evtDict 事件类型和表达式字典
+ * @param {{[type:string]:any}} evtDict 事件类型和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindOn(evtDict:{[type:string]:string}):PropertyDecorator;
+export function BindOn(evtDict:{[type:string]:any}):PropertyDecorator;
 /**
  * 一次绑定一个事件
  * 
@@ -421,13 +422,13 @@ export function BindOn(type:string, exp:string):PropertyDecorator;
 /**
  * @private
  */
-export function BindOn(arg1:{[type:string]:string}|string, arg2?:string):PropertyDecorator
+export function BindOn(arg1:{[type:string]:any}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
-            var evtDict:{[name:string]:string};
+            var evtDict:{[name:string]:any};
             if(typeof arg1 == "string")
             {
                 evtDict = {};
@@ -449,10 +450,10 @@ export function BindOn(arg1:{[type:string]:string}|string, arg2?:string):Propert
  * 一次绑定多个显示判断，如果要指定当前显示对象请使用$target作为key
  * 
  * @export
- * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+ * @param {{[name:string]:any}} uiDict ui属性和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindIf(uiDict:{[name:string]:string}):PropertyDecorator;
+export function BindIf(uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * 一次绑定一个显示判断
  * 
@@ -473,13 +474,13 @@ export function BindIf(exp:string):PropertyDecorator;
 /**
  * @private
  */
-export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):PropertyDecorator
+export function BindIf(arg1:{[name:string]:any}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
-            var uiDict:{[name:string]:string};
+            var uiDict:{[name:string]:any};
             if(typeof arg1 == "string")
             {
                 uiDict = {};
@@ -503,10 +504,10 @@ export function BindIf(arg1:{[name:string]:string}|string, arg2?:string):Propert
  * 一次绑定多个数据集合，如果要指定当前显示对象请使用$target作为key
  * 
  * @export
- * @param {{[name:string]:string}} uiDict ui属性和表达式字典
+ * @param {{[name:string]:any}} uiDict ui属性和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindFor(uiDict:{[name:string]:string}):PropertyDecorator;
+export function BindFor(uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * 一次绑定一个数据集合
  * 
@@ -527,13 +528,13 @@ export function BindFor(exp:string):PropertyDecorator;
 /**
  * @private
  */
-export function BindFor(arg1:{[name:string]:string}|string, arg2?:string):PropertyDecorator
+export function BindFor(arg1:{[name:string]:any}|string, arg2?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
             // 组织参数字典
-            var uiDict:{[name:string]:string};
+            var uiDict:{[name:string]:any};
             if(typeof arg1 == "string")
             {
                 uiDict = {};
@@ -556,10 +557,10 @@ export function BindFor(arg1:{[name:string]:string}|string, arg2?:string):Proper
  * 一次绑定多个全局消息
  * 
  * @export
- * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
+ * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindMessage(msgDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
+export function BindMessage(msgDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
  * 一次绑定一个全局消息
  * 
@@ -568,11 +569,11 @@ export function BindMessage(msgDict:{[type:string]:{[name:string]:string}}):Prop
  * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindMessage(type:IConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
+export function BindMessage(type:IConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * @private
  */
-export function BindMessage(arg1:{[type:string]:{[name:string]:string}}|IConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
+export function BindMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -601,10 +602,10 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:string}}|IConstru
  * 一次绑定多个模块消息
  * 
  * @export
- * @param {{[type:string]:{[name:string]:string}}} msgDict 消息类型和ui表达式字典
+ * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleMessage(msgDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
+export function BindModuleMessage(msgDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
  * 一次绑定一个模块消息
  * 
@@ -613,11 +614,11 @@ export function BindModuleMessage(msgDict:{[type:string]:{[name:string]:string}}
  * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleMessage(type:IConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
+export function BindModuleMessage(type:IConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * @private
  */
-export function BindModuleMessage(arg1:{[type:string]:{[name:string]:string}}|IConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
+export function BindModuleMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -645,10 +646,10 @@ export function BindModuleMessage(arg1:{[type:string]:{[name:string]:string}}|IC
  * 一次绑定多个全局通讯消息
  * 
  * @export
- * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
+ * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindResponse(resDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
+export function BindResponse(resDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
  * 一次绑定一个全局通讯消息
  * 
@@ -657,11 +658,11 @@ export function BindResponse(resDict:{[type:string]:{[name:string]:string}}):Pro
  * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
+export function BindResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * @private
  */
-export function BindResponse(arg1:{[type:string]:{[name:string]:string}}|IResponseDataConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
+export function BindResponse(arg1:{[type:string]:{[name:string]:any}}|IResponseDataConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -690,10 +691,10 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:string}}|IRespon
  * 一次绑定多个模块通讯消息
  * 
  * @export
- * @param {{[type:string]:{[name:string]:string}}} resDict 通讯消息类型和表达式字典
+ * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleResponse(resDict:{[type:string]:{[name:string]:string}}):PropertyDecorator;
+export function BindModuleResponse(resDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
  * 一次绑定一个模块通讯消息
  * 
@@ -702,11 +703,11 @@ export function BindModuleResponse(resDict:{[type:string]:{[name:string]:string}
  * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:string}):PropertyDecorator;
+export function BindModuleResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * @private
  */
-export function BindModuleResponse(arg1:{[type:string]:{[name:string]:string}}|IResponseDataConstructor|string, arg2?:{[name:string]:string}):PropertyDecorator
+export function BindModuleResponse(arg1:{[type:string]:{[name:string]:any}}|IResponseDataConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
