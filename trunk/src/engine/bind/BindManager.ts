@@ -214,6 +214,7 @@ export default class BindManager
             var handler:Function = mediator.viewModel[exp];
             var commonScope:any = {
                 $this: mediator,
+                $data: mediator.viewModel,
                 $bridge: mediator.bridge,
                 $target: ui
             };
@@ -299,7 +300,7 @@ export default class BindManager
                 var commonScope:any = {
                     $key: key,
                     $value: value,
-                    $item: renderer
+                    $target: renderer
                 };
                 // 填入用户声明的属性
                 commonScope[res[1]] = (res[2] == "in" ? key : value);
@@ -350,6 +351,7 @@ export default class BindManager
                     // 设置通用属性
                     var commonScope:any = {
                         $this: mediator,
+                        $data: mediator.viewModel,
                         $bridge: mediator.bridge,
                         $target: ui
                     };
@@ -387,6 +389,7 @@ export default class BindManager
                     // 设置通用属性
                     var commonScope:any = {
                         $this: mediator,
+                        $data: mediator.viewModel,
                         $bridge: mediator.bridge,
                         $target: ui
                     };

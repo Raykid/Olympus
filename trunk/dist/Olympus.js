@@ -6211,6 +6211,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 var handler = mediator.viewModel[exp];
                 var commonScope = {
                     $this: mediator,
+                    $data: mediator.viewModel,
                     $bridge: mediator.bridge,
                     $target: ui
                 };
@@ -6292,7 +6293,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     var commonScope = {
                         $key: key,
                         $value: value,
-                        $item: renderer
+                        $target: renderer
                     };
                     // 填入用户声明的属性
                     commonScope[res[1]] = (res[2] == "in" ? key : value);
@@ -6346,6 +6347,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                         // 设置通用属性
                         var commonScope = {
                             $this: mediator,
+                            $data: mediator.viewModel,
                             $bridge: mediator.bridge,
                             $target: ui
                         };
@@ -6381,6 +6383,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                         // 设置通用属性
                         var commonScope = {
                             $this: mediator,
+                            $data: mediator.viewModel,
                             $bridge: mediator.bridge,
                             $target: ui
                         };

@@ -24,7 +24,7 @@ class SecondMediator extends SceneMediator
     @BindFor("lst", "value of fuckList")
     @BindValue({
         txt: {
-            text: "$item.$hashCode"
+            text: "$target.$hashCode"
         }
     })
     public lst:eui.DataGroup;
