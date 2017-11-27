@@ -6206,6 +6206,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          */
         BindManager.prototype.bindOn = function (mediator, ui, evtDict) {
             var _this = this;
+            var self = this;
             this.delaySearch(mediator, evtDict, ui, function (ui, key, exp) {
                 var handler = mediator.viewModel[exp];
                 var commonScope = {
@@ -6217,7 +6218,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 if (!handler) {
                     var func = Utils_2.createRunFunc(exp, 2 + _this._envModel.length);
                     handler = function () {
-                        func.call.apply(func, [this, mediator.viewModel].concat(this._envModel, [commonScope]));
+                        func.call.apply(func, [this, mediator.viewModel].concat(self._envModel, [commonScope]));
                     };
                 }
                 mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);

@@ -210,6 +210,7 @@ export default class BindManager
      */
     public bindOn(mediator:IMediator, ui:any, evtDict:{[type:string]:string}):void
     {
+        var self:BindManager = this;
         this.delaySearch(mediator, evtDict, ui, (ui:any, key:string, exp:string)=>{
             var handler:Function = mediator.viewModel[exp];
             var commonScope:any = {
@@ -223,7 +224,7 @@ export default class BindManager
                 var func:Function = createRunFunc(exp, 2 + this._envModel.length);
                 handler = function():void
                 {
-                    func.call(this, mediator.viewModel, ...this._envModel, commonScope);
+                    func.call(this, mediator.viewModel, ...self._envModel, commonScope);
                 };
             }
             mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
