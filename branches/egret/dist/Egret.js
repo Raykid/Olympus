@@ -66155,8 +66155,6 @@ define("egret/utils/UIUtil", ["require", "exports"], function (require, exports)
             var _this = _super.call(this) || this;
             _this.skinName = skinName;
             _this._rendererHandler = rendererHandler;
-            // 默认自身不可点击
-            _this.touchEnabled = false;
             return _this;
         }
         ItemRenderer.prototype.dataChanged = function () {
