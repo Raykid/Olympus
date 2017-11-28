@@ -199,6 +199,8 @@ export default class ModuleManager
             // 监听通讯消息
             netManager.listenRequest(target.observable);
             // 数据先行
+            var from:[IModuleConstructor, IModule] = this.getCurrent();
+            var fromModule:IModule = from && from[1];
             this._moduleStack.unshift([cls, target]);
             // 记一个是否需要遮罩的flag
             var maskFlag:boolean = true;
@@ -256,8 +258,6 @@ export default class ModuleManager
                         var requests:RequestData[] = target.listInitRequests();
                         netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
                         {
-                            var from:[IModuleConstructor, IModule] = this.getCurrent();
-                            var fromModule:IModule = from && from[1];
                             // 赋值responses
                             target.responses = responses;
                             // 调用onOpen接口

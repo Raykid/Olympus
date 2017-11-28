@@ -5123,6 +5123,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 监听通讯消息
                 NetManager_1.netManager.listenRequest(target.observable);
                 // 数据先行
+                var from = this.getCurrent();
+                var fromModule = from && from[1];
                 this._moduleStack.unshift([cls, target]);
                 // 记一个是否需要遮罩的flag
                 var maskFlag = true;
@@ -5175,8 +5177,6 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                             // 发送所有模块消息，模块消息默认发送全局内核
                             var requests = target.listInitRequests();
                             NetManager_1.netManager.sendMultiRequests(requests, function (responses) {
-                                var from = this.getCurrent();
-                                var fromModule = from && from[1];
                                 // 赋值responses
                                 target.responses = responses;
                                 // 调用onOpen接口
@@ -7151,7 +7151,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                     break;
             }
             // 前置处理
-            from && from.onBeforeOut(to, data);
+            to && from && from.onBeforeOut(to, data);
             to && to.onBeforeIn(from, data);
             // 派发事件
             Core_20.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
@@ -7162,11 +7162,11 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             // 调用切换接口
             doFunc.call(policy, from, to, function () {
                 // 移除显示
-                from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
+                to && from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
                 // 调用回调
                 complete && complete();
                 // 后置处理
-                from && from.onAfterOut(to, data);
+                to && from && from.onAfterOut(to, data);
                 to && to.onAfterIn(from, data);
                 // 派发事件
                 Core_20.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);

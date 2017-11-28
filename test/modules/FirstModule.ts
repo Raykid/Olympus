@@ -58,7 +58,7 @@ class FirstMediator extends SceneMediator
             fuckText: "fuck you",
             onClick: ()=>{
                 this.viewModel.fuckText = "clicked";
-                this.moduleManager.open(SecondModule);
+                this.moduleManager.open(SecondModule, null, true);
             }
         };
 

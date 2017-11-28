@@ -304,7 +304,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
                 fuckText: "fuck you",
                 onClick: function () {
                     _this.viewModel.fuckText = "clicked";
-                    _this.moduleManager.open(SecondModule_1.default);
+                    _this.moduleManager.open(SecondModule_1.default, null, true);
                 }
             };
             AudioManager_1.audioManager.playMusic({
