@@ -10,6 +10,7 @@ import IPromptPanel, { IPromptParams, IPromptHandler, ButtonType, IPromptPanelCo
 import { system } from "../system/System";
 import { bridgeManager } from "../bridge/BridgeManager";
 import { maskManager } from "../mask/MaskManager";
+import Dictionary from "../../utils/Dictionary";
 
 /**
  * @author Raykid
@@ -22,8 +23,12 @@ import { maskManager } from "../mask/MaskManager";
 @Injectable
 export default class PanelManager
 {
+    private static PRIORITY_NORMAL:number = 0;
+    private static PRIORITY_PROMPT:number = 1;
+
     private _panels:IPanel[] = [];
-    private _specifiedContainer:any = null;
+    private _priorities:Dictionary<IPanel, number> = new Dictionary();
+    private _modalDict:Dictionary<IPanel, boolean> = new Dictionary();
 
     /**
      * 获取当前显示的弹窗数组（副本）
@@ -48,6 +53,26 @@ export default class PanelManager
     public isOpened(panel:IPanel):boolean
     {
         return (this._panels.indexOf(panel) >= 0);
+    }
+
+    private updateModalMask(panel:IPanel):void
+    {
+        // 首先将传入的panel的模态遮罩去除
+        maskManager.hideModalMask(panel);
+        // 然后为最上层的模态弹窗添加遮罩
+        for(var i:number = this._panels.length - 1; i >= 0; i--)
+        {
+            panel = this._panels[i];
+            if(this._modalDict.get(panel))
+            {
+                // 如果已经有遮罩了，先移除之
+                if(maskManager.isShowingModalMask(panel))
+                    maskManager.hideModalMask(panel);
+                // 添加遮罩
+                maskManager.showModalMask(panel);
+                break;
+            }
+        }
     }
 
     /**
@@ -80,7 +105,27 @@ export default class PanelManager
             policy.prepare && policy.prepare(panel);
             // 添加显示
             var bridge:IBridge = panel.bridge;
-            bridge.addChild(this._specifiedContainer || bridge.panelLayer, panel.skin);
+            bridge.addChild(bridge.panelLayer, panel.skin);
+            // 根据优先级进行排序
+            this._panels.sort((a:IPanel, b:IPanel)=>{
+                var priA:number = this._priorities.get(a) || 0;
+                var priB:number = this._priorities.get(b) || 0;
+                // 如果a优先级大于b优先级，则表示a和b需要进行反向，将他们的显示层级对调
+                var result:number = priA - priB;
+                if(result > 0)
+                {
+                    var skinA:any = a.skin;
+                    var skinB:any = b.skin;
+                    var indexA:number = bridge.getChildIndex(bridge.panelLayer, skinA);
+                    var indexB:number = bridge.getChildIndex(bridge.panelLayer, skinB);
+                    bridge.removeChild(bridge.panelLayer, skinA);
+                    bridge.removeChild(bridge.panelLayer, skinB);
+                    bridge.addChildAt(bridge.panelLayer, skinB, indexA);
+                    bridge.addChildAt(bridge.panelLayer, skinA, indexB);
+                }
+                // 返回数据，让数组也重新排序
+                return result;
+            });
             // 调用策略接口
             policy.pop(panel, ()=>{
                 // 调用回调
@@ -88,8 +133,10 @@ export default class PanelManager
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModal, from);
             }, from);
-            // 如果是模态弹出，则需要遮罩层
-            if(isModal) maskManager.showModalMask(panel);
+            // 记录模态数据
+            this._modalDict.set(panel, isModal);
+            // 更新模态遮罩
+            this.updateModalMask(panel);
         }
         return panel;
     }
@@ -129,8 +176,12 @@ export default class PanelManager
                 // 调用接口
                 panel.__close(data, to);
             }, to);
-            // 移除遮罩
-            maskManager.hideModalMask(panel);
+            // 移除优先级数据
+            this._priorities.delete(panel);
+            // 移除模态数据
+            this._modalDict.delete(panel);
+            // 更新模态遮罩
+            this.updateModalMask(panel);
         }
         return panel;
     }
@@ -214,10 +265,10 @@ export default class PanelManager
         }
         // 实例化
         var prompt:IPromptPanel = new promptCls();
+        // 设置优先级
+        this._priorities.set(prompt, PanelManager.PRIORITY_PROMPT);
         // 显示弹窗
-        this._specifiedContainer = prompt.bridge.promptLayer;
         this.pop(prompt);
-        this._specifiedContainer = null;
         // 更新弹窗
         prompt.update(params);
         // 返回弹窗

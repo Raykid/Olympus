@@ -1591,13 +1591,6 @@ declare module "engine/bridge/IBridge" {
          */
         readonly panelLayer: any;
         /**
-         * 获取提示弹窗容器
-         *
-         * @type {*}
-         * @memberof IBridge
-         */
-        readonly promptLayer: any;
-        /**
          * 获取遮罩容器
          *
          * @readonly
@@ -1988,8 +1981,11 @@ declare module "engine/panel/PanelManager" {
      * 弹窗管理器，包含弹出弹窗、关闭弹窗、弹窗管理等功能
     */
     export default class PanelManager {
+        private static PRIORITY_NORMAL;
+        private static PRIORITY_PROMPT;
         private _panels;
-        private _specifiedContainer;
+        private _priorities;
+        private _modalDict;
         /**
          * 获取当前显示的弹窗数组（副本）
          *
@@ -2006,6 +2002,7 @@ declare module "engine/panel/PanelManager" {
          * @memberof PanelManager
          */
         isOpened(panel: IPanel): boolean;
+        private updateModalMask(panel);
         /**
          * 打开一个弹窗
          *

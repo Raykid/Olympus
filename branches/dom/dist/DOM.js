@@ -328,19 +328,6 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/As
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(DOMBridge.prototype, "promptLayer", {
-            /**
-             * 获取提示弹窗容器
-             *
-             * @type {HTMLElement}
-             * @memberof DOMBridge
-             */
-            get: function () {
-                return this._initParams.container;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(DOMBridge.prototype, "maskLayer", {
             /**
              * 获取遮罩容器

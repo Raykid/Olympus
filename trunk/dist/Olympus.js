@@ -2782,7 +2782,7 @@ define("engine/system/System", ["require", "exports", "core/Core", "core/injecto
     /** 再额外导出一个单例 */
     exports.system = Core_4.core.getInject(System);
 });
-define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/bridge/BridgeManager", "engine/mask/MaskManager"], function (require, exports, Core_5, Injector_3, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, BridgeManager_2, MaskManager_1) {
+define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/panel/NonePanelPolicy", "engine/panel/PanelMessage", "engine/panel/IPromptPanel", "engine/bridge/BridgeManager", "engine/mask/MaskManager", "utils/Dictionary"], function (require, exports, Core_5, Injector_3, NonePanelPolicy_1, PanelMessage_1, IPromptPanel_1, BridgeManager_2, MaskManager_1, Dictionary_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -2796,10 +2796,12 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
     var PanelManager = /** @class */ (function () {
         function PanelManager() {
             this._panels = [];
-            this._specifiedContainer = null;
+            this._priorities = new Dictionary_3.default();
+            this._modalDict = new Dictionary_3.default();
             /************************ 下面是通用弹窗的逻辑 ************************/
             this._promptDict = {};
         }
+        PanelManager_1 = PanelManager;
         /**
          * 获取当前显示的弹窗数组（副本）
          *
@@ -2823,6 +2825,22 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
         PanelManager.prototype.isOpened = function (panel) {
             return (this._panels.indexOf(panel) >= 0);
         };
+        PanelManager.prototype.updateModalMask = function (panel) {
+            // 首先将传入的panel的模态遮罩去除
+            MaskManager_1.maskManager.hideModalMask(panel);
+            // 然后为最上层的模态弹窗添加遮罩
+            for (var i = this._panels.length - 1; i >= 0; i--) {
+                panel = this._panels[i];
+                if (this._modalDict.get(panel)) {
+                    // 如果已经有遮罩了，先移除之
+                    if (MaskManager_1.maskManager.isShowingModalMask(panel))
+                        MaskManager_1.maskManager.hideModalMask(panel);
+                    // 添加遮罩
+                    MaskManager_1.maskManager.showModalMask(panel);
+                    break;
+                }
+            }
+        };
         /**
          * 打开一个弹窗
          *
@@ -2834,6 +2852,7 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
          * @memberof PanelManager
          */
         PanelManager.prototype.pop = function (panel, data, isModal, from) {
+            var _this = this;
             if (isModal === void 0) { isModal = true; }
             if (this._panels.indexOf(panel) < 0) {
                 // 数据先行
@@ -2852,7 +2871,26 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                 policy.prepare && policy.prepare(panel);
                 // 添加显示
                 var bridge = panel.bridge;
-                bridge.addChild(this._specifiedContainer || bridge.panelLayer, panel.skin);
+                bridge.addChild(bridge.panelLayer, panel.skin);
+                // 根据优先级进行排序
+                this._panels.sort(function (a, b) {
+                    var priA = _this._priorities.get(a) || 0;
+                    var priB = _this._priorities.get(b) || 0;
+                    // 如果a优先级大于b优先级，则表示a和b需要进行反向，将他们的显示层级对调
+                    var result = priA - priB;
+                    if (result > 0) {
+                        var skinA = a.skin;
+                        var skinB = b.skin;
+                        var indexA = bridge.getChildIndex(bridge.panelLayer, skinA);
+                        var indexB = bridge.getChildIndex(bridge.panelLayer, skinB);
+                        bridge.removeChild(bridge.panelLayer, skinA);
+                        bridge.removeChild(bridge.panelLayer, skinB);
+                        bridge.addChildAt(bridge.panelLayer, skinB, indexA);
+                        bridge.addChildAt(bridge.panelLayer, skinA, indexB);
+                    }
+                    // 返回数据，让数组也重新排序
+                    return result;
+                });
                 // 调用策略接口
                 policy.pop(panel, function () {
                     // 调用回调
@@ -2860,9 +2898,10 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 派发消息
                     Core_5.core.dispatch(PanelMessage_1.default.PANEL_AFTER_POP, panel, isModal, from);
                 }, from);
-                // 如果是模态弹出，则需要遮罩层
-                if (isModal)
-                    MaskManager_1.maskManager.showModalMask(panel);
+                // 记录模态数据
+                this._modalDict.set(panel, isModal);
+                // 更新模态遮罩
+                this.updateModalMask(panel);
             }
             return panel;
         };
@@ -2900,8 +2939,12 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
                     // 调用接口
                     panel.__close(data, to);
                 }, to);
-                // 移除遮罩
-                MaskManager_1.maskManager.hideModalMask(panel);
+                // 移除优先级数据
+                this._priorities.delete(panel);
+                // 移除模态数据
+                this._modalDict.delete(panel);
+                // 更新模态遮罩
+                this.updateModalMask(panel);
             }
             return panel;
         };
@@ -2962,10 +3005,10 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             }
             // 实例化
             var prompt = new promptCls();
+            // 设置优先级
+            this._priorities.set(prompt, PanelManager_1.PRIORITY_PROMPT);
             // 显示弹窗
-            this._specifiedContainer = prompt.bridge.promptLayer;
             this.pop(prompt);
-            this._specifiedContainer = null;
             // 更新弹窗
             prompt.update(params);
             // 返回弹窗
@@ -3015,10 +3058,13 @@ define("engine/panel/PanelManager", ["require", "exports", "core/Core", "core/in
             ];
             return this.prompt(params);
         };
-        PanelManager = __decorate([
+        PanelManager.PRIORITY_NORMAL = 0;
+        PanelManager.PRIORITY_PROMPT = 1;
+        PanelManager = PanelManager_1 = __decorate([
             Injector_3.Injectable
         ], PanelManager);
         return PanelManager;
+        var PanelManager_1;
     }());
     exports.default = PanelManager;
     /** 再额外导出一个单例 */
@@ -5280,7 +5326,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
     /** 再额外导出一个单例 */
     exports.moduleManager = Core_14.core.getInject(ModuleManager);
 });
-define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager", "engine/module/ModuleManager", "engine/mask/MaskManager"], function (require, exports, Core_15, Injector_11, BridgeMessage_1, PanelManager_1, ModuleManager_1, MaskManager_4) {
+define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeMessage", "engine/panel/PanelManager", "engine/module/ModuleManager", "engine/mask/MaskManager"], function (require, exports, Core_15, Injector_11, BridgeMessage_1, PanelManager_2, ModuleManager_1, MaskManager_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5395,7 +5441,7 @@ define("engine/bridge/BridgeManager", ["require", "exports", "core/Core", "core/
                     // 初始化Mask
                     MaskManager_4.maskManager.registerMask(bridge.type, bridge.maskEntity);
                     // 注册通用提示框
-                    PanelManager_1.panelManager.registerPrompt(bridge.type, bridge.promptClass);
+                    PanelManager_2.panelManager.registerPrompt(bridge.type, bridge.promptClass);
                     // 初始化该表现层实例
                     if (bridge.init)
                         bridge.init(afterInitBridge);
@@ -5838,7 +5884,7 @@ define("engine/bind/Watcher", ["require", "exports", "engine/bind/Utils"], funct
     }());
     exports.default = Watcher;
 });
-define("engine/bind/Dep", ["require", "exports", "utils/Dictionary"], function (require, exports, Dictionary_3) {
+define("engine/bind/Dep", ["require", "exports", "utils/Dictionary"], function (require, exports, Dictionary_4) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -5851,7 +5897,7 @@ define("engine/bind/Dep", ["require", "exports", "utils/Dictionary"], function (
     */
     var Dep = /** @class */ (function () {
         function Dep() {
-            this._map = new Dictionary_3.default();
+            this._map = new Dictionary_4.default();
         }
         /**
          * 添加数据变更订阅者
@@ -6019,7 +6065,7 @@ define("engine/bind/Mutator", ["require", "exports", "utils/ObjectUtil", "engine
         return result;
     }
 });
-define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind", "engine/bind/Utils", "engine/net/NetManager"], function (require, exports, Injector_13, Core_18, Dictionary_4, Bind_1, Utils_2, NetManager_2) {
+define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind", "engine/bind/Utils", "engine/net/NetManager"], function (require, exports, Injector_13, Core_18, Dictionary_5, Bind_1, Utils_2, NetManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6032,7 +6078,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
     */
     var BindManager = /** @class */ (function () {
         function BindManager() {
-            this._bindDict = new Dictionary_4.default();
+            this._bindDict = new Dictionary_5.default();
             this._envModel = [];
             this._regExp = /^\s*(\w+)\s+((in)|(of))\s+(.+?)\s*$/;
         }
@@ -6748,7 +6794,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
     }());
     exports.default = Mediator;
 });
-define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_2) {
+define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Mediator", "engine/panel/PanelManager"], function (require, exports, Mediator_1, PanelManager_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6776,7 +6822,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.open = function (data, isModel, from) {
-            return PanelManager_2.panelManager.pop(this, data, isModel, from);
+            return PanelManager_3.panelManager.pop(this, data, isModel, from);
         };
         /**
          * 弹出当前弹窗（只能由PanelManager调用）
@@ -6798,7 +6844,7 @@ define("engine/panel/PanelMediator", ["require", "exports", "engine/mediator/Med
          * @memberof PanelMediator
          */
         PanelMediator.prototype.close = function (data, to) {
-            return PanelManager_2.panelManager.drop(this, data, to);
+            return PanelManager_3.panelManager.drop(this, data, to);
         };
         /**
          * 关闭当前弹窗（只能由PanelManager调用）
@@ -7280,7 +7326,7 @@ define("engine/scene/SceneMediator", ["require", "exports", "engine/mediator/Med
     }(Mediator_2.default));
     exports.default = SceneMediator;
 });
-define("engine/module/Module", ["require", "exports", "core/Core", "core/observable/Observable", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_21, Observable_2, Dictionary_5, ModuleManager_2, ConstructUtil_2) {
+define("engine/module/Module", ["require", "exports", "core/Core", "core/observable/Observable", "utils/Dictionary", "engine/module/ModuleManager", "utils/ConstructUtil"], function (require, exports, Core_21, Observable_2, Dictionary_6, ModuleManager_2, ConstructUtil_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -7295,7 +7341,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
         function Module() {
             this._disposed = false;
             this._mediators = [];
-            this._disposeDict = new Dictionary_5.default();
+            this._disposeDict = new Dictionary_6.default();
             /*********************** 下面是模块消息系统 ***********************/
             this._observable = new Observable_2.default();
         }
@@ -8228,7 +8274,7 @@ define("engine/injector/BindUtil", ["require", "exports", "engine/bind/BindManag
     }
     exports.compileResponse = compileResponse;
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil"], function (require, exports, Injector_19, Message_3, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_6, BindUtil) {
+define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil"], function (require, exports, Injector_19, Message_3, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_7, BindUtil) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -8376,7 +8422,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
             NetManager_4.netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
         });
     }
-    var delegateHandlerDict = new Dictionary_6.default();
+    var delegateHandlerDict = new Dictionary_7.default();
     function addDelegateHandler(instance, handler) {
         if (!instance)
             return;
@@ -8448,7 +8494,7 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         }
     }
     exports.DelegateMediator = DelegateMediator;
-    var onOpenDict = new Dictionary_6.default();
+    var onOpenDict = new Dictionary_7.default();
     function listenOnOpen(prototype, propertyKey, before, after) {
         ConstructUtil_3.listenConstruct(prototype.constructor, function (mediator) {
             // 篡改onOpen方法
