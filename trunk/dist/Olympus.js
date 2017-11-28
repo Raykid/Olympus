@@ -2271,6 +2271,14 @@ define("engine/net/RequestData", ["require", "exports"], function (require, expo
              * @memberof RequestData
              */
             this.__userData = {};
+            Object.defineProperties(this, {
+                __userData: {
+                    configurable: true,
+                    enumerable: false,
+                    writable: true,
+                    value: this.__userData
+                }
+            });
         }
         Object.defineProperty(RequestData.prototype, "type", {
             /**

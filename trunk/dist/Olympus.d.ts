@@ -1291,6 +1291,7 @@ declare module "engine/net/RequestData" {
          * @memberof RequestData
          */
         readonly type: string;
+        constructor();
     }
     /** 导出公共消息参数对象 */
     export var commonData: any;

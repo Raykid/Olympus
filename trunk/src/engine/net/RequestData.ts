@@ -102,6 +102,18 @@ export default abstract class RequestData implements IMessage
     {
         return this.__params.type;
     }
+
+    public constructor()
+    {
+        Object.defineProperties(this, {
+            __userData: {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: this.__userData
+            }
+        });
+    }
 }
 
 /** 导出公共消息参数对象 */
