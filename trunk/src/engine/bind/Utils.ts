@@ -14,7 +14,7 @@ function wrapEvalFuncExp(exp:string, scopeCount:number):(...scopes:any[])=>any
     for(var i:number = 0; i < scopeCount; i++)
     {
         argList.push("s" + i);
-        expStr = "with(s" + i + "||{}){" + expStr + "}";
+        expStr = "with(s" + (scopeCount - 1 - i) + "||{}){" + expStr + "}";
     }
     return Function(argList.join(","), expStr) as (...scopes:any[])=>any;
 }

@@ -5578,7 +5578,7 @@ define("engine/bind/Utils", ["require", "exports"], function (require, exports) 
         var expStr = exp;
         for (var i = 0; i < scopeCount; i++) {
             argList.push("s" + i);
-            expStr = "with(s" + i + "||{}){" + expStr + "}";
+            expStr = "with(s" + (scopeCount - 1 - i) + "||{}){" + expStr + "}";
         }
         return Function(argList.join(","), expStr);
     }
