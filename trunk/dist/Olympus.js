@@ -8415,11 +8415,21 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
     function doResponseHandler(cls, key, type, inModule) {
         // 监听实例化
         ConstructUtil_3.listenConstruct(cls, function (instance) {
-            NetManager_4.netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+            if (instance instanceof Mediator_3.default) {
+                // 如果是Mediator，则需要等到被托管后再执行注册
+                addDelegateHandler(instance, function () {
+                    NetManager_4.netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+                });
+            }
+            else {
+                var module = instance.dependModuleInstance;
+                NetManager_4.netManager.listenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
+            }
         });
         // 监听销毁
         ConstructUtil_3.listenDispose(cls, function (instance) {
-            NetManager_4.netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+            var module = instance.dependModuleInstance;
+            NetManager_4.netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
         });
     }
     var delegateHandlerDict = new Dictionary_7.default();

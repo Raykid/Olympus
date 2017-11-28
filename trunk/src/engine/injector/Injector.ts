@@ -184,14 +184,26 @@ export function ModuleResponseHandler(target:any, key?:string):MethodDecorator|v
 function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConstructor, inModule:boolean):void
 {
     // 监听实例化
-    listenConstruct(cls, function(instance:{observable:IObservable}):void
+    listenConstruct(cls, function(instance:IModuleDependent):void
     {
-        netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+        if(instance instanceof Mediator)
+        {
+            // 如果是Mediator，则需要等到被托管后再执行注册
+            addDelegateHandler(instance, ()=>{
+                netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+            });
+        }
+        else
+        {
+            var module:IModule = instance.dependModuleInstance;
+            netManager.listenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
+        }
     });
     // 监听销毁
-    listenDispose(cls, function(instance:{observable:IObservable}):void
+    listenDispose(cls, function(instance:IModuleDependent):void
     {
-        netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+        var module:IModule = instance.dependModuleInstance;
+        netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
     });
 }
 
