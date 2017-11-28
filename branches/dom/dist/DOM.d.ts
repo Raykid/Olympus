@@ -165,6 +165,13 @@ declare module "DOMBridge" {
          */
         readonly panelLayer: HTMLElement;
         /**
+         * 获取提示弹窗容器
+         *
+         * @type {HTMLElement}
+         * @memberof DOMBridge
+         */
+        readonly promptLayer: HTMLElement;
+        /**
          * 获取遮罩容器
          *
          * @readonly

@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.1.0",
+  "version": "0.1.7",
   "description": "Olympus的DOM表现层库",
   "main": "dist/DOM.js",
   "types": "dist/DOM.d.ts",

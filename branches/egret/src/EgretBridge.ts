@@ -140,6 +140,19 @@ export default class EgretBridge implements IBridge
         return this._panelLayer;
     }
     
+    private _promptLayer:egret.DisplayObjectContainer;
+    /**
+     * 获取提示弹窗容器
+     * 
+     * @readonly
+     * @type {egret.DisplayObjectContainer}
+     * @memberof EgretBridge
+     */
+    public get promptLayer():egret.DisplayObjectContainer
+    {
+        return this._promptLayer;
+    }
+    
     private _maskLayer:egret.DisplayObjectContainer;
     /**
      * 获取遮罩容器
@@ -316,6 +329,10 @@ export default class EgretBridge implements IBridge
             self._panelLayer = new eui.UILayer();
             self._panelLayer.touchEnabled = false;
             root.addChild(self._panelLayer);
+            // 创建提示框层
+            self._promptLayer = new eui.UILayer();
+            self._promptLayer.touchEnabled = false;
+            root.addChild(self._promptLayer);
             // 创建遮罩层
             self._maskLayer = new eui.UILayer();
             self._maskLayer.touchEnabled = false;

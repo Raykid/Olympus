@@ -333,6 +333,15 @@ declare module "EgretBridge" {
          * @memberof EgretBridge
          */
         readonly panelLayer: egret.DisplayObjectContainer;
+        private _promptLayer;
+        /**
+         * 获取提示弹窗容器
+         *
+         * @readonly
+         * @type {egret.DisplayObjectContainer}
+         * @memberof EgretBridge
+         */
+        readonly promptLayer: egret.DisplayObjectContainer;
         private _maskLayer;
         /**
          * 获取遮罩容器

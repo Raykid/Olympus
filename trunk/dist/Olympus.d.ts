@@ -1591,6 +1591,13 @@ declare module "engine/bridge/IBridge" {
          */
         readonly panelLayer: any;
         /**
+         * 获取提示弹窗容器
+         *
+         * @type {*}
+         * @memberof IBridge
+         */
+        readonly promptLayer: any;
+        /**
          * 获取遮罩容器
          *
          * @readonly
@@ -1982,6 +1989,7 @@ declare module "engine/panel/PanelManager" {
     */
     export default class PanelManager {
         private _panels;
+        private _specifiedContainer;
         /**
          * 获取当前显示的弹窗数组（副本）
          *

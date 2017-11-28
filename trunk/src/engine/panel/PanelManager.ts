@@ -23,6 +23,7 @@ import { maskManager } from "../mask/MaskManager";
 export default class PanelManager
 {
     private _panels:IPanel[] = [];
+    private _specifiedContainer:any = null;
 
     /**
      * 获取当前显示的弹窗数组（副本）
@@ -79,7 +80,7 @@ export default class PanelManager
             policy.prepare && policy.prepare(panel);
             // 添加显示
             var bridge:IBridge = panel.bridge;
-            bridge.addChild(bridge.panelLayer, panel.skin);
+            bridge.addChild(this._specifiedContainer || bridge.panelLayer, panel.skin);
             // 调用策略接口
             policy.pop(panel, ()=>{
                 // 调用回调
@@ -123,7 +124,8 @@ export default class PanelManager
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
                 // 移除显示
                 var bridge:IBridge = panel.bridge;
-                bridge.removeChild(bridge.panelLayer, panel.skin);
+                var parent:any = bridge.getParent(panel.skin);
+                if(parent) bridge.removeChild(parent, panel.skin);
                 // 调用接口
                 panel.__close(data, to);
             }, to);
@@ -213,7 +215,9 @@ export default class PanelManager
         // 实例化
         var prompt:IPromptPanel = new promptCls();
         // 显示弹窗
+        this._specifiedContainer = prompt.bridge.promptLayer;
         this.pop(prompt);
+        this._specifiedContainer = null;
         // 更新弹窗
         prompt.update(params);
         // 返回弹窗

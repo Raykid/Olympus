@@ -125,6 +125,17 @@ export default class DOMBridge implements IBridge
     }
 
     /**
+     * 获取提示弹窗容器
+     * 
+     * @type {HTMLElement}
+     * @memberof DOMBridge
+     */
+    public get promptLayer():HTMLElement
+    {
+        return <HTMLElement>this._initParams.container;
+    }
+
+    /**
      * 获取遮罩容器
      * 
      * @readonly
