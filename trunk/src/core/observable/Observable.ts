@@ -18,9 +18,26 @@ export default class Observable implements IObservable, IDisposable
     private _parent:IObservable;
     private _listenerDict:{[type:string]:IMessageData[]} = {};
     
+    /**
+     * 获取到IObservable实体，若本身就是IObservable实体则返回本身
+     * 
+     * @type {IObservable}
+     * @memberof Observable
+     */
     public get observable():IObservable
     {
         return this;
+    }
+
+    /**
+     * 获取到父级IObservable
+     * 
+     * @type {IObservable}
+     * @memberof Observable
+     */
+    public get parent():IObservable
+    {
+        return this._parent;
     }
 
     public constructor(parent?:IObservable)
@@ -92,6 +109,8 @@ export default class Observable implements IObservable, IDisposable
     /** dispatch方法实现 */
     public dispatch(typeOrMsg:string|IMessage, ...params:any[]):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         // 统一消息对象
         var msg:IMessage = typeOrMsg as IMessage;
         if(typeof typeOrMsg == "string")
@@ -117,6 +136,8 @@ export default class Observable implements IObservable, IDisposable
      */
     public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         type = (typeof type == "string" ? type : type.toString());
         var listeners:IMessageData[] = this._listenerDict[type];
         if(!listeners) this._listenerDict[type] = listeners = [];
@@ -141,6 +162,8 @@ export default class Observable implements IObservable, IDisposable
      */
     public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         type = (typeof type == "string" ? type : type.toString());
         var listeners:IMessageData[] = this._listenerDict[type];
         // 检查存在性
@@ -184,6 +207,8 @@ export default class Observable implements IObservable, IDisposable
      */
     public mapCommand(type:string, cmd:ICommandConstructor):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         var commands:(ICommandConstructor)[] = this._commandDict[type];
         if(!commands) this._commandDict[type] = commands = [];
         if(commands.indexOf(cmd) < 0) commands.push(cmd);
@@ -199,6 +224,8 @@ export default class Observable implements IObservable, IDisposable
      */
     public unmapCommand(type:string, cmd:ICommandConstructor):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         var commands:(ICommandConstructor)[] = this._commandDict[type];
         if(!commands) return;
         var index:number = commands.indexOf(cmd);
@@ -215,6 +242,7 @@ export default class Observable implements IObservable, IDisposable
     /** 销毁 */
     public dispose():void
     {
+        // 销毁判断
         if(this._disposed) return;
         // 移除上一层观察者引用
         this._parent = null;

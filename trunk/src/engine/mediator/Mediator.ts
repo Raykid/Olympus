@@ -302,6 +302,17 @@ export default class Mediator implements IModuleMediator
     }
     
     /**
+     * 获取到父级IObservable
+     * 
+     * @type {IObservable}
+     * @memberof Mediator
+     */
+    public get parent():IObservable
+    {
+        return this.observable.parent;
+    }
+    
+    /**
      * 派发消息
      * 
      * @param {IMessage} msg 内核消息实例

@@ -209,6 +209,13 @@ declare module "core/observable/IObservable" {
          */
         readonly observable: IObservable;
         /**
+         * 获取到父级IObservable
+         *
+         * @type {IObservable}
+         * @memberof IObservable
+         */
+        readonly parent: IObservable;
+        /**
          * 派发消息
          *
          * @param {IMessage} msg 内核消息实例
@@ -412,7 +419,20 @@ declare module "core/observable/Observable" {
     export default class Observable implements IObservable, IDisposable {
         private _parent;
         private _listenerDict;
+        /**
+         * 获取到IObservable实体，若本身就是IObservable实体则返回本身
+         *
+         * @type {IObservable}
+         * @memberof Observable
+         */
         readonly observable: IObservable;
+        /**
+         * 获取到父级IObservable
+         *
+         * @type {IObservable}
+         * @memberof Observable
+         */
+        readonly parent: IObservable;
         constructor(parent?: IObservable);
         private handleMessages(msg);
         private doDispatch(msg);
@@ -568,6 +588,13 @@ declare module "core/Core" {
          * @memberof Core
          */
         readonly observable: IObservable;
+        /**
+         * 获取到父级IObservable
+         *
+         * @type {IObservable}
+         * @memberof Core
+         */
+        readonly parent: IObservable;
         /**
          * 派发内核消息
          *
@@ -2168,7 +2195,9 @@ declare module "engine/net/NetManager" {
         sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any, observable?: IObservable): void;
         /** 这里导出不希望用户使用的方法，供框架内使用 */
         __onResponse(type: string, result: any, request?: RequestData): void | never;
+        private recurseResponse(type, response, observable);
         __onError(err: Error, request?: RequestData): void;
+        private recurseError(err, request, observable);
     }
     /** 再额外导出一个单例 */
     export const netManager: NetManager;
@@ -3271,6 +3300,13 @@ declare module "engine/model/Model" {
          */
         readonly observable: IObservable;
         /**
+         * 获取到父级IObservable
+         *
+         * @type {IObservable}
+         * @memberof Model
+         */
+        readonly parent: IObservable;
+        /**
          * 派发内核消息
          *
          * @param {IMessage} msg 内核消息实例
@@ -3790,6 +3826,13 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         readonly observable: IObservable;
+        /**
+         * 获取到父级IObservable
+         *
+         * @type {IObservable}
+         * @memberof Mediator
+         */
+        readonly parent: IObservable;
         /**
          * 派发消息
          *
@@ -4327,6 +4370,13 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         readonly observable: IObservable;
+        /**
+         * 获取到父级IObservable
+         *
+         * @type {IObservable}
+         * @memberof Module
+         */
+        readonly parent: IObservable;
         /**
          * 派发消息
          *

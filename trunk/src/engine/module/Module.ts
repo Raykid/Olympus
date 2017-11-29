@@ -276,6 +276,17 @@ export default abstract class Module implements IModule
     }
     
     /**
+     * 获取到父级IObservable
+     * 
+     * @type {IObservable}
+     * @memberof Module
+     */
+    public get parent():IObservable
+    {
+        return this._observable.parent;
+    }
+    
+    /**
      * 派发消息
      * 
      * @param {IMessage} msg 内核消息实例

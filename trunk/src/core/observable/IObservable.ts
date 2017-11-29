@@ -19,6 +19,13 @@ export default interface IObservable
      * @memberof IObservable
      */
     readonly observable:IObservable;
+    /**
+     * 获取到父级IObservable
+     * 
+     * @type {IObservable}
+     * @memberof IObservable
+     */
+    readonly parent:IObservable;
 
     /**
      * 派发消息

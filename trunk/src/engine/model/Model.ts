@@ -26,6 +26,17 @@ export default abstract class Model implements IObservable
     }
 
     /**
+     * 获取到父级IObservable
+     * 
+     * @type {IObservable}
+     * @memberof Model
+     */
+    public get parent():IObservable
+    {
+        return null;
+    }
+
+    /**
      * 派发内核消息
      * 
      * @param {IMessage} msg 内核消息实例

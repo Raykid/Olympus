@@ -1576,8 +1576,27 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
             this._parent = parent && parent.observable;
         }
         Object.defineProperty(Observable.prototype, "observable", {
+            /**
+             * 获取到IObservable实体，若本身就是IObservable实体则返回本身
+             *
+             * @type {IObservable}
+             * @memberof Observable
+             */
             get: function () {
                 return this;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Observable.prototype, "parent", {
+            /**
+             * 获取到父级IObservable
+             *
+             * @type {IObservable}
+             * @memberof Observable
+             */
+            get: function () {
+                return this._parent;
             },
             enumerable: true,
             configurable: true
@@ -1629,6 +1648,9 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
             for (var _i = 1; _i < arguments.length; _i++) {
                 params[_i - 1] = arguments[_i];
             }
+            // 销毁判断
+            if (this._disposed)
+                return;
             // 统一消息对象
             var msg = typeOrMsg;
             if (typeof typeOrMsg == "string") {
@@ -1651,6 +1673,9 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
          * @memberof Observable
          */
         Observable.prototype.listen = function (type, handler, thisArg) {
+            // 销毁判断
+            if (this._disposed)
+                return;
             type = (typeof type == "string" ? type : type.toString());
             var listeners = this._listenerDict[type];
             if (!listeners)
@@ -1674,6 +1699,9 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
          * @memberof Observable
          */
         Observable.prototype.unlisten = function (type, handler, thisArg) {
+            // 销毁判断
+            if (this._disposed)
+                return;
             type = (typeof type == "string" ? type : type.toString());
             var listeners = this._listenerDict[type];
             // 检查存在性
@@ -1707,6 +1735,9 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
          * @memberof Observable
          */
         Observable.prototype.mapCommand = function (type, cmd) {
+            // 销毁判断
+            if (this._disposed)
+                return;
             var commands = this._commandDict[type];
             if (!commands)
                 this._commandDict[type] = commands = [];
@@ -1722,6 +1753,9 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
          * @memberof Observable
          */
         Observable.prototype.unmapCommand = function (type, cmd) {
+            // 销毁判断
+            if (this._disposed)
+                return;
             var commands = this._commandDict[type];
             if (!commands)
                 return;
@@ -1740,6 +1774,7 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
         });
         /** 销毁 */
         Observable.prototype.dispose = function () {
+            // 销毁判断
             if (this._disposed)
                 return;
             // 移除上一层观察者引用
@@ -1983,6 +2018,19 @@ define("core/Core", ["require", "exports", "utils/Dictionary", "core/observable/
              */
             get: function () {
                 return this._observable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Core.prototype, "parent", {
+            /**
+             * 获取到父级IObservable
+             *
+             * @type {IObservable}
+             * @memberof Core
+             */
+            get: function () {
+                return null;
             },
             enumerable: true,
             configurable: true
@@ -3330,6 +3378,8 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             var cls = this._responseDict[type];
             if (cls) {
                 var response = new cls();
+                // 执行解析
+                response.parse(result);
                 // 设置配对请求和发送内核
                 var observable = Core_6.core.observable;
                 if (request) {
@@ -3337,37 +3387,51 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                     // 如果有配对请求，则将返回值发送到请求所在的原始内核里
                     observable = request.__oriObservable;
                 }
-                // 执行解析
-                response.parse(result);
-                // 派发事件
-                observable.dispatch(NetMessage_1.default.NET_RESPONSE, response, request);
-                // 触发事件形式监听
-                var listeners = this._responseListeners[type];
-                if (listeners) {
-                    listeners = listeners.concat();
-                    for (var _i = 0, listeners_3 = listeners; _i < listeners_3.length; _i++) {
-                        var listener = listeners_3[_i];
-                        if (listener[3] == observable) {
-                            // 必须是同核消息才能触发回调
-                            listener[0].call(listener[1], response, request);
-                            // 如果是一次性监听则移除之
-                            if (listener[2])
-                                this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
-                        }
-                    }
-                }
+                // 处理
+                this.recurseResponse(type, response, observable);
             }
             else {
                 console.warn("没有找到返回结构体定义：" + type);
+            }
+        };
+        NetManager.prototype.recurseResponse = function (type, response, observable) {
+            // 派发事件
+            observable.dispatch(NetMessage_1.default.NET_RESPONSE, response, response.__params.request);
+            // 触发事件形式监听
+            var listeners = this._responseListeners[type];
+            if (listeners) {
+                listeners = listeners.concat();
+                for (var _i = 0, listeners_3 = listeners; _i < listeners_3.length; _i++) {
+                    var listener = listeners_3[_i];
+                    if (listener[3] == observable) {
+                        // 必须是同核消息才能触发回调
+                        listener[0].call(listener[1], response, response.__params.request);
+                        // 如果是一次性监听则移除之
+                        if (listener[2])
+                            this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
+                    }
+                }
+            }
+            // 递归
+            if (observable.parent) {
+                this.recurseResponse(type, response, observable.parent);
             }
         };
         NetManager.prototype.__onError = function (err, request) {
             // 移除遮罩
             MaskManager_2.maskManager.hideLoading("net");
             // 如果有配对请求，则将返回值发送到请求所在的原始内核里
-            var observable = request ? request.__oriObservable : Core_6.core;
+            var observable = request && request.__oriObservable;
+            // 处理
+            this.recurseError(err, request, observable);
+        };
+        NetManager.prototype.recurseError = function (err, request, observable) {
             // 派发事件
             observable.dispatch(NetMessage_1.default.NET_ERROR, err, request);
+            // 递归
+            if (observable.parent) {
+                this.recurseError(err, request, observable.parent);
+            }
         };
         NetManager = __decorate([
             Injector_4.Injectable,
@@ -5561,6 +5625,19 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Model.prototype, "parent", {
+            /**
+             * 获取到父级IObservable
+             *
+             * @type {IObservable}
+             * @memberof Model
+             */
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Model.prototype.dispatch = function () {
             var params = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -6718,6 +6795,19 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Mediator.prototype, "parent", {
+            /**
+             * 获取到父级IObservable
+             *
+             * @type {IObservable}
+             * @memberof Mediator
+             */
+            get: function () {
+                return this.observable.parent;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /** dispatch方法实现 */
         Mediator.prototype.dispatch = function () {
             var params = [];
@@ -7566,6 +7656,19 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
              */
             get: function () {
                 return this._observable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Module.prototype, "parent", {
+            /**
+             * 获取到父级IObservable
+             *
+             * @type {IObservable}
+             * @memberof Module
+             */
+            get: function () {
+                return this._observable.parent;
             },
             enumerable: true,
             configurable: true

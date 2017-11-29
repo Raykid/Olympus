@@ -58,6 +58,17 @@ export default class Core implements IObservable
     {
         return this._observable;
     }
+    
+    /**
+     * 获取到父级IObservable
+     * 
+     * @type {IObservable}
+     * @memberof Core
+     */
+    public get parent():IObservable
+    {
+        return null;
+    }
 
     /**
      * 派发内核消息
