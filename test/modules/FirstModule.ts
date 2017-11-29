@@ -33,11 +33,11 @@ class FirstMediator extends SceneMediator
     private fuckModel3:IFuckModel;
 
     @BindOn({click: "onClick"})
-    @BindIf({"labelDisplay": "fuckText == '1234'"})
-    public btn:eui.Button;
+    @BindIf("fuckText == '1234'")
+    public btn:HTMLElement
     @BindFor("fuck in fuckList")
     @BindValue({textContent: "fuck + ' - ' + fuckText + ' - 1'"})
-    public txt:eui.Label;
+    public txt:HTMLElement;
 
     public listAssets():string[]
     {

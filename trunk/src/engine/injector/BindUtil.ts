@@ -160,14 +160,14 @@ export function compileOn(mediator:IMediator, target:ICompileTarget, evtDict:{[t
 /**
  * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
  */
-export function compileIf(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:any}):void
+export function compileIf(mediator:IMediator, target:ICompileTarget, exp:string):void
 {
     // 将后面的编译命令缓存起来
     var bindParams:IBindParams[] = target.__bind_commands__;
     var cached:IBindParams[] = bindParams.splice(0, bindParams.length);
     // 绑定if命令
     var terminated:boolean = false;
-    bindManager.bindIf(mediator, target, uiDict, (value:boolean)=>{
+    bindManager.bindIf(mediator, target, exp, (value:boolean)=>{
         // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
         if(!terminated && value)
         {

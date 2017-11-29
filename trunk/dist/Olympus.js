@@ -6302,17 +6302,15 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:any}} uiDict 判断字典
+         * @param {string} exp 绑定表达式
          * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
          * @memberof BindManager
          */
-        BindManager.prototype.bindIf = function (mediator, ui, uiDict, callback) {
+        BindManager.prototype.bindIf = function (mediator, ui, exp, callback) {
             var _this = this;
             var bindData = this._bindDict.get(mediator);
             var replacer = mediator.bridge.createEmptyDisplay();
-            this.delaySearch(mediator, uiDict, ui, function (ui, key, exp) {
-                // 寻址到指定目标
-                ui = ui[key] || ui;
+            this.delaySearch(mediator, { key: exp }, ui, function (a, b, exp) {
                 // 绑定表达式
                 (_a = bindData.bind).createWatcher.apply(_a, [ui, exp, function (value) {
                         // 如果表达式为true则显示ui，否则移除ui
@@ -8232,13 +8230,13 @@ define("engine/injector/BindUtil", ["require", "exports", "engine/bind/BindManag
     /**
      * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
      */
-    function compileIf(mediator, target, uiDict) {
+    function compileIf(mediator, target, exp) {
         // 将后面的编译命令缓存起来
         var bindParams = target.__bind_commands__;
         var cached = bindParams.splice(0, bindParams.length);
         // 绑定if命令
         var terminated = false;
-        BindManager_2.bindManager.bindIf(mediator, target, uiDict, function (value) {
+        BindManager_2.bindManager.bindIf(mediator, target, exp, function (value) {
             // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
             if (!terminated && value) {
                 // 恢复后面的命令
@@ -8621,27 +8619,19 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
     }
     exports.BindOn = BindOn;
     /**
-     * @private
+     * 绑定当前对象的显示判断，if不支持寻址功能
+     *
+     * @export
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
      */
-    function BindIf(arg1, arg2) {
+    function BindIf(exp) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 组织参数字典
-                var uiDict;
-                if (typeof arg1 == "string") {
-                    uiDict = {};
-                    if (arg2)
-                        uiDict[arg1] = arg2; // 有name寻址
-                    else
-                        uiDict["$target"] = arg1; // 没有name寻址，直接绑定表达式
-                }
-                else {
-                    uiDict = arg1;
-                }
                 // 获取编译启动目标
                 var target = mediator[propertyKey];
                 // 添加编译指令
-                BindUtil.addCompileCommand(target, BindUtil.compileIf, uiDict);
+                BindUtil.addCompileCommand(target, BindUtil.compileIf, exp);
             });
         };
     }

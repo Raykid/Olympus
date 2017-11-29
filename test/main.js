@@ -342,13 +342,13 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
         ], FirstMediator.prototype, "fuckModel3", void 0);
         __decorate([
             Injector_8.BindOn({ click: "onClick" }),
-            Injector_8.BindIf({ "labelDisplay": "fuckText == '1234'" }),
-            __metadata("design:type", eui.Button)
+            Injector_8.BindIf("fuckText == '1234'"),
+            __metadata("design:type", HTMLElement)
         ], FirstMediator.prototype, "btn", void 0);
         __decorate([
             Injector_8.BindFor("fuck in fuckList"),
             Injector_8.BindValue({ textContent: "fuck + ' - ' + fuckText + ' - 1'" }),
-            __metadata("design:type", eui.Label)
+            __metadata("design:type", HTMLElement)
         ], FirstMediator.prototype, "txt", void 0);
         __decorate([
             Injector_7.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),

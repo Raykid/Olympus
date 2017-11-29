@@ -459,54 +459,21 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:string):PropertyDe
 }
 
 /**
- * 一次绑定多个显示判断，如果要指定当前显示对象请使用$target作为key
- * 
- * @export
- * @param {{[name:string]:any}} uiDict ui属性和表达式字典
- * @returns {PropertyDecorator} 
- */
-export function BindIf(uiDict:{[name:string]:any}):PropertyDecorator;
-/**
- * 一次绑定一个显示判断
- * 
- * @export
- * @param {string} name ui属性名称
- * @param {string} exp 表达式
- * @returns {PropertyDecorator} 
- */
-export function BindIf(name:string, exp:string):PropertyDecorator;
-/**
- * 绑定当前对象的显示判断
+ * 绑定当前对象的显示判断，if不支持寻址功能
  * 
  * @export
  * @param {string} exp 表达式
  * @returns {PropertyDecorator} 
  */
-export function BindIf(exp:string):PropertyDecorator;
-/**
- * @private
- */
-export function BindIf(arg1:{[name:string]:any}|string, arg2?:string):PropertyDecorator
+export function BindIf(exp:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
-            // 组织参数字典
-            var uiDict:{[name:string]:any};
-            if(typeof arg1 == "string")
-            {
-                uiDict = {};
-                if(arg2) uiDict[arg1] = arg2;// 有name寻址
-                else uiDict["$target"] = arg1;// 没有name寻址，直接绑定表达式
-            }
-            else
-            {
-                uiDict = arg1;
-            }
             // 获取编译启动目标
             var target:any = mediator[propertyKey];
             // 添加编译指令
-            BindUtil.addCompileCommand(target, BindUtil.compileIf, uiDict);
+            BindUtil.addCompileCommand(target, BindUtil.compileIf, exp);
         });
     };
 }

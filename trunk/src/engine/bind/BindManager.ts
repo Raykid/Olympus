@@ -252,17 +252,15 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {{[name:string]:any}} uiDict 判断字典
+     * @param {string} exp 绑定表达式
      * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
      * @memberof BindManager
      */
-    public bindIf(mediator:IMediator, ui:any, uiDict:{[name:string]:any}, callback?:(value:boolean)=>void):void
+    public bindIf(mediator:IMediator, ui:any, exp:string, callback?:(value:boolean)=>void):void
     {
         var bindData:BindData = this._bindDict.get(mediator);
         var replacer:any = mediator.bridge.createEmptyDisplay();
-        this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
-            // 寻址到指定目标
-            ui = ui[key] || ui;
+        this.delaySearch(mediator, {key: exp}, ui, (a:any, b:string, exp:string)=>{
             // 绑定表达式
             bindData.bind.createWatcher(ui, exp, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui

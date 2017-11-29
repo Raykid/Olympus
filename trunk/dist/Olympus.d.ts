@@ -3601,13 +3601,11 @@ declare module "engine/bind/BindManager" {
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:any}} uiDict 判断字典
+         * @param {string} exp 绑定表达式
          * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
          * @memberof BindManager
          */
-        bindIf(mediator: IMediator, ui: any, uiDict: {
-            [name: string]: any;
-        }, callback?: (value: boolean) => void): void;
+        bindIf(mediator: IMediator, ui: any, exp: string, callback?: (value: boolean) => void): void;
         private _regExp;
         /**
          * 绑定循环
@@ -4794,9 +4792,7 @@ declare module "engine/injector/BindUtil" {
     /**
      * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
      */
-    export function compileIf(mediator: IMediator, target: ICompileTarget, uiDict: {
-        [name: string]: any;
-    }): void;
+    export function compileIf(mediator: IMediator, target: ICompileTarget, exp: string): void;
     /**
      * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
      */
@@ -4901,26 +4897,7 @@ declare module "engine/injector/Injector" {
      */
     export function BindOn(type: string, exp: string): PropertyDecorator;
     /**
-     * 一次绑定多个显示判断，如果要指定当前显示对象请使用$target作为key
-     *
-     * @export
-     * @param {{[name:string]:any}} uiDict ui属性和表达式字典
-     * @returns {PropertyDecorator}
-     */
-    export function BindIf(uiDict: {
-        [name: string]: any;
-    }): PropertyDecorator;
-    /**
-     * 一次绑定一个显示判断
-     *
-     * @export
-     * @param {string} name ui属性名称
-     * @param {string} exp 表达式
-     * @returns {PropertyDecorator}
-     */
-    export function BindIf(name: string, exp: string): PropertyDecorator;
-    /**
-     * 绑定当前对象的显示判断
+     * 绑定当前对象的显示判断，if不支持寻址功能
      *
      * @export
      * @param {string} exp 表达式
