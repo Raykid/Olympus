@@ -3200,8 +3200,8 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
         }
         NetManager.prototype.onMsgDispatched = function (msg) {
             var observable = this.observable;
-            // 如果消息是通讯消息且所属内核与当前处理的内核一致则做处理
-            if (msg instanceof RequestData_1.default && observable == msg.__oriObservable) {
+            // 如果消息是通讯消息则做处理
+            if (msg instanceof RequestData_1.default) {
                 // 添加遮罩
                 MaskManager_2.maskManager.showLoading(null, "net");
                 // 指定消息参数连接上公共参数作为参数
@@ -5234,7 +5234,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 // 如果有缓存的模块需要打开则打开之
                                 if (this._openCache.length > 0)
                                     this.open.apply(this, this._openCache.shift());
-                            }, _this);
+                            }, _this, target.observable);
                         });
                     }
                 };

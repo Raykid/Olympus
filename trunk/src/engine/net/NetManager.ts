@@ -35,8 +35,8 @@ export default class NetManager
     private onMsgDispatched(msg:IMessage):void
     {
         var observable:IObservable = (this as any).observable;
-        // 如果消息是通讯消息且所属内核与当前处理的内核一致则做处理
-        if(msg instanceof RequestData && observable == msg.__oriObservable)
+        // 如果消息是通讯消息则做处理
+        if(msg instanceof RequestData)
         {
             // 添加遮罩
             maskManager.showLoading(null, "net");

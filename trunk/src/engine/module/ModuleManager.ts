@@ -273,7 +273,7 @@ export default class ModuleManager
                             // 如果有缓存的模块需要打开则打开之
                             if(this._openCache.length > 0)
                                 this.open.apply(this, this._openCache.shift());
-                        }, this);
+                        }, this, target.observable);
                     });
                 }
             };
