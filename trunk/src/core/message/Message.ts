@@ -32,6 +32,14 @@ export default abstract class Message implements IMessage
      */
     public __observable:IObservable;
 
+    /**
+     * 消息所属的原始内核（第一个派发到的内核）
+     * 
+     * @type {IObservable}
+     * @memberof Message
+     */
+    public __oriObservable:IObservable;
+
     public constructor(type:string)
     {
         this._type = type;

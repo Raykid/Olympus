@@ -154,7 +154,7 @@ export default class MaskManager
     /** 显示模态窗口遮罩 */
     public showModalMask(popup:IPanel, alpha?:number):void
     {
-        var type:string = bridgeManager.currentBridge.type;
+        var type:string = popup.bridge.type;
         var entity:IMaskEntity = this._entityDict[type];
         if(entity != null)
         {
@@ -168,7 +168,7 @@ export default class MaskManager
     /** 隐藏模态窗口遮罩 */
     public hideModalMask(popup:IPanel):void
     {
-        var type:string = bridgeManager.currentBridge.type;
+        var type:string = popup.bridge.type;
         var entity:IMaskEntity = this._entityDict[type];
         if(entity != null)
         {
@@ -182,7 +182,7 @@ export default class MaskManager
     /** 当前是否在显示模态窗口遮罩 */
     public isShowingModalMask(popup:IPanel):boolean
     {
-        var type:string = bridgeManager.currentBridge.type;
+        var type:string = popup.bridge.type;
         var entity:IMaskEntity = this._entityDict[type];
         if(entity != null) return entity.isShowingModalMask(popup);
         return false;

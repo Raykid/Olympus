@@ -13,6 +13,14 @@ import ICommandConstructor from "../command/ICommandConstructor";
 export default interface IObservable
 {
     /**
+     * 获取到IObservable实体，若本身就是IObservable实体则返回本身
+     * 
+     * @type {IObservable}
+     * @memberof IObservable
+     */
+    readonly observable:IObservable;
+
+    /**
      * 派发消息
      * 
      * @param {IMessage} msg 内核消息实例

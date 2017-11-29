@@ -202,6 +202,13 @@ declare module "core/observable/IObservable" {
     */
     export default interface IObservable {
         /**
+         * 获取到IObservable实体，若本身就是IObservable实体则返回本身
+         *
+         * @type {IObservable}
+         * @memberof IObservable
+         */
+        readonly observable: IObservable;
+        /**
          * 派发消息
          *
          * @param {IMessage} msg 内核消息实例
@@ -279,6 +286,13 @@ declare module "core/message/IMessage" {
          * @memberof IMessage
          */
         readonly __observable: IObservable;
+        /**
+         * 消息所属的原始内核（第一个派发到的内核）
+         *
+         * @type {IObservable}
+         * @memberof IMessage
+         */
+        readonly __oriObservable: IObservable;
     }
 }
 declare module "core/interfaces/IDisposable" {
@@ -325,6 +339,13 @@ declare module "core/message/Message" {
          * @memberof RequestData
          */
         __observable: IObservable;
+        /**
+         * 消息所属的原始内核（第一个派发到的内核）
+         *
+         * @type {IObservable}
+         * @memberof Message
+         */
+        __oriObservable: IObservable;
         constructor(type: string);
     }
 }
@@ -389,7 +410,10 @@ declare module "core/observable/Observable" {
      * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
     */
     export default class Observable implements IObservable, IDisposable {
+        private _global;
         private _listenerDict;
+        readonly observable: IObservable;
+        constructor(global?: IObservable);
         private handleMessages(msg);
         private doDispatch(msg);
         /**
@@ -1267,6 +1291,13 @@ declare module "engine/net/RequestData" {
          * @memberof RequestData
          */
         __observable: IObservable;
+        /**
+         * 消息所属的原始内核（第一个派发到的内核）
+         *
+         * @type {IObservable}
+         * @memberof RequestData
+         */
+        __oriObservable: IObservable;
         /**
          * 请求参数，可以运行时修改
          *
@@ -3305,6 +3336,14 @@ declare module "engine/model/Model" {
      * Model的基类，也可以不继承该基类，因为Model是很随意的东西
     */
     export default abstract class Model implements IObservable {
+        /**
+         * 转发core.observable
+         *
+         * @readonly
+         * @type {IObservable}
+         * @memberof Model
+         */
+        readonly observable: IObservable;
         /**
          * 派发内核消息
          *

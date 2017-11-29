@@ -15,7 +15,18 @@ import IObservable from "./IObservable";
 */
 export default class Observable implements IObservable, IDisposable
 {
+    private _global:IObservable;
     private _listenerDict:{[type:string]:IMessageData[]} = {};
+    
+    public get observable():IObservable
+    {
+        return this;
+    }
+
+    public constructor(global?:IObservable)
+    {
+        this._global = global;
+    }
 
     private handleMessages(msg:IMessage):void
     {
@@ -47,6 +58,16 @@ export default class Observable implements IObservable, IDisposable
             value: this,
             writable: false
         });
+        // 设置所属原始内核
+        if(!msg.__oriObservable)
+        {
+            Object.defineProperty(msg, "__oriObservable", {
+                configurable: true,
+                enumerable: false,
+                value: this,
+                writable: false
+            });
+        }
         // 触发命令
         this.handleCommands(msg);
         // 触发用listen形式监听的消息
@@ -82,6 +103,8 @@ export default class Observable implements IObservable, IDisposable
         this.doDispatch(msg);
         // 额外派发一个通用事件
         this.doDispatch(new CommonMessage(CoreMessage.MESSAGE_DISPATCHED, msg));
+        // 将事件转发到全局
+        this._global && this._global.dispatch(msg);
     }
 
     /**
@@ -193,6 +216,8 @@ export default class Observable implements IObservable, IDisposable
     public dispose():void
     {
         if(this._disposed) return;
+        // 移除全局观察者
+        this._global = null;
         // 清空所有消息监听
         this._listenerDict = null;
         // 清空所有命令

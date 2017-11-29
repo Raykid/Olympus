@@ -14,6 +14,18 @@ import ICommandConstructor from "../../core/command/ICommandConstructor";
 export default abstract class Model implements IObservable
 {
     /**
+     * 转发core.observable
+     * 
+     * @readonly
+     * @type {IObservable}
+     * @memberof Model
+     */
+    public get observable():IObservable
+    {
+        return core.observable;
+    }
+
+    /**
      * 派发内核消息
      * 
      * @param {IMessage} msg 内核消息实例

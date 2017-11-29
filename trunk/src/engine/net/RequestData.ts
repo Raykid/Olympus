@@ -75,6 +75,13 @@ export default abstract class RequestData implements IMessage
      */
     public __observable:IObservable;
     /**
+     * 消息所属的原始内核（第一个派发到的内核）
+     * 
+     * @type {IObservable}
+     * @memberof RequestData
+     */
+    public __oriObservable:IObservable;
+    /**
      * 请求参数，可以运行时修改
      * 
      * @abstract

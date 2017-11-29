@@ -314,6 +314,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
                 _this.viewModel.fuckText = "1234";
                 _this.viewModel.fuckList = ["hello", "world"];
             }, 3000);
+            this.dispatchModule(new TestRequest_1.default());
         };
         FirstMediator.prototype.onModuleChange = function (to, from) {
             if (to == FirstModule)

@@ -281,7 +281,7 @@ export default abstract class Module implements IModule
     
     /*********************** 下面是模块消息系统 ***********************/
 
-    private _observable:Observable = new Observable();
+    private _observable:Observable = new Observable(core.observable);
 
     /**
      * 暴露IObservable接口

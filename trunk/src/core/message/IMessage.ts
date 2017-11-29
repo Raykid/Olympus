@@ -25,4 +25,11 @@ export default interface IMessage
      * @memberof IMessage
      */
     readonly __observable:IObservable;
+    /**
+     * 消息所属的原始内核（第一个派发到的内核）
+     * 
+     * @type {IObservable}
+     * @memberof IMessage
+     */
+    readonly __oriObservable:IObservable;
 }

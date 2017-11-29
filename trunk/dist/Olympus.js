@@ -1569,11 +1569,19 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
      * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
     */
     var Observable = /** @class */ (function () {
-        function Observable() {
+        function Observable(global) {
             this._listenerDict = {};
             this._commandDict = {};
             this._disposed = false;
+            this._global = global;
         }
+        Object.defineProperty(Observable.prototype, "observable", {
+            get: function () {
+                return this;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Observable.prototype.handleMessages = function (msg) {
             var listeners1 = this._listenerDict[msg.type];
             var listeners2 = this._listenerDict[msg.constructor.toString()];
@@ -1601,6 +1609,15 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
                 value: this,
                 writable: false
             });
+            // 设置所属原始内核
+            if (!msg.__oriObservable) {
+                Object.defineProperty(msg, "__oriObservable", {
+                    configurable: true,
+                    enumerable: false,
+                    value: this,
+                    writable: false
+                });
+            }
             // 触发命令
             this.handleCommands(msg);
             // 触发用listen形式监听的消息
@@ -1622,6 +1639,8 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
             this.doDispatch(msg);
             // 额外派发一个通用事件
             this.doDispatch(new CommonMessage_1.default(CoreMessage_1.default.MESSAGE_DISPATCHED, msg));
+            // 将事件转发到全局
+            this._global && this._global.dispatch(msg);
         };
         /**
          * 监听内核消息
@@ -1723,6 +1742,8 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
         Observable.prototype.dispose = function () {
             if (this._disposed)
                 return;
+            // 移除全局观察者
+            this._global = null;
             // 清空所有消息监听
             this._listenerDict = null;
             // 清空所有命令
@@ -2444,7 +2465,7 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
         };
         /** 显示模态窗口遮罩 */
         MaskManager.prototype.showModalMask = function (popup, alpha) {
-            var type = BridgeManager_1.bridgeManager.currentBridge.type;
+            var type = popup.bridge.type;
             var entity = this._entityDict[type];
             if (entity != null) {
                 // 调用回调
@@ -2455,7 +2476,7 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
         };
         /** 隐藏模态窗口遮罩 */
         MaskManager.prototype.hideModalMask = function (popup) {
-            var type = BridgeManager_1.bridgeManager.currentBridge.type;
+            var type = popup.bridge.type;
             var entity = this._entityDict[type];
             if (entity != null) {
                 // 隐藏遮罩
@@ -2466,7 +2487,7 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
         };
         /** 当前是否在显示模态窗口遮罩 */
         MaskManager.prototype.isShowingModalMask = function (popup) {
-            var type = BridgeManager_1.bridgeManager.currentBridge.type;
+            var type = popup.bridge.type;
             var entity = this._entityDict[type];
             if (entity != null)
                 return entity.isShowingModalMask(popup);
@@ -3208,9 +3229,9 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             this.listenRequest(Core_6.core);
         }
         NetManager.prototype.onMsgDispatched = function (msg) {
-            var observable = this;
-            // 如果消息是通讯消息则做处理
-            if (msg instanceof RequestData_1.default) {
+            var observable = this.observable;
+            // 如果消息是通讯消息且所属内核与当前处理的内核一致则做处理
+            if (msg instanceof RequestData_1.default && observable == msg.__oriObservable) {
                 // 添加遮罩
                 MaskManager_2.maskManager.showLoading(null, "net");
                 // 指定消息参数连接上公共参数作为参数
@@ -5567,6 +5588,20 @@ define("engine/model/Model", ["require", "exports", "core/Core"], function (requ
     var Model = /** @class */ (function () {
         function Model() {
         }
+        Object.defineProperty(Model.prototype, "observable", {
+            /**
+             * 转发core.observable
+             *
+             * @readonly
+             * @type {IObservable}
+             * @memberof Model
+             */
+            get: function () {
+                return Core_17.core.observable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Model.prototype.dispatch = function () {
             var params = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -7349,7 +7384,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
             this._mediators = [];
             this._disposeDict = new Dictionary_6.default();
             /*********************** 下面是模块消息系统 ***********************/
-            this._observable = new Observable_2.default();
+            this._observable = new Observable_2.default(Core_21.core.observable);
         }
         Object.defineProperty(Module.prototype, "disposed", {
             /**

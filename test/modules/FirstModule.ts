@@ -70,6 +70,8 @@ class FirstMediator extends SceneMediator
             this.viewModel.fuckText = "1234";
             this.viewModel.fuckList = ["hello", "world"];
         }, 3000);
+
+        this.dispatchModule(new TestRequest());
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)
