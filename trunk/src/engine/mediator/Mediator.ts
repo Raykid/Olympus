@@ -275,26 +275,6 @@ export default class Mediator implements IModuleMediator
         }
     }
 
-    /**
-     * 派发内核消息
-     * 
-     * @param {IMessage} msg 内核消息实例
-     * @memberof Core
-     */
-    public dispatch(msg:IMessage):void;
-    /**
-     * 派发内核消息，消息会转变为Message类型对象
-     * 
-     * @param {string} type 消息类型
-     * @param {...any[]} params 消息参数列表
-     * @memberof Core
-     */
-    public dispatch(type:string, ...params:any[]):void;
-    public dispatch(typeOrMsg:any, ...params:any[]):void
-    {
-        core.dispatch(typeOrMsg, ...params);
-    }
-
     /*********************** 下面是模块消息系统 ***********************/
 
     /**
@@ -306,7 +286,29 @@ export default class Mediator implements IModuleMediator
      */
     public get observable():IObservable
     {
-        return this._dependModuleInstance && this._dependModuleInstance.observable;
+        return (this._dependModuleInstance || core).observable;
+    }
+    
+    /**
+     * 派发消息
+     * 
+     * @param {IMessage} msg 内核消息实例
+     * @memberof IModuleObservable
+     */
+    public dispatch(msg:IMessage):void;
+    /**
+     * 派发消息，消息会转变为Message类型对象
+     * 
+     * @param {string} type 消息类型
+     * @param {...any[]} params 消息参数列表
+     * @memberof IModuleObservable
+     */
+    public dispatch(type:string, ...params:any[]):void;
+    /** dispatch方法实现 */
+    public dispatch(...params:any[]):void
+    {
+        var observable:IObservable = this.observable;
+        observable.dispatch.apply(observable, params);
     }
 
     /**
@@ -317,9 +319,9 @@ export default class Mediator implements IModuleMediator
      * @param {*} [thisArg] 消息this指向
      * @memberof IModuleObservable
      */
-    public listenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
-        this._dependModuleInstance && this._dependModuleInstance.listenModule(type, handler, thisArg);
+        this.observable.listen(type, handler, thisArg);
     }
 
     /**
@@ -330,9 +332,9 @@ export default class Mediator implements IModuleMediator
      * @param {*} [thisArg] 消息this指向
      * @memberof IModuleObservable
      */
-    public unlistenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
-        this._dependModuleInstance && this._dependModuleInstance.unlistenModule(type, handler,thisArg);
+        this.observable.unlisten(type, handler,thisArg);
     }
 
     /**
@@ -342,9 +344,9 @@ export default class Mediator implements IModuleMediator
      * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
      * @memberof IModuleObservable
      */
-    public mapCommandModule(type:string, cmd:ICommandConstructor):void
+    public mapCommand(type:string, cmd:ICommandConstructor):void
     {
-        this._dependModuleInstance && this._dependModuleInstance.mapCommandModule(type, cmd);
+        this.observable.mapCommand(type, cmd);
     }
 
     /**
@@ -355,30 +357,9 @@ export default class Mediator implements IModuleMediator
      * @returns {void} 
      * @memberof IModuleObservable
      */
-    public unmapCommandModule(type:string, cmd:ICommandConstructor):void
+    public unmapCommand(type:string, cmd:ICommandConstructor):void
     {
-        this._dependModuleInstance && this._dependModuleInstance.unmapCommandModule(type, cmd);
-    }
-
-    /**
-     * 派发消息
-     * 
-     * @param {IMessage} msg 内核消息实例
-     * @memberof IModuleObservable
-     */
-    public dispatchModule(msg:IMessage):void;
-    /**
-     * 派发消息，消息会转变为Message类型对象
-     * 
-     * @param {string} type 消息类型
-     * @param {...any[]} params 消息参数列表
-     * @memberof IModuleObservable
-     */
-    public dispatchModule(type:string, ...params:any[]):void;
-    /** dispatchModule方法实现 */
-    public dispatchModule(...params:any[]):void
-    {
-        this._dependModuleInstance && this._dependModuleInstance.dispatchModule.apply(this._dependModuleInstance, params);
+        this.observable.unmapCommand(type, cmd);
     }
 
     /**

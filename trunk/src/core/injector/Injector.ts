@@ -1,6 +1,5 @@
 import { core } from "../Core";
-import { listenConstruct, listenDispose } from "../../utils/ConstructUtil";
-import Message from "../message/Message";
+import { listenConstruct } from "../../utils/ConstructUtil";
 
 /**
  * @author Raykid
@@ -64,40 +63,5 @@ function doInject(cls:IConstructor, key:string, type:any):void
             enumerable: true,
             get: ()=>target || (target = core.getInject(type))
         });
-    });
-}
-
-/** 处理内核消息 */
-export function MessageHandler(prototype:any, propertyKey:string):void;
-export function MessageHandler(type:string):MethodDecorator;
-export function MessageHandler(target:string|any, key?:string):MethodDecorator
-{
-    if(key)
-    {
-        var defs:[IConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
-        var resClass:IConstructor = defs[0];
-        if(!(resClass.prototype instanceof Message))
-            throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
-        doMessageHandler(target.constructor, key, resClass);
-    }
-    else
-    {
-        return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
-        {
-            doMessageHandler(prototype.constructor, propertyKey, target);
-        };
-    }
-};
-function doMessageHandler(cls:IConstructor, key:string, type:IConstructor):void
-{
-    // 监听实例化
-    listenConstruct(cls, function(instance:any):void
-    {
-        core.listen(type, instance[key], instance);
-    });
-    // 监听销毁
-    listenDispose(cls, function(instance:any):void
-    {
-        core.unlisten(type, instance[key], instance);
     });
 }

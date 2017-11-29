@@ -33,7 +33,7 @@ define("utils/InitParamsUtil", ["require", "exports", "engine/env/WindowExternal
     }
     exports.default = getParam;
 });
-define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediator", "engine/module/Module", "core/injector/Injector", "engine/injector/Injector", "egret/injector/Injector"], function (require, exports, SceneMediator_1, Module_1, Injector_1, Injector_2, Injector_3) {
+define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediator", "engine/module/Module", "engine/injector/Injector", "egret/injector/Injector"], function (require, exports, SceneMediator_1, Module_1, Injector_1, Injector_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -56,7 +56,7 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
             var _this = this;
             this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, function () {
                 // moduleManager.close(SecondModule);
-                _this.dispatchModule("FuckMsg", "Shit!!!");
+                _this.dispatch("FuckMsg", "Shit!!!");
             });
             this.viewModel = {
                 onMsg: function (msg) {
@@ -67,21 +67,19 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
                 fuck: "you",
                 fuckList: ["fuck", "shit", "you", "!!!"]
             };
-            // 测试系统消息
+            // 测试消息
             this.dispatch("fuck", 123);
-            // 测试模块消息
-            this.dispatchModule("fuck", 123);
         };
         __decorate([
-            Injector_2.BindModuleMessage("FuckMsg", { label: "onMsg($arguments[0])" }),
-            Injector_2.BindFunc("getCurrentState", ["fuck", "onMsg", undefined]),
+            Injector_1.BindMessage("FuckMsg", { label: "onMsg($arguments[0])" }),
+            Injector_1.BindFunc("getCurrentState", ["fuck", "onMsg", undefined]),
             __metadata("design:type", eui.Button)
         ], SecondMediator.prototype, "btn", void 0);
         __decorate([
-            Injector_2.BindFor("i in fuckList"),
-            Injector_2.BindValue("txt.text", "i"),
-            Injector_2.BindFor("lst", "value of fuckList"),
-            Injector_2.BindValue({
+            Injector_1.BindFor("i in fuckList"),
+            Injector_1.BindValue("txt.text", "i"),
+            Injector_1.BindFor("lst", "value of fuckList"),
+            Injector_1.BindValue({
                 txt: {
                     text: "$target.$hashCode"
                 }
@@ -89,7 +87,7 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
             __metadata("design:type", eui.DataGroup)
         ], SecondMediator.prototype, "lst", void 0);
         SecondMediator = __decorate([
-            Injector_3.EgretMediatorClass("Fuck2Skin")
+            Injector_2.EgretMediatorClass("Fuck2Skin")
         ], SecondMediator);
         return SecondMediator;
     }(SceneMediator_1.default));
@@ -102,18 +100,18 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
             console.log("message at SecondModule: " + a);
         };
         __decorate([
-            Injector_2.DelegateMediator,
+            Injector_1.DelegateMediator,
             __metadata("design:type", SecondMediator)
         ], SecondModule.prototype, "_mediator", void 0);
         __decorate([
             Injector_1.MessageHandler("fuck"),
-            Injector_2.ModuleMessageHandler("fuck"),
+            Injector_1.GlobalMessageHandler("fuck"),
             __metadata("design:type", Function),
             __metadata("design:paramtypes", [Object]),
             __metadata("design:returntype", void 0)
         ], SecondModule.prototype, "onFuck", null);
         SecondModule = __decorate([
-            Injector_2.ModuleClass
+            Injector_1.ModuleClass
         ], SecondModule);
         return SecondModule;
     }(Module_1.default));
@@ -230,7 +228,7 @@ define("net/request/TestRequest", ["require", "exports", "net/response/TestRespo
     }(RequestData_1.default));
     exports.default = TestRequest;
 });
-define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "core/injector/Injector", "engine/env/Hash"], function (require, exports, Injector_4, Injector_5, Hash_1) {
+define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "core/injector/Injector", "engine/env/Hash"], function (require, exports, Injector_3, Injector_4, Hash_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var IFuckModel = /** @class */ (function () {
@@ -261,18 +259,18 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
             configurable: true
         });
         __decorate([
-            Injector_5.Inject,
+            Injector_4.Inject,
             __metadata("design:type", Hash_1.default)
         ], FuckModel.prototype, "hash", void 0);
         FuckModel = __decorate([
-            Injector_4.ModelClass(1, IFuckModel),
+            Injector_3.ModelClass(1, IFuckModel),
             __metadata("design:paramtypes", [])
         ], FuckModel);
         return FuckModel;
     }(IFuckModel));
     exports.default = FuckModel;
 });
-define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel", "dom/injector/Injector", "engine/scene/SceneMediator", "core/injector/Injector", "engine/module/ModuleManager", "engine/audio/AudioManager", "engine/module/ModuleMessage", "engine/module/Module", "engine/injector/Injector"], function (require, exports, SecondModule_1, TestResponse_2, TestRequest_1, FuckModel_1, Injector_6, SceneMediator_2, Injector_7, ModuleManager_1, AudioManager_1, ModuleMessage_1, Module_2, Injector_8) {
+define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel", "dom/injector/Injector", "engine/scene/SceneMediator", "core/injector/Injector", "engine/module/ModuleManager", "engine/audio/AudioManager", "engine/module/ModuleMessage", "engine/module/Module", "engine/injector/Injector"], function (require, exports, SecondModule_1, TestResponse_2, TestRequest_1, FuckModel_1, Injector_5, SceneMediator_2, Injector_6, ModuleManager_1, AudioManager_1, ModuleMessage_1, Module_2, Injector_7) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -314,7 +312,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
                 _this.viewModel.fuckText = "1234";
                 _this.viewModel.fuckList = ["hello", "world"];
             }, 3000);
-            this.dispatchModule(new TestRequest_1.default());
+            this.dispatch(new TestRequest_1.default());
         };
         FirstMediator.prototype.onModuleChange = function (to, from) {
             if (to == FirstModule)
@@ -326,29 +324,29 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             alert("123");
         };
         __decorate([
-            Injector_7.Inject,
+            Injector_6.Inject,
             __metadata("design:type", ModuleManager_1.default)
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
-            Injector_7.Inject,
+            Injector_6.Inject,
             __metadata("design:type", FuckModel_1.default)
         ], FirstMediator.prototype, "fuckModel1", void 0);
         __decorate([
-            Injector_7.Inject,
+            Injector_6.Inject,
             __metadata("design:type", FuckModel_1.IFuckModel)
         ], FirstMediator.prototype, "fuckModel2", void 0);
         __decorate([
-            Injector_7.Inject(1),
+            Injector_6.Inject(1),
             __metadata("design:type", FuckModel_1.IFuckModel)
         ], FirstMediator.prototype, "fuckModel3", void 0);
         __decorate([
-            Injector_8.BindOn({ click: "onClick" }),
-            Injector_8.BindIf("fuckText == '1234'"),
+            Injector_7.BindOn({ click: "onClick" }),
+            Injector_7.BindIf("fuckText == '1234'"),
             __metadata("design:type", HTMLElement)
         ], FirstMediator.prototype, "btn", void 0);
         __decorate([
-            Injector_8.BindFor("fuck in fuckList"),
-            Injector_8.BindValue({ textContent: "fuck + ' - ' + fuckText + ' - 1'" }),
+            Injector_7.BindFor("fuck in fuckList"),
+            Injector_7.BindValue({ textContent: "fuck + ' - ' + fuckText + ' - 1'" }),
             __metadata("design:type", HTMLElement)
         ], FirstMediator.prototype, "txt", void 0);
         __decorate([
@@ -358,13 +356,13 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onModuleChange", null);
         __decorate([
-            Injector_8.ResponseHandler,
+            Injector_7.ResponseHandler,
             __metadata("design:type", Function),
             __metadata("design:paramtypes", [TestResponse_2.default, TestRequest_1.default]),
             __metadata("design:returntype", void 0)
         ], FirstMediator.prototype, "onResponse", null);
         FirstMediator = __decorate([
-            Injector_6.DOMMediatorClass("./modules/test.html")
+            Injector_5.DOMMediatorClass("./modules/test.html")
         ], FirstMediator);
         return FirstMediator;
     }(SceneMediator_2.default));
@@ -380,18 +378,18 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             console.log("message at FirstModule: " + a);
         };
         __decorate([
-            Injector_8.DelegateMediator,
+            Injector_7.DelegateMediator,
             __metadata("design:type", FirstMediator)
         ], FirstModule.prototype, "_mediator", void 0);
         __decorate([
             Injector_7.MessageHandler("fuck"),
-            Injector_8.ModuleMessageHandler("fuck"),
+            Injector_7.GlobalMessageHandler("fuck"),
             __metadata("design:type", Function),
             __metadata("design:paramtypes", [Object]),
             __metadata("design:returntype", void 0)
         ], FirstModule.prototype, "onFuck", null);
         FirstModule = __decorate([
-            Injector_8.ModuleClass
+            Injector_7.ModuleClass
         ], FirstModule);
         return FirstModule;
     }(Module_2.default));

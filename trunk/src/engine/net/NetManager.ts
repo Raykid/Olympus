@@ -29,7 +29,7 @@ export default class NetManager
 {
     public constructor()
     {
-        this.listenRequest(core);
+        core.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, core);
     }
     
     private onMsgDispatched(msg:IMessage):void
@@ -47,17 +47,6 @@ export default class NetManager
             // 派发系统消息
             observable.dispatch(NetMessage.NET_REQUEST, msg);
         }
-    }
-
-    /**
-     * 添加内核消息监听，遇到通讯消息则发送到后端，接到返回值后会将其发送到指定内核里
-     * 
-     * @param {IObservable} observable 内核
-     * @memberof NetManager
-     */
-    public listenRequest(observable:IObservable):void
-    {
-        observable.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, observable);
     }
 
     private _responseDict:{[type:string]:IResponseDataConstructor} = {};
@@ -200,8 +189,8 @@ export default class NetManager
             if(request)
             {
                 response.__params.request = request;
-                // 如果有配对请求，则将返回值发送到请求所在的内核里
-                observable = request.__observable;
+                // 如果有配对请求，则将返回值发送到请求所在的原始内核里
+                observable = request.__oriObservable;
             }
             // 执行解析
             response.parse(result);
@@ -234,8 +223,8 @@ export default class NetManager
     {
         // 移除遮罩
         maskManager.hideLoading("net");
-        // 如果有配对请求，则将返回值发送到请求所在的内核里
-        var observable:IObservable = request ? request.__observable : core;
+        // 如果有配对请求，则将返回值发送到请求所在的原始内核里
+        var observable:IObservable = request ? request.__oriObservable : core;
         // 派发事件
         observable.dispatch(NetMessage.NET_ERROR, err, request);
     }

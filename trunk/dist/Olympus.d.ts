@@ -410,10 +410,10 @@ declare module "core/observable/Observable" {
      * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
     */
     export default class Observable implements IObservable, IDisposable {
-        private _global;
+        private _parent;
         private _listenerDict;
         readonly observable: IObservable;
-        constructor(global?: IObservable);
+        constructor(parent?: IObservable);
         private handleMessages(msg);
         private doDispatch(msg);
         /**
@@ -532,9 +532,6 @@ declare module "core/injector/Injector" {
     /** 赋值注入的实例 */
     export function Inject(prototype: any, propertyKey: string): void;
     export function Inject(cls: any): PropertyDecorator;
-    /** 处理内核消息 */
-    export function MessageHandler(prototype: any, propertyKey: string): void;
-    export function MessageHandler(type: string): MethodDecorator;
 }
 declare module "core/Core" {
     import IMessage from "core/message/IMessage";
@@ -976,78 +973,6 @@ declare module "engine/scene/IScenePolicy" {
         pop?(from: IScene, to: IScene, callback: () => void): void;
     }
 }
-declare module "engine/module/IModuleObservable" {
-    import IMessage from "core/message/IMessage";
-    import ICommandConstructor from "core/command/ICommandConstructor";
-    import IObservable from "core/observable/IObservable";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-31
-     * @modify date 2017-10-31
-     *
-     * 模块可观察接口
-    */
-    export default interface IModuleObservable {
-        /**
-         * 将内部的IObservable暴露出来
-         *
-         * @type {IObservable}
-         * @memberof IModuleObservable
-         */
-        readonly observable: IObservable;
-        /**
-         * 监听消息
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof IModuleObservable
-         */
-        listenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
-        /**
-         * 移除消息监听
-         *
-         * @param {string} type 消息类型
-         * @param {Function} handler 消息处理函数
-         * @param {*} [thisArg] 消息this指向
-         * @memberof IModuleObservable
-         */
-        unlistenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
-        /**
-         * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
-         *
-         * @param {string} type 要注册的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof IModuleObservable
-         */
-        mapCommandModule(type: string, cmd: ICommandConstructor): void;
-        /**
-         * 注销命令
-         *
-         * @param {string} type 要注销的消息类型
-         * @param {(ICommandConstructor)} cmd 命令处理器
-         * @returns {void}
-         * @memberof IModuleObservable
-         */
-        unmapCommandModule(type: string, cmd: ICommandConstructor): void;
-        /**
-         * 派发消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof IModuleObservable
-         */
-        dispatchModule(msg: IMessage): void;
-        /**
-         * 派发消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof IModuleObservable
-         */
-        dispatchModule(type: string, ...params: any[]): void;
-    }
-}
 declare module "engine/module/IModuleConstructor" {
     import IModule from "engine/module/IModule";
     /**
@@ -1089,7 +1014,6 @@ declare module "engine/module/IModuleDependent" {
     }
 }
 declare module "engine/mediator/IModuleMediator" {
-    import IModuleObservable from "engine/module/IModuleObservable";
     import IModuleDependent from "engine/module/IModuleDependent";
     import IMediator from "engine/mediator/IMediator";
     /**
@@ -1100,7 +1024,7 @@ declare module "engine/mediator/IModuleMediator" {
      *
      * 托管到模块的中介者所具有的接口
     */
-    export default interface IModuleMediator extends IMediator, IModuleObservable, IModuleDependent {
+    export default interface IModuleMediator extends IMediator, IModuleDependent {
         /**
          * 列出中介者所需的资源数组，可重写
          *
@@ -1329,11 +1253,11 @@ declare module "engine/net/RequestData" {
 }
 declare module "engine/module/IModule" {
     import IDisposable from "core/interfaces/IDisposable";
+    import IObservable from "core/observable/IObservable";
     import IModuleMediator from "engine/mediator/IModuleMediator";
     import RequestData from "engine/net/RequestData";
     import ResponseData from "engine/net/ResponseData";
     import IModuleConstructor from "engine/module/IModuleConstructor";
-    import IModuleObservable from "engine/module/IModuleObservable";
     import IModuleDependent from "engine/module/IModuleDependent";
     /**
      * @author Raykid
@@ -1343,7 +1267,7 @@ declare module "engine/module/IModule" {
      *
      * 业务模块接口
     */
-    export default interface IModule extends IDisposable, IModuleObservable, IModuleDependent {
+    export default interface IModule extends IDisposable, IObservable, IModuleDependent {
         /** 模块打开时的参数 */
         data: any;
         /** 模块初始消息的返回数据 */
@@ -1380,6 +1304,7 @@ declare module "engine/mediator/IMediator" {
     import IHasBridge from "engine/bridge/IHasBridge";
     import IOpenClose from "core/interfaces/IOpenClose";
     import IDisposable from "core/interfaces/IDisposable";
+    import IObservable from "core/observable/IObservable";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1388,7 +1313,7 @@ declare module "engine/mediator/IMediator" {
      *
      * 界面中介者接口
     */
-    export default interface IMediator extends IHasBridge, IOpenClose, IDisposable {
+    export default interface IMediator extends IHasBridge, IOpenClose, IDisposable, IObservable {
         /**
          * 获取中介者是否已被销毁
          *
@@ -2191,13 +2116,6 @@ declare module "engine/net/NetManager" {
     export default class NetManager {
         constructor();
         private onMsgDispatched(msg);
-        /**
-         * 添加内核消息监听，遇到通讯消息则发送到后端，接到返回值后会将其发送到指定内核里
-         *
-         * @param {IObservable} observable 内核
-         * @memberof NetManager
-         */
-        listenRequest(observable: IObservable): void;
         private _responseDict;
         /**
          * 注册一个返回结构体
@@ -3847,21 +3765,6 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         unmapAllListeners(): void;
-        /**
-         * 派发内核消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof Core
-         */
-        dispatch(msg: IMessage): void;
-        /**
-         * 派发内核消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof Core
-         */
-        dispatch(type: string, ...params: any[]): void;
         /*********************** 下面是模块消息系统 ***********************/
         /**
          * 暴露IObservable
@@ -3872,6 +3775,21 @@ declare module "engine/mediator/Mediator" {
          */
         readonly observable: IObservable;
         /**
+         * 派发消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof IModuleObservable
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof IModuleObservable
+         */
+        dispatch(type: string, ...params: any[]): void;
+        /**
          * 监听消息
          *
          * @param {string} type 消息类型
@@ -3879,7 +3797,7 @@ declare module "engine/mediator/Mediator" {
          * @param {*} [thisArg] 消息this指向
          * @memberof IModuleObservable
          */
-        listenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
         /**
          * 移除消息监听
          *
@@ -3888,7 +3806,7 @@ declare module "engine/mediator/Mediator" {
          * @param {*} [thisArg] 消息this指向
          * @memberof IModuleObservable
          */
-        unlistenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
         /**
          * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
          *
@@ -3896,7 +3814,7 @@ declare module "engine/mediator/Mediator" {
          * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
          * @memberof IModuleObservable
          */
-        mapCommandModule(type: string, cmd: ICommandConstructor): void;
+        mapCommand(type: string, cmd: ICommandConstructor): void;
         /**
          * 注销命令
          *
@@ -3905,22 +3823,7 @@ declare module "engine/mediator/Mediator" {
          * @returns {void}
          * @memberof IModuleObservable
          */
-        unmapCommandModule(type: string, cmd: ICommandConstructor): void;
-        /**
-         * 派发消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof IModuleObservable
-         */
-        dispatchModule(msg: IMessage): void;
-        /**
-         * 派发消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof IModuleObservable
-         */
-        dispatchModule(type: string, ...params: any[]): void;
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
         /**
          * 销毁中介者
          *
@@ -4398,21 +4301,6 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         onDeactivate(to: IModuleConstructor | undefined, data?: any): void;
-        /**
-         * 派发内核消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof Core
-         */
-        dispatch(msg: IMessage): void;
-        /**
-         * 派发内核消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof Core
-         */
-        dispatch(type: string, ...params: any[]): void;
         /*********************** 下面是模块消息系统 ***********************/
         private _observable;
         /**
@@ -4424,55 +4312,55 @@ declare module "engine/module/Module" {
          */
         readonly observable: IObservable;
         /**
+         * 派发消息
+         *
+         * @param {IMessage} msg 内核消息实例
+         * @memberof Module
+         */
+        dispatch(msg: IMessage): void;
+        /**
+         * 派发消息，消息会转变为Message类型对象
+         *
+         * @param {string} type 消息类型
+         * @param {...any[]} params 消息参数列表
+         * @memberof Module
+         */
+        dispatch(type: string, ...params: any[]): void;
+        /**
          * 监听消息
          *
          * @param {string} type 消息类型
          * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        listenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
         /**
          * 移除消息监听
          *
          * @param {string} type 消息类型
          * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        unlistenModule(type: IConstructor | string, handler: Function, thisArg?: any): void;
+        unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
         /**
          * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
          *
          * @param {string} type 要注册的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        mapCommandModule(type: string, cmd: ICommandConstructor): void;
+        mapCommand(type: string, cmd: ICommandConstructor): void;
         /**
          * 注销命令
          *
          * @param {string} type 要注销的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器
          * @returns {void}
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        unmapCommandModule(type: string, cmd: ICommandConstructor): void;
-        /**
-         * 派发消息
-         *
-         * @param {IMessage} msg 内核消息实例
-         * @memberof IModuleObservable
-         */
-        dispatchModule(msg: IMessage): void;
-        /**
-         * 派发消息，消息会转变为Message类型对象
-         *
-         * @param {string} type 消息类型
-         * @param {...any[]} params 消息参数列表
-         * @memberof IModuleObservable
-         */
-        dispatchModule(type: string, ...params: any[]): void;
+        unmapCommand(type: string, cmd: ICommandConstructor): void;
         /**
          * 销毁模块，可以重写
          *
@@ -4869,15 +4757,18 @@ declare module "engine/injector/Injector" {
     export function MediatorClass(cls: IConstructor): IConstructor;
     /** 定义模块，支持实例注入 */
     export function ModuleClass(cls: IModuleConstructor): IConstructor;
-    /** 处理模块消息 */
-    export function ModuleMessageHandler(prototype: any, propertyKey: string): void;
-    export function ModuleMessageHandler(type: string): MethodDecorator;
+    /** 处理消息 */
+    export function MessageHandler(prototype: any, propertyKey: string): void;
+    export function MessageHandler(type: string): MethodDecorator;
+    /** 处理全局消息 */
+    export function GlobalMessageHandler(prototype: any, propertyKey: string): void;
+    export function GlobalMessageHandler(type: string): MethodDecorator;
     /** 处理通讯消息返回 */
     export function ResponseHandler(prototype: any, propertyKey: string): void;
     export function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
-    /** 处理模块通讯消息返回 */
-    export function ModuleResponseHandler(prototype: any, propertyKey: string): void;
-    export function ModuleResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
+    /** 处理全局通讯消息返回 */
+    export function GlobalResponseHandler(prototype: any, propertyKey: string): void;
+    export function GlobalResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
     /** 在Module内托管Mediator */
     export function DelegateMediator(prototype: any, propertyKey: string): any;
     /**
@@ -4971,13 +4862,36 @@ declare module "engine/injector/Injector" {
      */
     export function BindFor(exp: string): PropertyDecorator;
     /**
-     * 一次绑定多个全局消息
+     * 一次绑定多个消息
      *
      * @export
      * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
      * @returns {PropertyDecorator}
      */
     export function BindMessage(msgDict: {
+        [type: string]: {
+            [name: string]: any;
+        };
+    }): PropertyDecorator;
+    /**
+     * 一次绑定一个消息
+     *
+     * @export
+     * @param {IConstructor|string} type 消息类型或消息类型名称
+     * @param {string} uiDict ui表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindMessage(type: IConstructor | string, uiDict: {
+        [name: string]: any;
+    }): PropertyDecorator;
+    /**
+     * 一次绑定多个全局消息
+     *
+     * @export
+     * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
+     * @returns {PropertyDecorator}
+     */
+    export function BindGlobalMessage(msgDict: {
         [type: string]: {
             [name: string]: any;
         };
@@ -4990,30 +4904,30 @@ declare module "engine/injector/Injector" {
      * @param {string} uiDict ui表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindMessage(type: IConstructor | string, uiDict: {
+    export function BindGlobalMessage(type: IConstructor | string, uiDict: {
         [name: string]: any;
     }): PropertyDecorator;
     /**
-     * 一次绑定多个模块消息
+     * 一次绑定多个通讯消息
      *
      * @export
-     * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
+     * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindModuleMessage(msgDict: {
+    export function BindResponse(resDict: {
         [type: string]: {
             [name: string]: any;
         };
     }): PropertyDecorator;
     /**
-     * 一次绑定一个模块消息
+     * 一次绑定一个通讯消息
      *
      * @export
-     * @param {IConstructor|string} type 消息类型或消息类型名称
+     * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
      * @param {string} uiDict ui表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindModuleMessage(type: IConstructor | string, uiDict: {
+    export function BindResponse(type: IResponseDataConstructor | string, uiDict: {
         [name: string]: any;
     }): PropertyDecorator;
     /**
@@ -5023,7 +4937,7 @@ declare module "engine/injector/Injector" {
      * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindResponse(resDict: {
+    export function BindGlobalResponse(resDict: {
         [type: string]: {
             [name: string]: any;
         };
@@ -5036,30 +4950,7 @@ declare module "engine/injector/Injector" {
      * @param {string} uiDict ui表达式字典
      * @returns {PropertyDecorator}
      */
-    export function BindResponse(type: IResponseDataConstructor | string, uiDict: {
-        [name: string]: any;
-    }): PropertyDecorator;
-    /**
-     * 一次绑定多个模块通讯消息
-     *
-     * @export
-     * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
-     * @returns {PropertyDecorator}
-     */
-    export function BindModuleResponse(resDict: {
-        [type: string]: {
-            [name: string]: any;
-        };
-    }): PropertyDecorator;
-    /**
-     * 一次绑定一个模块通讯消息
-     *
-     * @export
-     * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
-     * @param {string} uiDict ui表达式字典
-     * @returns {PropertyDecorator}
-     */
-    export function BindModuleResponse(type: IResponseDataConstructor | string, uiDict: {
+    export function BindGlobalResponse(type: IResponseDataConstructor | string, uiDict: {
         [name: string]: any;
     }): PropertyDecorator;
 }

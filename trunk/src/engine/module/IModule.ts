@@ -1,9 +1,9 @@
 import IDisposable from "../../core/interfaces/IDisposable";
+import IObservable from "../../core/observable/IObservable";
 import IModuleMediator from "../mediator/IModuleMediator";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IModuleConstructor from "./IModuleConstructor";
-import IModuleObservable from "./IModuleObservable";
 import IModuleDependent from "./IModuleDependent";
 
 /**
@@ -14,7 +14,7 @@ import IModuleDependent from "./IModuleDependent";
  * 
  * 业务模块接口
 */
-export default interface IModule extends IDisposable, IModuleObservable, IModuleDependent
+export default interface IModule extends IDisposable, IObservable, IModuleDependent
 {
     /** 模块打开时的参数 */
     data:any;

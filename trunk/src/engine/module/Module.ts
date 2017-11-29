@@ -259,29 +259,9 @@ export default abstract class Module implements IModule
     {
     }
     
-    /**
-     * 派发内核消息
-     * 
-     * @param {IMessage} msg 内核消息实例
-     * @memberof Core
-     */
-    public dispatch(msg:IMessage):void;
-    /**
-     * 派发内核消息，消息会转变为Message类型对象
-     * 
-     * @param {string} type 消息类型
-     * @param {...any[]} params 消息参数列表
-     * @memberof Core
-     */
-    public dispatch(type:string, ...params:any[]):void;
-    public dispatch(typeOrMsg:any, ...params:any[]):void
-    {
-        core.dispatch(typeOrMsg, ...params);
-    }
-    
     /*********************** 下面是模块消息系统 ***********************/
 
-    private _observable:Observable = new Observable(core.observable);
+    private _observable:Observable = new Observable(core);
 
     /**
      * 暴露IObservable接口
@@ -294,6 +274,27 @@ export default abstract class Module implements IModule
     {
         return this._observable;
     }
+    
+    /**
+     * 派发消息
+     * 
+     * @param {IMessage} msg 内核消息实例
+     * @memberof Module
+     */
+    public dispatch(msg:IMessage):void;
+    /**
+     * 派发消息，消息会转变为Message类型对象
+     * 
+     * @param {string} type 消息类型
+     * @param {...any[]} params 消息参数列表
+     * @memberof Module
+     */
+    public dispatch(type:string, ...params:any[]):void;
+    /** dispatchModule方法实现 */
+    public dispatch(...params:any[]):void
+    {
+        this._observable.dispatch.apply(this._observable, params);
+    }
 
     /**
      * 监听消息
@@ -301,9 +302,9 @@ export default abstract class Module implements IModule
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof IModuleObservable
+     * @memberof Module
      */
-    public listenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
         this._observable.listen(type, handler, thisArg);
     }
@@ -314,9 +315,9 @@ export default abstract class Module implements IModule
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
-     * @memberof IModuleObservable
+     * @memberof Module
      */
-    public unlistenModule(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
     {
         this._observable.unlisten(type, handler,thisArg);
     }
@@ -326,9 +327,9 @@ export default abstract class Module implements IModule
      * 
      * @param {string} type 要注册的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-     * @memberof IModuleObservable
+     * @memberof Module
      */
-    public mapCommandModule(type:string, cmd:ICommandConstructor):void
+    public mapCommand(type:string, cmd:ICommandConstructor):void
     {
         this._observable.mapCommand(type, cmd);
     }
@@ -339,32 +340,11 @@ export default abstract class Module implements IModule
      * @param {string} type 要注销的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器
      * @returns {void} 
-     * @memberof IModuleObservable
+     * @memberof Module
      */
-    public unmapCommandModule(type:string, cmd:ICommandConstructor):void
+    public unmapCommand(type:string, cmd:ICommandConstructor):void
     {
         this._observable.unmapCommand(type, cmd);
-    }
-
-    /**
-     * 派发消息
-     * 
-     * @param {IMessage} msg 内核消息实例
-     * @memberof IModuleObservable
-     */
-    public dispatchModule(msg:IMessage):void;
-    /**
-     * 派发消息，消息会转变为Message类型对象
-     * 
-     * @param {string} type 消息类型
-     * @param {...any[]} params 消息参数列表
-     * @memberof IModuleObservable
-     */
-    public dispatchModule(type:string, ...params:any[]):void;
-    /** dispatchModule方法实现 */
-    public dispatchModule(...params:any[]):void
-    {
-        this._observable.dispatch.apply(this._observable, params);
     }
 
     /**

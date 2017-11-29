@@ -15,7 +15,7 @@ import IObservable from "./IObservable";
 */
 export default class Observable implements IObservable, IDisposable
 {
-    private _global:IObservable;
+    private _parent:IObservable;
     private _listenerDict:{[type:string]:IMessageData[]} = {};
     
     public get observable():IObservable
@@ -23,9 +23,9 @@ export default class Observable implements IObservable, IDisposable
         return this;
     }
 
-    public constructor(global?:IObservable)
+    public constructor(parent?:IObservable)
     {
-        this._global = global;
+        this._parent = parent && parent.observable;
     }
 
     private handleMessages(msg:IMessage):void
@@ -103,8 +103,8 @@ export default class Observable implements IObservable, IDisposable
         this.doDispatch(msg);
         // 额外派发一个通用事件
         this.doDispatch(new CommonMessage(CoreMessage.MESSAGE_DISPATCHED, msg));
-        // 将事件转发到全局
-        this._global && this._global.dispatch(msg);
+        // 将事件转发到上一层
+        this._parent && this._parent.dispatch(msg);
     }
 
     /**
@@ -216,8 +216,8 @@ export default class Observable implements IObservable, IDisposable
     public dispose():void
     {
         if(this._disposed) return;
-        // 移除全局观察者
-        this._global = null;
+        // 移除上一层观察者引用
+        this._parent = null;
         // 清空所有消息监听
         this._listenerDict = null;
         // 清空所有命令

@@ -4,12 +4,12 @@ import TestRequest from "../net/request/TestRequest";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
 import { DOMMediatorClass } from "dom/injector/Injector";
 import SceneMediator from "engine/scene/SceneMediator";
-import { Inject, MessageHandler } from "core/injector/Injector";
+import { Inject } from "core/injector/Injector";
 import ModuleManager from "engine/module/ModuleManager";
 import { audioManager } from "engine/audio/AudioManager";
 import ModuleMessage from "engine/module/ModuleMessage";
 import Module from "engine/module/Module";
-import { ResponseHandler, ModuleClass, DelegateMediator, ModuleMessageHandler, BindValue, BindOn, BindIf, BindFor } from "engine/injector/Injector";
+import { ResponseHandler, ModuleClass, DelegateMediator, BindValue, BindOn, BindIf, BindFor, MessageHandler, GlobalMessageHandler } from "engine/injector/Injector";
 
 /**
  * @author Raykid
@@ -71,7 +71,7 @@ class FirstMediator extends SceneMediator
             this.viewModel.fuckList = ["hello", "world"];
         }, 3000);
 
-        this.dispatchModule(new TestRequest());
+        this.dispatch(new TestRequest());
     }
     
     @MessageHandler(ModuleMessage.MODULE_CHANGE)
@@ -100,7 +100,7 @@ export default class FirstModule extends Module
     }
     
     @MessageHandler("fuck")
-    @ModuleMessageHandler("fuck")
+    @GlobalMessageHandler("fuck")
     private onFuck(a):void
     {
         console.log("message at FirstModule: " + a);

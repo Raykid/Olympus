@@ -10,7 +10,6 @@ import IModuleConstructor from "../module/IModuleConstructor";
 import { bridgeManager } from "../bridge/BridgeManager";
 import Mediator from "../mediator/Mediator";
 import { moduleManager } from "../module/ModuleManager";
-import IModuleDependent from "../module/IModuleDependent";
 import IModuleMediator from "../mediator/IModuleMediator";
 import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
@@ -92,50 +91,73 @@ export function ModuleClass(cls:IModuleConstructor):IConstructor
     return wrapperCls;
 }
 
-/** 处理模块消息 */
-export function ModuleMessageHandler(prototype:any, propertyKey:string):void;
-export function ModuleMessageHandler(type:string):MethodDecorator;
-export function ModuleMessageHandler(target:string|any, key?:string):MethodDecorator
+/** 处理消息 */
+export function MessageHandler(prototype:any, propertyKey:string):void;
+export function MessageHandler(type:string):MethodDecorator;
+export function MessageHandler(target:string|any, key?:string):MethodDecorator
 {
     if(key)
     {
         var defs:[IConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
         var resClass:IConstructor = defs[0];
         if(!(resClass.prototype instanceof Message))
-            throw new Error("@ModuleMessageHandler装饰器装饰的方法的首个参数必须是Message");
-        doModuleMessageHandler(target.constructor, key, resClass);
+            throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
+        doMessageHandler(target.constructor, key, resClass, true);
     }
     else
     {
         return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
         {
-            doModuleMessageHandler(prototype.constructor, propertyKey, target);
+            doMessageHandler(prototype.constructor, propertyKey, target, true);
         };
     }
 };
-function doModuleMessageHandler(cls:IConstructor, key:string, type:IConstructor):void
+
+/** 处理全局消息 */
+export function GlobalMessageHandler(prototype:any, propertyKey:string):void;
+export function GlobalMessageHandler(type:string):MethodDecorator;
+export function GlobalMessageHandler(target:string|any, key?:string):MethodDecorator
+{
+    if(key)
+    {
+        var defs:[IConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
+        var resClass:IConstructor = defs[0];
+        if(!(resClass.prototype instanceof Message))
+            throw new Error("@GlobalMessageHandler装饰器装饰的方法的首个参数必须是Message");
+            doMessageHandler(target.constructor, key, resClass, false);
+    }
+    else
+    {
+        return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+        {
+            doMessageHandler(prototype.constructor, propertyKey, target, false);
+        };
+    }
+};
+function doMessageHandler(cls:IConstructor, key:string, type:IConstructor, inModule:boolean):void
 {
     // 监听实例化
-    listenConstruct(cls, function(instance:IModuleDependent):void
+    listenConstruct(cls, function(instance:IObservable):void
     {
         if(instance instanceof Mediator)
         {
             // 如果是Mediator，则需要等到被托管后再执行注册
             addDelegateHandler(instance, ()=>{
-                instance.dependModuleInstance.listenModule(type, instance[key], instance);
+                var observable:IObservable = inModule ? instance : core;
+                observable.listen(type, instance[key], instance);
             });
         }
         else
         {
-            var module:IModule = instance.dependModuleInstance;
-            module && module.listenModule(type, instance[key], instance);
+            var observable:IObservable = inModule ? instance : core;
+            observable.listen(type, instance[key], instance);
         }
     });
     // 监听销毁
-    listenDispose(cls, function(instance:IModuleDependent):void
+    listenDispose(cls, function(instance:IObservable):void
     {
-        var module:IModule = instance.dependModuleInstance;
-        module && module.unlistenModule(type, instance[key], instance);
+        var observable:IObservable = inModule ? instance : core;
+        observable.unlisten(type, instance[key], instance);
     });
 }
 
@@ -150,27 +172,6 @@ export function ResponseHandler(target:any, key?:string):MethodDecorator|void
         var resClass:IResponseDataConstructor = defs[0];
         if(!(resClass.prototype instanceof ResponseData))
             throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-        doResponseHandler(target.constructor, key, defs[0], false);
-    }
-    else
-    {
-        return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
-        {
-            doResponseHandler(prototype.constructor, propertyKey, target, false);
-        };
-    }
-}
-/** 处理模块通讯消息返回 */
-export function ModuleResponseHandler(prototype:any, propertyKey:string):void;
-export function ModuleResponseHandler(cls:IResponseDataConstructor):MethodDecorator;
-export function ModuleResponseHandler(target:any, key?:string):MethodDecorator|void
-{
-    if(key)
-    {
-        var defs:[IResponseDataConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
-        var resClass:IResponseDataConstructor = defs[0];
-        if(!(resClass.prototype instanceof ResponseData))
-            throw new Error("无参数@ModuleResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
         doResponseHandler(target.constructor, key, defs[0], true);
     }
     else
@@ -181,10 +182,31 @@ export function ModuleResponseHandler(target:any, key?:string):MethodDecorator|v
         };
     }
 }
+/** 处理全局通讯消息返回 */
+export function GlobalResponseHandler(prototype:any, propertyKey:string):void;
+export function GlobalResponseHandler(cls:IResponseDataConstructor):MethodDecorator;
+export function GlobalResponseHandler(target:any, key?:string):MethodDecorator|void
+{
+    if(key)
+    {
+        var defs:[IResponseDataConstructor] = Reflect.getMetadata("design:paramtypes", target, key);
+        var resClass:IResponseDataConstructor = defs[0];
+        if(!(resClass.prototype instanceof ResponseData))
+            throw new Error("无参数@GlobalResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
+        doResponseHandler(target.constructor, key, defs[0], false);
+    }
+    else
+    {
+        return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+        {
+            doResponseHandler(prototype.constructor, propertyKey, target, false);
+        };
+    }
+}
 function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConstructor, inModule:boolean):void
 {
     // 监听实例化
-    listenConstruct(cls, function(instance:IModuleDependent):void
+    listenConstruct(cls, function(instance:IObservable):void
     {
         if(instance instanceof Mediator)
         {
@@ -195,15 +217,13 @@ function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConst
         }
         else
         {
-            var module:IModule = instance.dependModuleInstance;
-            netManager.listenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
+            netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
         }
     });
     // 监听销毁
-    listenDispose(cls, function(instance:IModuleDependent):void
+    listenDispose(cls, function(instance:IObservable):void
     {
-        var module:IModule = instance.dependModuleInstance;
-        netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
+        netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
     });
 }
 
@@ -533,7 +553,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:string):PropertyD
 }
 
 /**
- * 一次绑定多个全局消息
+ * 一次绑定多个消息
  * 
  * @export
  * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
@@ -541,7 +561,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:string):PropertyD
  */
 export function BindMessage(msgDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
- * 一次绑定一个全局消息
+ * 一次绑定一个消息
  * 
  * @export
  * @param {IConstructor|string} type 消息类型或消息类型名称
@@ -562,7 +582,7 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructo
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2);
+                BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2, mediator.observable);
             }
             else
             {
@@ -570,7 +590,7 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructo
                 for(var type in arg1)
                 {
                     // 添加编译指令
-                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type]);
+                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type], mediator.observable);
                 }
             }
         });
@@ -578,26 +598,26 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructo
 }
 
 /**
- * 一次绑定多个模块消息
+ * 一次绑定多个全局消息
  * 
  * @export
  * @param {{[type:string]:{[name:string]:any}}} msgDict 消息类型和ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleMessage(msgDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
+export function BindGlobalMessage(msgDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
- * 一次绑定一个模块消息
+ * 一次绑定一个全局消息
  * 
  * @export
  * @param {IConstructor|string} type 消息类型或消息类型名称
  * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleMessage(type:IConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
+export function BindGlobalMessage(type:IConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * @private
  */
-export function BindModuleMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
+export function BindGlobalMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -607,14 +627,14 @@ export function BindModuleMessage(arg1:{[type:string]:{[name:string]:any}}|ICons
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2, mediator.observable);
+                BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2);
             }
             else
             {
                 // 是字典方式
                 for(var type in arg1)
                 {
-                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type], mediator.observable);
+                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type]);
                 }
             }
         });
@@ -622,7 +642,7 @@ export function BindModuleMessage(arg1:{[type:string]:{[name:string]:any}}|ICons
 }
 
 /**
- * 一次绑定多个全局通讯消息
+ * 一次绑定多个通讯消息
  * 
  * @export
  * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
@@ -630,7 +650,7 @@ export function BindModuleMessage(arg1:{[type:string]:{[name:string]:any}}|ICons
  */
 export function BindResponse(resDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
- * 一次绑定一个全局通讯消息
+ * 一次绑定一个通讯消息
  * 
  * @export
  * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
@@ -652,14 +672,14 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:any}}|IResponseD
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2);
+                BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2, mediator.observable);
             }
             else
             {
                 // 是字典方式
                 for(var type in arg1)
                 {
-                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type]);
+                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type], mediator.observable);
                 }
             }
         });
@@ -667,26 +687,26 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:any}}|IResponseD
 }
 
 /**
- * 一次绑定多个模块通讯消息
+ * 一次绑定多个全局通讯消息
  * 
  * @export
  * @param {{[type:string]:{[name:string]:any}}} resDict 通讯消息类型和表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleResponse(resDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
+export function BindGlobalResponse(resDict:{[type:string]:{[name:string]:any}}):PropertyDecorator;
 /**
- * 一次绑定一个模块通讯消息
+ * 一次绑定一个全局通讯消息
  * 
  * @export
  * @param {IResponseDataConstructor|string} type 通讯消息类型或通讯消息类型名称
  * @param {string} uiDict ui表达式字典
  * @returns {PropertyDecorator} 
  */
-export function BindModuleResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
+export function BindGlobalResponse(type:IResponseDataConstructor|string, uiDict:{[name:string]:any}):PropertyDecorator;
 /**
  * @private
  */
-export function BindModuleResponse(arg1:{[type:string]:{[name:string]:any}}|IResponseDataConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
+export function BindGlobalResponse(arg1:{[type:string]:{[name:string]:any}}|IResponseDataConstructor|string, arg2?:{[name:string]:any}):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -696,14 +716,14 @@ export function BindModuleResponse(arg1:{[type:string]:{[name:string]:any}}|IRes
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
                 // 是类型方式
-                BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2, mediator.observable);
+                BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2);
             }
             else
             {
                 // 是字典方式
                 for(var type in arg1)
                 {
-                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type], mediator.observable);
+                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type]);
                 }
             }
         });

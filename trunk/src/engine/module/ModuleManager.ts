@@ -196,8 +196,6 @@ export default class ModuleManager
             var target:IModule = new cls();
             // 赋值打开参数
             target.data = data;
-            // 监听通讯消息
-            netManager.listenRequest(target.observable);
             // 数据先行
             var from:[IModuleConstructor, IModule] = this.getCurrent();
             var fromModule:IModule = from && from[1];

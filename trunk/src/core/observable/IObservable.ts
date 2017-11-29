@@ -27,7 +27,6 @@ export default interface IObservable
      * @memberof IObservable
      */
     dispatch(msg:IMessage):void;
-    
     /**
      * 派发消息，消息会转变为Message类型对象
      * 

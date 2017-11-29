@@ -1,7 +1,6 @@
 import SceneMediator from "engine/scene/SceneMediator";
 import Module from "engine/module/Module";
-import { MessageHandler } from "core/injector/Injector";
-import { BindModuleMessage, ModuleClass, DelegateMediator, ModuleMessageHandler, BindFunc, BindFor, BindValue } from "engine/injector/Injector";
+import { ModuleClass, DelegateMediator, BindFunc, BindFor, BindValue, MessageHandler, GlobalMessageHandler, BindMessage } from "engine/injector/Injector";
 import { EgretMediatorClass } from "egret/injector/Injector";
 
 /**
@@ -16,7 +15,7 @@ import { EgretMediatorClass } from "egret/injector/Injector";
 @EgretMediatorClass("Fuck2Skin")
 class SecondMediator extends SceneMediator
 {
-    @BindModuleMessage("FuckMsg", {label: "onMsg($arguments[0])"})
+    @BindMessage("FuckMsg", {label: "onMsg($arguments[0])"})
     @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
     @BindFor("i in fuckList")
@@ -39,7 +38,7 @@ class SecondMediator extends SceneMediator
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
             // moduleManager.close(SecondModule);
 
-            this.dispatchModule("FuckMsg", "Shit!!!");
+            this.dispatch("FuckMsg", "Shit!!!");
         });
         this.viewModel = {
             onMsg: msg=>{
@@ -50,10 +49,8 @@ class SecondMediator extends SceneMediator
             fuck: "you",
             fuckList: ["fuck", "shit", "you", "!!!"]
         };
-        // 测试系统消息
+        // 测试消息
         this.dispatch("fuck", 123);
-        // 测试模块消息
-        this.dispatchModule("fuck", 123);
     }
 }
 
@@ -64,7 +61,7 @@ export default class SecondModule extends Module
     private _mediator:SecondMediator;
     
     @MessageHandler("fuck")
-    @ModuleMessageHandler("fuck")
+    @GlobalMessageHandler("fuck")
     private onFuck(a):void
     {
         console.log("message at SecondModule: " + a);

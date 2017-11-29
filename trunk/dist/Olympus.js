@@ -1569,11 +1569,11 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
      * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
     */
     var Observable = /** @class */ (function () {
-        function Observable(global) {
+        function Observable(parent) {
             this._listenerDict = {};
             this._commandDict = {};
             this._disposed = false;
-            this._global = global;
+            this._parent = parent && parent.observable;
         }
         Object.defineProperty(Observable.prototype, "observable", {
             get: function () {
@@ -1639,8 +1639,8 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
             this.doDispatch(msg);
             // 额外派发一个通用事件
             this.doDispatch(new CommonMessage_1.default(CoreMessage_1.default.MESSAGE_DISPATCHED, msg));
-            // 将事件转发到全局
-            this._global && this._global.dispatch(msg);
+            // 将事件转发到上一层
+            this._parent && this._parent.dispatch(msg);
         };
         /**
          * 监听内核消息
@@ -1742,8 +1742,8 @@ define("core/observable/Observable", ["require", "exports", "core/message/Common
         Observable.prototype.dispose = function () {
             if (this._disposed)
                 return;
-            // 移除全局观察者
-            this._global = null;
+            // 移除上一层观察者引用
+            this._parent = null;
             // 清空所有消息监听
             this._listenerDict = null;
             // 清空所有命令
@@ -1872,7 +1872,7 @@ define("utils/ConstructUtil", ["require", "exports", "utils/ObjectUtil", "utils/
     }
     exports.listenDispose = listenDispose;
 });
-define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil", "core/message/Message"], function (require, exports, Core_2, ConstructUtil_1, Message_2) {
+define("core/injector/Injector", ["require", "exports", "core/Core", "utils/ConstructUtil"], function (require, exports, Core_2, ConstructUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -1930,32 +1930,6 @@ define("core/injector/Injector", ["require", "exports", "core/Core", "utils/Cons
                 enumerable: true,
                 get: function () { return target || (target = Core_2.core.getInject(type)); }
             });
-        });
-    }
-    function MessageHandler(target, key) {
-        if (key) {
-            var defs = Reflect.getMetadata("design:paramtypes", target, key);
-            var resClass = defs[0];
-            if (!(resClass.prototype instanceof Message_2.default))
-                throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
-            doMessageHandler(target.constructor, key, resClass);
-        }
-        else {
-            return function (prototype, propertyKey, descriptor) {
-                doMessageHandler(prototype.constructor, propertyKey, target);
-            };
-        }
-    }
-    exports.MessageHandler = MessageHandler;
-    ;
-    function doMessageHandler(cls, key, type) {
-        // 监听实例化
-        ConstructUtil_1.listenConstruct(cls, function (instance) {
-            Core_2.core.listen(type, instance[key], instance);
-        });
-        // 监听销毁
-        ConstructUtil_1.listenDispose(cls, function (instance) {
-            Core_2.core.unlisten(type, instance[key], instance);
         });
     }
 });
@@ -2216,10 +2190,6 @@ define("engine/scene/IScene", ["require", "exports"], function (require, exports
     Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/scene/IScenePolicy", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/module/IModuleObservable", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
@@ -3226,7 +3196,7 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
         function NetManager() {
             this._responseDict = {};
             this._responseListeners = {};
-            this.listenRequest(Core_6.core);
+            Core_6.core.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, Core_6.core);
         }
         NetManager.prototype.onMsgDispatched = function (msg) {
             var observable = this.observable;
@@ -3241,15 +3211,6 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 // 派发系统消息
                 observable.dispatch(NetMessage_1.default.NET_REQUEST, msg);
             }
-        };
-        /**
-         * 添加内核消息监听，遇到通讯消息则发送到后端，接到返回值后会将其发送到指定内核里
-         *
-         * @param {IObservable} observable 内核
-         * @memberof NetManager
-         */
-        NetManager.prototype.listenRequest = function (observable) {
-            observable.listen(CoreMessage_2.default.MESSAGE_DISPATCHED, this.onMsgDispatched, observable);
         };
         /**
          * 注册一个返回结构体
@@ -3373,8 +3334,8 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                 var observable = Core_6.core.observable;
                 if (request) {
                     response.__params.request = request;
-                    // 如果有配对请求，则将返回值发送到请求所在的内核里
-                    observable = request.__observable;
+                    // 如果有配对请求，则将返回值发送到请求所在的原始内核里
+                    observable = request.__oriObservable;
                 }
                 // 执行解析
                 response.parse(result);
@@ -3403,8 +3364,8 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
         NetManager.prototype.__onError = function (err, request) {
             // 移除遮罩
             MaskManager_2.maskManager.hideLoading("net");
-            // 如果有配对请求，则将返回值发送到请求所在的内核里
-            var observable = request ? request.__observable : Core_6.core;
+            // 如果有配对请求，则将返回值发送到请求所在的原始内核里
+            var observable = request ? request.__oriObservable : Core_6.core;
             // 派发事件
             observable.dispatch(NetMessage_1.default.NET_ERROR, err, request);
         };
@@ -5200,8 +5161,6 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 var target = new cls();
                 // 赋值打开参数
                 target.data = data;
-                // 监听通讯消息
-                NetManager_1.netManager.listenRequest(target.observable);
                 // 数据先行
                 var from = this.getCurrent();
                 var fromModule = from && from[1];
@@ -6731,13 +6690,6 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
                 this.bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
             }
         };
-        Mediator.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            Core_19.core.dispatch.apply(Core_19.core, [typeOrMsg].concat(params));
-        };
         Object.defineProperty(Mediator.prototype, "observable", {
             /*********************** 下面是模块消息系统 ***********************/
             /**
@@ -6748,11 +6700,20 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
              * @memberof Mediator
              */
             get: function () {
-                return this._dependModuleInstance && this._dependModuleInstance.observable;
+                return (this._dependModuleInstance || Core_19.core).observable;
             },
             enumerable: true,
             configurable: true
         });
+        /** dispatch方法实现 */
+        Mediator.prototype.dispatch = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            var observable = this.observable;
+            observable.dispatch.apply(observable, params);
+        };
         /**
          * 监听消息
          *
@@ -6761,8 +6722,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
          * @param {*} [thisArg] 消息this指向
          * @memberof IModuleObservable
          */
-        Mediator.prototype.listenModule = function (type, handler, thisArg) {
-            this._dependModuleInstance && this._dependModuleInstance.listenModule(type, handler, thisArg);
+        Mediator.prototype.listen = function (type, handler, thisArg) {
+            this.observable.listen(type, handler, thisArg);
         };
         /**
          * 移除消息监听
@@ -6772,8 +6733,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
          * @param {*} [thisArg] 消息this指向
          * @memberof IModuleObservable
          */
-        Mediator.prototype.unlistenModule = function (type, handler, thisArg) {
-            this._dependModuleInstance && this._dependModuleInstance.unlistenModule(type, handler, thisArg);
+        Mediator.prototype.unlisten = function (type, handler, thisArg) {
+            this.observable.unlisten(type, handler, thisArg);
         };
         /**
          * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
@@ -6782,8 +6743,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
          * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
          * @memberof IModuleObservable
          */
-        Mediator.prototype.mapCommandModule = function (type, cmd) {
-            this._dependModuleInstance && this._dependModuleInstance.mapCommandModule(type, cmd);
+        Mediator.prototype.mapCommand = function (type, cmd) {
+            this.observable.mapCommand(type, cmd);
         };
         /**
          * 注销命令
@@ -6793,16 +6754,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
          * @returns {void}
          * @memberof IModuleObservable
          */
-        Mediator.prototype.unmapCommandModule = function (type, cmd) {
-            this._dependModuleInstance && this._dependModuleInstance.unmapCommandModule(type, cmd);
-        };
-        /** dispatchModule方法实现 */
-        Mediator.prototype.dispatchModule = function () {
-            var params = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                params[_i] = arguments[_i];
-            }
-            this._dependModuleInstance && this._dependModuleInstance.dispatchModule.apply(this._dependModuleInstance, params);
+        Mediator.prototype.unmapCommand = function (type, cmd) {
+            this.observable.unmapCommand(type, cmd);
         };
         /**
          * 销毁中介者
@@ -7384,7 +7337,7 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
             this._mediators = [];
             this._disposeDict = new Dictionary_6.default();
             /*********************** 下面是模块消息系统 ***********************/
-            this._observable = new Observable_2.default(Core_21.core.observable);
+            this._observable = new Observable_2.default(Core_21.core);
         }
         Object.defineProperty(Module.prototype, "disposed", {
             /**
@@ -7590,13 +7543,6 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
          */
         Module.prototype.onDeactivate = function (to, data) {
         };
-        Module.prototype.dispatch = function (typeOrMsg) {
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            Core_21.core.dispatch.apply(Core_21.core, [typeOrMsg].concat(params));
-        };
         Object.defineProperty(Module.prototype, "observable", {
             /**
              * 暴露IObservable接口
@@ -7611,15 +7557,23 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
             enumerable: true,
             configurable: true
         });
+        /** dispatchModule方法实现 */
+        Module.prototype.dispatch = function () {
+            var params = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                params[_i] = arguments[_i];
+            }
+            this._observable.dispatch.apply(this._observable, params);
+        };
         /**
          * 监听消息
          *
          * @param {string} type 消息类型
          * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        Module.prototype.listenModule = function (type, handler, thisArg) {
+        Module.prototype.listen = function (type, handler, thisArg) {
             this._observable.listen(type, handler, thisArg);
         };
         /**
@@ -7628,9 +7582,9 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
          * @param {string} type 消息类型
          * @param {Function} handler 消息处理函数
          * @param {*} [thisArg] 消息this指向
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        Module.prototype.unlistenModule = function (type, handler, thisArg) {
+        Module.prototype.unlisten = function (type, handler, thisArg) {
             this._observable.unlisten(type, handler, thisArg);
         };
         /**
@@ -7638,9 +7592,9 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
          *
          * @param {string} type 要注册的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        Module.prototype.mapCommandModule = function (type, cmd) {
+        Module.prototype.mapCommand = function (type, cmd) {
             this._observable.mapCommand(type, cmd);
         };
         /**
@@ -7649,18 +7603,10 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
          * @param {string} type 要注销的消息类型
          * @param {(ICommandConstructor)} cmd 命令处理器
          * @returns {void}
-         * @memberof IModuleObservable
+         * @memberof Module
          */
-        Module.prototype.unmapCommandModule = function (type, cmd) {
+        Module.prototype.unmapCommand = function (type, cmd) {
             this._observable.unmapCommand(type, cmd);
-        };
-        /** dispatchModule方法实现 */
-        Module.prototype.dispatchModule = function () {
-            var params = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                params[_i] = arguments[_i];
-            }
-            this._observable.dispatch.apply(this._observable, params);
         };
         /**
          * 销毁模块，可以重写
@@ -8315,7 +8261,7 @@ define("engine/injector/BindUtil", ["require", "exports", "engine/bind/BindManag
     }
     exports.compileResponse = compileResponse;
 });
-define("engine/injector/Injector", ["require", "exports", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil"], function (require, exports, Injector_19, Message_3, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_7, BindUtil) {
+define("engine/injector/Injector", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil"], function (require, exports, Core_26, Injector_19, Message_2, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_7, BindUtil) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -8387,40 +8333,57 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
         return wrapperCls;
     }
     exports.ModuleClass = ModuleClass;
-    function ModuleMessageHandler(target, key) {
+    function MessageHandler(target, key) {
         if (key) {
             var defs = Reflect.getMetadata("design:paramtypes", target, key);
             var resClass = defs[0];
-            if (!(resClass.prototype instanceof Message_3.default))
-                throw new Error("@ModuleMessageHandler装饰器装饰的方法的首个参数必须是Message");
-            doModuleMessageHandler(target.constructor, key, resClass);
+            if (!(resClass.prototype instanceof Message_2.default))
+                throw new Error("@MessageHandler装饰器装饰的方法的首个参数必须是Message");
+            doMessageHandler(target.constructor, key, resClass, true);
         }
         else {
             return function (prototype, propertyKey, descriptor) {
-                doModuleMessageHandler(prototype.constructor, propertyKey, target);
+                doMessageHandler(prototype.constructor, propertyKey, target, true);
             };
         }
     }
-    exports.ModuleMessageHandler = ModuleMessageHandler;
+    exports.MessageHandler = MessageHandler;
     ;
-    function doModuleMessageHandler(cls, key, type) {
+    function GlobalMessageHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof Message_2.default))
+                throw new Error("@GlobalMessageHandler装饰器装饰的方法的首个参数必须是Message");
+            doMessageHandler(target.constructor, key, resClass, false);
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                doMessageHandler(prototype.constructor, propertyKey, target, false);
+            };
+        }
+    }
+    exports.GlobalMessageHandler = GlobalMessageHandler;
+    ;
+    function doMessageHandler(cls, key, type, inModule) {
         // 监听实例化
         ConstructUtil_3.listenConstruct(cls, function (instance) {
             if (instance instanceof Mediator_3.default) {
                 // 如果是Mediator，则需要等到被托管后再执行注册
                 addDelegateHandler(instance, function () {
-                    instance.dependModuleInstance.listenModule(type, instance[key], instance);
+                    var observable = inModule ? instance : Core_26.core;
+                    observable.listen(type, instance[key], instance);
                 });
             }
             else {
-                var module = instance.dependModuleInstance;
-                module && module.listenModule(type, instance[key], instance);
+                var observable = inModule ? instance : Core_26.core;
+                observable.listen(type, instance[key], instance);
             }
         });
         // 监听销毁
         ConstructUtil_3.listenDispose(cls, function (instance) {
-            var module = instance.dependModuleInstance;
-            module && module.unlistenModule(type, instance[key], instance);
+            var observable = inModule ? instance : Core_26.core;
+            observable.unlisten(type, instance[key], instance);
         });
     }
     function ResponseHandler(target, key) {
@@ -8429,21 +8392,6 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
             var resClass = defs[0];
             if (!(resClass.prototype instanceof ResponseData_1.default))
                 throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-            doResponseHandler(target.constructor, key, defs[0], false);
-        }
-        else {
-            return function (prototype, propertyKey, descriptor) {
-                doResponseHandler(prototype.constructor, propertyKey, target, false);
-            };
-        }
-    }
-    exports.ResponseHandler = ResponseHandler;
-    function ModuleResponseHandler(target, key) {
-        if (key) {
-            var defs = Reflect.getMetadata("design:paramtypes", target, key);
-            var resClass = defs[0];
-            if (!(resClass.prototype instanceof ResponseData_1.default))
-                throw new Error("无参数@ModuleResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
             doResponseHandler(target.constructor, key, defs[0], true);
         }
         else {
@@ -8452,7 +8400,22 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
             };
         }
     }
-    exports.ModuleResponseHandler = ModuleResponseHandler;
+    exports.ResponseHandler = ResponseHandler;
+    function GlobalResponseHandler(target, key) {
+        if (key) {
+            var defs = Reflect.getMetadata("design:paramtypes", target, key);
+            var resClass = defs[0];
+            if (!(resClass.prototype instanceof ResponseData_1.default))
+                throw new Error("无参数@GlobalResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
+            doResponseHandler(target.constructor, key, defs[0], false);
+        }
+        else {
+            return function (prototype, propertyKey, descriptor) {
+                doResponseHandler(prototype.constructor, propertyKey, target, false);
+            };
+        }
+    }
+    exports.GlobalResponseHandler = GlobalResponseHandler;
     function doResponseHandler(cls, key, type, inModule) {
         // 监听实例化
         ConstructUtil_3.listenConstruct(cls, function (instance) {
@@ -8463,14 +8426,12 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                 });
             }
             else {
-                var module = instance.dependModuleInstance;
-                NetManager_4.netManager.listenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
+                NetManager_4.netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
             }
         });
         // 监听销毁
         ConstructUtil_3.listenDispose(cls, function (instance) {
-            var module = instance.dependModuleInstance;
-            NetManager_4.netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? module.observable : undefined));
+            NetManager_4.netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
         });
     }
     var delegateHandlerDict = new Dictionary_7.default();
@@ -8707,13 +8668,13 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
                 var target = mediator[propertyKey];
                 if (typeof arg1 == "string" || arg1 instanceof Function) {
                     // 是类型方式
-                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2);
+                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2, mediator.observable);
                 }
                 else {
                     // 是字典方式
                     for (var type in arg1) {
                         // 添加编译指令
-                        BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type]);
+                        BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type], mediator.observable);
                     }
                 }
             });
@@ -8723,53 +8684,31 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
     /**
      * @private
      */
-    function BindModuleMessage(arg1, arg2) {
+    function BindGlobalMessage(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
                 // 获取编译启动目标
                 var target = mediator[propertyKey];
                 if (typeof arg1 == "string" || arg1 instanceof Function) {
                     // 是类型方式
-                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2, mediator.observable);
+                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2);
                 }
                 else {
                     // 是字典方式
                     for (var type in arg1) {
-                        BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type], mediator.observable);
+                        BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type]);
                     }
                 }
             });
         };
     }
-    exports.BindModuleMessage = BindModuleMessage;
+    exports.BindGlobalMessage = BindGlobalMessage;
     /**
      * @private
      */
     function BindResponse(arg1, arg2) {
         return function (prototype, propertyKey) {
             // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
-            listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
-                if (typeof arg1 == "string" || arg1 instanceof Function) {
-                    // 是类型方式
-                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2);
-                }
-                else {
-                    // 是字典方式
-                    for (var type in arg1) {
-                        BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type]);
-                    }
-                }
-            });
-        };
-    }
-    exports.BindResponse = BindResponse;
-    /**
-     * @private
-     */
-    function BindModuleResponse(arg1, arg2) {
-        return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
                 // 获取编译启动目标
                 var target = mediator[propertyKey];
@@ -8786,9 +8725,31 @@ define("engine/injector/Injector", ["require", "exports", "core/injector/Injecto
             });
         };
     }
-    exports.BindModuleResponse = BindModuleResponse;
+    exports.BindResponse = BindResponse;
+    /**
+     * @private
+     */
+    function BindGlobalResponse(arg1, arg2) {
+        return function (prototype, propertyKey) {
+            listenOnOpen(prototype, propertyKey, null, function (mediator) {
+                // 获取编译启动目标
+                var target = mediator[propertyKey];
+                if (typeof arg1 == "string" || arg1 instanceof Function) {
+                    // 是类型方式
+                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2);
+                }
+                else {
+                    // 是字典方式
+                    for (var type in arg1) {
+                        BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type]);
+                    }
+                }
+            });
+        };
+    }
+    exports.BindGlobalResponse = BindGlobalResponse;
 });
-define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_26, Injector_20, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, Version_3, ModuleMessage_2) {
+define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injector", "engine/bridge/BridgeManager", "engine/bridge/BridgeMessage", "engine/module/ModuleManager", "engine/assets/AssetsManager", "engine/env/Environment", "engine/env/Hash", "engine/version/Version", "engine/module/ModuleMessage"], function (require, exports, Core_27, Injector_20, BridgeManager_4, BridgeMessage_2, ModuleManager_4, AssetsManager_3, Environment_6, Hash_1, Version_3, ModuleMessage_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -8831,7 +8792,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 // 初始化版本号工具
                 Version_3.version.initialize(function () {
                     // 监听Bridge初始化完毕事件，显示第一个模块
-                    Core_26.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
+                    Core_27.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                     // 注册并初始化表现层桥实例
                     BridgeManager_4.bridgeManager.registerBridge.apply(BridgeManager_4.bridgeManager, params.bridges);
                 });
@@ -8849,7 +8810,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         };
         Engine.prototype.onAllBridgesInit = function () {
             // 注销监听
-            Core_26.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+            Core_27.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
             // 初始化插件
             if (this._initParams.plugins) {
                 for (var _i = 0, _a = this._initParams.plugins; _i < _a.length; _i++) {
@@ -8874,7 +8835,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             // 调用回调
             this._initParams.onInited && this._initParams.onInited();
             // 监听首个模块开启
-            Core_26.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            Core_27.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
             ModuleManager_4.moduleManager.open(this._initParams.firstModule);
             // 如果有哈希模块则打开之
@@ -8883,7 +8844,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
         };
         Engine.prototype.onModuleChange = function (from) {
             // 注销监听
-            Core_26.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
+            Core_27.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 移除loadElement显示
             if (this._loadElement) {
                 var parent = this._loadElement.parentElement;
@@ -8897,7 +8858,7 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
     }());
     exports.default = Engine;
     /** 再额外导出一个单例 */
-    exports.engine = Core_26.core.getInject(Engine);
+    exports.engine = Core_27.core.getInject(Engine);
 });
 /// <amd-module name="Olympus"/>
 define("Olympus", ["require", "exports", "engine/Engine"], function (require, exports, Engine_1) {
