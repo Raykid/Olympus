@@ -9,6 +9,7 @@ import { mutate } from "../bind/Mutator";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
 import { bindManager } from "../bind/BindManager";
 import IObservable from "../../core/observable/IObservable";
+import ResponseData from "../net/ResponseData";
 
 /**
  * @author Raykid
@@ -92,6 +93,17 @@ export default class Mediator implements IModuleMediator
     public get dependModule():IModuleConstructor
     {
         return this._dependModule;
+    }
+
+    /**
+     * 便捷获取被托管到的模块的初始化消息数组
+     * 
+     * @type {ResponseData[]}
+     * @memberof IModuleMediator
+     */
+    public get initResponses():ResponseData[]
+    {
+        return (this._dependModuleInstance ? this._dependModuleInstance.responses : []);
     }
 
     private _data:any;

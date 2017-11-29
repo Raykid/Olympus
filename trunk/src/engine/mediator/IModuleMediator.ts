@@ -1,5 +1,6 @@
 import IModuleDependent from "../module/IModuleDependent";
 import IMediator from "./IMediator";
+import ResponseData from "../net/ResponseData";
 
 /**
  * @author Raykid
@@ -11,6 +12,14 @@ import IMediator from "./IMediator";
 */
 export default interface IModuleMediator extends IMediator, IModuleDependent
 {
+    /**
+     * 便捷获取被托管到的模块的初始化消息数组
+     * 
+     * @type {ResponseData[]}
+     * @memberof IModuleMediator
+     */
+    readonly initResponses:ResponseData[];
+
     /**
      * 列出中介者所需的资源数组，可重写
      * 

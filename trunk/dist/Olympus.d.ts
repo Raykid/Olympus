@@ -1013,61 +1013,6 @@ declare module "engine/module/IModuleDependent" {
         readonly dependModule: IModuleConstructor;
     }
 }
-declare module "engine/mediator/IModuleMediator" {
-    import IModuleDependent from "engine/module/IModuleDependent";
-    import IMediator from "engine/mediator/IMediator";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-10-24
-     * @modify date 2017-10-24
-     *
-     * 托管到模块的中介者所具有的接口
-    */
-    export default interface IModuleMediator extends IMediator, IModuleDependent {
-        /**
-         * 列出中介者所需的资源数组，可重写
-         *
-         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-         * @memberof IModuleMediator
-         */
-        listAssets(): string[];
-        /**
-         * 加载从listAssets中获取到的所有资源
-         *
-         * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
-         * @memberof IModuleMediator
-         */
-        loadAssets(handler: (err?: Error) => void): void;
-        /**
-         * 当所需资源加载完毕后调用
-         *
-         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
-         * @memberof IModuleMediator
-         */
-        onLoadAssets(err?: Error): void;
-    }
-}
-declare module "engine/net/IRequestPolicy" {
-    import RequestData from "engine/net/RequestData";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-09-11
-     * @modify date 2017-09-11
-     *
-     * 请求策略，根据使用的策略不同，请求的行为也会有所不同，例如使用HTTP或者Socket
-    */
-    export default interface IRequestPolicy {
-        /**
-         * 发送请求逻辑
-         *
-         * @param {RequestData} request 请求
-         * @memberof IRequestPolicy
-         */
-        sendRequest(request: RequestData): void;
-    }
-}
 declare module "engine/net/DataType" {
     /**
      * @author Raykid
@@ -1112,8 +1057,7 @@ declare module "engine/net/DataType" {
         abstract pack(): any;
     }
 }
-declare module "engine/net/ResponseData" {
-    import DataType from "engine/net/DataType";
+declare module "engine/net/IRequestPolicy" {
     import RequestData from "engine/net/RequestData";
     /**
      * @author Raykid
@@ -1121,26 +1065,16 @@ declare module "engine/net/ResponseData" {
      * @create date 2017-09-11
      * @modify date 2017-09-11
      *
-     * 通讯返回消息基类
+     * 请求策略，根据使用的策略不同，请求的行为也会有所不同，例如使用HTTP或者Socket
     */
-    export interface IResponseParams {
-        type: string;
-        request?: RequestData;
-        [key: string]: any;
-    }
-    export default abstract class ResponseData extends DataType {
+    export default interface IRequestPolicy {
         /**
-         * 返回参数
+         * 发送请求逻辑
          *
-         * @abstract
-         * @type {IResponseParams}
-         * @memberof ResponseType
+         * @param {RequestData} request 请求
+         * @memberof IRequestPolicy
          */
-        abstract __params: IResponseParams;
-    }
-    export interface IResponseDataConstructor {
-        new (): ResponseData;
-        readonly type: string;
+        sendRequest(request: RequestData): void;
     }
 }
 declare module "engine/net/RequestData" {
@@ -1250,6 +1184,80 @@ declare module "engine/net/RequestData" {
     }
     /** 导出公共消息参数对象 */
     export var commonData: any;
+}
+declare module "engine/net/ResponseData" {
+    import DataType from "engine/net/DataType";
+    import RequestData from "engine/net/RequestData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-09-11
+     * @modify date 2017-09-11
+     *
+     * 通讯返回消息基类
+    */
+    export interface IResponseParams {
+        type: string;
+        request?: RequestData;
+        [key: string]: any;
+    }
+    export default abstract class ResponseData extends DataType {
+        /**
+         * 返回参数
+         *
+         * @abstract
+         * @type {IResponseParams}
+         * @memberof ResponseType
+         */
+        abstract __params: IResponseParams;
+    }
+    export interface IResponseDataConstructor {
+        new (): ResponseData;
+        readonly type: string;
+    }
+}
+declare module "engine/mediator/IModuleMediator" {
+    import IModuleDependent from "engine/module/IModuleDependent";
+    import IMediator from "engine/mediator/IMediator";
+    import ResponseData from "engine/net/ResponseData";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-10-24
+     * @modify date 2017-10-24
+     *
+     * 托管到模块的中介者所具有的接口
+    */
+    export default interface IModuleMediator extends IMediator, IModuleDependent {
+        /**
+         * 便捷获取被托管到的模块的初始化消息数组
+         *
+         * @type {ResponseData[]}
+         * @memberof IModuleMediator
+         */
+        readonly initResponses: ResponseData[];
+        /**
+         * 列出中介者所需的资源数组，可重写
+         *
+         * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+         * @memberof IModuleMediator
+         */
+        listAssets(): string[];
+        /**
+         * 加载从listAssets中获取到的所有资源
+         *
+         * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+         * @memberof IModuleMediator
+         */
+        loadAssets(handler: (err?: Error) => void): void;
+        /**
+         * 当所需资源加载完毕后调用
+         *
+         * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+         * @memberof IModuleMediator
+         */
+        onLoadAssets(err?: Error): void;
+    }
 }
 declare module "engine/module/IModule" {
     import IDisposable from "core/interfaces/IDisposable";
@@ -3617,6 +3625,7 @@ declare module "engine/mediator/Mediator" {
     import IModuleConstructor from "engine/module/IModuleConstructor";
     import ICommandConstructor from "core/command/ICommandConstructor";
     import IObservable from "core/observable/IObservable";
+    import ResponseData from "engine/net/ResponseData";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3675,6 +3684,13 @@ declare module "engine/mediator/Mediator" {
          * @memberof IMediator
          */
         readonly dependModule: IModuleConstructor;
+        /**
+         * 便捷获取被托管到的模块的初始化消息数组
+         *
+         * @type {ResponseData[]}
+         * @memberof IModuleMediator
+         */
+        readonly initResponses: ResponseData[];
         private _data;
         /**
          * 打开时传递的data对象

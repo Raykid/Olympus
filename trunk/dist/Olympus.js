@@ -2201,14 +2201,6 @@ define("engine/module/IModuleDependent", ["require", "exports"], function (requi
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/mediator/IModuleMediator", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
-define("engine/net/IRequestPolicy", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-});
 define("engine/net/DataType", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -2238,17 +2230,9 @@ define("engine/net/DataType", ["require", "exports"], function (require, exports
     }());
     exports.default = DataType;
 });
-define("engine/net/ResponseData", ["require", "exports", "engine/net/DataType"], function (require, exports, DataType_1) {
+define("engine/net/IRequestPolicy", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var ResponseData = /** @class */ (function (_super) {
-        __extends(ResponseData, _super);
-        function ResponseData() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return ResponseData;
-    }(DataType_1.default));
-    exports.default = ResponseData;
 });
 define("engine/net/RequestData", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -2290,6 +2274,22 @@ define("engine/net/RequestData", ["require", "exports"], function (require, expo
     exports.default = RequestData;
     /** 导出公共消息参数对象 */
     exports.commonData = {};
+});
+define("engine/net/ResponseData", ["require", "exports", "engine/net/DataType"], function (require, exports, DataType_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ResponseData = /** @class */ (function (_super) {
+        __extends(ResponseData, _super);
+        function ResponseData() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        return ResponseData;
+    }(DataType_1.default));
+    exports.default = ResponseData;
+});
+define("engine/mediator/IModuleMediator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("engine/module/IModule", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -6538,6 +6538,19 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
              */
             get: function () {
                 return this._dependModule;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Mediator.prototype, "initResponses", {
+            /**
+             * 便捷获取被托管到的模块的初始化消息数组
+             *
+             * @type {ResponseData[]}
+             * @memberof IModuleMediator
+             */
+            get: function () {
+                return (this._dependModuleInstance ? this._dependModuleInstance.responses : []);
             },
             enumerable: true,
             configurable: true
