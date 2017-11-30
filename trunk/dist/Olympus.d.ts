@@ -3888,6 +3888,12 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         dispose(): void;
+        /**
+         * 当销毁时调用
+         *
+         * @memberof Mediator
+         */
+        onDispose(): void;
     }
 }
 declare module "engine/panel/PanelMediator" {
@@ -4432,6 +4438,12 @@ declare module "engine/module/Module" {
          * @memberof Module
          */
         dispose(): void;
+        /**
+         * 当销毁时调用
+         *
+         * @memberof Mediator
+         */
+        onDispose(): void;
     }
 }
 declare module "engine/env/Explorer" {

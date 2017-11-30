@@ -393,6 +393,8 @@ export default class Mediator implements IModuleMediator
     public dispose():void
     {
         if(this._disposed) return;
+        // 调用模板方法
+        this.onDispose();
         // 移除显示
         if(this.skin && this.bridge)
         {
@@ -411,6 +413,16 @@ export default class Mediator implements IModuleMediator
         this.skin = null;
         // 设置已被销毁
         this._disposed = true;
+    }
+
+    /**
+     * 当销毁时调用
+     * 
+     * @memberof Mediator
+     */
+    public onDispose():void
+    {
+        // 可重写
     }
 }
 

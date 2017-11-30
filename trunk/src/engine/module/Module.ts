@@ -366,6 +366,8 @@ export default abstract class Module implements IModule
     public dispose():void
     {
         if(this._disposed) return;
+        // 调用模板方法
+        this.onDispose();
         // 关闭自身
         var cls:IModuleConstructor = <IModuleConstructor>getConstructor(<IModuleConstructor>this.constructor);
         moduleManager.close(cls);
@@ -383,5 +385,15 @@ export default abstract class Module implements IModule
         this._observable = null;
         // 记录
         this._disposed = true;
+    }
+    
+    /**
+     * 当销毁时调用
+     * 
+     * @memberof Mediator
+     */
+    public onDispose():void
+    {
+        // 可重写
     }
 }

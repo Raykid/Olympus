@@ -6860,6 +6860,8 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
         Mediator.prototype.dispose = function () {
             if (this._disposed)
                 return;
+            // 调用模板方法
+            this.onDispose();
             // 移除显示
             if (this.skin && this.bridge) {
                 var parent = this.bridge.getParent(this.skin);
@@ -6878,6 +6880,14 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             this.skin = null;
             // 设置已被销毁
             this._disposed = true;
+        };
+        /**
+         * 当销毁时调用
+         *
+         * @memberof Mediator
+         */
+        Mediator.prototype.onDispose = function () {
+            // 可重写
         };
         return Mediator;
     }());
@@ -7724,6 +7734,8 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
         Module.prototype.dispose = function () {
             if (this._disposed)
                 return;
+            // 调用模板方法
+            this.onDispose();
             // 关闭自身
             var cls = ConstructUtil_2.getConstructor(this.constructor);
             ModuleManager_2.moduleManager.close(cls);
@@ -7741,6 +7753,14 @@ define("engine/module/Module", ["require", "exports", "core/Core", "core/observa
             this._observable = null;
             // 记录
             this._disposed = true;
+        };
+        /**
+         * 当销毁时调用
+         *
+         * @memberof Mediator
+         */
+        Module.prototype.onDispose = function () {
+            // 可重写
         };
         return Module;
     }());
