@@ -3387,7 +3387,9 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                     // 如果有配对请求，则将返回值发送到请求所在的原始内核里
                     observable = request.__oriObservable;
                 }
-                // 处理
+                // 派发事件
+                observable.dispatch(NetMessage_1.default.NET_RESPONSE, response, response.__params.request);
+                // 递归处理事件监听
                 this.recurseResponse(type, response, observable);
             }
             else {
@@ -3395,8 +3397,6 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             }
         };
         NetManager.prototype.recurseResponse = function (type, response, observable) {
-            // 派发事件
-            observable.dispatch(NetMessage_1.default.NET_RESPONSE, response, response.__params.request);
             // 触发事件形式监听
             var listeners = this._responseListeners[type];
             if (listeners) {
@@ -3422,16 +3422,8 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             MaskManager_2.maskManager.hideLoading("net");
             // 如果有配对请求，则将返回值发送到请求所在的原始内核里
             var observable = request && request.__oriObservable;
-            // 处理
-            this.recurseError(err, request, observable);
-        };
-        NetManager.prototype.recurseError = function (err, request, observable) {
             // 派发事件
             observable.dispatch(NetMessage_1.default.NET_ERROR, err, request);
-            // 递归
-            if (observable.parent) {
-                this.recurseError(err, request, observable.parent);
-            }
         };
         NetManager = __decorate([
             Injector_4.Injectable,

@@ -194,7 +194,9 @@ export default class NetManager
                 // 如果有配对请求，则将返回值发送到请求所在的原始内核里
                 observable = request.__oriObservable;
             }
-            // 处理
+            // 派发事件
+            observable.dispatch(NetMessage.NET_RESPONSE, response, response.__params.request);
+            // 递归处理事件监听
             this.recurseResponse(type, response, observable);
         }
         else
@@ -205,8 +207,6 @@ export default class NetManager
 
     private recurseResponse(type:string, response:ResponseData, observable:IObservable):void
     {
-        // 派发事件
-        observable.dispatch(NetMessage.NET_RESPONSE, response, response.__params.request);
         // 触发事件形式监听
         var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
         if(listeners)
@@ -236,19 +236,8 @@ export default class NetManager
         maskManager.hideLoading("net");
         // 如果有配对请求，则将返回值发送到请求所在的原始内核里
         var observable:IObservable = request && request.__oriObservable;
-        // 处理
-        this.recurseError(err, request, observable);
-    }
-
-    private recurseError(err:Error, request:RequestData, observable:IObservable):void
-    {
         // 派发事件
         observable.dispatch(NetMessage.NET_ERROR, err, request);
-        // 递归
-        if(observable.parent)
-        {
-            this.recurseError(err, request, observable.parent);
-        }
     }
 }
 /** 再额外导出一个单例 */

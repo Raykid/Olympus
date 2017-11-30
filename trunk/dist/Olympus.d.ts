@@ -2197,7 +2197,6 @@ declare module "engine/net/NetManager" {
         __onResponse(type: string, result: any, request?: RequestData): void | never;
         private recurseResponse(type, response, observable);
         __onError(err: Error, request?: RequestData): void;
-        private recurseError(err, request, observable);
     }
     /** 再额外导出一个单例 */
     export const netManager: NetManager;
