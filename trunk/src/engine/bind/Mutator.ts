@@ -30,15 +30,22 @@ export function mutate(data:any):any
 {
     // 如果是简单类型，则啥也不做
     if(!data || typeof data != "object") return data;
-    // 递归变异所有内部变量
-    for(var key in data)
+    // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
+    var keys:string[] = Object.keys(data).concat(Object.keys(data.__proto__));
+    // 去重
+    var temp:any = {};
+    for(var key of keys)
     {
-        mutateObject(data, key, data[key]);
+        if(!temp[key])
+        {
+            temp[key] = key;
+            mutateObject(data, key);
+        }
     }
     return data;
 }
 
-function mutateObject(data:any, key:string, value:any):void
+function mutateObject(data:any, key:string):void
 {
     var depKey:string = getObjectHashs(data, key);
     // 对每个复杂类型对象都要有一个对应的依赖列表
@@ -46,27 +53,61 @@ function mutateObject(data:any, key:string, value:any):void
     if(!dep)
     {
         dep = new Dep();
-        // 变异过程
-        Object.defineProperty(data, key, {
-            enumerable: true,
-            configurable: false,
-            get: ()=>{
-                // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
-                var watcher:Watcher = Watcher.updating;
-                if(watcher) dep.watch(watcher);
-                // 利用闭包保存原始值
-                return value;
-            },
-            set: v=>{
-                if(v == value) return;
-                value = v;
-                // 如果是数组就走专门的数组变异方法，否则递归变异对象
-                if(Array.isArray(v)) mutateArray(v, dep);
-                else mutate(v);
-                // 触发通知
-                dep.notify();
+        // 判断本来这个属性是值属性还是getter/setter属性，要有不同的操作方式
+        var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__, key);
+        if(desc)
+        {
+            if(desc.hasOwnProperty("value"))
+            {
+                // 值属性的变异过程
+                Object.defineProperty(data, key, {
+                    enumerable: true,
+                    configurable: false,
+                    get: ()=>{
+                        // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
+                        var watcher:Watcher = Watcher.updating;
+                        if(watcher) dep.watch(watcher);
+                        // 利用闭包保存原始值
+                        return desc.value;
+                    },
+                    set: v=>{
+                        if(!desc.writable || v === desc.value) return;
+                        desc.value = v;
+                        // 如果是数组就走专门的数组变异方法，否则递归变异对象
+                        if(Array.isArray(v)) mutateArray(v, dep);
+                        else mutate(v);
+                        // 触发通知
+                        dep.notify();
+                    }
+                });
             }
-        });
+            else
+            {
+                // getter/setter属性的变异过程
+                Object.defineProperty(data, key, {
+                    enumerable: true,
+                    configurable: false,
+                    get: ()=>{
+                        if(!desc.get) return;
+                        // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
+                        var watcher:Watcher = Watcher.updating;
+                        if(watcher) dep.watch(watcher);
+                        // 返回get方法结果
+                        return desc.get.call(data);
+                    },
+                    set: v=>{
+                        if(!desc.set) return;
+                        // 设置
+                        desc.set.call(data, v);
+                        // 如果是数组就走专门的数组变异方法，否则递归变异对象
+                        if(Array.isArray(v)) mutateArray(v, dep);
+                        else mutate(v);
+                        // 触发通知
+                        dep.notify();
+                    }
+                });
+            }
+        }
         // 打一个标记表示已经变异过了
         Object.defineProperty(data, depKey, {
             value: dep,
@@ -76,7 +117,7 @@ function mutateObject(data:any, key:string, value:any):void
         });
     }
     // 递归子属性
-    mutate(value);
+    mutate(data[key]);
 }
 
 function mutateArray(arr:any[], dep:Dep):void

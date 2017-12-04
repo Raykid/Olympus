@@ -38,6 +38,8 @@ class FirstMediator extends SceneMediator
     @BindFor("fuck in fuckList")
     @BindValue({textContent: "fuck + ' - ' + fuckText + ' - 1'"})
     public txt:HTMLElement;
+    @BindValue("textContent", "fuckModel.fuck")
+    public fuck:HTMLElement;
 
     public listAssets():string[]
     {
@@ -59,7 +61,8 @@ class FirstMediator extends SceneMediator
             onClick: ()=>{
                 this.viewModel.fuckText = "clicked";
                 this.moduleManager.open(SecondModule, null, true);
-            }
+            },
+            fuckModel: this.fuckModel1
         };
 
         audioManager.playMusic({
@@ -69,6 +72,7 @@ class FirstMediator extends SceneMediator
         setTimeout(()=>{
             this.viewModel.fuckText = "1234";
             this.viewModel.fuckList = ["hello", "world"];
+            this.fuckModel1.fuck = "You!!!";
         }, 3000);
 
         this.dispatch(new TestRequest());

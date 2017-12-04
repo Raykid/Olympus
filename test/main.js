@@ -244,20 +244,25 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
         return IFuckModel;
     }());
     exports.IFuckModel = IFuckModel;
-    var FuckModel = /** @class */ (function (_super) {
-        __extends(FuckModel, _super);
+    var FuckModel = /** @class */ (function () {
         function FuckModel() {
-            var _this = _super.call(this) || this;
+            this._fuck = "Fuck";
+            this.shit = "Shit";
             console.log("Fuck Model Constructed!");
-            return _this;
         }
         Object.defineProperty(FuckModel.prototype, "fuck", {
             get: function () {
-                return "Fuck you";
+                return this._fuck;
+            },
+            set: function (value) {
+                this._fuck = value;
             },
             enumerable: true,
             configurable: true
         });
+        FuckModel.prototype.fuckYou = function () {
+            return "Oye!";
+        };
         __decorate([
             Injector_4.Inject,
             __metadata("design:type", Hash_1.default)
@@ -267,7 +272,7 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
             __metadata("design:paramtypes", [])
         ], FuckModel);
         return FuckModel;
-    }(IFuckModel));
+    }());
     exports.default = FuckModel;
 });
 define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "net/response/TestResponse", "net/request/TestRequest", "models/FuckModel", "dom/injector/Injector", "engine/scene/SceneMediator", "core/injector/Injector", "engine/module/ModuleManager", "engine/audio/AudioManager", "engine/module/ModuleMessage", "engine/module/Module", "engine/injector/Injector"], function (require, exports, SecondModule_1, TestResponse_2, TestRequest_1, FuckModel_1, Injector_5, SceneMediator_2, Injector_6, ModuleManager_1, AudioManager_1, ModuleMessage_1, Module_2, Injector_7) {
@@ -303,7 +308,8 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
                 onClick: function () {
                     _this.viewModel.fuckText = "clicked";
                     _this.moduleManager.open(SecondModule_1.default, null, true);
-                }
+                },
+                fuckModel: this.fuckModel1
             };
             AudioManager_1.audioManager.playMusic({
                 url: "./test.mp3"
@@ -311,6 +317,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             setTimeout(function () {
                 _this.viewModel.fuckText = "1234";
                 _this.viewModel.fuckList = ["hello", "world"];
+                _this.fuckModel1.fuck = "You!!!";
             }, 3000);
             this.dispatch(new TestRequest_1.default());
         };
@@ -349,6 +356,10 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             Injector_7.BindValue({ textContent: "fuck + ' - ' + fuckText + ' - 1'" }),
             __metadata("design:type", HTMLElement)
         ], FirstMediator.prototype, "txt", void 0);
+        __decorate([
+            Injector_7.BindValue("textContent", "fuckModel.fuck"),
+            __metadata("design:type", HTMLElement)
+        ], FirstMediator.prototype, "fuck", void 0);
         __decorate([
             Injector_7.MessageHandler(ModuleMessage_1.default.MODULE_CHANGE),
             __metadata("design:type", Function),
