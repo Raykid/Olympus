@@ -57,11 +57,16 @@ export default class Engine
     public initialize(params:IInitParams):void
     {
         var self:Engine = this;
+        // 调用进度回调，初始化为0%
+        params.onInitProgress && params.onInitProgress(0, InitStep.ReadyToInit);
+        // 执行初始化
         if(document.readyState == "loading") document.addEventListener("readystatechange", doInitialize);
         else doInitialize();
 
         function doInitialize():void
         {
+            // 调用进度回调，开始初始化为10%
+            params.onInitProgress && params.onInitProgress(0.1, InitStep.StartInit);
             // 移除事件
             if(this == document) document.removeEventListener("readystatechange", doInitialize);
             // 要判断document是否初始化完毕
@@ -74,6 +79,8 @@ export default class Engine
             environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 初始化版本号工具
             version.initialize(()=>{
+                // 调用进度回调，版本号初始化完毕为20%
+                params.onInitProgress && params.onInitProgress(0.2, InitStep.VersionInited);
                 // 监听Bridge初始化完毕事件，显示第一个模块
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
@@ -95,6 +102,8 @@ export default class Engine
 
     private onAllBridgesInit():void
     {
+        // 调用进度回调，表现层桥初始化完毕为30%
+        this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, InitStep.BridgesInited);
         // 注销监听
         core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
         // 初始化插件
@@ -112,7 +121,16 @@ export default class Engine
         if(preloads)
         {
             // 去加载
-            assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this));
+            var curIndex:number = 0;
+            var totalCount:number = preloads.length;
+            assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this), null, (key:string, value:any)=>{
+                curIndex ++;
+                // 调用进度回调，每个预加载文件平分30%-90%的进度
+                var progress:number = 0.3 + 0.6 * curIndex / totalCount;
+                // 保留2位小数
+                progress = Math.round(progress * 100) * 0.01;
+                this._initParams.onInitProgress && this._initParams.onInitProgress(progress, InitStep.Preload, key, value);
+            });
         }
         else
         {
@@ -123,8 +141,8 @@ export default class Engine
 
     private onPreloadOK():void
     {
-        // 调用回调
-        this._initParams.onInited && this._initParams.onInited();
+        // 调用进度回调，打开首个模块为90%
+        this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
@@ -136,6 +154,8 @@ export default class Engine
 
     private onModuleChange(from:IModuleConstructor):void
     {
+        // 调用进度回调，全部过程完毕，100%
+        this._initParams.onInitProgress && this._initParams.onInitProgress(1, InitStep.Inited);
         // 注销监听
         core.unlisten(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 移除loadElement显示
@@ -148,6 +168,24 @@ export default class Engine
 }
 /** 再额外导出一个单例 */
 export const engine:Engine = core.getInject(Engine);
+
+export enum InitStep
+{
+    /** 框架已准备好初始化 */
+    ReadyToInit,
+    /** 开始执行初始化 */
+    StartInit,
+    /** 版本号系统初始化完毕 */
+    VersionInited,
+    /** 表现层桥初始化完毕 */
+    BridgesInited,
+    /** 预加载，可能会触发多次，每次传递两个参数：预加载文件名或路径、预加载文件内容 */
+    Preload,
+    /** 开始打开首个模块 */
+    OpenFirstModule,
+    /** 首个模块打开完毕，初始化流程完毕 */
+    Inited
+}
 
 export interface IInitParams
 {
@@ -215,6 +253,12 @@ export interface IInitParams
      * @memberof IInitParams
      */
     preloads?:string[];
+    /**
+     * 初始化进度变化时调用，第一个参数为进度数值，范围是[0, 1]；第二个参数是所在步骤枚举值；第三个参数是步骤提供的参数列表
+     * 
+     * @memberof IInitParams
+     */
+    onInitProgress?:(progress?:number, step?:InitStep, ...args:any[])=>void;
     /**
      * 框架初始化完毕时调用
      * 

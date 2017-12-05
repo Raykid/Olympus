@@ -70,10 +70,11 @@ export default class AssetsManager
      * @param {string|string[]} keyOrPath 资源短名称或资源路径
      * @param {(assets?:any|any[])=>void} complete 完成回调，如果加载失败则参数是个Error对象
      * @param {XMLHttpRequestResponseType} [responseType] 加载类型
+     * @param {(keyOrPath?:string, assets?:any)=>void} [oneComplete] 一个资源加载完毕会调用这个回调，如果有的话。仅在keyOrPath是数组情况下生效
      * @returns {void} 
      * @memberof AssetsManager
      */
-    public loadAssets(keyOrPath:string|string[], complete:(assets?:any|any[])=>void, responseType?:XMLHttpRequestResponseType):void
+    public loadAssets(keyOrPath:string|string[], complete:(assets?:any|any[])=>void, responseType?:XMLHttpRequestResponseType, oneComplete?:(keyOrPath?:string, assets?:any)=>void):void
     {
         // 非空判断
         if(!keyOrPath)
@@ -84,20 +85,30 @@ export default class AssetsManager
         // 获取路径
         if(keyOrPath instanceof Array)
         {
+            // 使用副本，防止修改原始数组
+            var temp:string[] = keyOrPath.concat();
             // 是个数组，转换成单一名称或对象
             var results:any[] = [];
+            var curKey:string;
             var onGetOne:(result:any)=>void = (result:any)=>
             {
                 // 记录结果
                 results.push(result);
+                // 调用回调
+                oneComplete && oneComplete(curKey, result);
                 // 获取下一个
                 getOne();
             };
             var getOne:()=>void = ()=>{
-                if(keyOrPath.length <= 0)
+                if(temp.length <= 0)
+                {
                     complete(results);
+                }
                 else
-                    this.loadAssets(keyOrPath.shift(), onGetOne);
+                {
+                    curKey = temp.shift();
+                    this.loadAssets(curKey, onGetOne);
+                }
             };
             getOne();
         }

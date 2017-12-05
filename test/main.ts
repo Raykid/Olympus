@@ -10,6 +10,7 @@ import Olympus from "Olympus";
 import { environment } from "engine/env/Environment";
 import DOMBridge from "DOMBridge";
 import EgretBridge from "EgretBridge";
+import { InitStep } from "engine/Engine";
 
 /**
  * @author Raykid
@@ -55,6 +56,9 @@ Olympus.startup({
     onInited: function():void
     {
         // bridgeManager.getBridge("Egret").defaultScenePolicy = none;
+    },
+    onInitProgress: (prg:number, step:InitStep, ...args)=>{
+        console.log(prg, step, ...args);
     }
 });
 

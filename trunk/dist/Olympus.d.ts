@@ -2602,10 +2602,11 @@ declare module "engine/assets/AssetsManager" {
          * @param {string|string[]} keyOrPath 资源短名称或资源路径
          * @param {(assets?:any|any[])=>void} complete 完成回调，如果加载失败则参数是个Error对象
          * @param {XMLHttpRequestResponseType} [responseType] 加载类型
+         * @param {(keyOrPath?:string, assets?:any)=>void} [oneComplete] 一个资源加载完毕会调用这个回调，如果有的话。仅在keyOrPath是数组情况下生效
          * @returns {void}
          * @memberof AssetsManager
          */
-        loadAssets(keyOrPath: string | string[], complete: (assets?: any | any[]) => void, responseType?: XMLHttpRequestResponseType): void;
+        loadAssets(keyOrPath: string | string[], complete: (assets?: any | any[]) => void, responseType?: XMLHttpRequestResponseType, oneComplete?: (keyOrPath?: string, assets?: any) => void): void;
     }
     /** 再额外导出一个单例 */
     export const assetsManager: AssetsManager;
@@ -5085,6 +5086,22 @@ declare module "engine/Engine" {
     }
     /** 再额外导出一个单例 */
     export const engine: Engine;
+    export enum InitStep {
+        /** 框架已准备好初始化 */
+        ReadyToInit = 0,
+        /** 开始执行初始化 */
+        StartInit = 1,
+        /** 版本号系统初始化完毕 */
+        VersionInited = 2,
+        /** 表现层桥初始化完毕 */
+        BridgesInited = 3,
+        /** 预加载，可能会触发多次，每次传递两个参数：预加载文件名或路径、预加载文件内容 */
+        Preload = 4,
+        /** 开始打开首个模块 */
+        OpenFirstModule = 5,
+        /** 首个模块打开完毕，初始化流程完毕 */
+        Inited = 6,
+    }
     export interface IInitParams {
         /**
          * 表现层桥数组，所有可能用到的表现层桥都要在此实例化并传入
@@ -5156,6 +5173,12 @@ declare module "engine/Engine" {
          * @memberof IInitParams
          */
         preloads?: string[];
+        /**
+         * 初始化进度变化时调用，第一个参数为进度数值，范围是[0, 1]；第二个参数是所在步骤枚举值；第三个参数是步骤提供的参数列表
+         *
+         * @memberof IInitParams
+         */
+        onInitProgress?: (progress?: number, step?: InitStep, ...args: any[]) => void;
         /**
          * 框架初始化完毕时调用
          *

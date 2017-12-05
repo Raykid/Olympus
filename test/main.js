@@ -456,6 +456,13 @@ define("main", ["require", "exports", "utils/InitParamsUtil", "modules/FirstModu
         preloads: ["a", "b"],
         onInited: function () {
             // bridgeManager.getBridge("Egret").defaultScenePolicy = none;
+        },
+        onInitProgress: function (prg, step) {
+            var args = [];
+            for (var _i = 2; _i < arguments.length; _i++) {
+                args[_i - 2] = arguments[_i];
+            }
+            console.log.apply(console, [prg, step].concat(args));
         }
     });
     console.log(Environment_1.environment.env, Environment_1.environment.getHost(), Environment_1.environment.curCDNHost);

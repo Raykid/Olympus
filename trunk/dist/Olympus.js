@@ -4204,10 +4204,11 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
          * @param {string|string[]} keyOrPath 资源短名称或资源路径
          * @param {(assets?:any|any[])=>void} complete 完成回调，如果加载失败则参数是个Error对象
          * @param {XMLHttpRequestResponseType} [responseType] 加载类型
+         * @param {(keyOrPath?:string, assets?:any)=>void} [oneComplete] 一个资源加载完毕会调用这个回调，如果有的话。仅在keyOrPath是数组情况下生效
          * @returns {void}
          * @memberof AssetsManager
          */
-        AssetsManager.prototype.loadAssets = function (keyOrPath, complete, responseType) {
+        AssetsManager.prototype.loadAssets = function (keyOrPath, complete, responseType, oneComplete) {
             var _this = this;
             // 非空判断
             if (!keyOrPath) {
@@ -4216,19 +4217,27 @@ define("engine/assets/AssetsManager", ["require", "exports", "core/injector/Inje
             }
             // 获取路径
             if (keyOrPath instanceof Array) {
+                // 使用副本，防止修改原始数组
+                var temp = keyOrPath.concat();
                 // 是个数组，转换成单一名称或对象
                 var results = [];
+                var curKey;
                 var onGetOne = function (result) {
                     // 记录结果
                     results.push(result);
+                    // 调用回调
+                    oneComplete && oneComplete(curKey, result);
                     // 获取下一个
                     getOne();
                 };
                 var getOne = function () {
-                    if (keyOrPath.length <= 0)
+                    if (temp.length <= 0) {
                         complete(results);
-                    else
-                        _this.loadAssets(keyOrPath.shift(), onGetOne);
+                    }
+                    else {
+                        curKey = temp.shift();
+                        _this.loadAssets(curKey, onGetOne);
+                    }
                 };
                 getOne();
             }
@@ -8959,11 +8968,16 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
          */
         Engine.prototype.initialize = function (params) {
             var self = this;
+            // 调用进度回调，初始化为0%
+            params.onInitProgress && params.onInitProgress(0, InitStep.ReadyToInit);
+            // 执行初始化
             if (document.readyState == "loading")
                 document.addEventListener("readystatechange", doInitialize);
             else
                 doInitialize();
             function doInitialize() {
+                // 调用进度回调，开始初始化为10%
+                params.onInitProgress && params.onInitProgress(0.1, InitStep.StartInit);
                 // 移除事件
                 if (this == document)
                     document.removeEventListener("readystatechange", doInitialize);
@@ -8978,6 +8992,8 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 Environment_6.environment.initialize(params.env, params.hostsDict, params.cdnsDict);
                 // 初始化版本号工具
                 Version_3.version.initialize(function () {
+                    // 调用进度回调，版本号初始化完毕为20%
+                    params.onInitProgress && params.onInitProgress(0.2, InitStep.VersionInited);
                     // 监听Bridge初始化完毕事件，显示第一个模块
                     Core_27.core.listen(BridgeMessage_2.default.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                     // 注册并初始化表现层桥实例
@@ -8996,6 +9012,9 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 window.addEventListener("error", handler);
         };
         Engine.prototype.onAllBridgesInit = function () {
+            var _this = this;
+            // 调用进度回调，表现层桥初始化完毕为30%
+            this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, InitStep.BridgesInited);
             // 注销监听
             Core_27.core.unlisten(BridgeMessage_2.default.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
             // 初始化插件
@@ -9011,7 +9030,16 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             var preloads = this._initParams.preloads;
             if (preloads) {
                 // 去加载
-                AssetsManager_3.assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this));
+                var curIndex = 0;
+                var totalCount = preloads.length;
+                AssetsManager_3.assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this), null, function (key, value) {
+                    curIndex++;
+                    // 调用进度回调，每个预加载文件平分30%-90%的进度
+                    var progress = 0.3 + 0.6 * curIndex / totalCount;
+                    // 保留2位小数
+                    progress = Math.round(progress * 100) * 0.01;
+                    _this._initParams.onInitProgress && _this._initParams.onInitProgress(progress, InitStep.Preload, key, value);
+                });
             }
             else {
                 // 没有预加载，直接完成
@@ -9019,8 +9047,8 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
             }
         };
         Engine.prototype.onPreloadOK = function () {
-            // 调用回调
-            this._initParams.onInited && this._initParams.onInited();
+            // 调用进度回调，打开首个模块为90%
+            this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
             // 监听首个模块开启
             Core_27.core.listen(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 打开首个模块
@@ -9030,6 +9058,8 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
                 ModuleManager_4.moduleManager.open(Hash_1.hash.moduleName, Hash_1.hash.params, Hash_1.hash.direct);
         };
         Engine.prototype.onModuleChange = function (from) {
+            // 调用进度回调，全部过程完毕，100%
+            this._initParams.onInitProgress && this._initParams.onInitProgress(1, InitStep.Inited);
             // 注销监听
             Core_27.core.unlisten(ModuleMessage_2.default.MODULE_CHANGE, this.onModuleChange, this);
             // 移除loadElement显示
@@ -9046,6 +9076,23 @@ define("engine/Engine", ["require", "exports", "core/Core", "core/injector/Injec
     exports.default = Engine;
     /** 再额外导出一个单例 */
     exports.engine = Core_27.core.getInject(Engine);
+    var InitStep;
+    (function (InitStep) {
+        /** 框架已准备好初始化 */
+        InitStep[InitStep["ReadyToInit"] = 0] = "ReadyToInit";
+        /** 开始执行初始化 */
+        InitStep[InitStep["StartInit"] = 1] = "StartInit";
+        /** 版本号系统初始化完毕 */
+        InitStep[InitStep["VersionInited"] = 2] = "VersionInited";
+        /** 表现层桥初始化完毕 */
+        InitStep[InitStep["BridgesInited"] = 3] = "BridgesInited";
+        /** 预加载，可能会触发多次，每次传递两个参数：预加载文件名或路径、预加载文件内容 */
+        InitStep[InitStep["Preload"] = 4] = "Preload";
+        /** 开始打开首个模块 */
+        InitStep[InitStep["OpenFirstModule"] = 5] = "OpenFirstModule";
+        /** 首个模块打开完毕，初始化流程完毕 */
+        InitStep[InitStep["Inited"] = 6] = "Inited";
+    })(InitStep = exports.InitStep || (exports.InitStep = {}));
 });
 /// <amd-module name="Olympus"/>
 define("Olympus", ["require", "exports", "engine/Engine"], function (require, exports, Engine_1) {
