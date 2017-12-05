@@ -15,6 +15,7 @@ import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import { BindFuncDict } from "../bind/BindManager";
 import * as BindUtil from "./BindUtil";
+import { searchUI } from "./BindUtil";
 
 /**
  * @author Raykid
@@ -452,17 +453,38 @@ export function BindOn(evtDict:{[type:string]:any}):PropertyDecorator;
  */
 export function BindOn(type:string, exp:string):PropertyDecorator;
 /**
+ * 为指定对象一次绑定一个事件
+ * 
+ * @export
+ * @param {string} name ui属性名称
+ * @param {string} type 事件类型
+ * @param {string} exp 表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindOn(name:string, type:string, exp:string):PropertyDecorator;
+/**
  * @private
  */
-export function BindOn(arg1:{[type:string]:any}|string, arg2?:string):PropertyDecorator
+export function BindOn(arg1:{[type:string]:any}|string, arg2?:string, arg3?:string):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, null, (mediator:IMediator)=>{
+            // 获取编译启动目标
+            var target:any = mediator[propertyKey];
             // 组织参数字典
             var evtDict:{[name:string]:any};
             if(typeof arg1 == "string")
             {
+                if(arg3)
+                {
+                    // 指定了UI对象，先去寻找
+                    var nameDict:any = {};
+                    nameDict[arg1] = "";
+                    searchUI(nameDict, target, (ui:any, key:string, value:any)=>{
+                        target = ui[key];
+                    });
+                }
                 evtDict = {};
                 evtDict[arg1] = arg2;
             }
@@ -470,8 +492,6 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:string):PropertyDe
             {
                 evtDict = arg1;
             }
-            // 获取编译启动目标
-            var target:any = mediator[propertyKey];
             // 添加编译指令
             BindUtil.addCompileCommand(target, BindUtil.compileOn, evtDict);
         });

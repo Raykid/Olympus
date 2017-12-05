@@ -213,3 +213,37 @@ export function compileResponse(mediator:IMediator, target:ICompileTarget, type:
 {
     bindManager.bindResponse(mediator, target, type, uiDict, observable);
 }
+
+/**
+ * 搜索UI，取到目标节点，执行回调
+ * 
+ * @export
+ * @param {*} values 值结构字典
+ * @param {*} ui ui实体
+ * @param {(ui:any, key:string, value:any)=>void} callback 
+ */
+export function searchUI(values:any, ui:any, callback:(ui:any, key:string, value:any)=>void):void
+{
+    for(var key in values)
+    {
+        var value:any = values[key];
+        var index:number = key.indexOf(".");
+        if(index >= 0)
+        {
+            // 是表达式寻址，递归寻址
+            var newValue:any = {};
+            newValue[key.substr(index + 1)] = value;
+            searchUI(newValue, ui[key.substring(0, index)], callback);
+        }
+        else if(typeof value == "object" && !(value instanceof Array))
+        {
+            // 是子对象寻址，递归寻址
+            searchUI(value, ui[key], callback);
+        }
+        else
+        {
+            // 是表达式，调用回调
+            callback(ui, key, value);
+        }
+    }
+}

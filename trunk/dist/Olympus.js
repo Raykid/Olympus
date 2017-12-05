@@ -6179,7 +6179,185 @@ define("engine/bind/Mutator", ["require", "exports", "utils/ObjectUtil", "engine
         return result;
     }
 });
-define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind", "engine/bind/Utils", "engine/net/NetManager"], function (require, exports, Injector_13, Core_18, Dictionary_5, Bind_1, Utils_2, NetManager_2) {
+define("engine/injector/BindUtil", ["require", "exports", "engine/bind/BindManager"], function (require, exports, BindManager_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /**
+     * 添加编译命令到显示对象上
+     *
+     * @export
+     * @param {ICompileTarget} target 显示对象
+     * @param {IBindCommand} cmd 命令函数
+     * @param {...any[]} args 命令参数列表
+     */
+    function addCompileCommand(target, cmd) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        var bindParams = target.__bind_commands__;
+        if (!bindParams)
+            target.__bind_commands__ = bindParams = [];
+        // 添加编译指令
+        bindParams.push({ cmd: cmd, args: args });
+    }
+    exports.addCompileCommand = addCompileCommand;
+    /**
+     * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
+     *
+     * @export
+     * @param {ICompileTarget} target
+     */
+    function reverseCompileCommand(target) {
+        var bindParams = target.__bind_commands__;
+        bindParams && bindParams.reverse();
+    }
+    exports.reverseCompileCommand = reverseCompileCommand;
+    /**
+     * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
+     *
+     * @export
+     * @param {ICompileTarget} from 源对象
+     * @param {ICompileTarget} to 目标对象
+     */
+    function moveCompileCommands(from, to) {
+        var commands = from.__bind_commands__;
+        if (!commands)
+            return;
+        if (!to.__bind_commands__)
+            to.__bind_commands__ = from.__bind_commands__;
+        else
+            (_a = to.__bind_commands__).push.apply(_a, from.__bind_commands__);
+        // 移除源对象的指令
+        from.__bind_commands__ = [];
+        var _a;
+    }
+    exports.moveCompileCommands = moveCompileCommands;
+    /**
+     * 编译显示对象
+     *
+     * @export
+     * @param {IMediator} mediator 显示对象所属的中介者
+     * @param {ICompileTarget} target 显示对象
+     */
+    function compile(mediator, target) {
+        // 取到编译参数列表
+        var bindParams = target.__bind_commands__;
+        if (!bindParams)
+            return;
+        // 这里没有提前读取出length属性，因为需要动态判断数组长度
+        for (var i = 0; i < bindParams.length;) {
+            // 使用shift按顺序取出编译命令
+            var params = bindParams.shift();
+            // 调用编译命令，并且更新中止状态
+            params.cmd.apply(params, [mediator, target].concat(params.args));
+        }
+    }
+    exports.compile = compile;
+    /**
+     * 编译bindValue命令，不会中止编译
+     */
+    function compileValue(mediator, target, uiDict) {
+        BindManager_1.bindManager.bindValue(mediator, target, uiDict);
+    }
+    exports.compileValue = compileValue;
+    /**
+     * 编译bindFunc命令，不会中止编译
+     */
+    function compileFunc(mediator, target, funcDict) {
+        BindManager_1.bindManager.bindFunc(mediator, target, funcDict);
+    }
+    exports.compileFunc = compileFunc;
+    /**
+     * 编译bindOn命令，不会中止编译
+     */
+    function compileOn(mediator, target, evtDict) {
+        BindManager_1.bindManager.bindOn(mediator, target, evtDict);
+    }
+    exports.compileOn = compileOn;
+    /**
+     * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
+     */
+    function compileIf(mediator, target, exp) {
+        // 将后面的编译命令缓存起来
+        var bindParams = target.__bind_commands__;
+        var cached = bindParams.splice(0, bindParams.length);
+        // 绑定if命令
+        var terminated = false;
+        BindManager_1.bindManager.bindIf(mediator, target, exp, function (value) {
+            // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
+            if (!terminated && value) {
+                // 恢复后面的命令
+                target.__bind_commands__ = cached;
+                // 继续编译
+                compile(mediator, target);
+                // 设置已终结标识
+                terminated = true;
+            }
+        });
+    }
+    exports.compileIf = compileIf;
+    /**
+     * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
+     */
+    function compileFor(mediator, target, uiDict) {
+        // 将后面的编译命令缓存起来
+        var bindParams = target.__bind_commands__;
+        var cached = bindParams.splice(0, bindParams.length);
+        // 绑定if命令
+        BindManager_1.bindManager.bindFor(mediator, target, uiDict, function (data, renderer) {
+            // 将缓存的命令复制到新的renderer实例中
+            renderer.__bind_commands__ = cached.concat();
+            // 编译renderer实例
+            compile(mediator, renderer);
+        });
+    }
+    exports.compileFor = compileFor;
+    /**
+     * 编译bindMessage命令，不会中止编译
+     */
+    function compileMessage(mediator, target, type, uiDict, observable) {
+        BindManager_1.bindManager.bindMessage(mediator, target, type, uiDict, observable);
+    }
+    exports.compileMessage = compileMessage;
+    /**
+     * 编译bindResponse命令，不会中止编译
+     */
+    function compileResponse(mediator, target, type, uiDict, observable) {
+        BindManager_1.bindManager.bindResponse(mediator, target, type, uiDict, observable);
+    }
+    exports.compileResponse = compileResponse;
+    /**
+     * 搜索UI，取到目标节点，执行回调
+     *
+     * @export
+     * @param {*} values 值结构字典
+     * @param {*} ui ui实体
+     * @param {(ui:any, key:string, value:any)=>void} callback
+     */
+    function searchUI(values, ui, callback) {
+        for (var key in values) {
+            var value = values[key];
+            var index = key.indexOf(".");
+            if (index >= 0) {
+                // 是表达式寻址，递归寻址
+                var newValue = {};
+                newValue[key.substr(index + 1)] = value;
+                searchUI(newValue, ui[key.substring(0, index)], callback);
+            }
+            else if (typeof value == "object" && !(value instanceof Array)) {
+                // 是子对象寻址，递归寻址
+                searchUI(value, ui[key], callback);
+            }
+            else {
+                // 是表达式，调用回调
+                callback(ui, key, value);
+            }
+        }
+    }
+    exports.searchUI = searchUI;
+});
+define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind", "engine/bind/Utils", "engine/net/NetManager", "engine/injector/BindUtil"], function (require, exports, Injector_13, Core_18, Dictionary_5, Bind_1, Utils_2, NetManager_2, BindUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6232,34 +6410,13 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 this._bindDict.delete(mediator);
             return bindData && bindData.bind;
         };
-        BindManager.prototype.search = function (values, ui, callback) {
-            for (var key in values) {
-                var value = values[key];
-                var index = key.indexOf(".");
-                if (index >= 0) {
-                    // 是表达式寻址，递归寻址
-                    var newValue = {};
-                    newValue[key.substr(index + 1)] = value;
-                    this.search(newValue, ui[key.substring(0, index)], callback);
-                }
-                else if (typeof value == "object" && !(value instanceof Array)) {
-                    // 是子对象寻址，递归寻址
-                    this.search(value, ui[key], callback);
-                }
-                else {
-                    // 是表达式，调用回调
-                    callback(ui, key, value);
-                }
-            }
-        };
         BindManager.prototype.delaySearch = function (mediator, values, ui, callback) {
-            var _this = this;
             var handler = function () {
                 // 判断数据是否合法
                 if (!mediator.viewModel)
                     return;
                 // 开始绑定
-                _this.search(values, ui, callback);
+                BindUtil_1.searchUI(values, ui, callback);
             };
             // 添加绑定数据
             var bindData = this._bindDict.get(mediator);
@@ -6506,7 +6663,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                         msg = args[0];
                     else
                         msg = { $arguments: args };
-                    _this.search(uiDict, ui, function (ui, key, exp) {
+                    BindUtil_1.searchUI(uiDict, ui, function (ui, key, exp) {
                         // 设置通用属性
                         var commonScope = {
                             $this: mediator,
@@ -6542,7 +6699,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     NetManager_2.netManager.unlistenResponse(type, handler, null, null, observable);
                 }
                 else {
-                    _this.search(uiDict, ui, function (ui, key, exp) {
+                    BindUtil_1.searchUI(uiDict, ui, function (ui, key, exp) {
                         // 设置通用属性
                         var commonScope = {
                             $this: mediator,
@@ -6573,7 +6730,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
     /** 再额外导出一个单例 */
     exports.bindManager = Core_18.core.getInject(BindManager);
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/bind/Mutator", "engine/bind/BindManager"], function (require, exports, Core_19, Mutator_1, BindManager_1) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/bind/Mutator", "engine/bind/BindManager"], function (require, exports, Core_19, Mutator_1, BindManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6591,7 +6748,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             if (skin)
                 this.skin = skin;
             // 初始化绑定
-            BindManager_1.bindManager.bind(this);
+            BindManager_2.bindManager.bind(this);
         }
         Object.defineProperty(Mediator.prototype, "viewModel", {
             /**
@@ -6607,7 +6764,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
                 // 设置的时候进行一次变异
                 this._viewModel = Mutator_1.mutate(value);
                 // 更新绑定
-                BindManager_1.bindManager.bind(this);
+                BindManager_2.bindManager.bind(this);
             },
             enumerable: true,
             configurable: true
@@ -6916,7 +7073,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             // 移除表现层桥
             this.bridge = null;
             // 移除绑定
-            BindManager_1.bindManager.unbind(this);
+            BindManager_2.bindManager.unbind(this);
             // 移除ViewModel
             this._viewModel = null;
             // 移除皮肤
@@ -8283,156 +8440,7 @@ define("engine/plugin/IPlugin", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/injector/BindUtil", ["require", "exports", "engine/bind/BindManager"], function (require, exports, BindManager_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * 添加编译命令到显示对象上
-     *
-     * @export
-     * @param {ICompileTarget} target 显示对象
-     * @param {IBindCommand} cmd 命令函数
-     * @param {...any[]} args 命令参数列表
-     */
-    function addCompileCommand(target, cmd) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        var bindParams = target.__bind_commands__;
-        if (!bindParams)
-            target.__bind_commands__ = bindParams = [];
-        // 添加编译指令
-        bindParams.push({ cmd: cmd, args: args });
-    }
-    exports.addCompileCommand = addCompileCommand;
-    /**
-     * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
-     *
-     * @export
-     * @param {ICompileTarget} target
-     */
-    function reverseCompileCommand(target) {
-        var bindParams = target.__bind_commands__;
-        bindParams && bindParams.reverse();
-    }
-    exports.reverseCompileCommand = reverseCompileCommand;
-    /**
-     * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
-     *
-     * @export
-     * @param {ICompileTarget} from 源对象
-     * @param {ICompileTarget} to 目标对象
-     */
-    function moveCompileCommands(from, to) {
-        var commands = from.__bind_commands__;
-        if (!commands)
-            return;
-        if (!to.__bind_commands__)
-            to.__bind_commands__ = from.__bind_commands__;
-        else
-            (_a = to.__bind_commands__).push.apply(_a, from.__bind_commands__);
-        // 移除源对象的指令
-        from.__bind_commands__ = [];
-        var _a;
-    }
-    exports.moveCompileCommands = moveCompileCommands;
-    /**
-     * 编译显示对象
-     *
-     * @export
-     * @param {IMediator} mediator 显示对象所属的中介者
-     * @param {ICompileTarget} target 显示对象
-     */
-    function compile(mediator, target) {
-        // 取到编译参数列表
-        var bindParams = target.__bind_commands__;
-        if (!bindParams)
-            return;
-        // 这里没有提前读取出length属性，因为需要动态判断数组长度
-        for (var i = 0; i < bindParams.length;) {
-            // 使用shift按顺序取出编译命令
-            var params = bindParams.shift();
-            // 调用编译命令，并且更新中止状态
-            params.cmd.apply(params, [mediator, target].concat(params.args));
-        }
-    }
-    exports.compile = compile;
-    /**
-     * 编译bindValue命令，不会中止编译
-     */
-    function compileValue(mediator, target, uiDict) {
-        BindManager_2.bindManager.bindValue(mediator, target, uiDict);
-    }
-    exports.compileValue = compileValue;
-    /**
-     * 编译bindFunc命令，不会中止编译
-     */
-    function compileFunc(mediator, target, funcDict) {
-        BindManager_2.bindManager.bindFunc(mediator, target, funcDict);
-    }
-    exports.compileFunc = compileFunc;
-    /**
-     * 编译bindOn命令，不会中止编译
-     */
-    function compileOn(mediator, target, evtDict) {
-        BindManager_2.bindManager.bindOn(mediator, target, evtDict);
-    }
-    exports.compileOn = compileOn;
-    /**
-     * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
-     */
-    function compileIf(mediator, target, exp) {
-        // 将后面的编译命令缓存起来
-        var bindParams = target.__bind_commands__;
-        var cached = bindParams.splice(0, bindParams.length);
-        // 绑定if命令
-        var terminated = false;
-        BindManager_2.bindManager.bindIf(mediator, target, exp, function (value) {
-            // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
-            if (!terminated && value) {
-                // 恢复后面的命令
-                target.__bind_commands__ = cached;
-                // 继续编译
-                compile(mediator, target);
-                // 设置已终结标识
-                terminated = true;
-            }
-        });
-    }
-    exports.compileIf = compileIf;
-    /**
-     * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
-     */
-    function compileFor(mediator, target, uiDict) {
-        // 将后面的编译命令缓存起来
-        var bindParams = target.__bind_commands__;
-        var cached = bindParams.splice(0, bindParams.length);
-        // 绑定if命令
-        BindManager_2.bindManager.bindFor(mediator, target, uiDict, function (data, renderer) {
-            // 将缓存的命令复制到新的renderer实例中
-            renderer.__bind_commands__ = cached.concat();
-            // 编译renderer实例
-            compile(mediator, renderer);
-        });
-    }
-    exports.compileFor = compileFor;
-    /**
-     * 编译bindMessage命令，不会中止编译
-     */
-    function compileMessage(mediator, target, type, uiDict, observable) {
-        BindManager_2.bindManager.bindMessage(mediator, target, type, uiDict, observable);
-    }
-    exports.compileMessage = compileMessage;
-    /**
-     * 编译bindResponse命令，不会中止编译
-     */
-    function compileResponse(mediator, target, type, uiDict, observable) {
-        BindManager_2.bindManager.bindResponse(mediator, target, type, uiDict, observable);
-    }
-    exports.compileResponse = compileResponse;
-});
-define("engine/injector/Injector", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil"], function (require, exports, Core_26, Injector_19, Message_2, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_7, BindUtil) {
+define("engine/injector/Injector", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil", "engine/injector/BindUtil"], function (require, exports, Core_26, Injector_19, Message_2, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_7, BindUtil, BindUtil_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -8765,20 +8773,28 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
     /**
      * @private
      */
-    function BindOn(arg1, arg2) {
+    function BindOn(arg1, arg2, arg3) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
+                // 获取编译启动目标
+                var target = mediator[propertyKey];
                 // 组织参数字典
                 var evtDict;
                 if (typeof arg1 == "string") {
+                    if (arg3) {
+                        // 指定了UI对象，先去寻找
+                        var nameDict = {};
+                        nameDict[arg1] = "";
+                        BindUtil_2.searchUI(nameDict, target, function (ui, key, value) {
+                            target = ui[key];
+                        });
+                    }
                     evtDict = {};
                     evtDict[arg1] = arg2;
                 }
                 else {
                     evtDict = arg1;
                 }
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
                 // 添加编译指令
                 BindUtil.addCompileCommand(target, BindUtil.compileOn, evtDict);
             });

@@ -8,6 +8,7 @@ import { evalExp, createRunFunc } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
+import { searchUI } from "../injector/BindUtil";
 
 /**
  * @author Raykid
@@ -62,32 +63,6 @@ export default class BindManager
         if(bindData) this._bindDict.delete(mediator);
         return bindData && bindData.bind;
     }
-    
-    private search(values:any, ui:any, callback:(ui:any, key:string, exp:string)=>void):void
-    {
-        for(var key in values)
-        {
-            var value:any = values[key];
-            var index:number = key.indexOf(".");
-            if(index >= 0)
-            {
-                // 是表达式寻址，递归寻址
-                var newValue:any = {};
-                newValue[key.substr(index + 1)] = value;
-                this.search(newValue, ui[key.substring(0, index)], callback);
-            }
-            else if(typeof value == "object" && !(value instanceof Array))
-            {
-                // 是子对象寻址，递归寻址
-                this.search(value, ui[key], callback);
-            }
-            else
-            {
-                // 是表达式，调用回调
-                callback(ui, key, value);
-            }
-        }
-    }
 
     private delaySearch(mediator:IMediator, values:any, ui:any, callback:(ui:any, key:string, exp:string)=>void):void
     {
@@ -95,7 +70,7 @@ export default class BindManager
             // 判断数据是否合法
             if(!mediator.viewModel) return;
             // 开始绑定
-            this.search(values, ui, callback);
+            searchUI(values, ui, callback);
         };
         // 添加绑定数据
         var bindData:BindData = this._bindDict.get(mediator);
@@ -345,7 +320,7 @@ export default class BindManager
                     msg = args[0];
                 else
                     msg = {$arguments: args};
-                this.search(uiDict, ui, (ui:any, key:string, exp:string)=>{
+                searchUI(uiDict, ui, (ui:any, key:string, exp:string)=>{
                     // 设置通用属性
                     var commonScope:any = {
                         $this: mediator,
@@ -383,7 +358,7 @@ export default class BindManager
             }
             else
             {
-                this.search(uiDict, ui, (ui:any, key:string, exp:string)=>{
+                searchUI(uiDict, ui, (ui:any, key:string, exp:string)=>{
                     // 设置通用属性
                     var commonScope:any = {
                         $this: mediator,

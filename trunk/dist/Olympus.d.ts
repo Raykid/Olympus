@@ -3530,6 +3530,145 @@ declare module "engine/bind/Mutator" {
      */
     export function mutate(data: any): any;
 }
+declare module "engine/injector/BindUtil" {
+    import IObservable from "core/observable/IObservable";
+    import { IResponseDataConstructor } from "engine/net/ResponseData";
+    import { BindFuncDict } from "engine/bind/BindManager";
+    import IMediator from "engine/mediator/IMediator";
+    /**
+     * @author Raykid
+     * @email initial_r@qq.com
+     * @create date 2017-11-24
+     * @modify date 2017-11-24
+     *
+     * 绑定工具集
+    */
+    export interface IBindCommand {
+        /**
+         * 执行绑定命令
+         *
+         * @export
+         * @param {IMediator} mediator 所属的中介者
+         * @param {ICompileTarget} target 要编译的目标显示对象
+         * @param {...any[]} args 命令参数列表
+         */
+        (mediator: IMediator, target: ICompileTarget, ...args: any[]): void;
+    }
+    export interface IBindParams {
+        /**
+         * 绑定命令函数
+         *
+         * @type {IBindCommand}
+         * @memberof IBindParams
+         */
+        cmd: IBindCommand;
+        /**
+         * 绑定命令参数列表
+         *
+         * @type {any[]}
+         * @memberof IBindParams
+         */
+        args: any[];
+        /**
+         * 指令可以自己设置所需记录的属性
+         *
+         * @memberof IBindParams
+         */
+        [key: string]: any;
+    }
+    export interface ICompileTarget {
+        /**
+         * 绑定命令列表
+         *
+         * @type {IBindParams[]}
+         * @memberof ICompileTarget
+         */
+        __bind_commands__?: IBindParams[];
+        /**
+         * 其他可能的属性或方法
+         */
+        [key: string]: any;
+    }
+    /**
+     * 添加编译命令到显示对象上
+     *
+     * @export
+     * @param {ICompileTarget} target 显示对象
+     * @param {IBindCommand} cmd 命令函数
+     * @param {...any[]} args 命令参数列表
+     */
+    export function addCompileCommand(target: ICompileTarget, cmd: IBindCommand, ...args: any[]): void;
+    /**
+     * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
+     *
+     * @export
+     * @param {ICompileTarget} target
+     */
+    export function reverseCompileCommand(target: ICompileTarget): void;
+    /**
+     * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
+     *
+     * @export
+     * @param {ICompileTarget} from 源对象
+     * @param {ICompileTarget} to 目标对象
+     */
+    export function moveCompileCommands(from: ICompileTarget, to: ICompileTarget): void;
+    /**
+     * 编译显示对象
+     *
+     * @export
+     * @param {IMediator} mediator 显示对象所属的中介者
+     * @param {ICompileTarget} target 显示对象
+     */
+    export function compile(mediator: IMediator, target: ICompileTarget): void;
+    /**
+     * 编译bindValue命令，不会中止编译
+     */
+    export function compileValue(mediator: IMediator, target: ICompileTarget, uiDict: {
+        [name: string]: any;
+    }): void;
+    /**
+     * 编译bindFunc命令，不会中止编译
+     */
+    export function compileFunc(mediator: IMediator, target: ICompileTarget, funcDict: BindFuncDict): void;
+    /**
+     * 编译bindOn命令，不会中止编译
+     */
+    export function compileOn(mediator: IMediator, target: ICompileTarget, evtDict: {
+        [type: string]: any;
+    }): void;
+    /**
+     * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
+     */
+    export function compileIf(mediator: IMediator, target: ICompileTarget, exp: string): void;
+    /**
+     * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
+     */
+    export function compileFor(mediator: IMediator, target: ICompileTarget, uiDict: {
+        [name: string]: any;
+    }): void;
+    /**
+     * 编译bindMessage命令，不会中止编译
+     */
+    export function compileMessage(mediator: IMediator, target: ICompileTarget, type: IConstructor | string, uiDict: {
+        [name: string]: any;
+    }, observable?: IObservable): void;
+    /**
+     * 编译bindResponse命令，不会中止编译
+     */
+    export function compileResponse(mediator: IMediator, target: ICompileTarget, type: IResponseDataConstructor | string, uiDict: {
+        [name: string]: any;
+    }, observable?: IObservable): void;
+    /**
+     * 搜索UI，取到目标节点，执行回调
+     *
+     * @export
+     * @param {*} values 值结构字典
+     * @param {*} ui ui实体
+     * @param {(ui:any, key:string, value:any)=>void} callback
+     */
+    export function searchUI(values: any, ui: any, callback: (ui: any, key: string, value: any) => void): void;
+}
 declare module "engine/bind/BindManager" {
     import IMediator from "engine/mediator/IMediator";
     import Bind from "engine/bind/Bind";
@@ -3562,7 +3701,6 @@ declare module "engine/bind/BindManager" {
          * @memberof BindManager
          */
         unbind(mediator: IMediator): Bind;
-        private search(values, ui, callback);
         private delaySearch(mediator, values, ui, callback);
         /**
          * 绑定属性值
@@ -4686,136 +4824,6 @@ declare module "engine/plugin/IPlugin" {
         initPlugin(): void;
     }
 }
-declare module "engine/injector/BindUtil" {
-    import IObservable from "core/observable/IObservable";
-    import { IResponseDataConstructor } from "engine/net/ResponseData";
-    import { BindFuncDict } from "engine/bind/BindManager";
-    import IMediator from "engine/mediator/IMediator";
-    /**
-     * @author Raykid
-     * @email initial_r@qq.com
-     * @create date 2017-11-24
-     * @modify date 2017-11-24
-     *
-     * 绑定工具集
-    */
-    export interface IBindCommand {
-        /**
-         * 执行绑定命令
-         *
-         * @export
-         * @param {IMediator} mediator 所属的中介者
-         * @param {ICompileTarget} target 要编译的目标显示对象
-         * @param {...any[]} args 命令参数列表
-         */
-        (mediator: IMediator, target: ICompileTarget, ...args: any[]): void;
-    }
-    export interface IBindParams {
-        /**
-         * 绑定命令函数
-         *
-         * @type {IBindCommand}
-         * @memberof IBindParams
-         */
-        cmd: IBindCommand;
-        /**
-         * 绑定命令参数列表
-         *
-         * @type {any[]}
-         * @memberof IBindParams
-         */
-        args: any[];
-        /**
-         * 指令可以自己设置所需记录的属性
-         *
-         * @memberof IBindParams
-         */
-        [key: string]: any;
-    }
-    export interface ICompileTarget {
-        /**
-         * 绑定命令列表
-         *
-         * @type {IBindParams[]}
-         * @memberof ICompileTarget
-         */
-        __bind_commands__?: IBindParams[];
-        /**
-         * 其他可能的属性或方法
-         */
-        [key: string]: any;
-    }
-    /**
-     * 添加编译命令到显示对象上
-     *
-     * @export
-     * @param {ICompileTarget} target 显示对象
-     * @param {IBindCommand} cmd 命令函数
-     * @param {...any[]} args 命令参数列表
-     */
-    export function addCompileCommand(target: ICompileTarget, cmd: IBindCommand, ...args: any[]): void;
-    /**
-     * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
-     *
-     * @export
-     * @param {ICompileTarget} target
-     */
-    export function reverseCompileCommand(target: ICompileTarget): void;
-    /**
-     * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
-     *
-     * @export
-     * @param {ICompileTarget} from 源对象
-     * @param {ICompileTarget} to 目标对象
-     */
-    export function moveCompileCommands(from: ICompileTarget, to: ICompileTarget): void;
-    /**
-     * 编译显示对象
-     *
-     * @export
-     * @param {IMediator} mediator 显示对象所属的中介者
-     * @param {ICompileTarget} target 显示对象
-     */
-    export function compile(mediator: IMediator, target: ICompileTarget): void;
-    /**
-     * 编译bindValue命令，不会中止编译
-     */
-    export function compileValue(mediator: IMediator, target: ICompileTarget, uiDict: {
-        [name: string]: any;
-    }): void;
-    /**
-     * 编译bindFunc命令，不会中止编译
-     */
-    export function compileFunc(mediator: IMediator, target: ICompileTarget, funcDict: BindFuncDict): void;
-    /**
-     * 编译bindOn命令，不会中止编译
-     */
-    export function compileOn(mediator: IMediator, target: ICompileTarget, evtDict: {
-        [type: string]: any;
-    }): void;
-    /**
-     * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
-     */
-    export function compileIf(mediator: IMediator, target: ICompileTarget, exp: string): void;
-    /**
-     * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
-     */
-    export function compileFor(mediator: IMediator, target: ICompileTarget, uiDict: {
-        [name: string]: any;
-    }): void;
-    /**
-     * 编译bindMessage命令，不会中止编译
-     */
-    export function compileMessage(mediator: IMediator, target: ICompileTarget, type: IConstructor | string, uiDict: {
-        [name: string]: any;
-    }, observable?: IObservable): void;
-    /**
-     * 编译bindResponse命令，不会中止编译
-     */
-    export function compileResponse(mediator: IMediator, target: ICompileTarget, type: IResponseDataConstructor | string, uiDict: {
-        [name: string]: any;
-    }, observable?: IObservable): void;
-}
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
     import IModuleConstructor from "engine/module/IModuleConstructor";
@@ -4903,6 +4911,16 @@ declare module "engine/injector/Injector" {
      * @returns {PropertyDecorator}
      */
     export function BindOn(type: string, exp: string): PropertyDecorator;
+    /**
+     * 为指定对象一次绑定一个事件
+     *
+     * @export
+     * @param {string} name ui属性名称
+     * @param {string} type 事件类型
+     * @param {string} exp 表达式
+     * @returns {PropertyDecorator}
+     */
+    export function BindOn(name: string, type: string, exp: string): PropertyDecorator;
     /**
      * 绑定当前对象的显示判断，if不支持寻址功能
      *
