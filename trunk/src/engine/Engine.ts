@@ -143,6 +143,8 @@ export default class Engine
     {
         // 调用进度回调，打开首个模块为90%
         this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
+        // 调用初始化完成回调
+        this._initParams.onInited && this._initParams.onInited();
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
