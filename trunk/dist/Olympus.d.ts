@@ -3088,14 +3088,6 @@ declare module "engine/module/ModuleManager" {
         private _openCache;
         private _opening;
         /**
-         * 获取是否有模块正在打开中
-         *
-         * @readonly
-         * @type {boolean}
-         * @memberof ModuleManager
-         */
-        readonly opening: boolean;
-        /**
          * 获取当前模块
          *
          * @readonly

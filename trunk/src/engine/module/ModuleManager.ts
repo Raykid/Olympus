@@ -30,18 +30,7 @@ export default class ModuleManager
     private _moduleStack:[IModuleConstructor, IModule][] = [];
 
     private _openCache:[IModuleConstructor, any, boolean][] = [];
-    private _opening:boolean = false;
-    /**
-     * 获取是否有模块正在打开中
-     * 
-     * @readonly
-     * @type {boolean}
-     * @memberof ModuleManager
-     */
-    public get opening():boolean
-    {
-        return this._opening;
-    }
+    private _opening:IModuleConstructor = null;
     
     /**
      * 获取当前模块
@@ -123,7 +112,17 @@ export default class ModuleManager
     
     private getCurrent():[IModuleConstructor, IModule]|undefined
     {
-        return this._moduleStack[0];
+        // 按顺序遍历模块，取出最新的没有在开启中的模块
+        var target:[IModuleConstructor, IModule];
+        for(var temp of this._moduleStack)
+        {
+            if(temp[0] !== this._opening)
+            {
+                target = temp;
+                break;
+            }
+        }
+        return target;
     }
 
     public registerModule(cls:IModuleConstructor):void
@@ -188,7 +187,7 @@ export default class ModuleManager
             this._openCache.push([cls, data, replace]);
             return;
         }
-        this._opening = true;
+        this._opening = cls;
         var after:[IModuleConstructor, IModule][] = this.getAfter(cls);
         if(!after)
         {
@@ -269,7 +268,7 @@ export default class ModuleManager
                             // 派发消息
                             core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
                             // 关闭标识符
-                            this._opening = false;
+                            this._opening = null;
                             // 如果有缓存的模块需要打开则打开之
                             if(this._openCache.length > 0)
                                 this.open.apply(this, this._openCache.shift());
@@ -295,12 +294,12 @@ export default class ModuleManager
             // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
             this.close(after[0][0], data);
             // 关闭标识符
-            this._opening = false;
+            this._opening = null;
         }
         else
         {
             // 关闭标识符
-            this._opening = false;
+            this._opening = null;
         }
     }
 

@@ -5069,22 +5069,8 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             this._moduleDict = {};
             this._moduleStack = [];
             this._openCache = [];
-            this._opening = false;
+            this._opening = null;
         }
-        Object.defineProperty(ModuleManager.prototype, "opening", {
-            /**
-             * 获取是否有模块正在打开中
-             *
-             * @readonly
-             * @type {boolean}
-             * @memberof ModuleManager
-             */
-            get: function () {
-                return this._opening;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(ModuleManager.prototype, "currentModule", {
             /**
              * 获取当前模块
@@ -5165,7 +5151,16 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
             return null;
         };
         ModuleManager.prototype.getCurrent = function () {
-            return this._moduleStack[0];
+            // 按顺序遍历模块，取出最新的没有在开启中的模块
+            var target;
+            for (var _i = 0, _a = this._moduleStack; _i < _a.length; _i++) {
+                var temp = _a[_i];
+                if (temp[0] !== this._opening) {
+                    target = temp;
+                    break;
+                }
+            }
+            return target;
         };
         ModuleManager.prototype.registerModule = function (cls) {
             this._moduleDict[cls["name"]] = cls;
@@ -5219,7 +5214,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 this._openCache.push([cls, data, replace]);
                 return;
             }
-            this._opening = true;
+            this._opening = cls;
             var after = this.getAfter(cls);
             if (!after) {
                 // 尚未打开过，正常开启模块
@@ -5295,7 +5290,7 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                                 // 派发消息
                                 Core_14.core.dispatch(ModuleMessage_1.default.MODULE_CHANGE, cls, from && from[0]);
                                 // 关闭标识符
-                                this._opening = false;
+                                this._opening = null;
                                 // 如果有缓存的模块需要打开则打开之
                                 if (this._openCache.length > 0)
                                     this.open.apply(this, this._openCache.shift());
@@ -5318,11 +5313,11 @@ define("engine/module/ModuleManager", ["require", "exports", "core/Core", "core/
                 // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
                 this.close(after[0][0], data);
                 // 关闭标识符
-                this._opening = false;
+                this._opening = null;
             }
             else {
                 // 关闭标识符
-                this._opening = false;
+                this._opening = null;
             }
         };
         /**
