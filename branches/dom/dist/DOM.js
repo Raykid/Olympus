@@ -122,13 +122,8 @@ define("dom/utils/SkinUtil", ["require", "exports", "engine/assets/AssetsManager
                 }
                 // 赋值皮肤内容
                 result.innerHTML = skin;
-                // 使用正则表达式将拥有id的节点赋值给mediator
-                var reg = /id=("([^"]+)"|'([^']+)')/g;
-                var res;
-                while (res = reg.exec(skin)) {
-                    var id = res[2] || res[3];
-                    mediator[id] = result.querySelector("#" + id);
-                }
+                // 拷贝引用
+                doCopyRef(result, skin, mediator);
                 // 恢复原始方法
                 if (oriFunc)
                     mediator.onOpen = oriFunc;
@@ -144,6 +139,26 @@ define("dom/utils/SkinUtil", ["require", "exports", "engine/assets/AssetsManager
         return result;
     }
     exports.wrapSkin = wrapSkin;
+    /**
+     * 将from中的所有拥有id属性的节点引用复制到to对象上
+     *
+     * @export
+     * @param {HTMLElement} from 复制源DOM节点
+     * @param {*} to 复制目标对象
+     */
+    function copyRef(from, to) {
+        doCopyRef(from, from.innerHTML, to);
+    }
+    exports.copyRef = copyRef;
+    function doCopyRef(fromEle, fromStr, to) {
+        // 使用正则表达式将拥有id的节点赋值给mediator
+        var reg = /id=("([^"]+)"|'([^']+)')/g;
+        var res;
+        while (res = reg.exec(fromStr)) {
+            var id = res[2] || res[3];
+            to[id] = fromEle.querySelector("#" + id);
+        }
+    }
     function getContent(skin) {
         if (skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0) {
             // 是皮肤字符串，直接返回

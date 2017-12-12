@@ -66,6 +66,14 @@ declare module "dom/utils/SkinUtil" {
      * @returns {HTMLElement} 皮肤的HTMLElement形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
      */
     export function wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
+    /**
+     * 将from中的所有拥有id属性的节点引用复制到to对象上
+     *
+     * @export
+     * @param {HTMLElement} from 复制源DOM节点
+     * @param {*} to 复制目标对象
+     */
+    export function copyRef(from: HTMLElement, to: any): void;
 }
 declare module "dom/injector/Injector" {
     /**

@@ -39,14 +39,8 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
             }
             // 赋值皮肤内容
             result.innerHTML = <string>skin;
-            // 使用正则表达式将拥有id的节点赋值给mediator
-            var reg:RegExp = /id=("([^"]+)"|'([^']+)')/g;
-            var res:RegExpExecArray;
-            while(res = reg.exec(<string>skin))
-            {
-                var id:string = res[2] || res[3];
-                mediator[id] = result.querySelector("#" + id);
-            }
+            // 拷贝引用
+            doCopyRef(result, <string>skin, mediator);
             // 恢复原始方法
             if(oriFunc) mediator.onOpen = oriFunc;
             else delete mediator.onOpen;
@@ -58,6 +52,30 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
     mediator.skin = result;
     // 同步返回皮肤
     return result;
+}
+
+/**
+ * 将from中的所有拥有id属性的节点引用复制到to对象上
+ * 
+ * @export
+ * @param {HTMLElement} from 复制源DOM节点
+ * @param {*} to 复制目标对象
+ */
+export function copyRef(from:HTMLElement, to:any):void
+{
+    doCopyRef(from, from.innerHTML, to);
+}
+
+function doCopyRef(fromEle:HTMLElement, fromStr:string, to:any):void
+{
+    // 使用正则表达式将拥有id的节点赋值给mediator
+    var reg:RegExp = /id=("([^"]+)"|'([^']+)')/g;
+    var res:RegExpExecArray;
+    while(res = reg.exec(fromStr))
+    {
+        var id:string = res[2] || res[3];
+        to[id] = fromEle.querySelector("#" + id);
+    }
 }
 
 function getContent(skin:string):string
