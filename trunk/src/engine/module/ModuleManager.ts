@@ -257,6 +257,8 @@ export default class ModuleManager
                         {
                             // 赋值responses
                             target.responses = responses;
+                            // 关闭标识符
+                            this._opening = null;
                             // 调用onOpen接口
                             target.onOpen(data);
                             // 调用onDeactivate接口
@@ -267,8 +269,6 @@ export default class ModuleManager
                             if(replace) this.close(from && from[0], data);
                             // 派发消息
                             core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
-                            // 关闭标识符
-                            this._opening = null;
                             // 如果有缓存的模块需要打开则打开之
                             if(this._openCache.length > 0)
                                 this.open.apply(this, this._openCache.shift());
