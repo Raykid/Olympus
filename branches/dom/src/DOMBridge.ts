@@ -11,6 +11,7 @@ import { IMaskEntity } from "engine/mask/MaskManager";
 import { assetsManager } from "engine/assets/AssetsManager";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
+import { copyRef } from "./dom/utils/SkinUtil";
 
 /**
  * @author Raykid
@@ -504,6 +505,8 @@ export default class DOMBridge implements IBridge
         for(var key in datas)
         {
             var newElement:HTMLElement = target.cloneNode(true) as HTMLElement;
+            // 拷贝子孙对象引用
+            copyRef(newElement, newElement);
             // 添加显示
             parent && parent.insertBefore(newElement, memento.to);
             // 使用cloneNode方法复制渲染器

@@ -201,7 +201,7 @@ define("dom/injector/Injector", ["require", "exports", "utils/ConstructUtil", "e
 });
 /// <amd-module name="DOMBridge"/>
 /// <reference path="../../../trunk/dist/Olympus.d.ts"/>
-define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/AssetsManager", "dom/mask/MaskEntity"], function (require, exports, ObjectUtil_1, AssetsManager_2, MaskEntity_1) {
+define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/AssetsManager", "dom/mask/MaskEntity", "dom/utils/SkinUtil"], function (require, exports, ObjectUtil_1, AssetsManager_2, MaskEntity_1, SkinUtil_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -661,6 +661,8 @@ define("DOMBridge", ["require", "exports", "utils/ObjectUtil", "engine/assets/As
             // 添加新的渲染器
             for (var key in datas) {
                 var newElement = target.cloneNode(true);
+                // 拷贝子孙对象引用
+                SkinUtil_2.copyRef(newElement, newElement);
                 // 添加显示
                 parent && parent.insertBefore(newElement, memento.to);
                 // 使用cloneNode方法复制渲染器
