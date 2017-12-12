@@ -207,6 +207,11 @@ export default class NetManager
 
     private recurseResponse(type:string, response:ResponseData, observable:IObservable):void
     {
+        // 先递归父级，与消息发送时顺序相反
+        if(observable.parent)
+        {
+            this.recurseResponse(type, response, observable.parent);
+        }
         // 触发事件形式监听
         var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
         if(listeners)
@@ -222,11 +227,6 @@ export default class NetManager
                     if(listener[2]) this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
                 }
             }
-        }
-        // 递归
-        if(observable.parent)
-        {
-            this.recurseResponse(type, response, observable.parent);
         }
     }
 

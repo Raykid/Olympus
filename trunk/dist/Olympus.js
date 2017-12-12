@@ -3397,6 +3397,10 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
             }
         };
         NetManager.prototype.recurseResponse = function (type, response, observable) {
+            // 先递归父级，与消息发送时顺序相反
+            if (observable.parent) {
+                this.recurseResponse(type, response, observable.parent);
+            }
             // 触发事件形式监听
             var listeners = this._responseListeners[type];
             if (listeners) {
@@ -3411,10 +3415,6 @@ define("engine/net/NetManager", ["require", "exports", "core/Core", "core/inject
                             this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
                     }
                 }
-            }
-            // 递归
-            if (observable.parent) {
-                this.recurseResponse(type, response, observable.parent);
             }
         };
         NetManager.prototype.__onError = function (err, request) {
