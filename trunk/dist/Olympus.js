@@ -7508,7 +7508,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
             to && from && from.onBeforeOut(to, data);
             to && to.onBeforeIn(from, data);
             // 派发事件
-            Core_20.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
+            to && Core_20.core.dispatch(SceneMessage_1.default.SCENE_BEFORE_CHANGE, to, from);
             // 调用准备接口
             prepareFunc && prepareFunc.call(policy, from, to);
             // 添加显示
@@ -7523,7 +7523,7 @@ define("engine/scene/SceneManager", ["require", "exports", "core/Core", "core/in
                 to && from && from.onAfterOut(to, data);
                 to && to.onAfterIn(from, data);
                 // 派发事件
-                Core_20.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
+                to && Core_20.core.dispatch(SceneMessage_1.default.SCENE_AFTER_CHANGE, to, from);
                 // 完成步骤
                 SyncUtil_1.notify(SYNC_NAME);
             });
