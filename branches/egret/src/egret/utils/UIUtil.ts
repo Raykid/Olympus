@@ -26,6 +26,7 @@ export function wrapEUIList(group:eui.DataGroup, rendererHandler:(data?:any, ren
         {
             if(!changed && (group.contentWidth > 0 || group.contentHeight > 0))
             {
+                changed = true;
                 // 移除事件监听
                 group.removeEventListener(egret.Event.ENTER_FRAME, enterFrameHandler, this);
                 // 调用回调
