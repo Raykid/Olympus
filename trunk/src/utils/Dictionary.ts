@@ -26,6 +26,40 @@ export default class Dictionary<K, V>
         for(var hash in this._keyDict) size ++;
         return size;
     }
+    
+    /**
+     * 获取字典key的集合
+     * 
+     * @readonly
+     * @type {K[]}
+     * @memberof Dictionary
+     */
+    public get keys():K[]
+    {
+        var keys:K[] = [];
+        for(var hash in this._keyDict)
+        {
+            keys.push(this._keyDict[hash]);
+        }
+        return keys;
+    }
+
+    /**
+     * 获取字典值的集合
+     * 
+     * @readonly
+     * @type {V[]}
+     * @memberof Dictionary
+     */
+    public get values():V[]
+    {
+        var values:V[] = [];
+        for(var hash in this._valueDict)
+        {
+            values.push(this._valueDict[hash]);
+        }
+        return values;
+    }
 
     /**
      * 设置一个键值对
