@@ -66137,10 +66137,8 @@ define("egret/utils/UIUtil", ["require", "exports"], function (require, exports)
         group.itemRenderer = ItemRenderer.bind(null, group.itemRendererSkinName, rendererHandler);
         if (updateHandler) {
             // 监听group尺寸是否改变
-            var changed = false;
             var enterFrameHandler = function () {
-                if (!changed && (group.contentWidth > 0 || group.contentHeight > 0)) {
-                    changed = true;
+                if (group.contentWidth > 0 || group.contentHeight > 0) {
                     // 移除事件监听
                     group.removeEventListener(egret.Event.ENTER_FRAME, enterFrameHandler, this);
                     // 调用回调
