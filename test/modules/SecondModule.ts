@@ -1,6 +1,6 @@
 import SceneMediator from "engine/scene/SceneMediator";
 import Module from "engine/module/Module";
-import { ModuleClass, DelegateMediator, BindFunc, BindFor, BindValue, MessageHandler, GlobalMessageHandler, BindMessage } from "engine/injector/Injector";
+import { ModuleClass, DelegateMediator, BindFunc, BindFor, BindValue, MessageHandler, GlobalMessageHandler, BindMessage, BindIf } from "engine/injector/Injector";
 import { EgretMediatorClass } from "egret/injector/Injector";
 
 /**
@@ -19,8 +19,10 @@ class SecondMediator extends SceneMediator
     @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
     @BindFor("i in fuckList")
+    @BindIf("txt", "false")
     @BindValue("txt.text", "i")
-    @BindFor("lst", "value of fuckList")
+    @BindFor("lst", "key in fuckList")
+    @BindIf("txt", "false")
     @BindValue({
         txt: {
             text: "$target.$hashCode"

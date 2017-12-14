@@ -77,8 +77,10 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
         ], SecondMediator.prototype, "btn", void 0);
         __decorate([
             Injector_1.BindFor("i in fuckList"),
+            Injector_1.BindIf("txt", "false"),
             Injector_1.BindValue("txt.text", "i"),
-            Injector_1.BindFor("lst", "value of fuckList"),
+            Injector_1.BindFor("lst", "key in fuckList"),
+            Injector_1.BindIf("txt", "false"),
             Injector_1.BindValue({
                 txt: {
                     text: "$target.$hashCode"

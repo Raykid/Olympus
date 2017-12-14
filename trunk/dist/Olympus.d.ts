@@ -1356,6 +1356,7 @@ declare module "engine/mediator/IMediator" {
     import IOpenClose from "core/interfaces/IOpenClose";
     import IDisposable from "core/interfaces/IDisposable";
     import IObservable from "core/observable/IObservable";
+    import Dictionary from "utils/Dictionary";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -1384,6 +1385,13 @@ declare module "engine/mediator/IMediator" {
          * @memberof IMediator
          */
         readonly viewModel: any;
+        /**
+         * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
+         *
+         * @type {Dictionary<any, any>[]}
+         * @memberof IMediator
+         */
+        readonly bindTargets: Dictionary<any, any>[];
         /**
          * 皮肤
          *
@@ -3661,6 +3669,7 @@ declare module "engine/mediator/Mediator" {
     import ICommandConstructor from "core/command/ICommandConstructor";
     import IObservable from "core/observable/IObservable";
     import ResponseData from "engine/net/ResponseData";
+    import Dictionary from "utils/Dictionary";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -3685,6 +3694,13 @@ declare module "engine/mediator/Mediator" {
          * @memberof Mediator
          */
         viewModel: any;
+        /**
+         * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
+         *
+         * @type {Dictionary<any, any>[]}
+         * @memberof Mediator
+         */
+        bindTargets: Dictionary<any, any>[];
         /**
          * 皮肤
          *
@@ -4690,6 +4706,7 @@ declare module "engine/injector/BindUtil" {
     import IObservable from "core/observable/IObservable";
     import { IResponseDataConstructor } from "engine/net/ResponseData";
     import IMediator from "engine/mediator/IMediator";
+    import Dictionary from "utils/Dictionary";
     /**
      * @author Raykid
      * @email initial_r@qq.com
@@ -4706,9 +4723,8 @@ declare module "engine/injector/BindUtil" {
          * @param {IMediator} mediator 所属的中介者
          * @param {ICompileTarget} target 要编译的目标显示对象
          * @param {...any[]} args 命令参数列表
-         * @return {boolean} 是否需要停止编译
          */
-        (mediator: IMediator, target: ICompileTarget, ...args: any[]): boolean;
+        (mediator: IMediator, target: ICompileTarget, ...args: any[]): void;
     }
     export interface IBindParams {
         /**
@@ -4745,6 +4761,9 @@ declare module "engine/injector/BindUtil" {
          */
         [key: string]: any;
     }
+    export interface IStopLeftHandler {
+        (target: any, bindTargets: Dictionary<any, any>[], leftHandlers: IStopLeftHandler[]): void;
+    }
     /**
      * 添加编译命令到显示对象上（正向）
      *
@@ -4774,40 +4793,41 @@ declare module "engine/injector/BindUtil" {
     /**
      * 编译bindValue命令，不会中止编译
      */
-    export function compileValue(mediator: IMediator, target: ICompileTarget, name: string, exp: string): boolean;
+    export function compileValue(mediator: IMediator, target: ICompileTarget, name: string, exp: string): void;
     /**
      * 编译bindFunc命令，不会中止编译
      */
-    export function compileFunc(mediator: IMediator, target: ICompileTarget, name: string, ...argExps: string[]): boolean;
+    export function compileFunc(mediator: IMediator, target: ICompileTarget, name: string, ...argExps: string[]): void;
     /**
      * 编译bindOn命令，不会中止编译
      */
-    export function compileOn(mediator: IMediator, target: ICompileTarget, type: string, exp: string): boolean;
+    export function compileOn(mediator: IMediator, target: ICompileTarget, type: string, exp: string): void;
     /**
      * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
      */
-    export function compileIf(mediator: IMediator, target: ICompileTarget, exp: string): boolean;
+    export function compileIf(mediator: IMediator, target: ICompileTarget, exp: string): void;
     /**
      * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
      */
-    export function compileFor(mediator: IMediator, target: ICompileTarget, exp: string): boolean;
+    export function compileFor(mediator: IMediator, target: ICompileTarget, exp: string): void;
     /**
      * 编译bindMessage命令，不会中止编译
      */
-    export function compileMessage(mediator: IMediator, target: ICompileTarget, type: IConstructor | string, name: string, exp: string, observable?: IObservable): boolean;
+    export function compileMessage(mediator: IMediator, target: ICompileTarget, type: IConstructor | string, name: string, exp: string, observable?: IObservable): void;
     /**
      * 编译bindResponse命令，不会中止编译
      */
-    export function compileResponse(mediator: IMediator, target: ICompileTarget, type: IResponseDataConstructor | string, name: string, exp: string, observable?: IObservable): boolean;
+    export function compileResponse(mediator: IMediator, target: ICompileTarget, type: IResponseDataConstructor | string, name: string, exp: string, observable?: IObservable): void;
     /**
      * 搜索UI，取到目标节点，执行回调
      *
      * @export
      * @param {*} values 值结构字典
      * @param {*} ui ui实体
-     * @param {(ui:any, key:string, value:any)=>void} callback
+     * @param {(ui:any, key:string, value:any, depth?:number)=>void} callback 回调
+     * @param {number} [depth=0] 遍历深度，方法会继续增加这个深度
      */
-    export function searchUI(values: any, ui: any, callback: (ui: any, key: string, value: any) => void): void;
+    export function searchUI(values: any, ui: any, callback: (ui: any, key: string, value: any, depth?: number) => void, depth?: number): void;
 }
 declare module "engine/injector/Injector" {
     import { IResponseDataConstructor } from "engine/net/ResponseData";
