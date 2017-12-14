@@ -21,9 +21,10 @@ export function wrapEUIList(group:eui.DataGroup, rendererHandler:(data?:any, ren
     if(updateHandler)
     {
         // 监听group尺寸是否改变
+        var changed:boolean = false;
         var enterFrameHandler:()=>void = function():void
         {
-            if(group.contentWidth > 0 || group.contentHeight > 0)
+            if(!changed && (group.contentWidth > 0 || group.contentHeight > 0))
             {
                 // 移除事件监听
                 group.removeEventListener(egret.Event.ENTER_FRAME, enterFrameHandler, this);
