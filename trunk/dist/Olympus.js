@@ -1368,6 +1368,42 @@ define("utils/Dictionary", ["require", "exports", "utils/ObjectUtil"], function 
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(Dictionary.prototype, "keys", {
+            /**
+             * 获取字典key的集合
+             *
+             * @readonly
+             * @type {K[]}
+             * @memberof Dictionary
+             */
+            get: function () {
+                var keys = [];
+                for (var hash in this._keyDict) {
+                    keys.push(this._keyDict[hash]);
+                }
+                return keys;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Dictionary.prototype, "values", {
+            /**
+             * 获取字典值的集合
+             *
+             * @readonly
+             * @type {V[]}
+             * @memberof Dictionary
+             */
+            get: function () {
+                var values = [];
+                for (var hash in this._valueDict) {
+                    values.push(this._valueDict[hash]);
+                }
+                return values;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * 设置一个键值对
          *
@@ -6183,185 +6219,7 @@ define("engine/bind/Mutator", ["require", "exports", "utils/ObjectUtil", "engine
         return result;
     }
 });
-define("engine/injector/BindUtil", ["require", "exports", "engine/bind/BindManager"], function (require, exports, BindManager_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-     * 添加编译命令到显示对象上
-     *
-     * @export
-     * @param {ICompileTarget} target 显示对象
-     * @param {IBindCommand} cmd 命令函数
-     * @param {...any[]} args 命令参数列表
-     */
-    function addCompileCommand(target, cmd) {
-        var args = [];
-        for (var _i = 2; _i < arguments.length; _i++) {
-            args[_i - 2] = arguments[_i];
-        }
-        var bindParams = target.__bind_commands__;
-        if (!bindParams)
-            target.__bind_commands__ = bindParams = [];
-        // 添加编译指令
-        bindParams.push({ cmd: cmd, args: args });
-    }
-    exports.addCompileCommand = addCompileCommand;
-    /**
-     * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
-     *
-     * @export
-     * @param {ICompileTarget} target
-     */
-    function reverseCompileCommand(target) {
-        var bindParams = target.__bind_commands__;
-        bindParams && bindParams.reverse();
-    }
-    exports.reverseCompileCommand = reverseCompileCommand;
-    /**
-     * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
-     *
-     * @export
-     * @param {ICompileTarget} from 源对象
-     * @param {ICompileTarget} to 目标对象
-     */
-    function moveCompileCommands(from, to) {
-        var commands = from.__bind_commands__;
-        if (!commands)
-            return;
-        if (!to.__bind_commands__)
-            to.__bind_commands__ = from.__bind_commands__;
-        else
-            (_a = to.__bind_commands__).push.apply(_a, from.__bind_commands__);
-        // 移除源对象的指令
-        from.__bind_commands__ = [];
-        var _a;
-    }
-    exports.moveCompileCommands = moveCompileCommands;
-    /**
-     * 编译显示对象
-     *
-     * @export
-     * @param {IMediator} mediator 显示对象所属的中介者
-     * @param {ICompileTarget} target 显示对象
-     */
-    function compile(mediator, target) {
-        // 取到编译参数列表
-        var bindParams = target.__bind_commands__;
-        if (!bindParams)
-            return;
-        // 这里没有提前读取出length属性，因为需要动态判断数组长度
-        for (var i = 0; i < bindParams.length;) {
-            // 使用shift按顺序取出编译命令
-            var params = bindParams.shift();
-            // 调用编译命令，并且更新中止状态
-            params.cmd.apply(params, [mediator, target].concat(params.args));
-        }
-    }
-    exports.compile = compile;
-    /**
-     * 编译bindValue命令，不会中止编译
-     */
-    function compileValue(mediator, target, uiDict) {
-        BindManager_1.bindManager.bindValue(mediator, target, uiDict);
-    }
-    exports.compileValue = compileValue;
-    /**
-     * 编译bindFunc命令，不会中止编译
-     */
-    function compileFunc(mediator, target, funcDict) {
-        BindManager_1.bindManager.bindFunc(mediator, target, funcDict);
-    }
-    exports.compileFunc = compileFunc;
-    /**
-     * 编译bindOn命令，不会中止编译
-     */
-    function compileOn(mediator, target, evtDict) {
-        BindManager_1.bindManager.bindOn(mediator, target, evtDict);
-    }
-    exports.compileOn = compileOn;
-    /**
-     * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
-     */
-    function compileIf(mediator, target, exp) {
-        // 将后面的编译命令缓存起来
-        var bindParams = target.__bind_commands__;
-        var cached = bindParams.splice(0, bindParams.length);
-        // 绑定if命令
-        var terminated = false;
-        BindManager_1.bindManager.bindIf(mediator, target, exp, function (value) {
-            // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
-            if (!terminated && value) {
-                // 恢复后面的命令
-                target.__bind_commands__ = cached;
-                // 继续编译
-                compile(mediator, target);
-                // 设置已终结标识
-                terminated = true;
-            }
-        });
-    }
-    exports.compileIf = compileIf;
-    /**
-     * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
-     */
-    function compileFor(mediator, target, uiDict) {
-        // 将后面的编译命令缓存起来
-        var bindParams = target.__bind_commands__;
-        var cached = bindParams.splice(0, bindParams.length);
-        // 绑定if命令
-        BindManager_1.bindManager.bindFor(mediator, target, uiDict, function (data, renderer) {
-            // 将缓存的命令复制到新的renderer实例中
-            renderer.__bind_commands__ = cached.concat();
-            // 编译renderer实例
-            compile(mediator, renderer);
-        });
-    }
-    exports.compileFor = compileFor;
-    /**
-     * 编译bindMessage命令，不会中止编译
-     */
-    function compileMessage(mediator, target, type, uiDict, observable) {
-        BindManager_1.bindManager.bindMessage(mediator, target, type, uiDict, observable);
-    }
-    exports.compileMessage = compileMessage;
-    /**
-     * 编译bindResponse命令，不会中止编译
-     */
-    function compileResponse(mediator, target, type, uiDict, observable) {
-        BindManager_1.bindManager.bindResponse(mediator, target, type, uiDict, observable);
-    }
-    exports.compileResponse = compileResponse;
-    /**
-     * 搜索UI，取到目标节点，执行回调
-     *
-     * @export
-     * @param {*} values 值结构字典
-     * @param {*} ui ui实体
-     * @param {(ui:any, key:string, value:any)=>void} callback
-     */
-    function searchUI(values, ui, callback) {
-        for (var key in values) {
-            var value = values[key];
-            var index = key.indexOf(".");
-            if (index >= 0) {
-                // 是表达式寻址，递归寻址
-                var newValue = {};
-                newValue[key.substr(index + 1)] = value;
-                searchUI(newValue, ui[key.substring(0, index)], callback);
-            }
-            else if (typeof value == "object" && !(value instanceof Array)) {
-                // 是子对象寻址，递归寻址
-                searchUI(value, ui[key], callback);
-            }
-            else {
-                // 是表达式，调用回调
-                callback(ui, key, value);
-            }
-        }
-    }
-    exports.searchUI = searchUI;
-});
-define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind", "engine/bind/Utils", "engine/net/NetManager", "engine/injector/BindUtil"], function (require, exports, Injector_13, Core_18, Dictionary_5, Bind_1, Utils_2, NetManager_2, BindUtil_1) {
+define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector", "core/Core", "utils/Dictionary", "engine/bind/Bind", "engine/bind/Utils", "engine/net/NetManager"], function (require, exports, Injector_13, Core_18, Dictionary_5, Bind_1, Utils_2, NetManager_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6414,13 +6272,13 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                 this._bindDict.delete(mediator);
             return bindData && bindData.bind;
         };
-        BindManager.prototype.delaySearch = function (mediator, values, ui, callback) {
+        BindManager.prototype.addBindHandler = function (mediator, callback) {
             var handler = function () {
                 // 判断数据是否合法
                 if (!mediator.viewModel)
                     return;
                 // 开始绑定
-                BindUtil_1.searchUI(values, ui, callback);
+                callback();
             };
             // 添加绑定数据
             var bindData = this._bindDict.get(mediator);
@@ -6433,16 +6291,22 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定属性值
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:any}} uiDict ui属性字典
+         * @param {*} target 绑定到的target实体对象
+         * @param {string} name 绑定的属性名
+         * @param {string} exp 绑定的属性表达式
          * @memberof BindManager
          */
-        BindManager.prototype.bindValue = function (mediator, ui, uiDict) {
+        BindManager.prototype.bindValue = function (mediator, target, name, exp) {
             var _this = this;
+            var watcher;
             var bindData = this._bindDict.get(mediator);
-            this.delaySearch(mediator, uiDict, ui, function (ui, key, exp) {
-                (_a = bindData.bind).createWatcher.apply(_a, [ui, exp, function (value) {
-                        ui[key] = value;
+            this.addBindHandler(mediator, function () {
+                // 如果之前绑定过，则要先销毁之
+                if (watcher)
+                    watcher.dispose();
+                // 绑定新的订阅者
+                watcher = (_a = bindData.bind).createWatcher.apply(_a, [target, exp, function (value) {
+                        target[name] = value;
                     }, mediator.viewModel].concat(_this._envModel));
                 var _a;
             });
@@ -6451,34 +6315,32 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定方法执行
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} ui 绑定到的ui实体对象
-         * @param {BindFuncDict} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
+         * @param {*} target 绑定到的target实体对象
+         * @param {string} name 绑定的方法名
+         * @param {...string[]} argExps 执行方法的参数表达式列表
          * @memberof BindManager
          */
-        BindManager.prototype.bindFunc = function (mediator, ui, funcDict) {
+        BindManager.prototype.bindFunc = function (mediator, target, name) {
             var _this = this;
+            var argExps = [];
+            for (var _i = 3; _i < arguments.length; _i++) {
+                argExps[_i - 3] = arguments[_i];
+            }
+            var watchers = [];
             var bindData = this._bindDict.get(mediator);
-            this.delaySearch(mediator, funcDict, ui, function (ui, key, exp) {
-                if (exp) {
-                    var exps;
-                    if (typeof exp == "string") {
-                        // 将裸的表达式形式参数转换为表达式参数数组形式
-                        exps = [exp];
-                    }
-                    else {
-                        // 本来就是表达式参数数组，直接赋值即可
-                        exps = exp;
-                    }
+            this.addBindHandler(mediator, function () {
+                // 判断参数数量，无参数方法一次性执行即可，无需绑定，有参数的方法则需要每次参数改变就执行一次
+                if (argExps.length > 0) {
                     // 将表达式中所有undefined和null变为内部值
                     var undefinedValue = Date.now() * Math.random() + "_undefined";
                     var nullValue = Date.now() * Math.random() + "_null";
-                    exps = exps.map(function (value) {
-                        if (value === undefined)
+                    argExps = argExps.map(function (exp) {
+                        if (exp === undefined)
                             return "'" + undefinedValue + "'";
-                        else if (value === null)
+                        else if (exp === null)
                             return "'" + nullValue + "'";
                         else
-                            return value;
+                            return exp;
                     });
                     // 绑定表达式参数数组
                     var initValue = {};
@@ -6504,21 +6366,27 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                             argsInited = true;
                         }
                         // 赋值已经完毕了，调用方法，this指向ui本身
-                        ui[key].apply(ui, args);
+                        target[name].apply(target, args);
                     };
+                    // 清理旧的订阅者
+                    for (var i = 0, len = watchers.length; i < len; i++) {
+                        watchers.shift().dispose();
+                    }
                     // 循环绑定表达式到handler
-                    for (var i = 0, len = exps.length; i < len; i++) {
+                    for (var i = 0, len = argExps.length; i < len; i++) {
                         // 记录一个初始值，用于判断参数列表是否已赋值完毕
                         args.push(initValue);
                     }
-                    for (var i = 0, len = exps.length; i < len; i++) {
+                    for (var i = 0, len = argExps.length; i < len; i++) {
                         // 绑定表达式
-                        (_a = bindData.bind).createWatcher.apply(_a, [ui, exps[i], handler.bind(_this, i), mediator.viewModel].concat(_this._envModel));
+                        var watcher = (_a = bindData.bind).createWatcher.apply(_a, [target, argExps[i], handler.bind(_this, i), mediator.viewModel].concat(_this._envModel));
+                        // 记录订阅者
+                        watchers.push(watcher);
                     }
                 }
                 else {
                     // 无参数执行，无需绑定，一次性执行即可
-                    ui[key]();
+                    target[name]();
                 }
                 var _a;
             });
@@ -6528,20 +6396,25 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          *
          * @param {IMediator} mediator 中介者
          * @param {*} ui 绑定到的ui实体对象
-         * @param {{[type:string]:any}} evtDict 事件字典
+         * @param {string} type 绑定的事件类型
+         * @param {string} exp 绑定的事件回调表达式
          * @memberof BindManager
          */
-        BindManager.prototype.bindOn = function (mediator, ui, evtDict) {
+        BindManager.prototype.bindOn = function (mediator, target, type, exp) {
             var _this = this;
-            this.delaySearch(mediator, evtDict, ui, function (ui, key, exp) {
-                var handler = mediator.viewModel[exp];
+            var handler;
+            this.addBindHandler(mediator, function () {
                 var commonScope = {
                     $this: mediator,
                     $data: mediator.viewModel,
                     $bridge: mediator.bridge,
-                    $target: ui
+                    $target: target
                 };
-                // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
+                // 如果之前添加过监听，则先移除之
+                if (!handler)
+                    mediator.bridge.unmapListener(target, type, handler, mediator.viewModel);
+                // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
+                handler = mediator.viewModel[exp];
                 if (!handler) {
                     var func = Utils_2.createRunFunc(exp, 2 + _this._envModel.length);
                     // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
@@ -6550,7 +6423,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                         func.call.apply(func, [this, mediator.viewModel].concat(envModel, [commonScope]));
                     };
                 }
-                mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
+                mediator.bridge.mapListener(target, type, handler, mediator.viewModel);
             });
         };
         BindManager.prototype.replaceDisplay = function (bridge, ori, cur) {
@@ -6568,23 +6441,27 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定显示
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} ui 绑定到的ui实体对象
+         * @param {*} target 绑定到的target实体对象
          * @param {string} exp 绑定表达式
          * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
          * @memberof BindManager
          */
-        BindManager.prototype.bindIf = function (mediator, ui, exp, callback) {
+        BindManager.prototype.bindIf = function (mediator, target, exp, callback) {
             var _this = this;
+            var watcher;
             var bindData = this._bindDict.get(mediator);
             var replacer = mediator.bridge.createEmptyDisplay();
-            this.delaySearch(mediator, { key: exp }, ui, function (a, b, exp) {
+            this.addBindHandler(mediator, function () {
+                // 如果之前绑定过，则要先销毁之
+                if (watcher)
+                    watcher.dispose();
                 // 绑定表达式
-                (_a = bindData.bind).createWatcher.apply(_a, [ui, exp, function (value) {
+                watcher = (_a = bindData.bind).createWatcher.apply(_a, [target, exp, function (value) {
                         // 如果表达式为true则显示ui，否则移除ui
                         if (value)
-                            _this.replaceDisplay(mediator.bridge, replacer, ui);
+                            _this.replaceDisplay(mediator.bridge, replacer, target);
                         else
-                            _this.replaceDisplay(mediator.bridge, ui, replacer);
+                            _this.replaceDisplay(mediator.bridge, target, replacer);
                         // 触发回调
                         callback && callback(value);
                     }, mediator.viewModel].concat(_this._envModel));
@@ -6595,24 +6472,23 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
          * 绑定循环
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} ui 绑定到的ui实体对象
-         * @param {{[name:string]:any}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
+         * @param {*} target 绑定到的target实体对象
+         * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
          * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
          * @memberof BindManager
          */
-        BindManager.prototype.bindFor = function (mediator, ui, uiDict, callback) {
+        BindManager.prototype.bindFor = function (mediator, target, exp, callback) {
             var _this = this;
+            var watcher;
             var bindData = this._bindDict.get(mediator);
             var replacer = mediator.bridge.createEmptyDisplay();
-            this.delaySearch(mediator, uiDict, ui, function (ui, key, exp) {
-                // 寻址到指定目标
-                ui = ui[key] || ui;
+            this.addBindHandler(mediator, function () {
                 // 解析表达式
                 var res = _this._regExp.exec(exp);
                 if (!res)
                     return;
                 // 包装渲染器创建回调
-                var memento = mediator.bridge.wrapBindFor(ui, function (key, value, renderer) {
+                var memento = mediator.bridge.wrapBindFor(target, function (key, value, renderer) {
                     // 设置环境变量
                     var commonScope = {
                         $key: key,
@@ -6628,26 +6504,29 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     // 移除环境变量
                     _this._envModel.splice(_this._envModel.indexOf(commonScope), 1);
                 });
+                // 如果之前绑定过，则要先销毁之
+                if (watcher)
+                    watcher.dispose();
                 // 获得要遍历的数据集合
-                var bindData = _this._bindDict.get(mediator);
-                (_a = bindData.bind).createWatcher.apply(_a, [ui, res[5], function (datas) {
+                watcher = (_a = bindData.bind).createWatcher.apply(_a, [target, res[5], function (datas) {
                         // 赋值
-                        mediator.bridge.valuateBindFor(ui, datas, memento);
+                        mediator.bridge.valuateBindFor(target, datas, memento);
                     }, mediator.viewModel].concat(_this._envModel));
                 var _a;
             });
         };
         /**
-         * 绑定全局Message
+         * 绑定Message
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} ui 绑定到的ui实体对象
+         * @param {*} target 绑定到的target实体对象
          * @param {IConstructor|string} type 绑定的消息类型字符串
-         * @param {{[name:string]:any}} uiDict ui表达式字典
+         * @param {string} name 绑定的属性名
+         * @param {string} exp 绑定的表达式
          * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
-        BindManager.prototype.bindMessage = function (mediator, ui, type, uiDict, observable) {
+        BindManager.prototype.bindMessage = function (mediator, target, type, name, exp, observable) {
             var _this = this;
             if (!observable)
                 observable = Core_18.core.observable;
@@ -6667,32 +6546,31 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                         msg = args[0];
                     else
                         msg = { $arguments: args };
-                    BindUtil_1.searchUI(uiDict, ui, function (ui, key, exp) {
-                        // 设置通用属性
-                        var commonScope = {
-                            $this: mediator,
-                            $data: mediator.viewModel,
-                            $bridge: mediator.bridge,
-                            $target: ui
-                        };
-                        ui[key] = Utils_2.evalExp.apply(void 0, [exp, mediator.viewModel, msg, mediator.viewModel].concat(_this._envModel, [commonScope]));
-                    });
+                    // 设置通用属性
+                    var commonScope = {
+                        $this: mediator,
+                        $data: mediator.viewModel,
+                        $bridge: mediator.bridge,
+                        $target: target
+                    };
+                    target[name] = Utils_2.evalExp.apply(void 0, [exp, mediator.viewModel, msg, mediator.viewModel].concat(_this._envModel, [commonScope]));
                 }
             };
             // 添加监听
             observable.listen(type, handler);
         };
         /**
-         * 绑定全局Response
+         * 绑定Response
          *
          * @param {IMediator} mediator 中介者
-         * @param {*} ui 绑定到的ui实体对象
+         * @param {*} target 绑定到的target实体对象
          * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-         * @param {{[name:string]:any}} uiDict ui表达式字典
+         * @param {string} name 绑定的属性名
+         * @param {string} exp 绑定的表达式
          * @param {IObservable} [observable] 绑定的消息内核，默认是core
          * @memberof BindManager
          */
-        BindManager.prototype.bindResponse = function (mediator, ui, type, uiDict, observable) {
+        BindManager.prototype.bindResponse = function (mediator, target, type, name, exp, observable) {
             var _this = this;
             if (!observable)
                 observable = Core_18.core.observable;
@@ -6703,16 +6581,14 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
                     NetManager_2.netManager.unlistenResponse(type, handler, null, null, observable);
                 }
                 else {
-                    BindUtil_1.searchUI(uiDict, ui, function (ui, key, exp) {
-                        // 设置通用属性
-                        var commonScope = {
-                            $this: mediator,
-                            $data: mediator.viewModel,
-                            $bridge: mediator.bridge,
-                            $target: ui
-                        };
-                        ui[key] = Utils_2.evalExp.apply(void 0, [exp, mediator.viewModel, response, mediator.viewModel].concat(_this._envModel, [commonScope]));
-                    });
+                    // 设置通用属性
+                    var commonScope = {
+                        $this: mediator,
+                        $data: mediator.viewModel,
+                        $bridge: mediator.bridge,
+                        $target: target
+                    };
+                    target[name] = Utils_2.evalExp.apply(void 0, [exp, mediator.viewModel, response, mediator.viewModel].concat(_this._envModel, [commonScope]));
                 }
             };
             // 添加监听
@@ -6734,7 +6610,7 @@ define("engine/bind/BindManager", ["require", "exports", "core/injector/Injector
     /** 再额外导出一个单例 */
     exports.bindManager = Core_18.core.getInject(BindManager);
 });
-define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/bind/Mutator", "engine/bind/BindManager"], function (require, exports, Core_19, Mutator_1, BindManager_2) {
+define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/bind/Mutator", "engine/bind/BindManager"], function (require, exports, Core_19, Mutator_1, BindManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -6747,12 +6623,19 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
     */
     var Mediator = /** @class */ (function () {
         function Mediator(skin) {
+            /**
+             * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
+             *
+             * @type {Dictionary<any, any>[]}
+             * @memberof Mediator
+             */
+            this.bindTargets = [];
             this._disposed = false;
             this._listeners = [];
             if (skin)
                 this.skin = skin;
             // 初始化绑定
-            BindManager_2.bindManager.bind(this);
+            BindManager_1.bindManager.bind(this);
         }
         Object.defineProperty(Mediator.prototype, "viewModel", {
             /**
@@ -6768,7 +6651,7 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
                 // 设置的时候进行一次变异
                 this._viewModel = Mutator_1.mutate(value);
                 // 更新绑定
-                BindManager_2.bindManager.bind(this);
+                BindManager_1.bindManager.bind(this);
             },
             enumerable: true,
             configurable: true
@@ -7077,9 +6960,11 @@ define("engine/mediator/Mediator", ["require", "exports", "core/Core", "engine/b
             // 移除表现层桥
             this.bridge = null;
             // 移除绑定
-            BindManager_2.bindManager.unbind(this);
+            BindManager_1.bindManager.unbind(this);
             // 移除ViewModel
             this._viewModel = null;
+            // 移除绑定目标数组
+            this.bindTargets = null;
             // 移除皮肤
             this.skin = null;
             // 设置已被销毁
@@ -8444,7 +8329,195 @@ define("engine/plugin/IPlugin", ["require", "exports"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("engine/injector/Injector", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil", "engine/injector/BindUtil"], function (require, exports, Core_26, Injector_19, Message_2, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_7, BindUtil, BindUtil_2) {
+define("engine/injector/BindUtil", ["require", "exports", "engine/bind/BindManager"], function (require, exports, BindManager_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function getBindParams(target) {
+        var bindParams = target.__bind_commands__;
+        if (!bindParams) {
+            bindParams = [];
+            Object.defineProperty(target, "__bind_commands__", {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: bindParams
+            });
+        }
+        return bindParams;
+    }
+    /**
+     * 添加编译命令到显示对象上（正向）
+     *
+     * @export
+     * @param {ICompileTarget} target 显示对象
+     * @param {IBindCommand} cmd 命令函数
+     * @param {...any[]} args 命令参数列表
+     */
+    function pushCompileCommand(target, cmd) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        // 添加编译指令
+        getBindParams(target).push({ cmd: cmd, args: args });
+    }
+    exports.pushCompileCommand = pushCompileCommand;
+    /**
+     * 添加编译命令到显示对象上（反向）
+     *
+     * @export
+     * @param {ICompileTarget} target 显示对象
+     * @param {IBindCommand} cmd 命令函数
+     * @param {...any[]} args 命令参数列表
+     */
+    function unshiftCompileCommand(target, cmd) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
+        }
+        getBindParams(target).unshift({ cmd: cmd, args: args });
+    }
+    exports.unshiftCompileCommand = unshiftCompileCommand;
+    /**
+     * 编译显示对象，会先编译自身，然后再递归编译子对象
+     *
+     * @export
+     * @param {IMediator} mediator 显示对象所属的中介者
+     * @param {ICompileTarget} target 显示对象
+     */
+    function compile(mediator, target) {
+        var stop = false;
+        // 取到编译参数列表
+        var bindParams = target.__bind_commands__;
+        // 编译target自身
+        if (bindParams) {
+            // 这里没有提前读取出length属性，因为需要动态判断数组长度
+            for (var i = 0; !stop && i < bindParams.length;) {
+                // 使用shift按顺序取出编译命令
+                var params = bindParams.shift();
+                // 调用编译命令，并且更新中止状态
+                stop = params.cmd.apply(params, [mediator, target].concat(params.args));
+            }
+        }
+    }
+    exports.compile = compile;
+    /**
+     * 编译bindValue命令，不会中止编译
+     */
+    function compileValue(mediator, target, name, exp) {
+        BindManager_2.bindManager.bindValue(mediator, target, name, exp);
+        return false;
+    }
+    exports.compileValue = compileValue;
+    /**
+     * 编译bindFunc命令，不会中止编译
+     */
+    function compileFunc(mediator, target, name) {
+        var argExps = [];
+        for (var _i = 3; _i < arguments.length; _i++) {
+            argExps[_i - 3] = arguments[_i];
+        }
+        BindManager_2.bindManager.bindFunc.apply(BindManager_2.bindManager, [mediator, target, name].concat(argExps));
+        return false;
+    }
+    exports.compileFunc = compileFunc;
+    /**
+     * 编译bindOn命令，不会中止编译
+     */
+    function compileOn(mediator, target, type, exp) {
+        BindManager_2.bindManager.bindOn(mediator, target, type, exp);
+        return false;
+    }
+    exports.compileOn = compileOn;
+    /**
+     * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
+     */
+    function compileIf(mediator, target, exp) {
+        // 将后面的编译命令缓存起来
+        var bindParams = target.__bind_commands__;
+        var cached = bindParams.splice(0, bindParams.length);
+        // 绑定if命令
+        var terminated = false;
+        BindManager_2.bindManager.bindIf(mediator, target, exp, function (value) {
+            // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
+            if (!terminated && value) {
+                // 恢复后面的命令
+                target.__bind_commands__ = cached;
+                // 继续编译
+                compile(mediator, target);
+                // 设置已终结标识
+                terminated = true;
+            }
+        });
+        return true;
+    }
+    exports.compileIf = compileIf;
+    /**
+     * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
+     */
+    function compileFor(mediator, target, exp) {
+        // 将后面的编译命令缓存起来
+        var bindParams = target.__bind_commands__;
+        var cached = bindParams.splice(0, bindParams.length);
+        // 绑定if命令
+        BindManager_2.bindManager.bindFor(mediator, target, exp, function (data, renderer) {
+            // 将缓存的命令复制到新的renderer实例中
+            renderer.__bind_commands__ = cached.concat();
+            // 编译renderer实例
+            compile(mediator, renderer);
+        });
+        return true;
+    }
+    exports.compileFor = compileFor;
+    /**
+     * 编译bindMessage命令，不会中止编译
+     */
+    function compileMessage(mediator, target, type, name, exp, observable) {
+        BindManager_2.bindManager.bindMessage(mediator, target, type, name, exp, observable);
+        return false;
+    }
+    exports.compileMessage = compileMessage;
+    /**
+     * 编译bindResponse命令，不会中止编译
+     */
+    function compileResponse(mediator, target, type, name, exp, observable) {
+        BindManager_2.bindManager.bindResponse(mediator, target, type, name, exp, observable);
+        return false;
+    }
+    exports.compileResponse = compileResponse;
+    /**
+     * 搜索UI，取到目标节点，执行回调
+     *
+     * @export
+     * @param {*} values 值结构字典
+     * @param {*} ui ui实体
+     * @param {(ui:any, key:string, value:any, depth?:number)=>void} callback 回调
+     * @param {number} [depth=0] 遍历深度，方法会继续增加这个深度
+     */
+    function searchUI(values, ui, callback, depth) {
+        if (depth === void 0) { depth = 0; }
+        for (var key in values) {
+            var value = values[key];
+            var index = key.indexOf(".");
+            if (index >= 0) {
+                // 是表达式寻址，递归寻址
+                var newValue = {};
+                newValue[key.substr(index + 1)] = value;
+                searchUI(newValue, ui[key.substring(0, index)], callback, depth + 1);
+            }
+            else if (typeof value == "object" && !(value instanceof Array)) {
+                // 是子对象寻址，递归寻址
+                searchUI(value, ui[key], callback, depth + 1);
+            }
+            else {
+                // 是表达式，调用回调，将调用层级也传递回去
+                callback(ui, key, value, depth);
+            }
+        }
+    }
+    exports.searchUI = searchUI;
+});
+define("engine/injector/Injector", ["require", "exports", "core/Core", "core/injector/Injector", "core/message/Message", "utils/ConstructUtil", "engine/net/ResponseData", "engine/net/NetManager", "engine/bridge/BridgeManager", "engine/mediator/Mediator", "engine/module/ModuleManager", "utils/Dictionary", "engine/injector/BindUtil", "engine/injector/BindUtil"], function (require, exports, Core_26, Injector_19, Message_2, ConstructUtil_3, ResponseData_1, NetManager_4, BridgeManager_3, Mediator_3, ModuleManager_3, Dictionary_7, BindUtil, BindUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -8701,8 +8774,6 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                 }
                 // 注册到字典中
                 var target = mediator[propertyKey];
-                var count = onOpenDict.get(target) || 0;
-                onOpenDict.set(target, ++count);
                 // 调用回调
                 before && before(mediator);
                 // 恢复原始方法
@@ -8714,19 +8785,61 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                 mediator.onOpen.apply(this, args);
                 // 调用回调
                 after && after(mediator);
+                // 递减篡改次数
+                var count = onOpenDict.get(mediator) - 1;
+                onOpenDict.set(mediator, count);
                 // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
-                count = onOpenDict.get(target);
-                onOpenDict.set(target, --count);
-                if (count == 0) {
-                    // 编译顺序反向
-                    BindUtil.reverseCompileCommand(target);
-                    // 全调用完毕了，启动编译
-                    BindUtil.compile(mediator, target);
-                    // 删除引用
-                    onOpenDict.delete(target);
+                if (count <= 0) {
+                    // 移除数据
+                    onOpenDict.delete(mediator);
+                    // 全调用完毕了，按层级顺序由浅入深编译
+                    var bindTargets = mediator.bindTargets;
+                    for (var depth in bindTargets) {
+                        var dict = bindTargets[depth];
+                        dict.forEach(function (target) { return BindUtil.compile(mediator, target); });
+                    }
                 }
             };
+            // 记录onOpen篡改次数
+            var count = onOpenDict.get(mediator) || 0;
+            onOpenDict.set(mediator, count + 1);
         });
+    }
+    /**
+     * 获取显示对象在mediator.skin中的嵌套层级
+     *
+     * @param {IMediator} mediator 中介者
+     * @param {*} target 目标显示对象
+     * @returns {number}
+     */
+    function getDepth(mediator, target) {
+        var skin = mediator.skin;
+        var bridge = mediator.bridge;
+        var depth = 0;
+        if (bridge.isMySkin(target)) {
+            while (target && target !== skin) {
+                depth++;
+                target = bridge.getParent(target);
+            }
+            // 如果显示对象是没有根的，或者不在skin的显示树中，则返回0
+            if (!target)
+                depth = 0;
+        }
+        return depth;
+    }
+    function searchUIDepth(values, mediator, target, callback) {
+        // 获取显示层级
+        var depth = getDepth(mediator, target);
+        // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+        BindUtil_1.searchUI(values, target, function (target, name, exp, depth) {
+            // 记录编译目标到mediator中
+            var dict = mediator.bindTargets[depth];
+            if (!dict)
+                mediator.bindTargets[depth] = dict = new Dictionary_7.default();
+            dict.set(target, target);
+            // 调用回调
+            callback(target, name, exp);
+        }, depth);
     }
     /**
      * @private
@@ -8743,10 +8856,11 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                 else {
                     uiDict = arg1;
                 }
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
-                // 添加编译指令
-                BindUtil.addCompileCommand(target, BindUtil.compileValue, uiDict);
+                // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                searchUIDepth(uiDict, mediator, mediator[propertyKey], function (target, name, exp) {
+                    // 添加编译指令
+                    BindUtil.unshiftCompileCommand(target, BindUtil.compileValue, name, exp);
+                });
             });
         };
     }
@@ -8766,10 +8880,14 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                 else {
                     funcDict = arg1;
                 }
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
-                // 添加编译指令
-                BindUtil.addCompileCommand(target, BindUtil.compileFunc, funcDict);
+                // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                searchUIDepth(funcDict, mediator, mediator[propertyKey], function (target, name, argExps) {
+                    // 统一参数类型为字符串数组
+                    if (typeof argExps == "string")
+                        argExps = [argExps];
+                    // 添加编译指令
+                    BindUtil.unshiftCompileCommand.apply(BindUtil, [target, BindUtil.compileFunc, name].concat(argExps));
+                });
             });
         };
     }
@@ -8789,7 +8907,7 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                         // 指定了UI对象，先去寻找
                         var nameDict = {};
                         nameDict[arg1] = "";
-                        BindUtil_2.searchUI(nameDict, target, function (ui, key, value) {
+                        BindUtil_1.searchUI(nameDict, target, function (ui, key, value) {
                             target = ui[key];
                         });
                     }
@@ -8799,26 +8917,44 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                 else {
                     evtDict = arg1;
                 }
-                // 添加编译指令
-                BindUtil.addCompileCommand(target, BindUtil.compileOn, evtDict);
+                // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                searchUIDepth(evtDict, mediator, target, function (target, type, exp) {
+                    // 添加编译指令
+                    BindUtil.unshiftCompileCommand(target, BindUtil.compileOn, type, exp);
+                });
             });
         };
     }
     exports.BindOn = BindOn;
     /**
-     * 绑定当前对象的显示判断，if不支持寻址功能
-     *
-     * @export
-     * @param {string} exp 表达式
-     * @returns {PropertyDecorator}
+     * @private
      */
-    function BindIf(exp) {
+    function BindIf(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
-                // 添加编译指令
-                BindUtil.addCompileCommand(target, BindUtil.compileIf, exp);
+                if (typeof arg1 == "string") {
+                    if (!arg2) {
+                        // 没有指定寻址路径，就是要操作当前对象
+                        BindUtil.unshiftCompileCommand(mediator[propertyKey], BindUtil.compileIf, arg1);
+                    }
+                    else {
+                        // 指定了寻址路径，需要寻址
+                        var uiDict = {};
+                        uiDict[arg1] = arg2;
+                        // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                        searchUIDepth(uiDict, mediator, mediator[propertyKey], function (target, name, exp) {
+                            // 添加编译指令
+                            BindUtil.unshiftCompileCommand(target[name], BindUtil.compileIf, exp);
+                        });
+                    }
+                }
+                else {
+                    // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                    searchUIDepth(arg1, mediator, mediator[propertyKey], function (target, name, exp) {
+                        // 添加编译指令
+                        BindUtil.unshiftCompileCommand(target[name], BindUtil.compileIf, exp);
+                    });
+                }
             });
         };
     }
@@ -8829,43 +8965,52 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
     function BindFor(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 组织参数字典
-                var uiDict;
                 if (typeof arg1 == "string") {
-                    uiDict = {};
-                    if (arg2)
-                        uiDict[arg1] = arg2; // 有name寻址
-                    else
-                        uiDict["$target"] = arg1; // 没有name寻址，直接绑定表达式
+                    if (!arg2) {
+                        // 没有指定寻址路径，就是要操作当前对象
+                        BindUtil.unshiftCompileCommand(mediator[propertyKey], BindUtil.compileFor, arg1);
+                    }
+                    else {
+                        // 指定了寻址路径，需要寻址
+                        var uiDict = {};
+                        uiDict[arg1] = arg2;
+                        // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                        searchUIDepth(uiDict, mediator, mediator[propertyKey], function (target, name, exp) {
+                            // 添加编译指令
+                            BindUtil.unshiftCompileCommand(target[name], BindUtil.compileFor, exp);
+                        });
+                    }
                 }
                 else {
-                    uiDict = arg1;
+                    // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                    searchUIDepth(arg1, mediator, mediator[propertyKey], function (target, name, exp) {
+                        // 添加编译指令
+                        BindUtil.unshiftCompileCommand(target[name], BindUtil.compileFor, exp);
+                    });
                 }
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
-                // 添加编译指令
-                BindUtil.addCompileCommand(target, BindUtil.compileFor, uiDict);
             });
         };
     }
     exports.BindFor = BindFor;
+    function doBindMessage(mediator, target, type, uiDict, observable) {
+        searchUIDepth(uiDict, mediator, target, function (target, name, exp) {
+            BindUtil.unshiftCompileCommand(target, BindUtil.compileMessage, type, name, exp, observable);
+        });
+    }
     /**
      * @private
      */
     function BindMessage(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
                 if (typeof arg1 == "string" || arg1 instanceof Function) {
                     // 是类型方式
-                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2, mediator.observable);
+                    doBindMessage(mediator, mediator[propertyKey], arg1, arg2, mediator.observable);
                 }
                 else {
                     // 是字典方式
                     for (var type in arg1) {
-                        // 添加编译指令
-                        BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type], mediator.observable);
+                        doBindMessage(mediator, mediator[propertyKey], type, arg1[type], mediator.observable);
                     }
                 }
             });
@@ -8878,22 +9023,25 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
     function BindGlobalMessage(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
                 if (typeof arg1 == "string" || arg1 instanceof Function) {
                     // 是类型方式
-                    BindUtil.addCompileCommand(target, BindUtil.compileMessage, arg1, arg2);
+                    doBindMessage(mediator, mediator[propertyKey], arg1, arg2);
                 }
                 else {
                     // 是字典方式
                     for (var type in arg1) {
-                        BindUtil.addCompileCommand(target, BindUtil.compileMessage, type, arg1[type]);
+                        doBindMessage(mediator, mediator[propertyKey], type, arg1[type]);
                     }
                 }
             });
         };
     }
     exports.BindGlobalMessage = BindGlobalMessage;
+    function doBindResponse(mediator, target, type, uiDict, observable) {
+        searchUIDepth(uiDict, mediator, target, function (target, name, exp) {
+            BindUtil.unshiftCompileCommand(target, BindUtil.compileResponse, type, name, exp, observable);
+        });
+    }
     /**
      * @private
      */
@@ -8901,16 +9049,14 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
         return function (prototype, propertyKey) {
             // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
                 if (typeof arg1 == "string" || arg1 instanceof Function) {
                     // 是类型方式
-                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2, mediator.observable);
+                    doBindResponse(mediator, mediator[propertyKey], arg1, arg2, mediator.observable);
                 }
                 else {
                     // 是字典方式
                     for (var type in arg1) {
-                        BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type], mediator.observable);
+                        doBindResponse(mediator, mediator[propertyKey], type, arg1[type], mediator.observable);
                     }
                 }
             });
@@ -8923,16 +9069,14 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
     function BindGlobalResponse(arg1, arg2) {
         return function (prototype, propertyKey) {
             listenOnOpen(prototype, propertyKey, null, function (mediator) {
-                // 获取编译启动目标
-                var target = mediator[propertyKey];
                 if (typeof arg1 == "string" || arg1 instanceof Function) {
                     // 是类型方式
-                    BindUtil.addCompileCommand(target, BindUtil.compileResponse, arg1, arg2);
+                    doBindResponse(mediator, mediator[propertyKey], arg1, arg2);
                 }
                 else {
                     // 是字典方式
                     for (var type in arg1) {
-                        BindUtil.addCompileCommand(target, BindUtil.compileResponse, type, arg1[type]);
+                        doBindResponse(mediator, mediator[propertyKey], type, arg1[type]);
                     }
                 }
             });

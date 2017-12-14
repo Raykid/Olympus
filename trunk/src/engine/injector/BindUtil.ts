@@ -1,6 +1,6 @@
 import IObservable from "../../core/observable/IObservable";
 import { IResponseDataConstructor } from "../net/ResponseData";
-import { bindManager, BindFuncDict } from "../bind/BindManager";
+import { bindManager } from "../bind/BindManager";
 import IMediator from "../mediator/IMediator";
 
 /**
@@ -21,8 +21,9 @@ export interface IBindCommand
      * @param {IMediator} mediator 所属的中介者
      * @param {ICompileTarget} target 要编译的目标显示对象
      * @param {...any[]} args 命令参数列表
+     * @return {boolean} 是否需要停止编译
      */
-    (mediator:IMediator, target:ICompileTarget, ...args:any[]):void;
+    (mediator:IMediator, target:ICompileTarget, ...args:any[]):boolean;
 }
 
 export interface IBindParams
@@ -64,55 +65,51 @@ export interface ICompileTarget
     [key:string]:any;
 }
 
+function getBindParams(target:ICompileTarget):IBindParams[]
+{
+    var bindParams:IBindParams[] = target.__bind_commands__;
+    if(!bindParams)
+    {
+        bindParams = [];
+        Object.defineProperty(target, "__bind_commands__", {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: bindParams
+        });
+    }
+    return bindParams;
+}
+
 /**
- * 添加编译命令到显示对象上
+ * 添加编译命令到显示对象上（正向）
  * 
  * @export
  * @param {ICompileTarget} target 显示对象
  * @param {IBindCommand} cmd 命令函数
  * @param {...any[]} args 命令参数列表
  */
-export function addCompileCommand(target:ICompileTarget, cmd:IBindCommand, ...args:any[]):void
+export function pushCompileCommand(target:ICompileTarget, cmd:IBindCommand, ...args:any[]):void
 {
-    var bindParams:IBindParams[] = target.__bind_commands__;
-    if(!bindParams) target.__bind_commands__ = bindParams = [];
     // 添加编译指令
-    bindParams.push({cmd: cmd, args: args});
+    getBindParams(target).push({cmd: cmd, args: args});
 }
 
 /**
- * 将显示对象中的命令顺序反转（因为在有些地方添加命令的顺序是反的，比如Injector中监听onOpen时）
+ * 添加编译命令到显示对象上（反向）
  * 
  * @export
- * @param {ICompileTarget} target 
+ * @param {ICompileTarget} target 显示对象
+ * @param {IBindCommand} cmd 命令函数
+ * @param {...any[]} args 命令参数列表
  */
-export function reverseCompileCommand(target:ICompileTarget):void
+export function unshiftCompileCommand(target:ICompileTarget, cmd:IBindCommand, ...args:any[]):void
 {
-    var bindParams:IBindParams[] = target.__bind_commands__;
-    bindParams && bindParams.reverse();
+    getBindParams(target).unshift({cmd: cmd, args: args});
 }
 
 /**
- * 将所有编译指令从一个对象移动到另一个对象，会移除源对象当前的所有编译命令
- * 
- * @export
- * @param {ICompileTarget} from 源对象
- * @param {ICompileTarget} to 目标对象
- */
-export function moveCompileCommands(from:ICompileTarget, to:ICompileTarget):void
-{
-    var commands:IBindParams[] = from.__bind_commands__;
-    if(!commands) return;
-    if(!to.__bind_commands__)
-        to.__bind_commands__ = from.__bind_commands__;
-    else
-        to.__bind_commands__.push(...from.__bind_commands__);
-    // 移除源对象的指令
-    from.__bind_commands__ = [];
-}
-
-/**
- * 编译显示对象
+ * 编译显示对象，会先编译自身，然后再递归编译子对象
  * 
  * @export
  * @param {IMediator} mediator 显示对象所属的中介者
@@ -120,47 +117,54 @@ export function moveCompileCommands(from:ICompileTarget, to:ICompileTarget):void
  */
 export function compile(mediator:IMediator, target:ICompileTarget):void
 {
+    var stop:boolean = false;
     // 取到编译参数列表
     var bindParams:IBindParams[] = target.__bind_commands__;
-    if(!bindParams) return;
-    // 这里没有提前读取出length属性，因为需要动态判断数组长度
-    for(var i:number = 0; i < bindParams.length; )
+    // 编译target自身
+    if(bindParams)
     {
-        // 使用shift按顺序取出编译命令
-        var params:IBindParams = bindParams.shift();
-        // 调用编译命令，并且更新中止状态
-        params.cmd(mediator, target, ...params.args);
+        // 这里没有提前读取出length属性，因为需要动态判断数组长度
+        for(var i:number = 0; !stop && i < bindParams.length; )
+        {
+            // 使用shift按顺序取出编译命令
+            var params:IBindParams = bindParams.shift();
+            // 调用编译命令，并且更新中止状态
+            stop = params.cmd(mediator, target, ...params.args);
+        }
     }
 }
 
 /**
  * 编译bindValue命令，不会中止编译
  */
-export function compileValue(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:any}):void
+export function compileValue(mediator:IMediator, target:ICompileTarget, name:string, exp:string):boolean
 {
-    bindManager.bindValue(mediator, target, uiDict);
+    bindManager.bindValue(mediator, target, name, exp);
+    return false;
 }
 
 /**
  * 编译bindFunc命令，不会中止编译
  */
-export function compileFunc(mediator:IMediator, target:ICompileTarget, funcDict:BindFuncDict):void
+export function compileFunc(mediator:IMediator, target:ICompileTarget, name:string, ...argExps:string[]):boolean
 {
-    bindManager.bindFunc(mediator, target, funcDict);
+    bindManager.bindFunc(mediator, target, name, ...argExps);
+    return false;
 }
 
 /**
  * 编译bindOn命令，不会中止编译
  */
-export function compileOn(mediator:IMediator, target:ICompileTarget, evtDict:{[type:string]:any}):void
+export function compileOn(mediator:IMediator, target:ICompileTarget, type:string, exp:string):boolean
 {
-    bindManager.bindOn(mediator, target, evtDict);
+    bindManager.bindOn(mediator, target, type, exp);
+    return false;
 }
 
 /**
  * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
  */
-export function compileIf(mediator:IMediator, target:ICompileTarget, exp:string):void
+export function compileIf(mediator:IMediator, target:ICompileTarget, exp:string):boolean
 {
     // 将后面的编译命令缓存起来
     var bindParams:IBindParams[] = target.__bind_commands__;
@@ -179,39 +183,43 @@ export function compileIf(mediator:IMediator, target:ICompileTarget, exp:string)
             terminated = true;
         }
     });
+    return true;
 }
 
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export function compileFor(mediator:IMediator, target:ICompileTarget, uiDict:{[name:string]:any}):void
+export function compileFor(mediator:IMediator, target:ICompileTarget, exp:string):boolean
 {
     // 将后面的编译命令缓存起来
     var bindParams:IBindParams[] = target.__bind_commands__;
     var cached:IBindParams[] = bindParams.splice(0, bindParams.length);
     // 绑定if命令
-    bindManager.bindFor(mediator, target, uiDict, (data:any, renderer:ICompileTarget)=>{
+    bindManager.bindFor(mediator, target, exp, (data:any, renderer:ICompileTarget)=>{
         // 将缓存的命令复制到新的renderer实例中
         renderer.__bind_commands__ = cached.concat();
         // 编译renderer实例
         compile(mediator, renderer);
     });
+    return true;
 }
 
 /**
  * 编译bindMessage命令，不会中止编译
  */
-export function compileMessage(mediator:IMediator, target:ICompileTarget, type:IConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
+export function compileMessage(mediator:IMediator, target:ICompileTarget, type:IConstructor|string, name:string, exp:string, observable?:IObservable):boolean
 {
-    bindManager.bindMessage(mediator, target, type, uiDict, observable);
+    bindManager.bindMessage(mediator, target, type, name, exp, observable);
+    return false;
 }
 
 /**
  * 编译bindResponse命令，不会中止编译
  */
-export function compileResponse(mediator:IMediator, target:ICompileTarget, type:IResponseDataConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
+export function compileResponse(mediator:IMediator, target:ICompileTarget, type:IResponseDataConstructor|string, name:string, exp:string, observable?:IObservable):boolean
 {
-    bindManager.bindResponse(mediator, target, type, uiDict, observable);
+    bindManager.bindResponse(mediator, target, type, name, exp, observable);
+    return false;
 }
 
 /**
@@ -220,9 +228,10 @@ export function compileResponse(mediator:IMediator, target:ICompileTarget, type:
  * @export
  * @param {*} values 值结构字典
  * @param {*} ui ui实体
- * @param {(ui:any, key:string, value:any)=>void} callback 
+ * @param {(ui:any, key:string, value:any, depth?:number)=>void} callback 回调
+ * @param {number} [depth=0] 遍历深度，方法会继续增加这个深度
  */
-export function searchUI(values:any, ui:any, callback:(ui:any, key:string, value:any)=>void):void
+export function searchUI(values:any, ui:any, callback:(ui:any, key:string, value:any, depth?:number)=>void, depth:number=0):void
 {
     for(var key in values)
     {
@@ -233,17 +242,17 @@ export function searchUI(values:any, ui:any, callback:(ui:any, key:string, value
             // 是表达式寻址，递归寻址
             var newValue:any = {};
             newValue[key.substr(index + 1)] = value;
-            searchUI(newValue, ui[key.substring(0, index)], callback);
+            searchUI(newValue, ui[key.substring(0, index)], callback, depth + 1);
         }
         else if(typeof value == "object" && !(value instanceof Array))
         {
             // 是子对象寻址，递归寻址
-            searchUI(value, ui[key], callback);
+            searchUI(value, ui[key], callback, depth + 1);
         }
         else
         {
-            // 是表达式，调用回调
-            callback(ui, key, value);
+            // 是表达式，调用回调，将调用层级也传递回去
+            callback(ui, key, value, depth);
         }
     }
 }

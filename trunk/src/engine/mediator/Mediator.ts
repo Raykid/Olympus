@@ -10,6 +10,7 @@ import ICommandConstructor from "../../core/command/ICommandConstructor";
 import { bindManager } from "../bind/BindManager";
 import IObservable from "../../core/observable/IObservable";
 import ResponseData from "../net/ResponseData";
+import Dictionary from "../../utils/Dictionary";
 
 /**
  * @author Raykid
@@ -47,6 +48,14 @@ export default class Mediator implements IModuleMediator
         // 更新绑定
         bindManager.bind(this);
     }
+
+    /**
+     * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
+     * 
+     * @type {Dictionary<any, any>[]}
+     * @memberof Mediator
+     */
+    public bindTargets:Dictionary<any, any>[] = [];
 
     /**
      * 皮肤
@@ -409,6 +418,8 @@ export default class Mediator implements IModuleMediator
         bindManager.unbind(this);
         // 移除ViewModel
         this._viewModel = null;
+        // 移除绑定目标数组
+        this.bindTargets = null;
         // 移除皮肤
         this.skin = null;
         // 设置已被销毁

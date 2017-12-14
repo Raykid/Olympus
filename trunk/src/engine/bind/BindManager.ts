@@ -8,7 +8,7 @@ import { evalExp, createRunFunc } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
-import { searchUI } from "../injector/BindUtil";
+import { IWatcher } from "./Watcher";
 
 /**
  * @author Raykid
@@ -64,13 +64,13 @@ export default class BindManager
         return bindData && bindData.bind;
     }
 
-    private delaySearch(mediator:IMediator, values:any, ui:any, callback:(ui:any, key:string, exp:string)=>void):void
+    private addBindHandler(mediator:IMediator, callback:()=>void):void
     {
         var handler:()=>void = ()=>{
             // 判断数据是否合法
             if(!mediator.viewModel) return;
             // 开始绑定
-            searchUI(values, ui, callback);
+            callback();
         };
         // 添加绑定数据
         var bindData:BindData = this._bindDict.get(mediator);
@@ -84,16 +84,21 @@ export default class BindManager
      * 绑定属性值
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} ui 绑定到的ui实体对象
-     * @param {{[name:string]:any}} uiDict ui属性字典
+     * @param {*} target 绑定到的target实体对象
+     * @param {string} name 绑定的属性名
+     * @param {string} exp 绑定的属性表达式
      * @memberof BindManager
      */
-    public bindValue(mediator:IMediator, ui:any, uiDict:{[name:string]:any}):void
+    public bindValue(mediator:IMediator, target:any, name:string, exp:string):void
     {
+        var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
-        this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
-            bindData.bind.createWatcher(ui, exp, (value:any)=>{
-                ui[key] = value;
+        this.addBindHandler(mediator, ()=>{
+            // 如果之前绑定过，则要先销毁之
+            if(watcher) watcher.dispose();
+            // 绑定新的订阅者
+            watcher = bindData.bind.createWatcher(target, exp, (value:any)=>{
+                target[name] = value;
             }, mediator.viewModel, ...this._envModel);
         });
     }
@@ -102,34 +107,26 @@ export default class BindManager
      * 绑定方法执行
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} ui 绑定到的ui实体对象
-     * @param {BindFuncDict} funcDict 方法字典，值可以是参数表达式，或者参数表达式数组，或者一个undefined
+     * @param {*} target 绑定到的target实体对象
+     * @param {string} name 绑定的方法名
+     * @param {...string[]} argExps 执行方法的参数表达式列表
      * @memberof BindManager
      */
-    public bindFunc(mediator:IMediator, ui:any, funcDict:BindFuncDict):void
+    public bindFunc(mediator:IMediator, target:any, name:string, ...argExps:string[]):void
     {
+        var watchers:IWatcher[] = [];
         var bindData:BindData = this._bindDict.get(mediator);
-        this.delaySearch(mediator, funcDict, ui, (ui:any, key:string, exp:string[]|string|undefined)=>{
-            if(exp)
+        this.addBindHandler(mediator, ()=>{
+            // 判断参数数量，无参数方法一次性执行即可，无需绑定，有参数的方法则需要每次参数改变就执行一次
+            if(argExps.length > 0)
             {
-                var exps:string[];
-                if(typeof exp == "string")
-                {
-                    // 将裸的表达式形式参数转换为表达式参数数组形式
-                    exps = [exp];
-                }
-                else
-                {
-                    // 本来就是表达式参数数组，直接赋值即可
-                    exps = exp;
-                }
                 // 将表达式中所有undefined和null变为内部值
                 var undefinedValue:string = Date.now() * Math.random() + "_undefined";
                 var nullValue:string = Date.now() * Math.random() + "_null";
-                exps = exps.map(value=>{
-                    if(value === undefined) return "'" + undefinedValue + "'";
-                    else if(value === null) return "'" + nullValue + "'";
-                    else return value;
+                argExps = argExps.map(exp=>{
+                    if(exp === undefined) return "'" + undefinedValue + "'";
+                    else if(exp === null) return "'" + nullValue + "'";
+                    else return exp;
                 });
                 // 绑定表达式参数数组
                 var initValue:any = {};
@@ -153,24 +150,31 @@ export default class BindManager
                         argsInited = true;
                     }
                     // 赋值已经完毕了，调用方法，this指向ui本身
-                    ui[key].apply(ui, args);
+                    target[name].apply(target, args);
                 };
+                // 清理旧的订阅者
+                for(var i:number = 0, len:number = watchers.length; i < len; i++)
+                {
+                    watchers.shift().dispose();
+                }
                 // 循环绑定表达式到handler
-                for(var i:number = 0, len:number = exps.length; i < len; i++)
+                for(var i:number = 0, len:number = argExps.length; i < len; i++)
                 {
                     // 记录一个初始值，用于判断参数列表是否已赋值完毕
                     args.push(initValue);
                 }
-                for(var i:number = 0, len:number = exps.length; i < len; i++)
+                for(var i:number = 0, len:number = argExps.length; i < len; i++)
                 {
                     // 绑定表达式
-                    bindData.bind.createWatcher(ui, exps[i], handler.bind(this, i), mediator.viewModel, ...this._envModel);
+                    var watcher:IWatcher = bindData.bind.createWatcher(target, argExps[i], handler.bind(this, i), mediator.viewModel, ...this._envModel);
+                    // 记录订阅者
+                    watchers.push(watcher);
                 }
             }
             else
             {
                 // 无参数执行，无需绑定，一次性执行即可
-                ui[key]();
+                target[name]();
             }
         });
     }
@@ -180,20 +184,24 @@ export default class BindManager
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} ui 绑定到的ui实体对象
-     * @param {{[type:string]:any}} evtDict 事件字典
+     * @param {string} type 绑定的事件类型
+     * @param {string} exp 绑定的事件回调表达式
      * @memberof BindManager
      */
-    public bindOn(mediator:IMediator, ui:any, evtDict:{[type:string]:any}):void
+    public bindOn(mediator:IMediator, target:any, type:string, exp:string):void
     {
-        this.delaySearch(mediator, evtDict, ui, (ui:any, key:string, exp:string)=>{
-            var handler:Function = mediator.viewModel[exp];
+        var handler:Function;
+        this.addBindHandler(mediator, ()=>{
             var commonScope:any = {
                 $this: mediator,
                 $data: mediator.viewModel,
                 $bridge: mediator.bridge,
-                $target: ui
+                $target: target
             };
-            // 如果取不到handler，则把exp当做一个执行表达式处理，外面包一层方法
+            // 如果之前添加过监听，则先移除之
+            if(!handler) mediator.bridge.unmapListener(target, type, handler, mediator.viewModel);
+            // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
+            handler = mediator.viewModel[exp];
             if(!handler)
             {
                 var func:Function = createRunFunc(exp, 2 + this._envModel.length);
@@ -204,7 +212,7 @@ export default class BindManager
                     func.call(this, mediator.viewModel, ...envModel, commonScope);
                 };
             }
-            mediator.bridge.mapListener(ui, key, handler, mediator.viewModel);
+            mediator.bridge.mapListener(target, type, handler, mediator.viewModel);
         });
     }
 
@@ -226,21 +234,24 @@ export default class BindManager
      * 绑定显示
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} ui 绑定到的ui实体对象
+     * @param {*} target 绑定到的target实体对象
      * @param {string} exp 绑定表达式
      * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
      * @memberof BindManager
      */
-    public bindIf(mediator:IMediator, ui:any, exp:string, callback?:(value:boolean)=>void):void
+    public bindIf(mediator:IMediator, target:any, exp:string, callback?:(value:boolean)=>void):void
     {
+        var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
         var replacer:any = mediator.bridge.createEmptyDisplay();
-        this.delaySearch(mediator, {key: exp}, ui, (a:any, b:string, exp:string)=>{
+        this.addBindHandler(mediator, ()=>{
+            // 如果之前绑定过，则要先销毁之
+            if(watcher) watcher.dispose();
             // 绑定表达式
-            bindData.bind.createWatcher(ui, exp, (value:boolean)=>{
+            watcher = bindData.bind.createWatcher(target, exp, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
-                if(value) this.replaceDisplay(mediator.bridge, replacer, ui);
-                else this.replaceDisplay(mediator.bridge, ui, replacer);
+                if(value) this.replaceDisplay(mediator.bridge, replacer, target);
+                else this.replaceDisplay(mediator.bridge, target, replacer);
                 // 触发回调
                 callback && callback(value);
             }, mediator.viewModel, ...this._envModel);
@@ -252,23 +263,22 @@ export default class BindManager
      * 绑定循环
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} ui 绑定到的ui实体对象
-     * @param {{[name:string]:any}} uiDict 循环表达式字典，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）
+     * @param {*} target 绑定到的target实体对象
+     * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
      * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    public bindFor(mediator:IMediator, ui:any, uiDict:{[name:string]:any}, callback?:(data?:any, renderer?:any)=>void):void
+    public bindFor(mediator:IMediator, target:any, exp:string, callback?:(data?:any, renderer?:any)=>void):void
     {
+        var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
         var replacer:any = mediator.bridge.createEmptyDisplay();
-        this.delaySearch(mediator, uiDict, ui, (ui:any, key:string, exp:string)=>{
-            // 寻址到指定目标
-            ui = ui[key] || ui;
+        this.addBindHandler(mediator, ()=>{
             // 解析表达式
             var res:RegExpExecArray = this._regExp.exec(exp);
             if(!res) return;
             // 包装渲染器创建回调
-            var memento:any = mediator.bridge.wrapBindFor(ui, (key:any, value:any, renderer:any)=>{
+            var memento:any = mediator.bridge.wrapBindFor(target, (key:any, value:any, renderer:any)=>{
                 // 设置环境变量
                 var commonScope:any = {
                     $key: key,
@@ -284,26 +294,28 @@ export default class BindManager
                 // 移除环境变量
                 this._envModel.splice(this._envModel.indexOf(commonScope), 1);
             });
+            // 如果之前绑定过，则要先销毁之
+            if(watcher) watcher.dispose();
             // 获得要遍历的数据集合
-            var bindData:BindData = this._bindDict.get(mediator);
-            bindData.bind.createWatcher(ui, res[5], (datas:any)=>{
+            watcher = bindData.bind.createWatcher(target, res[5], (datas:any)=>{
                 // 赋值
-                mediator.bridge.valuateBindFor(ui, datas, memento);
+                mediator.bridge.valuateBindFor(target, datas, memento);
             }, mediator.viewModel, ...this._envModel);
         });
     }
     
     /**
-     * 绑定全局Message
+     * 绑定Message
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} ui 绑定到的ui实体对象
+     * @param {*} target 绑定到的target实体对象
      * @param {IConstructor|string} type 绑定的消息类型字符串
-     * @param {{[name:string]:any}} uiDict ui表达式字典
+     * @param {string} name 绑定的属性名
+     * @param {string} exp 绑定的表达式
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindMessage(mediator:IMediator, ui:any, type:IConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
+    public bindMessage(mediator:IMediator, target:any, type:IConstructor|string, name:string, exp:string, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -320,16 +332,14 @@ export default class BindManager
                     msg = args[0];
                 else
                     msg = {$arguments: args};
-                searchUI(uiDict, ui, (ui:any, key:string, exp:string)=>{
-                    // 设置通用属性
-                    var commonScope:any = {
-                        $this: mediator,
-                        $data: mediator.viewModel,
-                        $bridge: mediator.bridge,
-                        $target: ui
-                    };
-                    ui[key] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, ...this._envModel, commonScope);
-                });
+                // 设置通用属性
+                var commonScope:any = {
+                    $this: mediator,
+                    $data: mediator.viewModel,
+                    $bridge: mediator.bridge,
+                    $target: target
+                };
+                target[name] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, ...this._envModel, commonScope);
             }
         };
         // 添加监听
@@ -337,16 +347,17 @@ export default class BindManager
     }
 
     /**
-     * 绑定全局Response
+     * 绑定Response
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} ui 绑定到的ui实体对象
+     * @param {*} target 绑定到的target实体对象
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
-     * @param {{[name:string]:any}} uiDict ui表达式字典
+     * @param {string} name 绑定的属性名
+     * @param {string} exp 绑定的表达式
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindResponse(mediator:IMediator, ui:any, type:IResponseDataConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
+    public bindResponse(mediator:IMediator, target:any, type:IResponseDataConstructor|string, name:string, exp:string, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -358,16 +369,14 @@ export default class BindManager
             }
             else
             {
-                searchUI(uiDict, ui, (ui:any, key:string, exp:string)=>{
-                    // 设置通用属性
-                    var commonScope:any = {
-                        $this: mediator,
-                        $data: mediator.viewModel,
-                        $bridge: mediator.bridge,
-                        $target: ui
-                    };
-                    ui[key] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, ...this._envModel, commonScope);
-                });
+                // 设置通用属性
+                var commonScope:any = {
+                    $this: mediator,
+                    $data: mediator.viewModel,
+                    $bridge: mediator.bridge,
+                    $target: target
+                };
+                target[name] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, ...this._envModel, commonScope);
             }
         };
         // 添加监听
@@ -381,11 +390,6 @@ export default class BindManager
             }
         }
     }
-}
-
-export interface BindFuncDict
-{
-    [name:string]:string[]|string|undefined|BindFuncDict;
 }
 
 interface BindData

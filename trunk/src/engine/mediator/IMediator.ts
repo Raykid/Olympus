@@ -4,6 +4,7 @@ import IDisposable from "../../core/interfaces/IDisposable";
 import IObservable from "../../core/observable/IObservable";
 import IModule from "../module/IModule";
 import IModuleConstructor from "../module/IModuleConstructor";
+import Dictionary from "../../utils/Dictionary";
 
 /**
  * @author Raykid
@@ -36,6 +37,14 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable, 
      * @memberof IMediator
      */
     readonly viewModel:any;
+
+    /**
+     * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
+     * 
+     * @type {Dictionary<any, any>[]}
+     * @memberof IMediator
+     */
+    readonly bindTargets:Dictionary<any, any>[];
     
     /**
      * 皮肤
