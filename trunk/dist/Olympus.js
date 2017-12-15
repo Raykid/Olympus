@@ -2444,10 +2444,10 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
             var type = BridgeManager_1.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null) {
-                // 调用回调
-                entity.maskData.onShowMask && entity.maskData.onShowMask();
                 // 显示遮罩
                 entity.showMask(alpha);
+                // 调用回调
+                entity.maskData.onShowMask && entity.maskData.onShowMask();
             }
         };
         /**
@@ -2457,10 +2457,10 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
             var type = BridgeManager_1.bridgeManager.currentBridge.type;
             var entity = this._entityDict[type];
             if (entity != null) {
-                // 隐藏遮罩
-                entity.hideMask();
                 // 调用回调
                 entity.maskData.onHideMask && entity.maskData.onHideMask();
+                // 隐藏遮罩
+                entity.hideMask();
             }
         };
         /**当前是否在显示遮罩*/
@@ -2481,10 +2481,10 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
                 var type = BridgeManager_1.bridgeManager.currentBridge.type;
                 var entity = this._entityDict[type];
                 if (entity != null) {
-                    // 调用回调
-                    entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
                     // 显示遮罩
                     entity.showLoading(alpha);
+                    // 调用回调
+                    entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
                 }
             }
             // 增计数
@@ -2502,10 +2502,10 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
                 var type = BridgeManager_1.bridgeManager.currentBridge.type;
                 var entity = this._entityDict[type];
                 if (entity != null) {
-                    // 隐藏遮罩
-                    entity.hideLoading();
                     // 调用回调
                     entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
+                    // 隐藏遮罩
+                    entity.hideLoading();
                 }
             }
         };
@@ -2522,10 +2522,10 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
             var type = popup.bridge.type;
             var entity = this._entityDict[type];
             if (entity != null) {
-                // 调用回调
-                entity.maskData.onShowModalMask && entity.maskData.onShowModalMask(popup);
                 // 显示遮罩
                 entity.showModalMask(popup, alpha);
+                // 调用回调
+                entity.maskData.onShowModalMask && entity.maskData.onShowModalMask(popup);
             }
         };
         /** 隐藏模态窗口遮罩 */
@@ -2533,10 +2533,10 @@ define("engine/mask/MaskManager", ["require", "exports", "core/injector/Injector
             var type = popup.bridge.type;
             var entity = this._entityDict[type];
             if (entity != null) {
-                // 隐藏遮罩
-                entity.hideModalMask(popup);
                 // 调用回调
                 entity.maskData.onHideModalMask && entity.maskData.onHideModalMask(popup);
+                // 隐藏遮罩
+                entity.hideModalMask(popup);
             }
         };
         /** 当前是否在显示模态窗口遮罩 */
