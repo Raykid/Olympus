@@ -541,6 +541,7 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:string, arg3?:stri
             var evtDict:{[name:string]:any};
             if(typeof arg1 == "string")
             {
+                evtDict = {};
                 if(arg3)
                 {
                     // 指定了UI对象，先去寻找
@@ -549,9 +550,12 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:string, arg3?:stri
                     searchUI(nameDict, target, (ui:any, key:string, value:any)=>{
                         target = ui[key];
                     });
+                    evtDict[arg2] = arg3;
                 }
-                evtDict = {};
-                evtDict[arg1] = arg2;
+                else
+                {
+                    evtDict[arg1] = arg2;
+                }
             }
             else
             {

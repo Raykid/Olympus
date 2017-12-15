@@ -8916,6 +8916,7 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                 // 组织参数字典
                 var evtDict;
                 if (typeof arg1 == "string") {
+                    evtDict = {};
                     if (arg3) {
                         // 指定了UI对象，先去寻找
                         var nameDict = {};
@@ -8923,9 +8924,11 @@ define("engine/injector/Injector", ["require", "exports", "core/Core", "core/inj
                         BindUtil_1.searchUI(nameDict, target, function (ui, key, value) {
                             target = ui[key];
                         });
+                        evtDict[arg2] = arg3;
                     }
-                    evtDict = {};
-                    evtDict[arg1] = arg2;
+                    else {
+                        evtDict[arg1] = arg2;
+                    }
                 }
                 else {
                     evtDict = arg1;
