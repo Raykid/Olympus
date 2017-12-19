@@ -3,38 +3,27 @@ import { MediatorClass } from "olympus-r/engine/injector/Injector";
 import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
 import { wrapSkin } from "../utils/SkinUtil";
 import DOMBridge from "../../DOMBridge";
-
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-10-09
- * @modify date 2017-10-09
- * 
- * 负责注入的模块
-*/
-export function DOMMediatorClass(cls:IConstructor):any
-export function DOMMediatorClass(...skins:string[]):ClassDecorator
-export function DOMMediatorClass(...args:any[]):any
-{
-    if(args[0] instanceof Function)
-    {
+export function DOMMediatorClass() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    if (args[0] instanceof Function) {
         // 调用MediatorClass方法
         var cls = MediatorClass(args[0]);
         // 监听类型实例化，赋值表现层桥
-        listenConstruct(cls, mediator=>mediator.bridge = bridgeManager.getBridge(DOMBridge.TYPE));
+        listenConstruct(cls, function (mediator) { return mediator.bridge = bridgeManager.getBridge(DOMBridge.TYPE); });
         // 返回结果类型
         return cls;
     }
-    else
-    {
-        return function(cls:IConstructor):any
-        {
+    else {
+        return function (cls) {
             // 调用MediatorClass方法
             cls = MediatorClass(cls);
             // 监听类型实例化，转换皮肤格式
-            listenConstruct(cls, mediator=>wrapSkin(mediator, args));
+            listenConstruct(cls, function (mediator) { return wrapSkin(mediator, args); });
             // 返回结果类型
             return cls;
-        } as ClassDecorator;
+        };
     }
 }

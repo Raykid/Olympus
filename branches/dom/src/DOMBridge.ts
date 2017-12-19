@@ -1,14 +1,13 @@
 /// <amd-module name="DOMBridge"/>
-/// <reference path="../../../trunk/dist/Olympus.d.ts"/>
 
-import IBridge from "engine/bridge/IBridge";
-import { getObjectHashs } from "utils/ObjectUtil";
-import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
-import IPanelPolicy from "engine/panel/IPanelPolicy";
-import IScenePolicy from "engine/scene/IScenePolicy";
-import IMediator from "engine/mediator/IMediator";
-import { IMaskEntity } from "engine/mask/MaskManager";
-import { assetsManager } from "engine/assets/AssetsManager";
+import IBridge from "olympus-r/engine/bridge/IBridge";
+import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
+import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
 import { copyRef } from "./dom/utils/SkinUtil";
