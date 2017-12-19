@@ -1,12 +1,12 @@
-/// <reference path="../libs/Reflect.d.ts"/>
-/// <reference path="./global/Patch.ts"/>
-
 import Dictionary from "../utils/Dictionary";
 import IMessage from "./message/IMessage";
 import ICommandConstructor from "./command/ICommandConstructor";
 import IObservable from "./observable/IObservable";
 import Observable from "./observable/Observable";
 import * as Injector from "./injector/Injector";
+import "reflect-metadata";
+import Patch from "./global/Patch";
+Patch;
 
 /**
  * @author Raykid

@@ -16,6 +16,7 @@ import IMediator from "../mediator/IMediator";
 import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
 import IBridge from "../bridge/IBridge";
+import "reflect-metadata";
 
 /**
  * @author Raykid

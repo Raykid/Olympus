@@ -17,3 +17,4 @@ if(Array.prototype.hasOwnProperty("findIndex"))
         Object.defineProperty(Array.prototype, "findIndex", desc);
     }
 }
+export default {};
