@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Olympus的DOM表现层库",
   "files": [
     "dom/",
@@ -29,7 +29,8 @@
     "url": "https://github.com/Raykid/Olympus/issues"
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "olympus-r": "^0.4.5"
   }
 }
