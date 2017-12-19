@@ -1,7 +1,12 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Olympus的DOM表现层库",
+  "files": [
+    "dom/",
+    "./*.js",
+    "./*.d.ts"
+  ],
   "main": "DOM.js",
   "types": "DOM.d.ts",
   "scripts": {
@@ -16,12 +21,15 @@
     "DOM"
   ],
   "author": "raykid",
+  "contributors": [
+    "gelan"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Raykid/Olympus/issues"
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
   "dependencies": {
-    "olympus-r": "^0.3.2"
+    "olympus-r": "^0.4.0"
   }
 }

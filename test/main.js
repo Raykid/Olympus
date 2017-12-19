@@ -44,7 +44,7 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
      *
      * 测试第二个模块
     */
-    var SecondMediator = /** @class */ (function (_super) {
+    var SecondMediator = (function (_super) {
         __extends(SecondMediator, _super);
         function SecondMediator() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -73,7 +73,7 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
         __decorate([
             Injector_1.BindMessage("FuckMsg", { label: "onMsg($arguments[0])" }),
             Injector_1.BindFunc("getCurrentState", ["fuck", "onMsg", undefined]),
-            __metadata("design:type", eui.Button)
+            __metadata("design:type", Object)
         ], SecondMediator.prototype, "btn", void 0);
         __decorate([
             Injector_1.BindFor("i in fuckList"),
@@ -86,14 +86,14 @@ define("modules/SecondModule", ["require", "exports", "engine/scene/SceneMediato
                     text: "$target.$hashCode"
                 }
             }),
-            __metadata("design:type", eui.DataGroup)
+            __metadata("design:type", Object)
         ], SecondMediator.prototype, "lst", void 0);
         SecondMediator = __decorate([
             Injector_2.EgretMediatorClass("Fuck2Skin")
         ], SecondMediator);
         return SecondMediator;
     }(SceneMediator_1.default));
-    var SecondModule = /** @class */ (function (_super) {
+    var SecondModule = (function (_super) {
         __extends(SecondModule, _super);
         function SecondModule() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -129,7 +129,7 @@ define("net/type/Test", ["require", "exports", "engine/net/DataType"], function 
      *
      * 测试
     */
-    var Test = /** @class */ (function (_super) {
+    var Test = (function (_super) {
         __extends(Test, _super);
         function Test() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -158,7 +158,7 @@ define("net/response/TestResponse", ["require", "exports", "net/type/Test", "eng
      *
      * 测试
     */
-    var TestResponse = /** @class */ (function (_super) {
+    var TestResponse = (function (_super) {
         __extends(TestResponse, _super);
         function TestResponse() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -203,7 +203,7 @@ define("net/request/TestRequest", ["require", "exports", "net/response/TestRespo
      *
      * 测试
     */
-    var TestRequest = /** @class */ (function (_super) {
+    var TestRequest = (function (_super) {
         __extends(TestRequest, _super);
         function TestRequest() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -233,7 +233,7 @@ define("net/request/TestRequest", ["require", "exports", "net/response/TestRespo
 define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "core/injector/Injector", "engine/env/Hash"], function (require, exports, Injector_3, Injector_4, Hash_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var IFuckModel = /** @class */ (function () {
+    var IFuckModel = (function () {
         function IFuckModel() {
         }
         Object.defineProperty(IFuckModel.prototype, "fuck", {
@@ -246,7 +246,7 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
         return IFuckModel;
     }());
     exports.IFuckModel = IFuckModel;
-    var FuckModel = /** @class */ (function () {
+    var FuckModel = (function () {
         function FuckModel() {
             this._fuck = "Fuck";
             this.shit = "Shit";
@@ -267,13 +267,14 @@ define("models/FuckModel", ["require", "exports", "engine/injector/Injector", "c
         };
         __decorate([
             Injector_4.Inject,
-            __metadata("design:type", Hash_1.default)
+            __metadata("design:type", typeof (_a = typeof Hash_1.default !== "undefined" && Hash_1.default) === "function" && _a || Object)
         ], FuckModel.prototype, "hash", void 0);
         FuckModel = __decorate([
             Injector_3.ModelClass(1, IFuckModel),
             __metadata("design:paramtypes", [])
         ], FuckModel);
         return FuckModel;
+        var _a;
     }());
     exports.default = FuckModel;
 });
@@ -288,7 +289,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
      *
      * 测试首个模块
     */
-    var FirstMediator = /** @class */ (function (_super) {
+    var FirstMediator = (function (_super) {
         __extends(FirstMediator, _super);
         function FirstMediator() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -334,7 +335,7 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
         };
         __decorate([
             Injector_6.Inject,
-            __metadata("design:type", ModuleManager_1.default)
+            __metadata("design:type", typeof (_a = typeof ModuleManager_1.default !== "undefined" && ModuleManager_1.default) === "function" && _a || Object)
         ], FirstMediator.prototype, "moduleManager", void 0);
         __decorate([
             Injector_6.Inject,
@@ -378,8 +379,9 @@ define("modules/FirstModule", ["require", "exports", "modules/SecondModule", "ne
             Injector_5.DOMMediatorClass("./modules/test.html")
         ], FirstMediator);
         return FirstMediator;
+        var _a;
     }(SceneMediator_2.default));
-    var FirstModule = /** @class */ (function (_super) {
+    var FirstModule = (function (_super) {
         __extends(FirstModule, _super);
         function FirstModule() {
             return _super !== null && _super.apply(this, arguments) || this;
