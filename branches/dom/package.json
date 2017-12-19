@@ -1,11 +1,11 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.4.1",
+  "version": "0.4.5",
   "description": "Olympus的DOM表现层库",
   "files": [
     "dom/",
-    "./*.js",
-    "./*.d.ts"
+    "DOMBridge.d.ts",
+    "DOMBridge.js"
   ],
   "main": "DOM.js",
   "types": "DOM.d.ts",
@@ -30,6 +30,6 @@
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
   "dependencies": {
-    "olympus-r": "^0.4.0"
+    "olympus-r": "^0.4.5"
   }
 }
