@@ -1,5 +1,5 @@
-import IPanelPolicy from "engine/panel/IPanelPolicy";
-import IPanel from "engine/panel/IPanel";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import IPanel from "olympus-r/engine/panel/IPanel";
 import { tweenFrom, tweenTo } from "../utils/TweenUtil";
 
 /**

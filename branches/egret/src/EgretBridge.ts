@@ -1,25 +1,20 @@
 /// <amd-module name="EgretBridge"/>
-/// <reference path="../../../trunk/dist/Olympus.d.ts"/>
-/// <reference path="./egret/egret-libs/egret/egret.d.ts"/>
-/// <reference path="./egret/egret-libs/eui/eui.d.ts"/>
-/// <reference path="./egret/egret-libs/res/res.d.ts"/>
-/// <reference path="./egret/egret-libs/tween/tween.d.ts"/>
 
-import { core } from "core/Core";
-import IBridge from "engine/bridge/IBridge";
-import ModuleMessage from "engine/module/ModuleMessage";
-import IPromptPanel, { IPromptPanelConstructor } from "engine/panel/IPromptPanel";
-import IPanelPolicy from "engine/panel/IPanelPolicy";
-import IScenePolicy from "engine/scene/IScenePolicy";
-import IMediator from "engine/mediator/IMediator";
-import { IMaskEntity } from "engine/mask/MaskManager";
+import { core } from "olympus-r/core/Core";
+import IBridge from "olympus-r/engine/bridge/IBridge";
+import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
+import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
-import * as UIUtil from "./egret/utils/UIUtil";
+import * as UIUtil from './egret/utils/UIUtil';
 import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
-import * as Injector from "./egret/injector/Injector";
+import * as Injector from './egret/injector/Injector';
 import { wrapEUIList } from "./egret/utils/UIUtil";
 
 /**
@@ -187,7 +182,7 @@ export default class EgretBridge implements IBridge
      */
     public get maskEntity():IMaskEntity
     {
-        return new MaskEntity(this._initParams.maskData);
+        return new MaskEntity(this._initParams.maskData) as IMaskEntity;
     }
 
     /**

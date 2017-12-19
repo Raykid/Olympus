@@ -1,5 +1,5 @@
-import IScenePolicy from "engine/scene/IScenePolicy";
-import IScene from "engine/scene/IScene";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
+import IScene from "olympus-r/engine/scene/IScene";
 
 /**
  * @author Raykid

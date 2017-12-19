@@ -1,9 +1,9 @@
-import { IMaskEntity } from "engine/mask/MaskManager";
-import IPanel from "engine/panel/IPanel";
-import IBridge from "engine/bridge/IBridge";
-import { bridgeManager } from "engine/bridge/BridgeManager";
-import Dictionary from "utils/Dictionary";
-import IMaskData from "engine/mask/IMaskData";
+import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import IPanel from "olympus-r/engine/panel/IPanel";
+import IBridge from "olympus-r/engine/bridge/IBridge";
+import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
+import Dictionary from "olympus-r/utils/Dictionary";
+import IMaskData from "olympus-r/engine/mask/IMaskData";
 import EgretBridge from "../../EgretBridge";
 
 /**

@@ -1,5 +1,5 @@
-import IMediator from "engine/mediator/IMediator";
-import SceneMediator from "engine/scene/SceneMediator";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import SceneMediator from "olympus-r/engine/scene/SceneMediator";
 
 /**
  * @author Raykid

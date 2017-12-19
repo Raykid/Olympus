@@ -1,5 +1,6 @@
 import { core } from "../Core";
 import { listenConstruct } from "../../utils/ConstructUtil";
+import "reflect-metadata";
 
 /**
  * @author Raykid

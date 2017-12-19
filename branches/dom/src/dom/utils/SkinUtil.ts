@@ -1,5 +1,5 @@
-import IMediator from "engine/mediator/IMediator";
-import { assetsManager } from "engine/assets/AssetsManager";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 
 /**
  * @author Raykid
