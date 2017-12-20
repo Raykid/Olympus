@@ -26,7 +26,7 @@ export function ModelClass() {
         args[_i] = arguments[_i];
     }
     // 转调Injectable方法
-    if (this === undefined) {
+    if (this !== undefined) {
         var cls = wrapConstruct(args[0]);
         Injectable.call(this, cls);
         return cls;

@@ -14,7 +14,7 @@ import "reflect-metadata";
 /** 生成类型实例并注入，可以进行类型转换注入（即注入类型可以和注册类型不一致，采用@Injectable(AnotherClass)的形式即可） */
 export function Injectable(...args:any[]):any
 {
-    if(this === undefined)
+    if(this !== undefined)
     {
         // 不需要转换注册类型，直接注册
         core.mapInject(args[0]);

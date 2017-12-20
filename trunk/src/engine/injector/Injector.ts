@@ -31,7 +31,7 @@ import "reflect-metadata";
 export function ModelClass(...args:any[]):any
 {
     // 转调Injectable方法
-    if(this === undefined)
+    if(this !== undefined)
     {
         var cls:IConstructor = wrapConstruct(args[0]);
         Injectable.call(this, cls);

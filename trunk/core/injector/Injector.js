@@ -15,7 +15,7 @@ export function Injectable() {
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    if (this === undefined) {
+    if (this !== undefined) {
         // 不需要转换注册类型，直接注册
         core.mapInject(args[0]);
     }
