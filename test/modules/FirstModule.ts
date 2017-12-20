@@ -2,14 +2,14 @@ import SecondModule from "./SecondModule";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
-import { DOMMediatorClass } from "dom/injector/Injector";
-import SceneMediator from "engine/scene/SceneMediator";
-import { Inject } from "core/injector/Injector";
-import ModuleManager from "engine/module/ModuleManager";
-import { audioManager } from "engine/audio/AudioManager";
-import ModuleMessage from "engine/module/ModuleMessage";
-import Module from "engine/module/Module";
-import { ResponseHandler, ModuleClass, DelegateMediator, BindValue, BindOn, BindIf, BindFor, MessageHandler, GlobalMessageHandler } from "engine/injector/Injector";
+import SceneMediator from 'olympus-r/engine/scene/SceneMediator';
+import { Inject } from "olympus-r/core/injector/Injector";
+import ModuleManager from "olympus-r/engine/module/ModuleManager";
+import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
+import Module from "olympus-r/engine/module/Module";
+import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandler, ResponseHandler, ModuleClass, DelegateMediator } from "olympus-r/engine/injector/Injector";
+import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
+import { audioManager } from "olympus-r/engine/audio/AudioManager";
 
 /**
  * @author Raykid

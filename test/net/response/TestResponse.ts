@@ -1,6 +1,6 @@
 import Test from "../type/Test";
-import ResponseData, { IResponseParams } from "engine/net/ResponseData";
-import { netManager } from "engine/net/NetManager";
+import ResponseData, { IResponseParams } from "olympus-r/engine/net/ResponseData";
+import { netManager } from "olympus-r/engine/net/NetManager";
 
 /**
  * @author TemplateGenerator

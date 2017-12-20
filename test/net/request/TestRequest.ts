@@ -1,7 +1,7 @@
 import TestResponse from "../response/TestResponse";
-import RequestData, { IRequestParams } from "engine/net/RequestData";
-import IRequestPolicy from "engine/net/IRequestPolicy";
-import policy from "engine/net/policies/HTTPRequestPolicy";
+import RequestData, { IRequestParams } from "olympus-r/engine/net/RequestData";
+import IRequestPolicy from "olympus-r/engine/net/IRequestPolicy";
+import policy from "olympus-r/engine/net/policies/HTTPRequestPolicy";
 
 /**
  * @author TemplateGenerator

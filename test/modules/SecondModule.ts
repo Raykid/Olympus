@@ -1,7 +1,7 @@
-import SceneMediator from "engine/scene/SceneMediator";
-import Module from "engine/module/Module";
-import { ModuleClass, DelegateMediator, BindFunc, BindFor, BindValue, MessageHandler, GlobalMessageHandler, BindMessage, BindIf } from "engine/injector/Injector";
-import { EgretMediatorClass } from "egret/injector/Injector";
+import SceneMediator from "olympus-r/engine/scene/SceneMediator";
+import Module from "olympus-r/engine/module/Module";
+import { ModuleClass, DelegateMediator, BindFunc, BindFor, BindValue, MessageHandler, GlobalMessageHandler, BindMessage, BindIf } from "olympus-r/engine/injector/Injector";
+import { EgretMediatorClass } from "olympus-r-egret/egret/injector/Injector";
 
 /**
  * @author Raykid
@@ -19,10 +19,8 @@ class SecondMediator extends SceneMediator
     @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
     @BindFor("i in fuckList")
-    @BindIf("txt", "false")
     @BindValue("txt.text", "i")
     @BindFor("lst", "key in fuckList")
-    @BindIf("txt", "false")
     @BindValue({
         txt: {
             text: "$target.$hashCode"

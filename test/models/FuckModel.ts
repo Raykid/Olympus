@@ -1,6 +1,6 @@
-import { ModelClass } from "engine/injector/Injector";
-import { Inject } from "core/injector/Injector";
-import Hash from "engine/env/Hash";
+import { Inject } from 'olympus-r/core/injector/Injector';
+import Hash from 'olympus-r/engine/env/Hash';
+import { ModelClass } from 'olympus-r/engine/injector/Injector';
 
 export class IFuckModel
 {

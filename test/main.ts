@@ -1,16 +1,16 @@
-/// <amd-module name="main"/>
-/// <reference path="../trunk/dist/Olympus.d.ts"/>
-/// <reference path="../branches/dom/dist/DOM.d.ts"/>
-/// <reference path="../branches/egret/dist/Egret.d.ts"/>
-/// <reference path="egret/libs/exml.e.d.ts"/>
+/// <reference path="./egret/libs/modules/egret/egret.d.ts"/>
+/// <reference path="./egret/libs/modules/res/res.d.ts"/>
+/// <reference path="./egret/libs/modules/eui/eui.d.ts"/>
+/// <reference path="./egret/libs/modules/tween/tween.d.ts"/>
 
+import { InitStep } from 'olympus-r/engine/Engine';
 import getParam from "./utils/InitParamsUtil";
 import FirstModule from "./modules/FirstModule";
-import Olympus from "Olympus";
-import { environment } from "engine/env/Environment";
-import DOMBridge from "DOMBridge";
-import EgretBridge from "EgretBridge";
-import { InitStep } from "engine/Engine";
+
+import Olympus from 'olympus-r/Olympus';
+import { environment } from 'olympus-r/engine/env/Environment';
+import DOMBridge from "olympus-r-dom/DOMBridge";
+import EgretBridge from "olympus-r-egret/EgretBridge";
 
 /**
  * @author Raykid
@@ -36,7 +36,6 @@ Olympus.startup({
     ],
     firstModule: FirstModule,
     loadElement: "#loading",
-    env: getParam("server_type"),
     hostsDict: {
         dev: ["http://www.test.17zuoye.net/"],
         test: ["https://www.test.17zuoye.net/"],
@@ -56,10 +55,9 @@ Olympus.startup({
     onInited: function():void
     {
         // bridgeManager.getBridge("Egret").defaultScenePolicy = none;
+        console.log(environment.env, environment.getHost(), environment.curCDNHost);
     },
     onInitProgress: (prg:number, step:InitStep, ...args)=>{
         console.log(prg, step, ...args);
     }
 });
-
-console.log(environment.env, environment.getHost(), environment.curCDNHost);

@@ -1,4 +1,4 @@
-import DataType from "engine/net/DataType";
+import DataType from "olympus-r/engine/net/DataType";
 
 /**
  * @author TemplateGenerator
