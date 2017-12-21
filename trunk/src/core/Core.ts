@@ -5,7 +5,7 @@ import IObservable from "./observable/IObservable";
 import Observable from "./observable/Observable";
 import * as Injector from "./injector/Injector";
 import "reflect-metadata";
-import Patch from "./global/Patch";
+import * as Patch from "./global/Patch";
 Patch;
 
 /**

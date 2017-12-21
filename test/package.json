@@ -27,8 +27,9 @@
     "webpack-merge": "^4.1.1"
   },
   "dependencies": {
-    "olympus-r": "^0.4.5",
+    "olympus-r": "^0.4.9",
     "olympus-r-dom": "^0.4.6",
-    "olympus-r-egret": "^0.4.6"
+    "olympus-r-egret": "^0.4.6",
+    "requirejs": "^2.3.5"
   }
 }

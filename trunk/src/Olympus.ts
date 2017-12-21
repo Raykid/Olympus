@@ -1,6 +1,5 @@
-/// <amd-module name="Olympus"/>
-
 import { engine, IInitParams } from "./engine/Engine";
+export { core } from "./core/Core";
 
 /**
  * @author Raykid

@@ -1,15 +1,11 @@
 {
   "compilerOptions": {
-    "module": "es2015",
+    "module": "amd",
     "moduleResolution": "node",
     "target": "es5",
-    "sourceMap": true,
+    "inlineSourceMap": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "lib": [
-      "es2017",
-      "dom"
-    ]
+    "emitDecoratorMetadata": true
   },
   "include": [
     "./main.ts"

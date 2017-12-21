@@ -11,6 +11,7 @@ import { bridgeManager } from "../bridge/BridgeManager";
 import Mediator from "../mediator/Mediator";
 import { moduleManager } from "../module/ModuleManager";
 import IModuleMediator from "../mediator/IModuleMediator";
+import { decorateThis } from "../../core/global/Patch";
 import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import * as BindUtil from "./BindUtil";
@@ -31,7 +32,7 @@ import "reflect-metadata";
 export function ModelClass(...args:any[]):any
 {
     // 转调Injectable方法
-    if(this !== undefined)
+    if(this === decorateThis)
     {
         var cls:IConstructor = wrapConstruct(args[0]);
         Injectable.call(this, cls);

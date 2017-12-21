@@ -1,5 +1,5 @@
-/// <amd-module name="Olympus"/>
 import { engine } from "./engine/Engine";
+export { core } from "./core/Core";
 /**
  * @author Raykid
  * @email initial_r@qq.com

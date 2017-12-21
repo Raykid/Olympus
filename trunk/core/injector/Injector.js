@@ -1,4 +1,5 @@
 import { core } from "../Core";
+import { decorateThis } from "../global/Patch";
 import { listenConstruct } from "../../utils/ConstructUtil";
 import "reflect-metadata";
 /**
@@ -15,7 +16,7 @@ export function Injectable() {
     for (var _i = 0; _i < arguments.length; _i++) {
         args[_i] = arguments[_i];
     }
-    if (this !== undefined) {
+    if (this === decorateThis) {
         // 不需要转换注册类型，直接注册
         core.mapInject(args[0]);
     }

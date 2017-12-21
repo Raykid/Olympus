@@ -18,6 +18,8 @@ if(Array.prototype.hasOwnProperty("findIndex"))
     }
 }
 
+export const decorateThis:any = {};
+
 /** 篡改Reflect.decorate方法，用于为装饰器方法打个flag，标记装饰器是否为参数化装饰 */
 if(Reflect && Reflect.decorate)
 {
@@ -28,7 +30,7 @@ if(Reflect && Reflect.decorate)
         var oriRef:Function = args[0][0];
         args[0][0] = function(...args:any[]):any
         {
-            return oriRef.apply(window, args);
+            return oriRef.apply(decorateThis, args);
         };
         // 调用原始方法
         var result:any = oriDecorate.apply(this, args);
@@ -38,5 +40,3 @@ if(Reflect && Reflect.decorate)
         return result;
     };
 }
-
-export default {};

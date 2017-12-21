@@ -1,14 +1,15 @@
+/// <reference types="olympus-r"/>
 /// <reference path="./egret/libs/modules/egret/egret.d.ts"/>
 /// <reference path="./egret/libs/modules/res/res.d.ts"/>
 /// <reference path="./egret/libs/modules/eui/eui.d.ts"/>
 /// <reference path="./egret/libs/modules/tween/tween.d.ts"/>
 
-import { InitStep } from 'olympus-r/engine/Engine';
 import getParam from "./utils/InitParamsUtil";
 import FirstModule from "./modules/FirstModule";
 
 import Olympus from 'olympus-r/Olympus';
 import { environment } from 'olympus-r/engine/env/Environment';
+import { InitStep } from 'olympus-r/engine/Engine';
 import DOMBridge from "olympus-r-dom/DOMBridge";
 import EgretBridge from "olympus-r-egret/EgretBridge";
 

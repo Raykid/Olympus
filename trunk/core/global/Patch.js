@@ -14,6 +14,7 @@ if (Array.prototype.hasOwnProperty("findIndex")) {
         Object.defineProperty(Array.prototype, "findIndex", desc);
     }
 }
+export var decorateThis = {};
 /** 篡改Reflect.decorate方法，用于为装饰器方法打个flag，标记装饰器是否为参数化装饰 */
 if (Reflect && Reflect.decorate) {
     var oriDecorate = Reflect.decorate;
@@ -29,7 +30,7 @@ if (Reflect && Reflect.decorate) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return oriRef.apply(window, args);
+            return oriRef.apply(decorateThis, args);
         };
         // 调用原始方法
         var result = oriDecorate.apply(this, args);
@@ -39,4 +40,3 @@ if (Reflect && Reflect.decorate) {
         return result;
     };
 }
-export default {};

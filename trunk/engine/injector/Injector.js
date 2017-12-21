@@ -7,6 +7,7 @@ import { netManager } from "../net/NetManager";
 import { bridgeManager } from "../bridge/BridgeManager";
 import Mediator from "../mediator/Mediator";
 import { moduleManager } from "../module/ModuleManager";
+import { decorateThis } from "../../core/global/Patch";
 import Dictionary from "../../utils/Dictionary";
 import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
@@ -26,7 +27,7 @@ export function ModelClass() {
         args[_i] = arguments[_i];
     }
     // 转调Injectable方法
-    if (this !== undefined) {
+    if (this === decorateThis) {
         var cls = wrapConstruct(args[0]);
         Injectable.call(this, cls);
         return cls;
