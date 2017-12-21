@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "olympus-r": "^0.4.9",
-    "olympus-r-dom": "^0.4.6",
-    "olympus-r-egret": "^0.4.6",
+    "olympus-r-dom": "^0.4.8",
+    "olympus-r-egret": "^0.4.7",
     "requirejs": "^2.3.5"
   }
 }

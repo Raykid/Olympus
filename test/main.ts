@@ -1,4 +1,6 @@
 /// <reference types="olympus-r"/>
+/// <reference types="olympus-r-dom"/>
+/// <reference types="olympus-r-egret"/>
 /// <reference path="./egret/libs/modules/egret/egret.d.ts"/>
 /// <reference path="./egret/libs/modules/res/res.d.ts"/>
 /// <reference path="./egret/libs/modules/eui/eui.d.ts"/>
