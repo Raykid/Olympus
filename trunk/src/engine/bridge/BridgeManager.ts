@@ -127,6 +127,8 @@ export default class BridgeManager
                 // 初始化该表现层实例
                 if(bridge.init) bridge.init(afterInitBridge);
                 else afterInitBridge(bridge);
+                // 先隐藏表现层桥的htmlWrapper
+                bridge.htmlWrapper.style.display = "none";
             }
         }
         else
@@ -136,8 +138,6 @@ export default class BridgeManager
 
         function afterInitBridge(bridge:IBridge):void
         {
-            // 先隐藏表现层桥的htmlWrapper
-            bridge.htmlWrapper.style.display = "none";
             // 派发消息
             core.dispatch(BridgeMessage.BRIDGE_AFTER_INIT, bridge);
             // 设置初始化完毕属性

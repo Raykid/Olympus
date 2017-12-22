@@ -9,10 +9,14 @@
   "dependencies": {},
   "devDependencies": {
     "typescript": "^2.6.2",
-    "uglify-js": "^3.2.2"
+    "uglify-js": "^3.2.2",
+    "webpack": "^3.10.0",
+    "ts-loader": "^3.2.0",
+    "webpack-dev-server": "^2.9.7"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node_modules/.bin/webpack-dev-server --inline --progress --config test/webpack.config.js",
+    "build": "node build/build.js"
   },
   "repository": {
     "type": "git",
