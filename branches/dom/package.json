@@ -4,7 +4,7 @@
   "description": "Olympus的DOM表现层库",
   "files": [
     "dom/",
-	"index.d.ts",
+    "index.d.ts",
     "DOMBridge.d.ts",
     "DOMBridge.js"
   ],
