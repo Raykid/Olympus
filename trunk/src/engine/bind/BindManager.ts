@@ -259,7 +259,6 @@ export default class BindManager
     }
 
     private _regExp:RegExp = /^\s*(\w+)\s+((in)|(of))\s+(.+?)\s*$/;
-    private _regExpNum:RegExp = /^\d+$/;
     /**
      * 绑定循环
      * 
@@ -297,19 +296,18 @@ export default class BindManager
             });
             // 如果之前绑定过，则要先销毁之
             if(watcher) watcher.dispose();
-            // 如果遍历的对象是个数字，则伪造一个临时数组供使用
-            var collectionExp:string = res[5];
-            if(this._regExpNum.test(collectionExp))
-            {
-                var tempArr:number[] = [];
-                for(var i:number = 0, len:number = parseInt(collectionExp); i < len; i++)
-                {
-                    tempArr.push(i);
-                }
-                collectionExp = "[" + tempArr.join(",") + "]";
-            }
             // 获得要遍历的数据集合
-            watcher = bindData.bind.createWatcher(target, collectionExp, (datas:any)=>{
+            watcher = bindData.bind.createWatcher(target, res[5], (datas:any)=>{
+                // 如果遍历的对象是个数字，则伪造一个临时数组供使用
+                if(typeof datas === "number")
+                {
+                    var tempArr:number[] = [];
+                    for(var i:number = 0; i < datas; i++)
+                    {
+                        tempArr.push(i);
+                    }
+                    datas = tempArr;
+                }
                 // 赋值
                 mediator.bridge.valuateBindFor(target, datas, memento);
             }, mediator.viewModel, ...this._envModel);
