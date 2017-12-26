@@ -72,6 +72,7 @@ export default class BindManager {
      */
     bindIf(mediator: IMediator, target: any, exp: string, callback?: (value: boolean) => void): void;
     private _regExp;
+    private _regExpNum;
     /**
      * 绑定循环
      *

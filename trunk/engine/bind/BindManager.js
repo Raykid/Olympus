@@ -23,6 +23,7 @@ var BindManager = /** @class */ (function () {
         this._bindDict = new Dictionary();
         this._envModel = [];
         this._regExp = /^\s*(\w+)\s+((in)|(of))\s+(.+?)\s*$/;
+        this._regExpNum = /^\d+$/;
     }
     /**
      * 绑定数据到UI上
@@ -295,8 +296,17 @@ var BindManager = /** @class */ (function () {
             // 如果之前绑定过，则要先销毁之
             if (watcher)
                 watcher.dispose();
+            // 如果遍历的对象是个数字，则伪造一个临时数组供使用
+            var collectionExp = res[5];
+            if (_this._regExpNum.test(collectionExp)) {
+                var tempArr = [];
+                for (var i = 0, len = parseInt(collectionExp); i < len; i++) {
+                    tempArr.push(i);
+                }
+                collectionExp = "[" + tempArr.join(",") + "]";
+            }
             // 获得要遍历的数据集合
-            watcher = (_a = bindData.bind).createWatcher.apply(_a, [target, res[5], function (datas) {
+            watcher = (_a = bindData.bind).createWatcher.apply(_a, [target, collectionExp, function (datas) {
                     // 赋值
                     mediator.bridge.valuateBindFor(target, datas, memento);
                 }, mediator.viewModel].concat(_this._envModel));
