@@ -20,8 +20,10 @@ export function wrapSkin(mediator, skin) {
         comp.skinName = skin;
         // 场景需要拉伸到与stage同宽高
         if (mediator instanceof SceneMediator) {
-            comp.width = mediator.bridge.root.stage.stageWidth;
-            comp.height = mediator.bridge.root.stage.stageHeight;
+            // 先设置一次场景尺寸
+            onStageResize();
+            // 监听舞台尺寸变更事件
+            mediator.mapListener(mediator.bridge.stage, egret.Event.RESIZE, onStageResize);
         }
         // 转发ui引用
         for (var _a = 0, _b = comp.skin.skinParts; _a < _b.length; _a++) {
@@ -37,4 +39,8 @@ export function wrapSkin(mediator, skin) {
         mediator.onOpen.apply(this, args);
     };
     return comp;
+    function onStageResize() {
+        comp.width = mediator.bridge.stage.stageWidth;
+        comp.height = mediator.bridge.stage.stageHeight;
+    }
 }
