@@ -16,9 +16,9 @@ MVC（整体架构）/MVVM（界面内数据绑定）
 使用桥接模式拆分接口与实现，达到一套核心驱动多套表现层的目的（目前支持DOM、Egret两种表现层），同时支持表现层的未来可扩展性
 
 #### npm安装
-安装Olympus主库：`npm i olympus-r`
-安装Olympus DOM表现层库：`npm i olympus-r-dom`
-安装Olympus Egret表现层库：`npm i olympus-r-egret`
+安装Olympus主库：`npm i olympus-r`;
+安装Olympus DOM表现层库：`npm i olympus-r-dom`;
+安装Olympus Egret表现层库：`npm i olympus-r-egret`;
 
 例如，如果你希望开发纯DOM应用，则你需要安装olympus-r和olympus-r-dom两个包，如果你的应用既可以开发DOM页面，也可以开发Egret页面，则三个包你都要安装。
 
@@ -35,7 +35,7 @@ MVC（整体架构）/MVVM（界面内数据绑定）
 	}
 
 #### 数据绑定
-如下就是一个简单的MVVM数据绑定示例，使用TypeScript标签为你的界面绑定数据，
+如下就是一个简单的MVVM数据绑定示例，使用TypeScript标签为你的界面绑定数据，更详细的例子请看https://github.com/Raykid/Olympus/blob/master/test/modules/FirstModule.ts
 
 	@DOMMediatorClass("./modules/test.html")
 	class FirstMediator extends SceneMediator
