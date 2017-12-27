@@ -19,6 +19,16 @@ export declare function shuffle<T extends any[]>(a: T): T;
  */
 export declare function randomize<T extends any[]>(arr: T, count?: number, begin?: number, end?: number): T;
 /**
+ * 进行权重随机
+ *
+ * @export
+ * @template T
+ * @param {T[]} arr 原始数组
+ * @param {number[]} weight 权重数组，应保证权重数组的元素数量不小于原始数组的元素数量
+ * @returns {T} 选取的结果
+ */
+export declare function randomizeWeight<T extends any>(arr: T[], weight: number[]): T;
+/**
  * 数组去重
  *
  * @export

@@ -54,6 +54,40 @@ export function randomize(arr, count, begin, end) {
     return arr2;
 }
 /**
+ * 进行权重随机
+ *
+ * @export
+ * @template T
+ * @param {T[]} arr 原始数组
+ * @param {number[]} weight 权重数组，应保证权重数组的元素数量不小于原始数组的元素数量
+ * @returns {T} 选取的结果
+ */
+export function randomizeWeight(arr, weight) {
+    if (!arr || !weight)
+        throw new Error("invalid argument");
+    if (weight.length < arr.length)
+        throw new Error("权重数组的元素数量不应小于原始数组的元素数量");
+    // 根据权重数组建立一个区间数组
+    var regions = [];
+    var sum = 0;
+    for (var i in arr) {
+        sum += weight[i];
+        regions.push(sum);
+    }
+    // 随机一个位置
+    var ran = Math.random() * sum;
+    // 搜索该位置所属区间索引
+    var index;
+    for (var i = 0, len = regions.length; i < len; i++) {
+        if (ran < regions[i]) {
+            index = i;
+            break;
+        }
+    }
+    // 返回索引处的原始数组元素
+    return arr[index];
+}
+/**
  * 数组去重
  *
  * @export

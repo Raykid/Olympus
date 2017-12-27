@@ -68,6 +68,43 @@ export function randomize<T extends any[]>(arr: T, count?: number, begin?: numbe
 }
 
 /**
+ * 进行权重随机
+ * 
+ * @export
+ * @template T 
+ * @param {T[]} arr 原始数组
+ * @param {number[]} weight 权重数组，应保证权重数组的元素数量不小于原始数组的元素数量
+ * @returns {T} 选取的结果
+ */
+export function randomizeWeight<T extends any>(arr:T[], weight:number[]):T
+{
+    if (!arr || !weight) throw new Error("invalid argument");
+    if(weight.length < arr.length) throw new Error("权重数组的元素数量不应小于原始数组的元素数量");
+    // 根据权重数组建立一个区间数组
+    let regions:number[] = [];
+    let sum:number = 0;
+    for(let i in arr)
+    {
+        sum += weight[i];
+        regions.push(sum);
+    }
+    // 随机一个位置
+    let ran:number = Math.random() * sum;
+    // 搜索该位置所属区间索引
+    let index:number;
+    for(let i:number = 0, len:number = regions.length; i < len; i++)
+    {
+        if(ran < regions[i])
+        {
+            index = i;
+            break;
+        }
+    }
+    // 返回索引处的原始数组元素
+    return arr[index];
+}
+
+/**
  * 数组去重
  * 
  * @export
