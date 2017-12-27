@@ -29,7 +29,7 @@ export default class System {
      */
     nextFrame(handler: Function, thisArg?: any, ...args: any[]): ICancelable;
     /**
-     * 每帧执行某个方法，直到取消位置
+     * 每帧执行某个方法，直到取消为止
      *
      * @param {Function} handler 每帧执行的某个方法
      * @param {*} [thisArg] this指向
