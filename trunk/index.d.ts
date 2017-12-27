@@ -106,6 +106,7 @@ import * as System from "./engine/system/System";
 import * as Version from "./engine/version/Version";
 
 
+import * as ArrayUtil from "./utils/ArrayUtil";
 import * as ConstructUtil from "./utils/ConstructUtil";
 import * as CookieUtil from "./utils/CookieUtil";
 import * as Dictionary from "./utils/Dictionary";
