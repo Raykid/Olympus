@@ -240,7 +240,7 @@ var ModuleManager = /** @class */ (function () {
                             // 调用onOpen接口
                             target.onOpen(data);
                             // 调用onDeactivate接口
-                            this.deactivateModule(fromModule && fromModule, cls, data);
+                            this.deactivateModule(fromModule, cls, data);
                             // 调用onActivate接口
                             this.activateModule(target, from && from[0], data);
                             // 如果replace是true，则关掉上一个模块
@@ -311,7 +311,7 @@ var ModuleManager = /** @class */ (function () {
             // 调用onClose接口
             target.onClose(data);
             // 调用onActivate接口
-            this.activateModule(toModule && toModule, cls, data);
+            this.activateModule(toModule, cls, data);
             // 派发消息
             core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
         }
