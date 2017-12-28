@@ -10,7 +10,16 @@ import IMaskData from "olympus-r/engine/mask/IMaskData";
  * DOM遮罩实现
 */
 export default class MaskEntityImpl implements IMaskEntity {
-    private _showing;
+    private _maskAlpha;
+    private _loadingAlpha;
+    private _modalPanelAlpha;
+    private _showingMask;
+    private _mask;
+    private _showingLoading;
+    private _loadingMask;
+    private _modalPanelDict;
+    private _modalPanelList;
+    private _modalPanelMask;
     loadingSkin: HTMLElement;
     maskData: MaskData;
     constructor(params?: MaskData);
@@ -42,5 +51,8 @@ export default class MaskEntityImpl implements IMaskEntity {
     isShowingModalMask(panel: IPanel): boolean;
 }
 export interface MaskData extends IMaskData {
+    maskAlpha?: number;
+    loadingAlpha?: number;
+    modalPanelAlpha?: number;
     loadingSkin?: HTMLElement | string;
 }

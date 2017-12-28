@@ -1,4 +1,5 @@
 /// <amd-module name="DOMBridge"/>
+/// <reference types="gsap"/>
 
 import IBridge from "olympus-r/engine/bridge/IBridge";
 import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
@@ -11,6 +12,7 @@ import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
 import { copyRef } from "./dom/utils/SkinUtil";
+import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 
 /**
  * @author Raykid
@@ -76,6 +78,7 @@ export default class DOMBridge implements IBridge
         return this.root.ownerDocument;
     }
 
+    private _bgLayer:HTMLElement;
     /**
      * 获取背景容器
      * 
@@ -85,9 +88,10 @@ export default class DOMBridge implements IBridge
      */
     public get bgLayer():HTMLElement
     {
-        return <HTMLElement>this._initParams.container;
+        return this._bgLayer;
     }
 
+    private _sceneLayer:HTMLElement;
     /**
      * 获取场景容器
      * 
@@ -97,9 +101,10 @@ export default class DOMBridge implements IBridge
      */
     public get sceneLayer():HTMLElement
     {
-        return <HTMLElement>this._initParams.container;
+        return this._sceneLayer;
     }
 
+    private _frameLayer:HTMLElement;
     /**
      * 获取框架容器
      * 
@@ -109,9 +114,10 @@ export default class DOMBridge implements IBridge
      */
     public get frameLayer():HTMLElement
     {
-        return <HTMLElement>this._initParams.container;
+        return this._frameLayer;
     }
 
+    private _panelLayer:HTMLElement;
     /**
      * 获取弹窗容器
      * 
@@ -121,9 +127,10 @@ export default class DOMBridge implements IBridge
      */
     public get panelLayer():HTMLElement
     {
-        return <HTMLElement>this._initParams.container;
+        return this._panelLayer;
     }
 
+    private _maskLayer:HTMLElement;
     /**
      * 获取遮罩容器
      * 
@@ -133,9 +140,10 @@ export default class DOMBridge implements IBridge
      */
     public get maskLayer():HTMLElement
     {
-        return <HTMLElement>this._initParams.container;
+        return this._maskLayer;
     }
 
+    private _topLayer:HTMLElement;
     /**
      * 获取顶级容器
      * 
@@ -145,7 +153,7 @@ export default class DOMBridge implements IBridge
      */
     public get topLayer():HTMLElement
     {
-        return <HTMLElement>this._initParams.container;
+        return this._topLayer;
     }
 
     /**
@@ -178,7 +186,7 @@ export default class DOMBridge implements IBridge
      * @type {IPanelPolicy}
      * @memberof EgretBridge
      */
-    public defaultPanelPolicy:IPanelPolicy = null;
+    public defaultPanelPolicy:IPanelPolicy = new BackPanelPolicy();
 
     /**
      * 获取默认场景切换策略
@@ -191,6 +199,25 @@ export default class DOMBridge implements IBridge
     public constructor(params:IInitParams)
     {
         this._initParams = params;
+    }
+
+    private createLayer():HTMLElement
+    {
+        // 生成一个父容器，不响应点击事件，但会撑起全屏幕范围
+        var layer:HTMLElement = document.createElement("div");
+        layer.style.position = "fixed";
+        layer.style.top = "0%";
+        layer.style.left = "0%";
+        layer.style.width = "100%";
+        layer.style.height = "100%";
+        layer.style.pointerEvents = "none";
+        this.root.appendChild(layer);
+        // 生成一个子容器，实际用来放置子对象，目的是响应点击事件
+        var subLayer:HTMLElement = document.createElement("div");
+        subLayer.style.pointerEvents = "auto";
+        layer.appendChild(subLayer);
+        // 返回子容器
+        return subLayer;
     }
     
     /**
@@ -211,6 +238,18 @@ export default class DOMBridge implements IBridge
             this._initParams.container = document.createElement("div");
             document.body.appendChild(this._initParams.container);
         }
+        // 创建背景显示层
+        this._bgLayer = this.createLayer();
+        // 创建场景显示层
+        this._sceneLayer = this.createLayer();
+        // 创建框架显示层
+        this._frameLayer = this.createLayer();
+        // 创建弹出层
+        this._panelLayer = this.createLayer();
+        // 创建遮罩层
+        this._maskLayer = this.createLayer();
+        // 创建顶级显示层
+        this._topLayer = this.createLayer();
         // 调用回调
         complete(this);
     }

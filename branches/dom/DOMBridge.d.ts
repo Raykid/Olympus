@@ -50,6 +50,7 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly stage: Document;
+    private _bgLayer;
     /**
      * 获取背景容器
      *
@@ -58,6 +59,7 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly bgLayer: HTMLElement;
+    private _sceneLayer;
     /**
      * 获取场景容器
      *
@@ -66,6 +68,7 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly sceneLayer: HTMLElement;
+    private _frameLayer;
     /**
      * 获取框架容器
      *
@@ -74,6 +77,7 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly frameLayer: HTMLElement;
+    private _panelLayer;
     /**
      * 获取弹窗容器
      *
@@ -82,6 +86,7 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly panelLayer: HTMLElement;
+    private _maskLayer;
     /**
      * 获取遮罩容器
      *
@@ -90,6 +95,7 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly maskLayer: HTMLElement;
+    private _topLayer;
     /**
      * 获取顶级容器
      *
@@ -129,6 +135,7 @@ export default class DOMBridge implements IBridge {
      */
     defaultScenePolicy: IScenePolicy;
     constructor(params: IInitParams);
+    private createLayer();
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调

@@ -3,6 +3,7 @@ import IBridge from "olympus-r/engine/bridge/IBridge";
 import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
 import IPanel from "olympus-r/engine/panel/IPanel";
 import IMaskData from "olympus-r/engine/mask/IMaskData";
+import Dictionary from "olympus-r/utils/Dictionary";
 import DOMBridge from "../../DOMBridge";
 
 /**
@@ -15,15 +16,31 @@ import DOMBridge from "../../DOMBridge";
 */
 export default class MaskEntityImpl implements IMaskEntity
 {
-    private _showing:boolean = false;
+    private _maskAlpha:number = 0.5;
+    private _loadingAlpha:number = 0.5;
+    private _modalPanelAlpha:number = 0.5;
+
+    private _showingMask:boolean = false;
+    private _mask:HTMLElement;
+
+    private _showingLoading:boolean = false;
+    private _loadingMask:HTMLElement;
+
+    private _modalPanelDict:Dictionary<IPanel, IPanel>;
+    private _modalPanelList:IPanel[];
+    private _modalPanelMask:HTMLElement;
 
     public loadingSkin:HTMLElement;
     public maskData:MaskData;
 
     public constructor(params?:MaskData)
     {
-        if(params)
+        if(params != null)
         {
+            this._maskAlpha = (params.maskAlpha != null ? params.maskAlpha : 0.5);
+            this._loadingAlpha = (params.loadingAlpha != null ? params.loadingAlpha : 0.5);
+            this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
+            // 初始化loading皮肤
             if(typeof params.loadingSkin == "string")
             {
                 var temp:HTMLElement = document.createElement("div");
@@ -33,6 +50,14 @@ export default class MaskEntityImpl implements IMaskEntity
             this.loadingSkin = params.loadingSkin;
         }
         this.maskData = params || {};
+
+        this._mask = document.createElement("div");
+
+        this._loadingMask = document.createElement("div");
+
+        this._modalPanelDict = new Dictionary();
+        this._modalPanelList = [];
+        this._modalPanelMask = document.createElement("div");
     }
 
     /**
@@ -40,7 +65,18 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public showMask(alpha?:number):void
     {
-        // DOM框架不需要遮罩，全部依赖CSS实现
+        if(this._showingMask) return;
+        this._showingMask = true;
+        // 显示
+        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+        // 绘制遮罩
+        if(alpha == null) alpha = this._maskAlpha;
+        this._mask.style.backgroundColor = "#000";
+        this._mask.style.opacity = alpha.toString();
+        this._mask.style.width = "100%";
+        this._mask.style.height = "100%";
+        // 添加显示
+        bridge.maskLayer.appendChild(this._mask);
     }
 
     /**
@@ -48,14 +84,16 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public hideMask():void
     {
-        // DOM框架不需要遮罩，全部依赖CSS实现
+        if(!this._showingMask) return;
+        this._showingMask = false;
+        // 隐藏
+        if(this._mask.parentElement != null) this._mask.parentElement.removeChild(this._mask);
     }
 
     /**当前是否在显示遮罩*/
     public isShowingMask():boolean
     {
-        // DOM框架不需要遮罩，全部依赖CSS实现
-        return false;
+        return this._showingMask;
     }
 
     /**
@@ -63,11 +101,21 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public showLoading(alpha?:number):void
     {
-        if(this.loadingSkin == null || this._showing) return;
-        this._showing = true;
+        if(this._showingLoading) return;
+        this._showingLoading = true;
         // 显示
         var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
-        bridge.addChild(bridge.maskLayer, this.loadingSkin);
+        // 绘制遮罩
+        if(alpha == null) alpha = this._loadingAlpha;
+        this._loadingMask.style.backgroundColor = "#000";
+        this._loadingMask.style.opacity = alpha.toString();
+        this._loadingMask.style.width = "100%";
+        this._loadingMask.style.height = "100%";
+        // 添加显示
+        bridge.maskLayer.appendChild(this._loadingMask);
+        // 添加loading皮肤
+        if(this.loadingSkin)
+            bridge.maskLayer.appendChild(this.loadingSkin);
     }
 
     /**
@@ -75,40 +123,88 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public hideLoading():void
     {
-        if(this.loadingSkin == null || !this._showing) return;
-        this._showing = false;
+        if(!this._showingLoading) return;
+        this._showingLoading = false;
         // 隐藏
-        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
-        bridge.removeChild(bridge.maskLayer, this.loadingSkin);
+        if(this._loadingMask.parentElement != null)
+            this._loadingMask.parentElement.removeChild(this._loadingMask);
+        if(this.loadingSkin != null && this.loadingSkin.parentElement != null)
+            this.loadingSkin.parentElement.removeChild(this.loadingSkin);
     }
 
     /**当前是否在显示loading*/
     public isShowingLoading():boolean
     {
-        return this._showing;
+        return this._showingLoading;
     }
 
     /** 显示模态窗口遮罩 */
     public showModalMask(panel:IPanel, alpha?:number):void
     {
-        // DOM框架不需要模态窗口遮罩，全部依赖CSS实现
+        if(this.isShowingModalMask(panel)) return;
+        this._modalPanelDict.set(panel, panel);
+        this._modalPanelList.push(panel);
+        // 绘制遮罩
+        if(alpha == null) alpha = this._modalPanelAlpha;
+        this._modalPanelMask.style.backgroundColor = "#000";
+        this._modalPanelMask.style.opacity = alpha.toString();
+        this._modalPanelMask.style.width = "100%";
+        this._modalPanelMask.style.height = "100%";
+        // 添加显示
+        var entity:HTMLElement = panel.skin;
+        var parent:HTMLElement = entity.parentElement;
+        if(parent != null)
+        {
+            if(this._modalPanelMask.parentElement) {
+                this._modalPanelMask.parentElement.removeChild(this._modalPanelMask);
+            }
+            var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+            var index:number = bridge.getChildIndex(parent, entity);
+            bridge.addChildAt(parent, this._modalPanelMask, index);
+        }
     }
 
     /** 隐藏模态窗口遮罩 */
     public hideModalMask(panel:IPanel):void
     {
-        // DOM框架不需要模态窗口遮罩，全部依赖CSS实现
+        if(!this.isShowingModalMask(panel)) return;
+        this._modalPanelDict.delete(panel);
+        this._modalPanelList.splice(this._modalPanelList.indexOf(panel), 1);
+        // 判断是否还需要Mask
+        if(this._modalPanelList.length <= 0)
+        {
+            // 隐藏
+            if(this._modalPanelMask.parentElement != null)
+                this._modalPanelMask.parentElement.removeChild(this._modalPanelMask);
+        }
+        else
+        {
+            // 移动Mask
+            var entity:HTMLElement = this._modalPanelList[this._modalPanelList.length - 1].skin;
+            var parent:HTMLElement = entity.parentElement;
+            if(parent != null)
+            {
+                if(this._modalPanelMask.parentElement) {
+                    this._modalPanelMask.parentElement.removeChild(this._modalPanelMask);
+                }
+                var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+                var index:number = bridge.getChildIndex(parent, entity);
+                bridge.addChildAt(parent, this._modalPanelMask, index);
+            }
+        }
     }
 
     /** 当前是否在显示模态窗口遮罩 */
     public isShowingModalMask(panel:IPanel):boolean
     {
-        // DOM框架不需要模态窗口遮罩，全部依赖CSS实现
-        return false;
+        return (this._modalPanelDict.get(panel) != null);
     }
 }
 
 export interface MaskData extends IMaskData
 {
+    maskAlpha?:number;
+    loadingAlpha?:number;
+    modalPanelAlpha?:number;
     loadingSkin?:HTMLElement|string;
 }

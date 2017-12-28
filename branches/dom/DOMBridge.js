@@ -1,8 +1,10 @@
 /// <amd-module name="DOMBridge"/>
+/// <reference types="gsap"/>
 import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity from "./dom/mask/MaskEntity";
 import { copyRef } from "./dom/utils/SkinUtil";
+import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -19,7 +21,7 @@ var DOMBridge = /** @class */ (function () {
          * @type {IPanelPolicy}
          * @memberof EgretBridge
          */
-        this.defaultPanelPolicy = null;
+        this.defaultPanelPolicy = new BackPanelPolicy();
         /**
          * 获取默认场景切换策略
          *
@@ -95,7 +97,7 @@ var DOMBridge = /** @class */ (function () {
          * @memberof DOMBridge
          */
         get: function () {
-            return this._initParams.container;
+            return this._bgLayer;
         },
         enumerable: true,
         configurable: true
@@ -109,7 +111,7 @@ var DOMBridge = /** @class */ (function () {
          * @memberof DOMBridge
          */
         get: function () {
-            return this._initParams.container;
+            return this._sceneLayer;
         },
         enumerable: true,
         configurable: true
@@ -123,7 +125,7 @@ var DOMBridge = /** @class */ (function () {
          * @memberof DOMBridge
          */
         get: function () {
-            return this._initParams.container;
+            return this._frameLayer;
         },
         enumerable: true,
         configurable: true
@@ -137,7 +139,7 @@ var DOMBridge = /** @class */ (function () {
          * @memberof DOMBridge
          */
         get: function () {
-            return this._initParams.container;
+            return this._panelLayer;
         },
         enumerable: true,
         configurable: true
@@ -151,7 +153,7 @@ var DOMBridge = /** @class */ (function () {
          * @memberof DOMBridge
          */
         get: function () {
-            return this._initParams.container;
+            return this._maskLayer;
         },
         enumerable: true,
         configurable: true
@@ -165,7 +167,7 @@ var DOMBridge = /** @class */ (function () {
          * @memberof DOMBridge
          */
         get: function () {
-            return this._initParams.container;
+            return this._topLayer;
         },
         enumerable: true,
         configurable: true
@@ -198,6 +200,23 @@ var DOMBridge = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    DOMBridge.prototype.createLayer = function () {
+        // 生成一个父容器，不响应点击事件，但会撑起全屏幕范围
+        var layer = document.createElement("div");
+        layer.style.position = "fixed";
+        layer.style.top = "0%";
+        layer.style.left = "0%";
+        layer.style.width = "100%";
+        layer.style.height = "100%";
+        layer.style.pointerEvents = "none";
+        this.root.appendChild(layer);
+        // 生成一个子容器，实际用来放置子对象，目的是响应点击事件
+        var subLayer = document.createElement("div");
+        subLayer.style.pointerEvents = "auto";
+        layer.appendChild(subLayer);
+        // 返回子容器
+        return subLayer;
+    };
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调
@@ -213,6 +232,18 @@ var DOMBridge = /** @class */ (function () {
             this._initParams.container = document.createElement("div");
             document.body.appendChild(this._initParams.container);
         }
+        // 创建背景显示层
+        this._bgLayer = this.createLayer();
+        // 创建场景显示层
+        this._sceneLayer = this.createLayer();
+        // 创建框架显示层
+        this._frameLayer = this.createLayer();
+        // 创建弹出层
+        this._panelLayer = this.createLayer();
+        // 创建遮罩层
+        this._maskLayer = this.createLayer();
+        // 创建顶级显示层
+        this._topLayer = this.createLayer();
         // 调用回调
         complete(this);
     };

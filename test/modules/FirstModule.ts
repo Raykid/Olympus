@@ -10,6 +10,7 @@ import Module from "olympus-r/engine/module/Module";
 import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandler, ResponseHandler, ModuleClass, DelegateMediator } from "olympus-r/engine/injector/Injector";
 import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
 import { audioManager } from "olympus-r/engine/audio/AudioManager";
+import TestPanel from "./TestPanel";
 
 /**
  * @author Raykid
@@ -32,11 +33,12 @@ class FirstMediator extends SceneMediator
     @Inject(1)
     private fuckModel3:IFuckModel;
 
-    @BindOn({click: "onClick"})
+    @BindOn({click: "onClickBtn"})
     @BindIf("fuckText == '1234'")
     public btn:HTMLElement
     @BindFor("fuck in fuckList")
     @BindValue({textContent: "fuck + ' - ' + fuckText + ' - 1'"})
+    @BindOn("click", "onClickText")
     public txt:HTMLElement;
     @BindValue("textContent", "fuckModel.fuck")
     public fuck:HTMLElement;
@@ -58,9 +60,12 @@ class FirstMediator extends SceneMediator
         this.viewModel = {
             fuckList: [1, 2, "shit", "you"],
             fuckText: "fuck you",
-            onClick: ()=>{
+            onClickBtn: ()=>{
                 this.viewModel.fuckText = "clicked";
                 this.moduleManager.open(SecondModule, null, true);
+            },
+            onClickText: ()=>{
+                this.moduleManager.open(TestPanel);
             },
             fuckModel: this.fuckModel1
         };

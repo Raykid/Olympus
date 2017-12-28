@@ -17,7 +17,7 @@
   },
   "scripts": {
     "make": "node make.js",
-    "start": "node_modules/.bin/webpack-dev-server --inline --progress --config test/webpack.config.js",
+    "test": "node_modules/.bin/webpack-dev-server --inline --progress --config test/webpack.config.js",
     "build": "node_modules/.bin/webpack --config test/webpack.config.js",
     "release": "node build/build.js"
   },
