@@ -410,7 +410,7 @@ export default class EgretBridge implements IBridge
      */
     public removeChild(parent:egret.DisplayObjectContainer, target:egret.DisplayObject):egret.DisplayObject
     {
-        if(parent && target && target.parent == parent)
+        if(parent && target && target.parent === parent)
             return parent.removeChild(target);
         else
             return target;
@@ -426,7 +426,10 @@ export default class EgretBridge implements IBridge
      */
     public removeChildAt(parent:egret.DisplayObjectContainer, index:number):egret.DisplayObject
     {
-        return parent.removeChildAt(index);
+        if(parent && index >= 0)
+            return parent.removeChildAt(index);
+        else
+            return null;
     }
     
     /**
@@ -437,7 +440,7 @@ export default class EgretBridge implements IBridge
      */
     public removeChildren(parent:egret.DisplayObjectContainer):void
     {
-        parent.removeChildren();
+        if(parent) parent.removeChildren();
     }
 
     /**

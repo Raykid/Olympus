@@ -372,7 +372,7 @@ var EgretBridge = /** @class */ (function () {
      * @memberof EgretBridge
      */
     EgretBridge.prototype.removeChild = function (parent, target) {
-        if (parent && target && target.parent == parent)
+        if (parent && target && target.parent === parent)
             return parent.removeChild(target);
         else
             return target;
@@ -386,7 +386,10 @@ var EgretBridge = /** @class */ (function () {
      * @memberof EgretBridge
      */
     EgretBridge.prototype.removeChildAt = function (parent, index) {
-        return parent.removeChildAt(index);
+        if (parent && index >= 0)
+            return parent.removeChildAt(index);
+        else
+            return null;
     };
     /**
      * 移除所有显示对象
@@ -395,7 +398,8 @@ var EgretBridge = /** @class */ (function () {
      * @memberof EgretBridge
      */
     EgretBridge.prototype.removeChildren = function (parent) {
-        parent.removeChildren();
+        if (parent)
+            parent.removeChildren();
     };
     /**
      * 获取父容器

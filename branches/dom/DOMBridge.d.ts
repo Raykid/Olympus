@@ -43,13 +43,13 @@ export default class DOMBridge implements IBridge {
      */
     readonly root: HTMLElement;
     /**
-     * 获取舞台引用，DOM的舞台指向root所在的Document对象
+     * 获取舞台引用，DOM的舞台指向根节点
      *
      * @readonly
-     * @type {Document}
+     * @type {HTMLElement}
      * @memberof DOMBridge
      */
-    readonly stage: Document;
+    readonly stage: HTMLElement;
     private _bgLayer;
     /**
      * 获取背景容器

@@ -1,5 +1,4 @@
 import SecondModule from "./SecondModule";
-import ThirdModule from "./ThirdModule";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
@@ -23,7 +22,7 @@ import TestPanel from "./TestPanel";
 */
 
 @DOMMediatorClass("./modules/test.html")
-class FirstMediator extends SceneMediator
+class ThirdMediator extends SceneMediator
 {
     @Inject
     private moduleManager:ModuleManager;
@@ -52,13 +51,6 @@ class FirstMediator extends SceneMediator
 
     public onOpen():void
     {
-        // this.mapListener(this.btn, "click", function():void
-        // {
-        //     this.txt.textContent = "Fuck you!!!";
-        //     this.moduleManager.open(SecondModule);
-        // }, this);
-        console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
-
         this.viewModel = {
             fuckList: [1, 2, "shit", "you"],
             fuckText: "fuck you",
@@ -70,53 +62,16 @@ class FirstMediator extends SceneMediator
                 this.moduleManager.open(TestPanel);
             },
             onClickFuck: ()=>{
-                this.moduleManager.open(ThirdModule);
+                this.moduleManager.close(ThirdModule);
             },
             fuckModel: this.fuckModel1
         };
-
-        audioManager.playMusic({
-            url: "./test.mp3"
-        });
-
-        setTimeout(()=>{
-            this.viewModel.fuckText = "1234";
-            this.viewModel.fuckList = ["hello", "world"];
-            this.fuckModel1.fuck = "You!!!";
-        }, 3000);
-
-        this.dispatch(new TestRequest());
-    }
-    
-    @MessageHandler(ModuleMessage.MODULE_CHANGE)
-    private onModuleChange(to:any, from:any):void
-    {
-        if(to == FirstModule) console.log("change to first module!");
-        else if(to == SecondModule) console.log("change to second module!");
-    }
-
-    @ResponseHandler
-    private onResponse(res:TestResponse, req:TestRequest):void
-    {
-        alert("123");
     }
 }
 
 @ModuleClass
-export default class FirstModule extends Module
+export default class ThirdModule extends Module
 {
     @DelegateMediator
-    private _mediator:FirstMediator;
-
-    public listJsFiles():string[]
-    {
-        return ["test1.js", "./test2.js"];
-    }
-    
-    @MessageHandler("fuck")
-    @GlobalMessageHandler("fuck")
-    private onFuck(a):void
-    {
-        console.log("message at FirstModule: " + a);
-    }
+    private _mediator:ThirdMediator;
 }

@@ -1,3 +1,4 @@
+import { TweenLite, Linear } from "gsap";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -15,6 +16,27 @@ var FadeScenePolicy = /** @class */ (function () {
      * @param to 切入的场景
      */
     FadeScenePolicy.prototype.prepareSwitch = function (from, to) {
+        if (from != null) {
+            // 移除克隆节点
+            if (this._stageClone && this._stageClone.parentElement) {
+                this._stageClone.parentElement.removeChild(this._stageClone);
+            }
+            // 克隆当前屏幕
+            var stage = from.bridge.stage;
+            this._stageClone = stage.cloneNode(true);
+            this._stageClone.style.position = "fixed";
+            this._stageClone.style.left = "0%";
+            this._stageClone.style.top = "0%";
+            this._stageClone.style.zIndex = "2147483647"; // 层级要最高
+            this._stageClone.style.pointerEvents = "none"; // 要屏蔽点击事件
+            // 添加克隆节点
+            from.bridge.htmlWrapper.appendChild(this._stageClone);
+            // 移除from
+            var fromDisplay = from.skin;
+            if (fromDisplay.parentElement != null) {
+                fromDisplay.parentElement.removeChild(fromDisplay);
+            }
+        }
     };
     /**
      * 切换场景时调度
@@ -23,6 +45,31 @@ var FadeScenePolicy = /** @class */ (function () {
      * @param callback 切换完毕的回调方法
      */
     FadeScenePolicy.prototype.switch = function (from, to, callback) {
+        var _this = this;
+        if (from != null) {
+            // 开始淡出
+            TweenLite.killTweensOf(this._stageClone, false, { opacity: true });
+            TweenLite.to(this._stageClone, 0.3, {
+                opacity: 0,
+                ease: Linear.easeNone,
+                onComplete: function () {
+                    // 移除截屏
+                    if (_this._stageClone.parentElement != null) {
+                        _this._stageClone.parentElement.removeChild(_this._stageClone);
+                    }
+                    // 调用回调
+                    callback();
+                }
+            });
+        }
+        else {
+            // 移除克隆节点
+            if (this._stageClone && this._stageClone.parentElement) {
+                this._stageClone.parentElement.removeChild(this._stageClone);
+            }
+            // 调用回调
+            callback();
+        }
     };
     return FadeScenePolicy;
 }());

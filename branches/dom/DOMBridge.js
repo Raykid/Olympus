@@ -5,6 +5,7 @@ import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity from "./dom/mask/MaskEntity";
 import { copyRef } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
+import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -28,7 +29,7 @@ var DOMBridge = /** @class */ (function () {
          * @type {IScenePolicy}
          * @memberof EgretBridge
          */
-        this.defaultScenePolicy = null;
+        this.defaultScenePolicy = new FadeScenePolicy();
         this._listenerDict = {};
         this._initParams = params;
     }
@@ -76,14 +77,14 @@ var DOMBridge = /** @class */ (function () {
     });
     Object.defineProperty(DOMBridge.prototype, "stage", {
         /**
-         * 获取舞台引用，DOM的舞台指向root所在的Document对象
+         * 获取舞台引用，DOM的舞台指向根节点
          *
          * @readonly
-         * @type {Document}
+         * @type {HTMLElement}
          * @memberof DOMBridge
          */
         get: function () {
-            return this.root.ownerDocument;
+            return this._initParams.container;
         },
         enumerable: true,
         configurable: true
@@ -298,7 +299,10 @@ var DOMBridge = /** @class */ (function () {
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChild = function (parent, target) {
-        return parent.removeChild(target);
+        if (parent && target && target.parentElement === parent)
+            return parent.removeChild(target);
+        else
+            return target;
     };
     /**
      * 按索引移除显示
@@ -309,7 +313,7 @@ var DOMBridge = /** @class */ (function () {
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChildAt = function (parent, index) {
-        return parent.removeChild(this.getChildAt(parent, index));
+        return this.removeChild(parent, this.getChildAt(parent, index));
     };
     /**
      * 移除所有显示对象

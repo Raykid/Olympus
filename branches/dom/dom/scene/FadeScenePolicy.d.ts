@@ -9,6 +9,7 @@ import IScene from "olympus-r/engine/scene/IScene";
  * 淡入淡出场景切换策略
 */
 export default class FadeScenePolicy implements IScenePolicy {
+    private _stageClone;
     /**
      * 准备切换场景时调度
      * @param from 切出的场景

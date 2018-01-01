@@ -13,6 +13,7 @@ import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
 import { copyRef } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
+import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
 
 /**
  * @author Raykid
@@ -67,15 +68,15 @@ export default class DOMBridge implements IBridge
     }
 
     /**
-     * 获取舞台引用，DOM的舞台指向root所在的Document对象
+     * 获取舞台引用，DOM的舞台指向根节点
      * 
      * @readonly
-     * @type {Document}
+     * @type {HTMLElement}
      * @memberof DOMBridge
      */
-    public get stage():Document
+    public get stage():HTMLElement
     {
-        return this.root.ownerDocument;
+        return <HTMLElement>this._initParams.container;
     }
 
     private _bgLayer:HTMLElement;
@@ -194,7 +195,7 @@ export default class DOMBridge implements IBridge
      * @type {IScenePolicy}
      * @memberof EgretBridge
      */
-    public defaultScenePolicy:IScenePolicy = null;
+    public defaultScenePolicy:IScenePolicy = new FadeScenePolicy();
     
     public constructor(params:IInitParams)
     {
@@ -314,7 +315,10 @@ export default class DOMBridge implements IBridge
      */
     public removeChild(parent:Element, target:Element):Element
     {
-        return parent.removeChild(target);
+        if(parent && target && target.parentElement === parent)
+            return parent.removeChild(target);
+        else
+            return target;
     }
 
     /**
@@ -327,7 +331,7 @@ export default class DOMBridge implements IBridge
      */
     public removeChildAt(parent:Element, index:number):Element
     {
-        return parent.removeChild(this.getChildAt(parent, index));
+        return this.removeChild(parent, this.getChildAt(parent, index));
     }
 
     /**

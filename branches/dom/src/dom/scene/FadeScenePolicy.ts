@@ -1,5 +1,6 @@
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import IScene from "olympus-r/engine/scene/IScene";
+import { TweenLite, Linear } from "gsap";
 
 /**
  * @author Raykid
@@ -11,6 +12,8 @@ import IScene from "olympus-r/engine/scene/IScene";
 */
 export default class FadeScenePolicy implements IScenePolicy
 {
+    private _stageClone:HTMLElement;
+
     /**
      * 准备切换场景时调度
      * @param from 切出的场景
@@ -18,6 +21,30 @@ export default class FadeScenePolicy implements IScenePolicy
      */
     public prepareSwitch(from:IScene, to:IScene):void
     {
+        if(from != null)
+        {
+            // 移除克隆节点
+            if(this._stageClone && this._stageClone.parentElement)
+            {
+                this._stageClone.parentElement.removeChild(this._stageClone);
+            }
+            // 克隆当前屏幕
+            var stage:HTMLElement = from.bridge.stage;
+            this._stageClone = <HTMLElement>stage.cloneNode(true);
+            this._stageClone.style.position = "fixed";
+            this._stageClone.style.left = "0%";
+            this._stageClone.style.top = "0%";
+            this._stageClone.style.zIndex = "2147483647";// 层级要最高
+            this._stageClone.style.pointerEvents = "none";// 要屏蔽点击事件
+            // 添加克隆节点
+            from.bridge.htmlWrapper.appendChild(this._stageClone);
+            // 移除from
+            var fromDisplay:HTMLElement = from.skin;
+            if(fromDisplay.parentElement != null)
+            {
+                fromDisplay.parentElement.removeChild(fromDisplay);
+            }
+        }
     }
 
     /**
@@ -28,5 +55,33 @@ export default class FadeScenePolicy implements IScenePolicy
      */
     public switch(from:IScene, to:IScene, callback:()=>void):void
     {
+        if(from != null)
+        {
+            // 开始淡出
+            TweenLite.killTweensOf(this._stageClone, false, {opacity: true});
+            TweenLite.to(this._stageClone, 0.3, {
+                opacity: 0,
+                ease: Linear.easeNone,
+                onComplete: ()=>{
+                    // 移除截屏
+                    if(this._stageClone.parentElement != null)
+                    {
+                        this._stageClone.parentElement.removeChild(this._stageClone);
+                    }
+                    // 调用回调
+                    callback();
+                }
+            });
+        }
+        else
+        {
+            // 移除克隆节点
+            if(this._stageClone && this._stageClone.parentElement)
+            {
+                this._stageClone.parentElement.removeChild(this._stageClone);
+            }
+            // 调用回调
+            callback();
+        }
     }
 }
