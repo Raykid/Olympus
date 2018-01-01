@@ -12,6 +12,6 @@
   "dependencies": {
     "olympus-r": "^0.4.15",
     "olympus-r-dom": "^0.4.9",
-    "olympus-r-egret": "^0.4.10"
+    "olympus-r-egret": "^0.4.12"
   }
 }
