@@ -61,6 +61,8 @@ import * as IMediator from "./engine/mediator/IMediator";
 import * as IModuleMediator from "./engine/mediator/IModuleMediator";
 import * as Mediator from "./engine/mediator/Mediator";
 
+import * as EngineMessage from "./engine/message/EngineMessage";
+
 import * as Model from "./engine/model/Model";
 
 import * as IModule from "./engine/module/IModule";

@@ -14,6 +14,7 @@ import { environment } from "./env/Environment";
 import { hash } from "./env/Hash";
 import { version } from "./version/Version";
 import ModuleMessage from "./module/ModuleMessage";
+import EngineMessage from "./message/EngineMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -115,6 +116,8 @@ var Engine = /** @class */ (function () {
     Engine.prototype.onPreloadOK = function () {
         // 调用进度回调，打开首个模块为90%
         this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
+        // 派发事件
+        core.dispatch(EngineMessage.INITIALIZED);
         // 调用初始化完成回调
         this._initParams.onInited && this._initParams.onInited();
         // 监听首个模块开启

@@ -32,6 +32,7 @@ import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
 import IPlugin from "./plugin/IPlugin";
 import * as Injector from "./injector/Injector";
+import EngineMessage from "./message/EngineMessage";
 
 /**
  * @author Raykid
@@ -143,6 +144,8 @@ export default class Engine
     {
         // 调用进度回调，打开首个模块为90%
         this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
+        // 派发事件
+        core.dispatch(EngineMessage.INITIALIZED);
         // 调用初始化完成回调
         this._initParams.onInited && this._initParams.onInited();
         // 监听首个模块开启
