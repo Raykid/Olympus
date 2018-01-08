@@ -32,8 +32,6 @@ export class HTTPRequestPolicy implements IRequestPolicy
             onError: err=>netManager.__onError(err, request),
             headerDict: {}
         }, params);
-        // ajax请求都统一设置withCredentials
-        httpParams.headerDict["withCredentials"] = "true";
         // 发送
         load(httpParams);
     }
