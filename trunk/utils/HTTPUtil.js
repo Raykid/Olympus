@@ -66,8 +66,14 @@ export function load(params) {
         // 根据发送方式组织数据格式
         switch (method) {
             case "POST":
-                // POST目前规定为JSON格式发送
-                sendData = JSON.stringify(data);
+                switch (params.headerDict["Content-Type"]) {
+                    case "application/x-www-form-urlencoded":
+                        sendData = toFormParams(data);
+                        break;
+                    default:
+                        sendData = JSON.stringify(data);
+                        break;
+                }
                 break;
             case "GET":
                 // 将数据添加到url上
@@ -127,4 +133,18 @@ export function load(params) {
         // 重新发送
         send();
     }
+}
+/**
+ * 将数据转换为form形式
+ *
+ * @export
+ * @param {*} data 要转换的数据
+ * @returns {string} 转换结果字符串
+ */
+export function toFormParams(data) {
+    var keys = Object.keys(data);
+    var params = keys.map(function (key) {
+        return encodeURIComponent(key) + "=" + encodeURIComponent(data[key]);
+    });
+    return params.join("&");
 }

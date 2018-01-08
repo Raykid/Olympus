@@ -86,3 +86,11 @@ export interface IHTTPRequestParams {
  * @param {IHTTPRequestParams} params 请求参数
  */
 export declare function load(params: IHTTPRequestParams): void;
+/**
+ * 将数据转换为form形式
+ *
+ * @export
+ * @param {*} data 要转换的数据
+ * @returns {string} 转换结果字符串
+ */
+export declare function toFormParams(data: any): string;
