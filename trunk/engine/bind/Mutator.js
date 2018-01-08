@@ -50,6 +50,11 @@ function mutateObject(data, key) {
         // 判断本来这个属性是值属性还是getter/setter属性，要有不同的操作方式
         var desc = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__, key);
         if (desc) {
+            // 如果是数组，则要进行过一下数组变异
+            if (data[key] instanceof Array) {
+                mutateArray(data[key], dep);
+            }
+            // 开始变异当前属性
             if (desc.hasOwnProperty("value")) {
                 // 值属性的变异过程
                 Object.defineProperty(data, key, {
