@@ -128,8 +128,6 @@ var BridgeManager = /** @class */ (function () {
                     bridge.init(afterInitBridge);
                 else
                     afterInitBridge(bridge);
-                // 先隐藏表现层桥的htmlWrapper
-                bridge.htmlWrapper.style.display = "none";
             }
         }
         else {
@@ -141,6 +139,8 @@ var BridgeManager = /** @class */ (function () {
             // 设置初始化完毕属性
             var data = self._bridgeDict[bridge.type];
             data[1] = true;
+            // 先隐藏表现层桥的htmlWrapper
+            bridge.htmlWrapper.style.display = "none";
             // 测试是否全部初始化完毕
             self.testAllInit();
         }
