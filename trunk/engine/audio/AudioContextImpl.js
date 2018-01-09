@@ -139,7 +139,7 @@ var AudioContextImpl = /** @class */ (function () {
                             if (data.status == AudioStatus.PLAYING) {
                                 curTime += deltaTime * 1000;
                                 var totalTime = data.node.buffer.duration * 1000;
-                                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, curTime, totalTime);
+                                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
                             }
                         });
                         // 派发播放开始事件

@@ -89,7 +89,7 @@ var AudioTagImpl = /** @class */ (function () {
                             var curTime = data.node.currentTime * 1000;
                             var totalTime = data.node.duration * 1000;
                             // 派发播放进度事件
-                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, curTime, totalTime);
+                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
                         }
                     };
                     // 开始播放
