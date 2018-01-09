@@ -27,7 +27,7 @@ export function getCookie(name:string):string
             return decodeURIComponent(document.cookie.substring(start, end));
         }
     }
-    return "";
+    return undefined;
 }
 
 /**

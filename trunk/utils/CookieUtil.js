@@ -24,7 +24,7 @@ export function getCookie(name) {
             return decodeURIComponent(document.cookie.substring(start, end));
         }
     }
-    return "";
+    return undefined;
 }
 /**
  * 获取cookie值
