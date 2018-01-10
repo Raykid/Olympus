@@ -16,12 +16,21 @@ export interface IBindCommand {
      *
      * @export
      * @param {IMediator} mediator 所属的中介者
-     * @param {ICompileTarget} target 要编译的目标显示对象
+     * @param {ICompileTarget} currentTarget 要编译的目标显示对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {...any[]} args 命令参数列表
      */
-    (mediator: IMediator, target: ICompileTarget, ...args: any[]): void;
+    (mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], ...args: any[]): void;
 }
 export interface IBindParams {
+    /**
+     * 绑定命令原本所在对象
+     *
+     * @type {*}
+     * @memberof IBindParams
+     */
+    target: any;
     /**
      * 绑定命令函数
      *
@@ -63,56 +72,59 @@ export interface IStopLeftHandler {
  * 添加编译命令到显示对象上（正向）
  *
  * @export
- * @param {ICompileTarget} target 显示对象
+ * @param {ICompileTarget} currentTarget 显示对象
+ * @param {*} target 编译命令本来所在的对象
  * @param {IBindCommand} cmd 命令函数
  * @param {...any[]} args 命令参数列表
  */
-export declare function pushCompileCommand(target: ICompileTarget, cmd: IBindCommand, ...args: any[]): void;
+export declare function pushCompileCommand(currentTarget: ICompileTarget, target: any, cmd: IBindCommand, ...args: any[]): void;
 /**
  * 添加编译命令到显示对象上（反向）
  *
  * @export
- * @param {ICompileTarget} target 显示对象
+ * @param {ICompileTarget} currentTarget 显示对象
+ * @param {*} target 编译命令本来所在的对象
  * @param {IBindCommand} cmd 命令函数
  * @param {...any[]} args 命令参数列表
  */
-export declare function unshiftCompileCommand(target: ICompileTarget, cmd: IBindCommand, ...args: any[]): void;
+export declare function unshiftCompileCommand(currentTarget: ICompileTarget, target: any, cmd: IBindCommand, ...args: any[]): void;
 /**
  * 编译显示对象，会先编译自身，然后再递归编译子对象
  *
  * @export
  * @param {IMediator} mediator 显示对象所属的中介者
- * @param {ICompileTarget} target 显示对象
+ * @param {ICompileTarget} currentTarget 显示对象
+ * @param {any[]} [envModels] 环境变量数组
  */
-export declare function compile(mediator: IMediator, target: ICompileTarget): void;
+export declare function compile(mediator: IMediator, currentTarget: ICompileTarget, envModels?: any[]): void;
 /**
  * 编译bindValue命令，不会中止编译
  */
-export declare function compileValue(mediator: IMediator, target: ICompileTarget, name: string, exp: string): void;
+export declare function compileValue(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], name: string, exp: string): void;
 /**
  * 编译bindFunc命令，不会中止编译
  */
-export declare function compileFunc(mediator: IMediator, target: ICompileTarget, name: string, ...argExps: string[]): void;
+export declare function compileFunc(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], name: string, ...argExps: string[]): void;
 /**
  * 编译bindOn命令，不会中止编译
  */
-export declare function compileOn(mediator: IMediator, target: ICompileTarget, type: string, exp: string): void;
+export declare function compileOn(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], type: string, exp: string): void;
 /**
  * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
  */
-export declare function compileIf(mediator: IMediator, target: ICompileTarget, exp: string): void;
+export declare function compileIf(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], exp: string): void;
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export declare function compileFor(mediator: IMediator, target: ICompileTarget, exp: string): void;
+export declare function compileFor(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], exp: string): void;
 /**
  * 编译bindMessage命令，不会中止编译
  */
-export declare function compileMessage(mediator: IMediator, target: ICompileTarget, type: IConstructor | string, name: string, exp: string, observable?: IObservable): void;
+export declare function compileMessage(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], type: IConstructor | string, name: string, exp: string, observable?: IObservable): void;
 /**
  * 编译bindResponse命令，不会中止编译
  */
-export declare function compileResponse(mediator: IMediator, target: ICompileTarget, type: IResponseDataConstructor | string, name: string, exp: string, observable?: IObservable): void;
+export declare function compileResponse(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], type: IResponseDataConstructor | string, name: string, exp: string, observable?: IObservable): void;
 /**
  * 搜索UI，取到目标节点，执行回调
  *

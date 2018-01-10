@@ -1,6 +1,7 @@
 /// <amd-module name="EgretBridge"/>
 import { core } from "olympus-r/core/Core";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
+import { cloneObject } from "olympus-r/utils/ObjectUtil";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
@@ -519,15 +520,26 @@ var EgretBridge = /** @class */ (function () {
             var key;
             var datas = memento.datas;
             // 遍历memento的datas属性（在valuateBindFor时被赋值）
-            for (var i in datas) {
-                if (datas[i] == data) {
-                    // 这就是我们要找的key
-                    key = i;
-                    break;
+            if (datas instanceof Array) {
+                var index = renderer.itemIndex;
+                if (datas[index] != null) {
+                    key = index;
+                    delete datas[index];
+                }
+            }
+            else {
+                for (var i in datas) {
+                    if (datas[i] === data) {
+                        // 这就是我们要找的key
+                        key = i;
+                        delete datas[i];
+                        break;
+                    }
                 }
             }
             // 调用回调
-            rendererHandler(key, data, renderer);
+            if (key != null)
+                rendererHandler(key, data, renderer);
         });
         return memento;
     };
@@ -543,6 +555,7 @@ var EgretBridge = /** @class */ (function () {
         var provider;
         if (datas instanceof Array) {
             provider = new eui.ArrayCollection(datas);
+            datas = datas.concat();
         }
         else {
             // 是字典，将其变为数组
@@ -551,6 +564,7 @@ var EgretBridge = /** @class */ (function () {
                 list.push(datas[key]);
             }
             provider = new eui.ArrayCollection(list);
+            datas = cloneObject(datas);
         }
         // 设置memento
         memento.datas = datas;

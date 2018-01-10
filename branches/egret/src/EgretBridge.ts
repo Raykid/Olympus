@@ -8,6 +8,7 @@ import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import IMediator from "olympus-r/engine/mediator/IMediator";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import { cloneObject } from "olympus-r/utils/ObjectUtil";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
@@ -573,22 +574,35 @@ export default class EgretBridge implements IBridge
     public wrapBindFor(target:eui.DataGroup, rendererHandler:(key?:any, value?:any, renderer?:eui.IItemRenderer)=>void):any
     {
         var memento:any = {};
-        wrapEUIList(target, (data:any, renderer:any)=>{
+        wrapEUIList(target, (data:any, renderer:eui.IItemRenderer)=>{
             // 取出key
-            var key:string;
+            var key:any;
             var datas:any = memento.datas;
             // 遍历memento的datas属性（在valuateBindFor时被赋值）
-            for(var i in datas)
+            if(datas instanceof Array)
             {
-                if(datas[i] == data)
+                var index:number = renderer.itemIndex;
+                if(datas[index] != null)
                 {
-                    // 这就是我们要找的key
-                    key = i;
-                    break;
+                    key = index;
+                    delete datas[index];
+                }
+            }
+            else
+            {
+                for(var i in datas)
+                {
+                    if(datas[i] === data)
+                    {
+                        // 这就是我们要找的key
+                        key = i;
+                        delete datas[i];
+                        break;
+                    }
                 }
             }
             // 调用回调
-            rendererHandler(key, data, renderer);
+            if(key != null) rendererHandler(key, data, renderer);
         });
         return memento;
     }
@@ -607,6 +621,7 @@ export default class EgretBridge implements IBridge
         if(datas instanceof Array)
         {
             provider = new eui.ArrayCollection(datas);
+            datas = datas.concat();
         }
         else
         {
@@ -617,6 +632,7 @@ export default class EgretBridge implements IBridge
                 list.push(datas[key]);
             }
             provider = new eui.ArrayCollection(list);
+            datas = cloneObject(datas);
         }
         // 设置memento
         memento.datas = datas;

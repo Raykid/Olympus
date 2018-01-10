@@ -2,9 +2,13 @@
 <e:Skin class="Fuck2Skin" width="720" height="1280" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
 	<e:Image width="194" height="268" source="egret_icon_png" anchorOffsetX="0" anchorOffsetY="0" horizontalCenter="0" top="28"/>
 	<e:Button id="btn" label="返回" horizontalCenter="0" bottom="34"/>
-	<e:DataGroup id="lst" height="806" y="330" anchorOffsetX="0" anchorOffsetY="0" itemRendererSkinName="ListRenderer" left="0" right="0">
-		<e:layout>
-			<e:VerticalLayout/>
-		</e:layout>
-	</e:DataGroup>
+	<e:Scroller height="566" y="330" anchorOffsetX="0" anchorOffsetY="0" left="0" right="0">
+		<e:Group>
+			<e:DataGroup id="lst" anchorOffsetX="0" anchorOffsetY="0" itemRendererSkinName="ListRenderer" scaleX="1" scaleY="1" left="0" right="0">
+				<e:layout>
+				<e:VerticalLayout/>
+				</e:layout>
+			</e:DataGroup>
+		</e:Group>
+	</e:Scroller>
 </e:Skin>

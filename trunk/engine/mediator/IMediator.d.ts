@@ -32,7 +32,7 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable, 
      */
     readonly viewModel: any;
     /**
-     * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
+     * 绑定目标数组，key是当前编译目标对象，即currentTarget；value是命令本来所在的对象，即target
      *
      * @type {Dictionary<any, any>[]}
      * @memberof IMediator

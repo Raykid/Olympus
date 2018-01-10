@@ -256,8 +256,6 @@ function listenOnOpen(prototype, propertyKey, before, after) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            // 注册到字典中
-            var target = mediator[propertyKey];
             // 调用回调
             before && before(mediator);
             // 恢复原始方法
@@ -280,7 +278,7 @@ function listenOnOpen(prototype, propertyKey, before, after) {
                 var bindTargets = mediator.bindTargets;
                 for (var depth in bindTargets) {
                     var dict = bindTargets[depth];
-                    dict.forEach(function (target) { return BindUtil.compile(mediator, target); });
+                    dict.forEach(function (currentTarget) { return BindUtil.compile(mediator, currentTarget); });
                 }
             }
         };
@@ -326,16 +324,16 @@ function searchUIDepth(values, mediator, target, callback, addressing) {
         if (leftHandlers)
             index = leftHandlers.indexOf(handler);
         // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-        searchUI(values, target, function (target, name, exp, depth) {
+        searchUI(values, target, function (currentTarget, name, exp, depth) {
             if (addressing)
-                target = target[name];
-            // 记录编译目标到bindTargets中
+                currentTarget = currentTarget[name];
+            // 记录当前编译目标和命令本体目标到bindTargets中
             var dict = bindTargets[depth];
             if (!dict)
                 bindTargets[depth] = dict = new Dictionary();
-            dict.set(target, target);
+            dict.set(currentTarget, target);
             // 调用回调
-            callback(target, name, exp, leftHandlers, index);
+            callback(currentTarget, target, name, exp, leftHandlers, index);
         }, depth);
     }
 }
@@ -355,9 +353,10 @@ export function BindValue(arg1, arg2) {
                 uiDict = arg1;
             }
             // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-            searchUIDepth(uiDict, mediator, mediator[propertyKey], function (target, name, exp) {
+            var target = mediator[propertyKey];
+            searchUIDepth(uiDict, mediator, target, function (currentTarget, target, name, exp) {
                 // 添加编译指令
-                BindUtil.pushCompileCommand(target, BindUtil.compileValue, name, exp);
+                BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileValue, name, exp);
             });
         });
     };
@@ -378,12 +377,13 @@ export function BindFunc(arg1, arg2) {
                 funcDict = arg1;
             }
             // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-            searchUIDepth(funcDict, mediator, mediator[propertyKey], function (target, name, argExps) {
+            var target = mediator[propertyKey];
+            searchUIDepth(funcDict, mediator, target, function (currentTarget, target, name, argExps) {
                 // 统一参数类型为字符串数组
                 if (typeof argExps == "string")
                     argExps = [argExps];
                 // 添加编译指令
-                BindUtil.pushCompileCommand.apply(BindUtil, [target, BindUtil.compileFunc, name].concat(argExps));
+                BindUtil.pushCompileCommand.apply(BindUtil, [currentTarget, target, BindUtil.compileFunc, name].concat(argExps));
             });
         });
     };
@@ -396,6 +396,7 @@ export function BindOn(arg1, arg2, arg3) {
         listenOnOpen(prototype, propertyKey, function (mediator) {
             // 获取编译启动目标
             var target = mediator[propertyKey];
+            var currentTarget = target;
             // 组织参数字典
             var evtDict;
             if (typeof arg1 == "string") {
@@ -404,8 +405,8 @@ export function BindOn(arg1, arg2, arg3) {
                     // 指定了UI对象，先去寻找
                     var nameDict = {};
                     nameDict[arg1] = "";
-                    searchUI(nameDict, target, function (ui, key, value) {
-                        target = ui[key];
+                    searchUI(nameDict, currentTarget, function (temp, key, value) {
+                        currentTarget = temp[key];
                     });
                     evtDict[arg2] = arg3;
                 }
@@ -417,9 +418,9 @@ export function BindOn(arg1, arg2, arg3) {
                 evtDict = arg1;
             }
             // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-            searchUIDepth(evtDict, mediator, target, function (target, type, exp) {
+            searchUIDepth(evtDict, mediator, currentTarget, function (currentTarget, target, type, exp) {
                 // 添加编译指令
-                BindUtil.pushCompileCommand(target, BindUtil.compileOn, type, exp);
+                BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileOn, type, exp);
             });
         });
     };
@@ -430,12 +431,13 @@ export function BindOn(arg1, arg2, arg3) {
 export function BindIf(arg1, arg2) {
     return function (prototype, propertyKey) {
         listenOnOpen(prototype, propertyKey, function (mediator) {
+            var target = mediator[propertyKey];
             if (typeof arg1 == "string") {
                 if (!arg2) {
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
-                    searchUIDepth({ r: 13 }, mediator, mediator[propertyKey], function (target, name, exp) {
+                    searchUIDepth({ r: 13 }, mediator, target, function (currentTarget, target, name, exp) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(target, BindUtil.compileIf, arg1);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileIf, arg1);
                     });
                 }
                 else {
@@ -443,17 +445,17 @@ export function BindIf(arg1, arg2) {
                     var uiDict = {};
                     uiDict[arg1] = arg2;
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                    searchUIDepth(uiDict, mediator, mediator[propertyKey], function (target, name, exp) {
+                    searchUIDepth(uiDict, mediator, target, function (currentTarget, target, name, exp) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(target, BindUtil.compileIf, exp);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileIf, exp);
                     }, true);
                 }
             }
             else {
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                searchUIDepth(arg1, mediator, mediator[propertyKey], function (target, name, exp) {
+                searchUIDepth(arg1, mediator, target, function (currentTarget, target, name, exp) {
                     // 添加编译指令
-                    BindUtil.pushCompileCommand(target, BindUtil.compileIf, exp);
+                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileIf, exp);
                 }, true);
             }
         });
@@ -471,11 +473,11 @@ export function BindFor(arg1, arg2) {
             if (typeof arg1 == "string") {
                 if (!arg2) {
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
-                    searchUIDepth({ r: 13 }, mediator, mediator[propertyKey], function (target, name, exp, leftHandlers, index) {
+                    searchUIDepth({ r: 13 }, mediator, target, function (currentTarget, target, name, exp, leftHandlers, index) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(target, BindUtil.compileFor, arg1);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, arg1);
                         // 设置中断编译
-                        target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
+                        currentTarget.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     });
                 }
                 else {
@@ -483,29 +485,29 @@ export function BindFor(arg1, arg2) {
                     var uiDict = {};
                     uiDict[arg1] = arg2;
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                    searchUIDepth(uiDict, mediator, target, function (target, name, exp, leftHandlers, index) {
+                    searchUIDepth(uiDict, mediator, target, function (currentTarget, target, name, exp, leftHandlers, index) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(target, BindUtil.compileFor, exp);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, exp);
                         // 设置中断编译
-                        target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
+                        currentTarget.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     }, true);
                 }
             }
             else {
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                searchUIDepth(arg1, mediator, target, function (target, name, exp, leftHandlers, index) {
+                searchUIDepth(arg1, mediator, target, function (currentTarget, target, name, exp, leftHandlers, index) {
                     // 添加编译指令
-                    BindUtil.pushCompileCommand(target, BindUtil.compileFor, exp);
+                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, exp);
                     // 设置中断编译
-                    target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
+                    currentTarget.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                 }, true);
             }
         });
     };
 }
 function doBindMessage(mediator, target, type, uiDict, observable) {
-    searchUIDepth(uiDict, mediator, target, function (target, name, exp) {
-        BindUtil.pushCompileCommand(target, BindUtil.compileMessage, type, name, exp, observable);
+    searchUIDepth(uiDict, mediator, target, function (currentTarget, target, name, exp) {
+        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileMessage, type, name, exp, observable);
     });
 }
 /**
@@ -514,14 +516,15 @@ function doBindMessage(mediator, target, type, uiDict, observable) {
 export function BindMessage(arg1, arg2) {
     return function (prototype, propertyKey) {
         listenOnOpen(prototype, propertyKey, function (mediator) {
+            var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式
-                doBindMessage(mediator, mediator[propertyKey], arg1, arg2, mediator.observable);
+                doBindMessage(mediator, target, arg1, arg2, mediator.observable);
             }
             else {
                 // 是字典方式
                 for (var type in arg1) {
-                    doBindMessage(mediator, mediator[propertyKey], type, arg1[type], mediator.observable);
+                    doBindMessage(mediator, target, type, arg1[type], mediator.observable);
                 }
             }
         });
@@ -533,22 +536,23 @@ export function BindMessage(arg1, arg2) {
 export function BindGlobalMessage(arg1, arg2) {
     return function (prototype, propertyKey) {
         listenOnOpen(prototype, propertyKey, function (mediator) {
+            var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式
-                doBindMessage(mediator, mediator[propertyKey], arg1, arg2);
+                doBindMessage(mediator, target, arg1, arg2);
             }
             else {
                 // 是字典方式
                 for (var type in arg1) {
-                    doBindMessage(mediator, mediator[propertyKey], type, arg1[type]);
+                    doBindMessage(mediator, target, type, arg1[type]);
                 }
             }
         });
     };
 }
 function doBindResponse(mediator, target, type, uiDict, observable) {
-    searchUIDepth(uiDict, mediator, target, function (target, name, exp) {
-        BindUtil.pushCompileCommand(target, BindUtil.compileResponse, type, name, exp, observable);
+    searchUIDepth(uiDict, mediator, target, function (currentTarget, target, name, exp) {
+        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileResponse, type, name, exp, observable);
     });
 }
 /**
@@ -558,14 +562,15 @@ export function BindResponse(arg1, arg2) {
     return function (prototype, propertyKey) {
         // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
         listenOnOpen(prototype, propertyKey, function (mediator) {
+            var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式
-                doBindResponse(mediator, mediator[propertyKey], arg1, arg2, mediator.observable);
+                doBindResponse(mediator, target, arg1, arg2, mediator.observable);
             }
             else {
                 // 是字典方式
                 for (var type in arg1) {
-                    doBindResponse(mediator, mediator[propertyKey], type, arg1[type], mediator.observable);
+                    doBindResponse(mediator, target, type, arg1[type], mediator.observable);
                 }
             }
         });
@@ -577,14 +582,15 @@ export function BindResponse(arg1, arg2) {
 export function BindGlobalResponse(arg1, arg2) {
     return function (prototype, propertyKey) {
         listenOnOpen(prototype, propertyKey, function (mediator) {
+            var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式
-                doBindResponse(mediator, mediator[propertyKey], arg1, arg2);
+                doBindResponse(mediator, target, arg1, arg2);
             }
             else {
                 // 是字典方式
                 for (var type in arg1) {
-                    doBindResponse(mediator, mediator[propertyKey], type, arg1[type]);
+                    doBindResponse(mediator, target, type, arg1[type]);
                 }
             }
         });

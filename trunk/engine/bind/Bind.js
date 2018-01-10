@@ -30,22 +30,23 @@ var Bind = /** @class */ (function () {
     /**
      * 创建一个观察者，在数值变更时会通知回调进行更新
      *
-     * @param {*} target 作用目标，指表达式所在的显示对象
+     * @param {*} currentTarget 作用目标，指表达式所在的显示对象
+     * @param {*} target 绑定表达式本来所在的对象
      * @param {string} exp 表达式
      * @param {WatcherCallback} callback 订阅器回调
      * @param {...any[]} scopes 作用域列表，首个作用域会被当做this指向
      * @returns {IWatcher} 返回观察者本身
      * @memberof Bind
      */
-    Bind.prototype.createWatcher = function (target, exp, callback) {
+    Bind.prototype.createWatcher = function (currentTarget, target, exp, callback) {
         var scopes = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            scopes[_i - 3] = arguments[_i];
+        for (var _i = 4; _i < arguments.length; _i++) {
+            scopes[_i - 4] = arguments[_i];
         }
-        var key = getObjectHashs.apply(void 0, [target, exp].concat(scopes));
+        var key = getObjectHashs.apply(void 0, [currentTarget, exp].concat(scopes));
         var watcher = this._watcherDict[key];
         if (!watcher)
-            this._watcherDict[key] = watcher = new (Watcher.bind.apply(Watcher, [void 0, this, target, exp, callback].concat(scopes)))();
+            this._watcherDict[key] = watcher = new (Watcher.bind.apply(Watcher, [void 0, this, currentTarget, target, exp, callback].concat(scopes)))();
         return watcher;
     };
     return Bind;

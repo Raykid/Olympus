@@ -20,14 +20,23 @@ export interface IBindCommand
      * 
      * @export
      * @param {IMediator} mediator 所属的中介者
-     * @param {ICompileTarget} target 要编译的目标显示对象
+     * @param {ICompileTarget} currentTarget 要编译的目标显示对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {...any[]} args 命令参数列表
      */
-    (mediator:IMediator, target:ICompileTarget, ...args:any[]):void;
+    (mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], ...args:any[]):void;
 }
 
 export interface IBindParams
 {
+    /**
+     * 绑定命令原本所在对象
+     * 
+     * @type {*}
+     * @memberof IBindParams
+     */
+    target:any;
     /**
      * 绑定命令函数
      * 
@@ -70,13 +79,13 @@ export interface IStopLeftHandler
     (target:any, bindTargets:Dictionary<any, any>[], leftHandlers:IStopLeftHandler[]):void;
 }
 
-function getBindParams(target:ICompileTarget):IBindParams[]
+function getBindParams(currentTarget:ICompileTarget):IBindParams[]
 {
-    var bindParams:IBindParams[] = target.__bind_commands__;
+    var bindParams:IBindParams[] = currentTarget.__bind_commands__;
     if(!bindParams)
     {
         bindParams = [];
-        Object.defineProperty(target, "__bind_commands__", {
+        Object.defineProperty(currentTarget, "__bind_commands__", {
             configurable: true,
             enumerable: false,
             writable: true,
@@ -90,27 +99,29 @@ function getBindParams(target:ICompileTarget):IBindParams[]
  * 添加编译命令到显示对象上（正向）
  * 
  * @export
- * @param {ICompileTarget} target 显示对象
+ * @param {ICompileTarget} currentTarget 显示对象
+ * @param {*} target 编译命令本来所在的对象
  * @param {IBindCommand} cmd 命令函数
  * @param {...any[]} args 命令参数列表
  */
-export function pushCompileCommand(target:ICompileTarget, cmd:IBindCommand, ...args:any[]):void
+export function pushCompileCommand(currentTarget:ICompileTarget, target:any, cmd:IBindCommand, ...args:any[]):void
 {
     // 添加编译指令
-    getBindParams(target).push({cmd: cmd, args: args});
+    getBindParams(currentTarget).push({cmd: cmd, target: target, args: args});
 }
 
 /**
  * 添加编译命令到显示对象上（反向）
  * 
  * @export
- * @param {ICompileTarget} target 显示对象
+ * @param {ICompileTarget} currentTarget 显示对象
+ * @param {*} target 编译命令本来所在的对象
  * @param {IBindCommand} cmd 命令函数
  * @param {...any[]} args 命令参数列表
  */
-export function unshiftCompileCommand(target:ICompileTarget, cmd:IBindCommand, ...args:any[]):void
+export function unshiftCompileCommand(currentTarget:ICompileTarget, target:any, cmd:IBindCommand, ...args:any[]):void
 {
-    getBindParams(target).unshift({cmd: cmd, args: args});
+    getBindParams(currentTarget).unshift({cmd: cmd, target: target, args: args});
 }
 
 /**
@@ -118,13 +129,14 @@ export function unshiftCompileCommand(target:ICompileTarget, cmd:IBindCommand, .
  * 
  * @export
  * @param {IMediator} mediator 显示对象所属的中介者
- * @param {ICompileTarget} target 显示对象
+ * @param {ICompileTarget} currentTarget 显示对象
+ * @param {any[]} [envModels] 环境变量数组
  */
-export function compile(mediator:IMediator, target:ICompileTarget):void
+export function compile(mediator:IMediator, currentTarget:ICompileTarget, envModels?:any[]):void
 {
     // 取到编译参数列表
-    var bindParams:IBindParams[] = target.__bind_commands__;
-    // 编译target自身
+    var bindParams:IBindParams[] = currentTarget.__bind_commands__;
+    // 编译currentTarget自身
     if(bindParams)
     {
         // 这里没有提前读取出length属性，因为需要动态判断数组长度
@@ -133,7 +145,7 @@ export function compile(mediator:IMediator, target:ICompileTarget):void
             // 使用shift按顺序取出编译命令
             var params:IBindParams = bindParams.shift();
             // 调用编译命令，并且更新中止状态
-            params.cmd(mediator, target, ...params.args);
+            params.cmd(mediator, currentTarget, params.target, envModels || [], ...params.args);
         }
     }
 }
@@ -141,45 +153,45 @@ export function compile(mediator:IMediator, target:ICompileTarget):void
 /**
  * 编译bindValue命令，不会中止编译
  */
-export function compileValue(mediator:IMediator, target:ICompileTarget, name:string, exp:string):void
+export function compileValue(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], name:string, exp:string):void
 {
-    bindManager.bindValue(mediator, target, name, exp);
+    bindManager.bindValue(mediator, currentTarget, target, envModels, name, exp);
 }
 
 /**
  * 编译bindFunc命令，不会中止编译
  */
-export function compileFunc(mediator:IMediator, target:ICompileTarget, name:string, ...argExps:string[]):void
+export function compileFunc(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], name:string, ...argExps:string[]):void
 {
-    bindManager.bindFunc(mediator, target, name, ...argExps);
+    bindManager.bindFunc(mediator, currentTarget, target, envModels, name, ...argExps);
 }
 
 /**
  * 编译bindOn命令，不会中止编译
  */
-export function compileOn(mediator:IMediator, target:ICompileTarget, type:string, exp:string):void
+export function compileOn(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], type:string, exp:string):void
 {
-    bindManager.bindOn(mediator, target, type, exp);
+    bindManager.bindOn(mediator, currentTarget, target, envModels, type, exp);
 }
 
 /**
  * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
  */
-export function compileIf(mediator:IMediator, target:ICompileTarget, exp:string):void
+export function compileIf(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], exp:string):void
 {
     // 将后面的编译命令缓存起来
-    var bindParams:IBindParams[] = target.__bind_commands__;
+    var bindParams:IBindParams[] = currentTarget.__bind_commands__;
     var cached:IBindParams[] = bindParams.splice(0, bindParams.length);
     // 绑定if命令
     var terminated:boolean = false;
-    bindManager.bindIf(mediator, target, exp, (value:boolean)=>{
+    bindManager.bindIf(mediator, currentTarget, target, envModels, exp, (value:boolean)=>{
         // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
         if(!terminated && value)
         {
             // 恢复后面的命令
-            target.__bind_commands__ = cached;
+            currentTarget.__bind_commands__ = cached;
             // 继续编译
-            compile(mediator, target);
+            compile(mediator, currentTarget, envModels);
             // 设置已终结标识
             terminated = true;
         }
@@ -189,12 +201,12 @@ export function compileIf(mediator:IMediator, target:ICompileTarget, exp:string)
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export function compileFor(mediator:IMediator, target:ICompileTarget, exp:string):void
+export function compileFor(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], exp:string):void
 {
     // 将后面的编译命令缓存起来
-    var leftHandlers:IStopLeftHandler[] = target.__stop_left_handlers__;
-    // 绑定if命令
-    bindManager.bindFor(mediator, target, exp, (data:any, renderer:ICompileTarget)=>{
+    var leftHandlers:IStopLeftHandler[] = currentTarget.__stop_left_handlers__;
+    // 绑定for命令
+    bindManager.bindFor(mediator, currentTarget, target, envModels, exp, (data:any, renderer:ICompileTarget, subEnvModels:any[])=>{
         var subLeftHandlers:IStopLeftHandler[] = leftHandlers.concat();
         var bindTargets:Dictionary<any, any>[] = [];
         // 针对每一个renderer赋值后续编译指令
@@ -206,7 +218,7 @@ export function compileFor(mediator:IMediator, target:ICompileTarget, exp:string
         for(var depth in bindTargets)
         {
             var dict:Dictionary<any, any> = bindTargets[depth];
-            dict.forEach(target=>compile(mediator, target));
+            dict.forEach(currentTarget=>compile(mediator, currentTarget, subEnvModels));
         }
     });
 }
@@ -214,17 +226,17 @@ export function compileFor(mediator:IMediator, target:ICompileTarget, exp:string
 /**
  * 编译bindMessage命令，不会中止编译
  */
-export function compileMessage(mediator:IMediator, target:ICompileTarget, type:IConstructor|string, name:string, exp:string, observable?:IObservable):void
+export function compileMessage(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], type:IConstructor|string, name:string, exp:string, observable?:IObservable):void
 {
-    bindManager.bindMessage(mediator, target, type, name, exp, observable);
+    bindManager.bindMessage(mediator, currentTarget, target, envModels, type, name, exp, observable);
 }
 
 /**
  * 编译bindResponse命令，不会中止编译
  */
-export function compileResponse(mediator:IMediator, target:ICompileTarget, type:IResponseDataConstructor|string, name:string, exp:string, observable?:IObservable):void
+export function compileResponse(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], type:IResponseDataConstructor|string, name:string, exp:string, observable?:IObservable):void
 {
-    bindManager.bindResponse(mediator, target, type, name, exp, observable);
+    bindManager.bindResponse(mediator, currentTarget, target, envModels, type, name, exp, observable);
 }
 
 /**

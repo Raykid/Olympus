@@ -19,6 +19,7 @@ export default class Watcher implements IWatcher
     private _value:any;
 
     private _bind:Bind;
+    private _currentTarget:any;
     private _target:any;
     private _exp:string;
     private _scopes:any[];
@@ -27,11 +28,12 @@ export default class Watcher implements IWatcher
 
     private _disposed:boolean = false;
 
-    public constructor(bind:Bind, target:any, exp:string, callback:WatcherCallback, ...scopes:any[])
+    public constructor(bind:Bind, currentTarget:any, target:any, exp:string, callback:WatcherCallback, ...scopes:any[])
     {
         // 记录Bind实例
         this._bind = bind;
         // 记录作用目标、表达式和作用域
+        this._currentTarget = currentTarget;
         this._target = target;
         this._exp = exp;
         this._scopes = scopes;
@@ -56,7 +58,9 @@ export default class Watcher implements IWatcher
         // 设置通用属性
         var commonScope:any = {
             $this: this._bind.mediator,
+            $data: this._bind.mediator.viewModel,
             $bridge: this._bind.mediator.bridge,
+            $currentTarget: this._currentTarget,
             $target: this._target
         };
         // 表达式求值

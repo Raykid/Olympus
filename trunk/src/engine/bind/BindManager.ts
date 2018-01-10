@@ -22,7 +22,6 @@ import { IWatcher } from "./Watcher";
 export default class BindManager
 {
     private _bindDict:Dictionary<IMediator, BindData> = new Dictionary();
-    private _envModel:any[] = [];
 
     /**
      * 绑定数据到UI上
@@ -84,12 +83,14 @@ export default class BindManager
      * 绑定属性值
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} target 绑定到的target实体对象
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的属性名
      * @param {string} exp 绑定的属性表达式
      * @memberof BindManager
      */
-    public bindValue(mediator:IMediator, target:any, name:string, exp:string):void
+    public bindValue(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:string):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -97,9 +98,9 @@ export default class BindManager
             // 如果之前绑定过，则要先销毁之
             if(watcher) watcher.dispose();
             // 绑定新的订阅者
-            watcher = bindData.bind.createWatcher(target, exp, (value:any)=>{
-                target[name] = value;
-            }, mediator.viewModel, ...this._envModel);
+            watcher = bindData.bind.createWatcher(currentTarget, target, exp, (value:any)=>{
+                currentTarget[name] = value;
+            }, mediator.viewModel, ...envModels);
         });
     }
 
@@ -107,12 +108,14 @@ export default class BindManager
      * 绑定方法执行
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} target 绑定到的target实体对象
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的方法名
      * @param {...string[]} argExps 执行方法的参数表达式列表
      * @memberof BindManager
      */
-    public bindFunc(mediator:IMediator, target:any, name:string, ...argExps:string[]):void
+    public bindFunc(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, ...argExps:string[]):void
     {
         var watchers:IWatcher[] = [];
         var bindData:BindData = this._bindDict.get(mediator);
@@ -150,7 +153,7 @@ export default class BindManager
                         argsInited = true;
                     }
                     // 赋值已经完毕了，调用方法，this指向ui本身
-                    target[name].apply(target, args);
+                    currentTarget[name].apply(currentTarget, args);
                 };
                 // 清理旧的订阅者
                 for(var i:number = 0, len:number = watchers.length; i < len; i++)
@@ -166,7 +169,7 @@ export default class BindManager
                 for(var i:number = 0, len:number = argExps.length; i < len; i++)
                 {
                     // 绑定表达式
-                    var watcher:IWatcher = bindData.bind.createWatcher(target, argExps[i], handler.bind(this, i), mediator.viewModel, ...this._envModel);
+                    var watcher:IWatcher = bindData.bind.createWatcher(currentTarget, target, argExps[i], handler.bind(this, i), mediator.viewModel, ...envModels);
                     // 记录订阅者
                     watchers.push(watcher);
                 }
@@ -183,12 +186,14 @@ export default class BindManager
      * 绑定事件
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} ui 绑定到的ui实体对象
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {string} type 绑定的事件类型
      * @param {string} exp 绑定的事件回调表达式
      * @memberof BindManager
      */
-    public bindOn(mediator:IMediator, target:any, type:string, exp:string):void
+    public bindOn(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:string, exp:string):void
     {
         var handler:Function;
         this.addBindHandler(mediator, ()=>{
@@ -196,23 +201,23 @@ export default class BindManager
                 $this: mediator,
                 $data: mediator.viewModel,
                 $bridge: mediator.bridge,
+                $currentTarget: currentTarget,
                 $target: target
             };
             // 如果之前添加过监听，则先移除之
-            if(!handler) mediator.bridge.unmapListener(target, type, handler, mediator.viewModel);
+            if(!handler) mediator.bridge.unmapListener(currentTarget, type, handler, mediator.viewModel);
             // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
             handler = mediator.viewModel[exp];
             if(!handler)
             {
-                var func:Function = createRunFunc(exp, 2 + this._envModel.length);
+                var func:Function = createRunFunc(exp, 2 + envModels.length);
                 // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
-                var envModel:any[] = this._envModel.concat();
                 handler = function():void
                 {
-                    func.call(this, mediator.viewModel, ...envModel, commonScope);
+                    func.call(this, mediator.viewModel, ...envModels, commonScope);
                 };
             }
-            mediator.bridge.mapListener(target, type, handler, mediator.viewModel);
+            mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
         });
     }
 
@@ -234,12 +239,14 @@ export default class BindManager
      * 绑定显示
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} target 绑定到的target实体对象
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {string} exp 绑定表达式
      * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
      * @memberof BindManager
      */
-    public bindIf(mediator:IMediator, target:any, exp:string, callback?:(value:boolean)=>void):void
+    public bindIf(mediator:IMediator, currentTarget:any, target:any, envModels:any[], exp:string, callback?:(value:boolean)=>void):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -248,13 +255,13 @@ export default class BindManager
             // 如果之前绑定过，则要先销毁之
             if(watcher) watcher.dispose();
             // 绑定表达式
-            watcher = bindData.bind.createWatcher(target, exp, (value:boolean)=>{
+            watcher = bindData.bind.createWatcher(currentTarget, target, exp, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
-                if(value) this.replaceDisplay(mediator.bridge, replacer, target);
-                else this.replaceDisplay(mediator.bridge, target, replacer);
+                if(value) this.replaceDisplay(mediator.bridge, replacer, currentTarget);
+                else this.replaceDisplay(mediator.bridge, currentTarget, replacer);
                 // 触发回调
                 callback && callback(value);
-            }, mediator.viewModel, ...this._envModel);
+            }, mediator.viewModel, ...envModels);
         });
     }
 
@@ -263,12 +270,14 @@ export default class BindManager
      * 绑定循环
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} target 绑定到的target实体对象
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
-     * @param {(data?:any, renderer?:any)=>void} [callback] 每次生成新的renderer实例时调用这个回调
+     * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    public bindFor(mediator:IMediator, target:any, exp:string, callback?:(data?:any, renderer?:any)=>void):void
+    public bindFor(mediator:IMediator, currentTarget:any, target:any, envModels:any[], exp:string, callback?:(data:any, renderer:any, envModels:any[])=>void):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -278,26 +287,26 @@ export default class BindManager
             var res:RegExpExecArray = this._regExp.exec(exp);
             if(!res) return;
             // 包装渲染器创建回调
-            var memento:any = mediator.bridge.wrapBindFor(target, (key:any, value:any, renderer:any)=>{
+            var memento:any = mediator.bridge.wrapBindFor(currentTarget, (key:any, value:any, renderer:any)=>{
                 // 设置环境变量
                 var commonScope:any = {
                     $key: key,
                     $value: value,
-                    $target: renderer
+                    $parent: envModels[envModels.length - 1] || mediator.viewModel
                 };
                 // 填入用户声明的属性
                 commonScope[res[1]] = (res[2] == "in" ? key : value);
+                // 生成一个环境变量的副本
+                var subEnvModels:any[] = envModels.concat();
                 // 插入环境变量
-                this._envModel.push(commonScope);
-                // 触发回调
-                callback && callback(value, renderer);
-                // 移除环境变量
-                this._envModel.splice(this._envModel.indexOf(commonScope), 1);
+                subEnvModels.push(commonScope);
+                // 触发回调，进行内部编译
+                callback && callback(value, renderer, subEnvModels);
             });
             // 如果之前绑定过，则要先销毁之
             if(watcher) watcher.dispose();
             // 获得要遍历的数据集合
-            watcher = bindData.bind.createWatcher(target, res[5], (datas:any)=>{
+            watcher = bindData.bind.createWatcher(currentTarget, target, res[5], (datas:any)=>{
                 // 如果遍历的对象是个数字，则伪造一个临时数组供使用
                 if(typeof datas === "number")
                 {
@@ -309,8 +318,8 @@ export default class BindManager
                     datas = tempArr;
                 }
                 // 赋值
-                mediator.bridge.valuateBindFor(target, datas, memento);
-            }, mediator.viewModel, ...this._envModel);
+                mediator.bridge.valuateBindFor(currentTarget, datas, memento);
+            }, mediator.viewModel, ...envModels);
         });
     }
     
@@ -318,14 +327,16 @@ export default class BindManager
      * 绑定Message
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} target 绑定到的target实体对象
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {IConstructor|string} type 绑定的消息类型字符串
      * @param {string} name 绑定的属性名
      * @param {string} exp 绑定的表达式
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindMessage(mediator:IMediator, target:any, type:IConstructor|string, name:string, exp:string, observable?:IObservable):void
+    public bindMessage(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IConstructor|string, name:string, exp:string, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -347,9 +358,10 @@ export default class BindManager
                     $this: mediator,
                     $data: mediator.viewModel,
                     $bridge: mediator.bridge,
+                    $currentTarget: currentTarget,
                     $target: target
                 };
-                target[name] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, ...this._envModel, commonScope);
+                currentTarget[name] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, ...envModels, commonScope);
             }
         };
         // 添加监听
@@ -360,14 +372,16 @@ export default class BindManager
      * 绑定Response
      * 
      * @param {IMediator} mediator 中介者
-     * @param {*} target 绑定到的target实体对象
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
      * @param {string} name 绑定的属性名
      * @param {string} exp 绑定的表达式
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindResponse(mediator:IMediator, target:any, type:IResponseDataConstructor|string, name:string, exp:string, observable?:IObservable):void
+    public bindResponse(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IResponseDataConstructor|string, name:string, exp:string, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -384,9 +398,10 @@ export default class BindManager
                     $this: mediator,
                     $data: mediator.viewModel,
                     $bridge: mediator.bridge,
+                    $currentTarget: currentTarget,
                     $target: target
                 };
-                target[name] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, ...this._envModel, commonScope);
+                currentTarget[name] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, ...envModels, commonScope);
             }
         };
         // 添加监听

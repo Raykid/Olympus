@@ -13,13 +13,14 @@ export default class Watcher implements IWatcher {
     private static _uid;
     private _value;
     private _bind;
+    private _currentTarget;
     private _target;
     private _exp;
     private _scopes;
     private _expFunc;
     private _callback;
     private _disposed;
-    constructor(bind: Bind, target: any, exp: string, callback: WatcherCallback, ...scopes: any[]);
+    constructor(bind: Bind, currentTarget: any, target: any, exp: string, callback: WatcherCallback, ...scopes: any[]);
     /**
      * 获取到表达式当前最新值
      * @returns {any} 最新值

@@ -8,15 +8,16 @@ import { createEvalFunc } from "./Utils";
  * 数据更新订阅者，当依赖的数据有更新时会触发callback通知外面
 */
 var Watcher = /** @class */ (function () {
-    function Watcher(bind, target, exp, callback) {
+    function Watcher(bind, currentTarget, target, exp, callback) {
         var scopes = [];
-        for (var _i = 4; _i < arguments.length; _i++) {
-            scopes[_i - 4] = arguments[_i];
+        for (var _i = 5; _i < arguments.length; _i++) {
+            scopes[_i - 5] = arguments[_i];
         }
         this._disposed = false;
         // 记录Bind实例
         this._bind = bind;
         // 记录作用目标、表达式和作用域
+        this._currentTarget = currentTarget;
         this._target = target;
         this._exp = exp;
         this._scopes = scopes;
@@ -40,7 +41,9 @@ var Watcher = /** @class */ (function () {
         // 设置通用属性
         var commonScope = {
             $this: this._bind.mediator,
+            $data: this._bind.mediator.viewModel,
             $bridge: this._bind.mediator.bridge,
+            $currentTarget: this._currentTarget,
             $target: this._target
         };
         // 表达式求值

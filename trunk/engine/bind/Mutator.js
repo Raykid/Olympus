@@ -59,7 +59,7 @@ function mutateObject(data, key) {
                 // 值属性的变异过程
                 Object.defineProperty(data, key, {
                     enumerable: true,
-                    configurable: false,
+                    configurable: true,
                     get: function () {
                         // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
                         var watcher = Watcher.updating;

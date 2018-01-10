@@ -18,12 +18,12 @@ class SecondMediator extends SceneMediator
     @BindMessage("FuckMsg", {label: "onMsg($arguments[0])"})
     @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
-    @BindFor("i in fuckList")
+    @BindFor("i of fuckList.concat(fuckList).concat(fuckList).concat(fuckList)")
     @BindValue("txt.text", "i")
-    @BindFor("lst", "key in fuckList")
+    @BindFor("lst", "j of fuckList")
     @BindValue({
         txt: {
-            text: "$target.$hashCode"
+            text: "'i=' + i + ' & ' + 'j=' + j"
         }
     })
     public lst:eui.DataGroup;
