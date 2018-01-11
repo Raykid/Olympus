@@ -1,3 +1,5 @@
+import { extendObject } from "../../utils/ObjectUtil";
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -13,6 +15,16 @@ export interface EvalFunc
 }
 
 export type EvalExp = string | EvalFunc;
+
+function wrapEvalFunc(exp:EvalFunc):EvalFunc
+{
+    // 这个方法的功能主要是将多个scope合并成为一个scope
+    return function(...scopes:any[]):any
+    {
+        var scope:any = extendObject({}, ...scopes.reverse());
+        return exp.call(this, scope);
+    };
+}
 
 /**
  * 将表达式包装成为方法
@@ -36,7 +48,7 @@ function wrapEvalFuncExp(exp:EvalExp, scopeCount:number):EvalFunc
     }
     else
     {
-        return exp;
+        return wrapEvalFunc(exp);
     }
 }
 
@@ -74,7 +86,7 @@ export function createRunFunc(exp:EvalExp, scopeCount:number=0):EvalFunc
     }
     else
     {
-        return exp;
+        return wrapEvalFunc(exp);
     }
 }
 
@@ -104,7 +116,7 @@ export function createEvalFunc(exp:EvalExp, scopeCount:number = 0):EvalFunc
     if(typeof exp === "string")
         return createRunFunc("return " + exp, scopeCount);
     else
-        return exp;
+        return wrapEvalFunc(exp);
 }
 
 /**

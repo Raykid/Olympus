@@ -1,11 +1,15 @@
-/**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-11-06
- * @modify date 2017-11-06
- *
- * 绑定工具类
-*/
+import { extendObject } from "../../utils/ObjectUtil";
+function wrapEvalFunc(exp) {
+    // 这个方法的功能主要是将多个scope合并成为一个scope
+    return function () {
+        var scopes = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            scopes[_i] = arguments[_i];
+        }
+        var scope = extendObject.apply(void 0, [{}].concat(scopes.reverse()));
+        return exp.call(this, scope);
+    };
+}
 /**
  * 将表达式包装成为方法
  *
@@ -24,7 +28,7 @@ function wrapEvalFuncExp(exp, scopeCount) {
         return Function(argList.join(","), expStr);
     }
     else {
-        return exp;
+        return wrapEvalFunc(exp);
     }
 }
 /**
@@ -57,7 +61,7 @@ export function createRunFunc(exp, scopeCount) {
         return func;
     }
     else {
-        return exp;
+        return wrapEvalFunc(exp);
     }
 }
 /**
@@ -88,7 +92,7 @@ export function createEvalFunc(exp, scopeCount) {
     if (typeof exp === "string")
         return createRunFunc("return " + exp, scopeCount);
     else
-        return exp;
+        return wrapEvalFunc(exp);
 }
 /**
  * 表达式求值，无法执行多条语句
