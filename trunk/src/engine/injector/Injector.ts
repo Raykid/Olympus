@@ -539,7 +539,6 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:string, arg3?:stri
         listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
             // 获取编译启动目标
             var target:any = mediator[propertyKey];
-            var currentTarget:any = target;
             // 组织参数字典
             if(typeof arg1 == "string")
             {
@@ -558,7 +557,7 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:string, arg3?:stri
                     var evtDict:any = {};
                     evtDict[arg1] = arg2;
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                    searchUIDepth(arg1, mediator, currentTarget, (currentTarget:any, target:any, type:string, exp:string)=>{
+                    searchUIDepth(evtDict, mediator, target, (currentTarget:any, target:any, type:string, exp:string)=>{
                         // 添加编译指令
                         BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileOn, type, exp);
                     });
@@ -567,7 +566,7 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:string, arg3?:stri
             else
             {
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                searchUIDepth(arg1, mediator, currentTarget, (currentTarget:any, target:any, type:string, exp:string)=>{
+                searchUIDepth(arg1, mediator, target, (currentTarget:any, target:any, type:string, exp:string)=>{
                     // 添加编译指令
                     BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileOn, type, exp);
                 });
