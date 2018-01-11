@@ -82,7 +82,7 @@ var BindManager = /** @class */ (function () {
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的属性表达式
+     * @param {(EvalExp)} exp 绑定的表达式或方法
      * @memberof BindManager
      */
     BindManager.prototype.bindValue = function (mediator, currentTarget, target, envModels, name, exp) {
@@ -95,7 +95,7 @@ var BindManager = /** @class */ (function () {
             // 绑定新的订阅者
             watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (value) {
                     currentTarget[name] = value;
-                }, mediator.viewModel].concat(envModels));
+                }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
             var _a;
         });
     };
@@ -107,7 +107,7 @@ var BindManager = /** @class */ (function () {
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的方法名
-     * @param {...string[]} argExps 执行方法的参数表达式列表
+     * @param {...(EvalExp)[]} argExps 执行方法的参数表达式或方法列表
      * @memberof BindManager
      */
     BindManager.prototype.bindFunc = function (mediator, currentTarget, target, envModels, name) {
@@ -169,7 +169,7 @@ var BindManager = /** @class */ (function () {
                 }
                 for (var i = 0, len = argExps.length; i < len; i++) {
                     // 绑定表达式
-                    var watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, argExps[i], handler.bind(_this, i), mediator.viewModel].concat(envModels));
+                    var watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, argExps[i], handler.bind(_this, i), mediator.viewModel].concat(envModels, [mediator.viewModel]));
                     // 记录订阅者
                     watchers.push(watcher);
                 }
@@ -189,7 +189,7 @@ var BindManager = /** @class */ (function () {
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} type 绑定的事件类型
-     * @param {string} exp 绑定的事件回调表达式
+     * @param {EvalExp} exp 绑定的事件回调表达式或方法
      * @memberof BindManager
      */
     BindManager.prototype.bindOn = function (mediator, currentTarget, target, envModels, type, exp) {
@@ -203,15 +203,18 @@ var BindManager = /** @class */ (function () {
                 $target: target
             };
             // 如果之前添加过监听，则先移除之
-            if (!handler)
+            if (!handler) {
                 mediator.bridge.unmapListener(currentTarget, type, handler, mediator.viewModel);
+                handler = null;
+            }
             // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
-            handler = mediator.viewModel[exp];
+            if (typeof exp === "string")
+                handler = mediator.viewModel[exp];
             if (!handler) {
                 var func = createRunFunc(exp, 2 + envModels.length);
                 // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
                 handler = function () {
-                    func.call.apply(func, [this, mediator.viewModel].concat(envModels, [commonScope]));
+                    func.call.apply(func, [this, commonScope].concat(envModels, [mediator.viewModel]));
                 };
             }
             mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
@@ -235,7 +238,7 @@ var BindManager = /** @class */ (function () {
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
-     * @param {string} exp 绑定表达式
+     * @param {EvalExp} exp 绑定表达式或方法
      * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
      * @memberof BindManager
      */
@@ -257,7 +260,7 @@ var BindManager = /** @class */ (function () {
                         _this.replaceDisplay(mediator.bridge, currentTarget, replacer);
                     // 触发回调
                     callback && callback(value);
-                }, mediator.viewModel].concat(envModels));
+                }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
             var _a;
         });
     };
@@ -288,14 +291,14 @@ var BindManager = /** @class */ (function () {
                 var commonScope = {
                     $key: key,
                     $value: value,
-                    $parent: envModels[envModels.length - 1] || mediator.viewModel
+                    $parent: envModels[0] || mediator.viewModel
                 };
                 // 填入用户声明的属性
                 commonScope[res[1]] = (res[2] == "in" ? key : value);
                 // 生成一个环境变量的副本
                 var subEnvModels = envModels.concat();
                 // 插入环境变量
-                subEnvModels.push(commonScope);
+                subEnvModels.unshift(commonScope);
                 // 触发回调，进行内部编译
                 callback && callback(value, renderer, subEnvModels);
             });
@@ -314,7 +317,7 @@ var BindManager = /** @class */ (function () {
                     }
                     // 赋值
                     mediator.bridge.valuateBindFor(currentTarget, datas, memento);
-                }, mediator.viewModel].concat(envModels));
+                }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
             var _a;
         });
     };
@@ -327,7 +330,7 @@ var BindManager = /** @class */ (function () {
      * @param {any[]} envModels 环境变量数组
      * @param {IConstructor|string} type 绑定的消息类型字符串
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的表达式
+     * @param {EvalExp} exp 绑定的表达式或方法
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
@@ -358,7 +361,7 @@ var BindManager = /** @class */ (function () {
                     $currentTarget: currentTarget,
                     $target: target
                 };
-                currentTarget[name] = evalExp.apply(void 0, [exp, mediator.viewModel, msg, mediator.viewModel].concat(envModels, [commonScope]));
+                currentTarget[name] = evalExp.apply(void 0, [exp, mediator.viewModel, msg].concat(envModels, [mediator.viewModel, commonScope]));
             }
         };
         // 添加监听
@@ -373,7 +376,7 @@ var BindManager = /** @class */ (function () {
      * @param {any[]} envModels 环境变量数组
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的表达式
+     * @param {EvalExp} exp 绑定的表达式或方法
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
@@ -395,7 +398,7 @@ var BindManager = /** @class */ (function () {
                     $currentTarget: currentTarget,
                     $target: target
                 };
-                currentTarget[name] = evalExp.apply(void 0, [exp, mediator.viewModel, response, mediator.viewModel].concat(envModels, [commonScope]));
+                currentTarget[name] = evalExp.apply(void 0, [exp, mediator.viewModel, response].concat(envModels, [mediator.viewModel, commonScope]));
             }
         };
         // 添加监听

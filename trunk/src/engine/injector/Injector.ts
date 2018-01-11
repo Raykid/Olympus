@@ -18,6 +18,7 @@ import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
 import IBridge from "../bridge/IBridge";
 import "reflect-metadata";
+import { EvalExp } from "../bind/Utils";
 
 /**
  * @author Raykid
@@ -416,14 +417,14 @@ export function BindValue(uiDict:{[path:string]:any}):PropertyDecorator;
  * 
  * @export
  * @param {string} path ui属性路径
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator} 
  */
-export function BindValue(path:string, exp:string):PropertyDecorator;
+export function BindValue(path:string, exp:EvalExp):PropertyDecorator;
 /**
  * @private
  */
-export function BindValue(arg1:{[path:string]:any}|string, arg2?:string):PropertyDecorator
+export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -451,14 +452,14 @@ export function BindValue(arg1:{[path:string]:any}|string, arg2?:string):Propert
 
 export interface BindFuncDict
 {
-    [path:string]:string[]|string|undefined|BindFuncDict;
+    [path:string]:(EvalExp)|(EvalExp)[]|undefined|BindFuncDict;
 }
 
 /**
  * 一次绑定多个方法
  * 
  * @export
- * @param {BindFuncDict} funcDict ui方法和表达式字典
+ * @param {BindFuncDict} funcDict ui方法和表达式或方法字典
  * @returns {PropertyDecorator} 
  */
 export function BindFunc(funcDict:BindFuncDict):PropertyDecorator;
@@ -467,14 +468,14 @@ export function BindFunc(funcDict:BindFuncDict):PropertyDecorator;
  * 
  * @export
  * @param {string} path ui方法路径
- * @param {string[]|string} [exp] 参数表达式或参数表达式数组
+ * @param {(EvalExp)|(EvalExp)[]} [exp] 参数表达式或参数表达式数组
  * @returns {PropertyDecorator} 
  */
-export function BindFunc(path:string, exp?:string[]|string):PropertyDecorator;
+export function BindFunc(path:string, exp?:(EvalExp)|(EvalExp)[]):PropertyDecorator;
 /**
  * @private
  */
-export function BindFunc(arg1:BindFuncDict|string, arg2?:string[]|string):PropertyDecorator
+export function BindFunc(arg1:BindFuncDict|string, arg2?:(EvalExp)|(EvalExp)[]):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -492,9 +493,9 @@ export function BindFunc(arg1:BindFuncDict|string, arg2?:string[]|string):Proper
             }
             // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
             var target:any = mediator[propertyKey];
-            searchUIDepth(funcDict, mediator, target, (currentTarget:any, target:any, name:string, argExps:string|string[])=>{
+            searchUIDepth(funcDict, mediator, target, (currentTarget:any, target:any, name:string, argExps:(EvalExp)|(EvalExp)[])=>{
                 // 统一参数类型为字符串数组
-                if(typeof argExps == "string") argExps = [argExps];
+                if(!(argExps instanceof Array)) argExps = [argExps];
                 // 添加编译指令
                 BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFunc, name, ...argExps);
             });
@@ -515,24 +516,24 @@ export function BindOn(evtDict:{[type:string]:any}):PropertyDecorator;
  * 
  * @export
  * @param {string} type 事件类型
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator} 
  */
-export function BindOn(type:string, exp:string):PropertyDecorator;
+export function BindOn(type:string, exp:EvalExp):PropertyDecorator;
 /**
  * 为指定对象一次绑定一个事件
  * 
  * @export
  * @param {string} path ui属性路径
  * @param {string} type 事件类型
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator} 
  */
-export function BindOn(path:string, type:string, exp:string):PropertyDecorator;
+export function BindOn(path:string, type:string, exp:EvalExp):PropertyDecorator;
 /**
  * @private
  */
-export function BindOn(arg1:{[type:string]:any}|string, arg2?:string, arg3?:string):PropertyDecorator
+export function BindOn(arg1:{[type:string]:any}|string, arg2?:EvalExp, arg3?:EvalExp):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
@@ -588,28 +589,28 @@ export function BindIf(uiDict:{[path:string]:any}):PropertyDecorator;
  * 
  * @export
  * @param {string} path ui属性路径
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator} 
  */
-export function BindIf(path:string, exp:string):PropertyDecorator;
+export function BindIf(path:string, exp:EvalExp):PropertyDecorator;
 /**
  * 绑定当前显示对象的显示判断
  * 
  * @export
- * @param {string} exp 表达式
+ * @param {string} exp 表达式或方法
  * @returns {PropertyDecorator} 
  */
-export function BindIf(exp:string):PropertyDecorator;
+export function BindIf(exp:EvalExp):PropertyDecorator;
 /**
  * @private
  */
-export function BindIf(arg1:{[path:string]:any}|string, arg2?:string):PropertyDecorator
+export function BindIf(arg1:{[path:string]:any}|EvalExp, arg2?:EvalExp):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
         listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
             var target:any = mediator[propertyKey];
-            if(typeof arg1 == "string")
+            if(typeof arg1 === "string" || arg1 instanceof Function)
             {
                 if(!arg2)
                 {
@@ -623,7 +624,7 @@ export function BindIf(arg1:{[path:string]:any}|string, arg2?:string):PropertyDe
                 {
                     // 指定了寻址路径，需要寻址
                     var uiDict:{[name:string]:any} = {};
-                    uiDict[arg1] = arg2;
+                    uiDict[<string>arg1] = arg2;
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                     searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:string)=>{
                         // 添加编译指令
@@ -657,7 +658,7 @@ export function BindFor(uiDict:{[name:string]:any}):PropertyDecorator;
  * 
  * @export
  * @param {string} name ui属性名称
- * @param {string} exp 表达式
+ * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @returns {PropertyDecorator} 
  */
 export function BindFor(name:string, exp:string):PropertyDecorator;
@@ -722,7 +723,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:string):PropertyD
 
 function doBindMessage(mediator:IMediator, target:any, type:IConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
 {
-    searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:string)=>{
+    searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:EvalExp)=>{
         BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileMessage, type, name, exp, observable);
     });
 }
@@ -815,7 +816,7 @@ export function BindGlobalMessage(arg1:{[type:string]:{[name:string]:any}}|ICons
 
 function doBindResponse(mediator:IMediator, target:any, type:IResponseDataConstructor|string, uiDict:{[name:string]:any}, observable?:IObservable):void
 {
-    searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:string)=>{
+    searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:EvalExp)=>{
         BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileResponse, type, name, exp, observable);
     });
 }

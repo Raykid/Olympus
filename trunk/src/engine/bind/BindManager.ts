@@ -4,7 +4,7 @@ import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
 import IBridge from "../bridge/IBridge";
-import { evalExp, createRunFunc } from "./Utils";
+import { evalExp, createRunFunc, EvalExp } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
@@ -87,10 +87,10 @@ export default class BindManager
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的属性表达式
+     * @param {(EvalExp)} exp 绑定的表达式或方法
      * @memberof BindManager
      */
-    public bindValue(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:string):void
+    public bindValue(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:EvalExp):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -100,7 +100,7 @@ export default class BindManager
             // 绑定新的订阅者
             watcher = bindData.bind.createWatcher(currentTarget, target, exp, (value:any)=>{
                 currentTarget[name] = value;
-            }, mediator.viewModel, ...envModels);
+            }, mediator.viewModel, ...envModels, mediator.viewModel);
         });
     }
 
@@ -112,10 +112,10 @@ export default class BindManager
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的方法名
-     * @param {...string[]} argExps 执行方法的参数表达式列表
+     * @param {...(EvalExp)[]} argExps 执行方法的参数表达式或方法列表
      * @memberof BindManager
      */
-    public bindFunc(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, ...argExps:string[]):void
+    public bindFunc(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, ...argExps:(EvalExp)[]):void
     {
         var watchers:IWatcher[] = [];
         var bindData:BindData = this._bindDict.get(mediator);
@@ -169,7 +169,7 @@ export default class BindManager
                 for(var i:number = 0, len:number = argExps.length; i < len; i++)
                 {
                     // 绑定表达式
-                    var watcher:IWatcher = bindData.bind.createWatcher(currentTarget, target, argExps[i], handler.bind(this, i), mediator.viewModel, ...envModels);
+                    var watcher:IWatcher = bindData.bind.createWatcher(currentTarget, target, argExps[i], handler.bind(this, i), mediator.viewModel, ...envModels, mediator.viewModel);
                     // 记录订阅者
                     watchers.push(watcher);
                 }
@@ -190,10 +190,10 @@ export default class BindManager
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} type 绑定的事件类型
-     * @param {string} exp 绑定的事件回调表达式
+     * @param {EvalExp} exp 绑定的事件回调表达式或方法
      * @memberof BindManager
      */
-    public bindOn(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:string, exp:string):void
+    public bindOn(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:string, exp:EvalExp):void
     {
         var handler:Function;
         this.addBindHandler(mediator, ()=>{
@@ -205,16 +205,20 @@ export default class BindManager
                 $target: target
             };
             // 如果之前添加过监听，则先移除之
-            if(!handler) mediator.bridge.unmapListener(currentTarget, type, handler, mediator.viewModel);
+            if(!handler)
+            {
+                mediator.bridge.unmapListener(currentTarget, type, handler, mediator.viewModel);
+                handler = null;
+            }
             // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
-            handler = mediator.viewModel[exp];
+            if(typeof exp === "string") handler = mediator.viewModel[exp];
             if(!handler)
             {
                 var func:Function = createRunFunc(exp, 2 + envModels.length);
                 // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
                 handler = function():void
                 {
-                    func.call(this, mediator.viewModel, ...envModels, commonScope);
+                    func.call(this, commonScope, ...envModels, mediator.viewModel);
                 };
             }
             mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
@@ -242,11 +246,11 @@ export default class BindManager
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
-     * @param {string} exp 绑定表达式
+     * @param {EvalExp} exp 绑定表达式或方法
      * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
      * @memberof BindManager
      */
-    public bindIf(mediator:IMediator, currentTarget:any, target:any, envModels:any[], exp:string, callback?:(value:boolean)=>void):void
+    public bindIf(mediator:IMediator, currentTarget:any, target:any, envModels:any[], exp:EvalExp, callback?:(value:boolean)=>void):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -261,7 +265,7 @@ export default class BindManager
                 else this.replaceDisplay(mediator.bridge, currentTarget, replacer);
                 // 触发回调
                 callback && callback(value);
-            }, mediator.viewModel, ...envModels);
+            }, mediator.viewModel, ...envModels, mediator.viewModel);
         });
     }
 
@@ -292,14 +296,14 @@ export default class BindManager
                 var commonScope:any = {
                     $key: key,
                     $value: value,
-                    $parent: envModels[envModels.length - 1] || mediator.viewModel
+                    $parent: envModels[0] || mediator.viewModel
                 };
                 // 填入用户声明的属性
                 commonScope[res[1]] = (res[2] == "in" ? key : value);
                 // 生成一个环境变量的副本
                 var subEnvModels:any[] = envModels.concat();
                 // 插入环境变量
-                subEnvModels.push(commonScope);
+                subEnvModels.unshift(commonScope);
                 // 触发回调，进行内部编译
                 callback && callback(value, renderer, subEnvModels);
             });
@@ -319,7 +323,7 @@ export default class BindManager
                 }
                 // 赋值
                 mediator.bridge.valuateBindFor(currentTarget, datas, memento);
-            }, mediator.viewModel, ...envModels);
+            }, mediator.viewModel, ...envModels, mediator.viewModel);
         });
     }
     
@@ -332,11 +336,11 @@ export default class BindManager
      * @param {any[]} envModels 环境变量数组
      * @param {IConstructor|string} type 绑定的消息类型字符串
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的表达式
+     * @param {EvalExp} exp 绑定的表达式或方法
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindMessage(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IConstructor|string, name:string, exp:string, observable?:IObservable):void
+    public bindMessage(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IConstructor|string, name:string, exp:EvalExp, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -361,7 +365,7 @@ export default class BindManager
                     $currentTarget: currentTarget,
                     $target: target
                 };
-                currentTarget[name] = evalExp(exp, mediator.viewModel, msg, mediator.viewModel, ...envModels, commonScope);
+                currentTarget[name] = evalExp(exp, mediator.viewModel, msg, ...envModels, mediator.viewModel, commonScope);
             }
         };
         // 添加监听
@@ -377,11 +381,11 @@ export default class BindManager
      * @param {any[]} envModels 环境变量数组
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的表达式
+     * @param {EvalExp} exp 绑定的表达式或方法
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    public bindResponse(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IResponseDataConstructor|string, name:string, exp:string, observable?:IObservable):void
+    public bindResponse(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IResponseDataConstructor|string, name:string, exp:EvalExp, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -401,7 +405,7 @@ export default class BindManager
                     $currentTarget: currentTarget,
                     $target: target
                 };
-                currentTarget[name] = evalExp(exp, mediator.viewModel, response, mediator.viewModel, ...envModels, commonScope);
+                currentTarget[name] = evalExp(exp, mediator.viewModel, response, ...envModels, mediator.viewModel, commonScope);
             }
         };
         // 添加监听

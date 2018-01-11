@@ -1,4 +1,4 @@
-import { createEvalFunc } from "./Utils";
+import { createEvalFunc, EvalExp } from "./Utils";
 import Bind from "./Bind";
 
 /**
@@ -21,14 +21,15 @@ export default class Watcher implements IWatcher
     private _bind:Bind;
     private _currentTarget:any;
     private _target:any;
-    private _exp:string;
+    private _exp:EvalExp;
+    private _thisArg:any;
     private _scopes:any[];
     private _expFunc:(...scopes:any[])=>any;
     private _callback:WatcherCallback;
 
     private _disposed:boolean = false;
 
-    public constructor(bind:Bind, currentTarget:any, target:any, exp:string, callback:WatcherCallback, ...scopes:any[])
+    public constructor(bind:Bind, currentTarget:any, target:any, exp:EvalExp, callback:WatcherCallback, thisArg:any, ...scopes:any[])
     {
         // 记录Bind实例
         this._bind = bind;
@@ -36,6 +37,7 @@ export default class Watcher implements IWatcher
         this._currentTarget = currentTarget;
         this._target = target;
         this._exp = exp;
+        this._thisArg = thisArg;
         this._scopes = scopes;
         // 将表达式和作用域解析为一个Function
         this._expFunc = createEvalFunc(exp, 1 + scopes.length);
@@ -66,12 +68,16 @@ export default class Watcher implements IWatcher
         // 表达式求值
         try
         {
-            value = this._expFunc.call(this._scopes[0], commonScope, ...this._scopes);
+            value = this._expFunc.call(this._thisArg, ...this._scopes, commonScope);
         }
         catch(err)
         {
             // 输出错误日志
-            console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp + "，scopes：" + JSON.stringify(this._scopes));
+            try {
+                console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp + "，scopes：" + JSON.stringify(this._scopes));
+            } catch (error) {
+                console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp);
+            }
         }
         // 移除自身记录
         Watcher.updating = null;

@@ -19,7 +19,9 @@ class SecondMediator extends SceneMediator
     @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
     @BindFor("i of fuckList.concat(fuckList).concat(fuckList).concat(fuckList)")
-    @BindValue("txt.text", "i")
+    @BindValue("txt.text", function(scope:any){
+        return scope.i;
+    })
     @BindFor("lst", "j of fuckList")
     @BindValue({
         txt: {

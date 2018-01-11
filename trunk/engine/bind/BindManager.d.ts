@@ -1,5 +1,6 @@
 import IMediator from "../mediator/IMediator";
 import Bind from "./Bind";
+import { EvalExp } from "./Utils";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import IObservable from "../../core/observable/IObservable";
 /**
@@ -37,10 +38,10 @@ export default class BindManager {
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的属性表达式
+     * @param {(EvalExp)} exp 绑定的表达式或方法
      * @memberof BindManager
      */
-    bindValue(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, exp: string): void;
+    bindValue(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, exp: EvalExp): void;
     /**
      * 绑定方法执行
      *
@@ -49,10 +50,10 @@ export default class BindManager {
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定的方法名
-     * @param {...string[]} argExps 执行方法的参数表达式列表
+     * @param {...(EvalExp)[]} argExps 执行方法的参数表达式或方法列表
      * @memberof BindManager
      */
-    bindFunc(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, ...argExps: string[]): void;
+    bindFunc(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, ...argExps: (EvalExp)[]): void;
     /**
      * 绑定事件
      *
@@ -61,10 +62,10 @@ export default class BindManager {
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} type 绑定的事件类型
-     * @param {string} exp 绑定的事件回调表达式
+     * @param {EvalExp} exp 绑定的事件回调表达式或方法
      * @memberof BindManager
      */
-    bindOn(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: string, exp: string): void;
+    bindOn(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: string, exp: EvalExp): void;
     private replaceDisplay(bridge, ori, cur);
     /**
      * 绑定显示
@@ -73,11 +74,11 @@ export default class BindManager {
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
-     * @param {string} exp 绑定表达式
+     * @param {EvalExp} exp 绑定表达式或方法
      * @param {(value:boolean)=>void} [callback] 判断条件改变时会触发这个回调
      * @memberof BindManager
      */
-    bindIf(mediator: IMediator, currentTarget: any, target: any, envModels: any[], exp: string, callback?: (value: boolean) => void): void;
+    bindIf(mediator: IMediator, currentTarget: any, target: any, envModels: any[], exp: EvalExp, callback?: (value: boolean) => void): void;
     private _regExp;
     /**
      * 绑定循环
@@ -100,11 +101,11 @@ export default class BindManager {
      * @param {any[]} envModels 环境变量数组
      * @param {IConstructor|string} type 绑定的消息类型字符串
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的表达式
+     * @param {EvalExp} exp 绑定的表达式或方法
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    bindMessage(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: IConstructor | string, name: string, exp: string, observable?: IObservable): void;
+    bindMessage(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: IConstructor | string, name: string, exp: EvalExp, observable?: IObservable): void;
     /**
      * 绑定Response
      *
@@ -114,11 +115,11 @@ export default class BindManager {
      * @param {any[]} envModels 环境变量数组
      * @param {IResponseDataConstructor|string} type 绑定的通讯消息类型
      * @param {string} name 绑定的属性名
-     * @param {string} exp 绑定的表达式
+     * @param {EvalExp} exp 绑定的表达式或方法
      * @param {IObservable} [observable] 绑定的消息内核，默认是core
      * @memberof BindManager
      */
-    bindResponse(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: IResponseDataConstructor | string, name: string, exp: string, observable?: IObservable): void;
+    bindResponse(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: IResponseDataConstructor | string, name: string, exp: EvalExp, observable?: IObservable): void;
 }
 /** 再额外导出一个单例 */
 export declare const bindManager: BindManager;

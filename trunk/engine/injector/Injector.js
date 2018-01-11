@@ -380,7 +380,7 @@ export function BindFunc(arg1, arg2) {
             var target = mediator[propertyKey];
             searchUIDepth(funcDict, mediator, target, function (currentTarget, target, name, argExps) {
                 // 统一参数类型为字符串数组
-                if (typeof argExps == "string")
+                if (!(argExps instanceof Array))
                     argExps = [argExps];
                 // 添加编译指令
                 BindUtil.pushCompileCommand.apply(BindUtil, [currentTarget, target, BindUtil.compileFunc, name].concat(argExps));
@@ -434,7 +434,7 @@ export function BindIf(arg1, arg2) {
     return function (prototype, propertyKey) {
         listenOnOpen(prototype, propertyKey, function (mediator) {
             var target = mediator[propertyKey];
-            if (typeof arg1 == "string") {
+            if (typeof arg1 === "string" || arg1 instanceof Function) {
                 if (!arg2) {
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
                     searchUIDepth({ r: 13 }, mediator, target, function (currentTarget, target, name, exp) {

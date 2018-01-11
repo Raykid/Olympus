@@ -1,3 +1,4 @@
+import { EvalExp } from "./Utils";
 import Bind from "./Bind";
 /**
  * @author Raykid
@@ -16,11 +17,12 @@ export default class Watcher implements IWatcher {
     private _currentTarget;
     private _target;
     private _exp;
+    private _thisArg;
     private _scopes;
     private _expFunc;
     private _callback;
     private _disposed;
-    constructor(bind: Bind, currentTarget: any, target: any, exp: string, callback: WatcherCallback, ...scopes: any[]);
+    constructor(bind: Bind, currentTarget: any, target: any, exp: EvalExp, callback: WatcherCallback, thisArg: any, ...scopes: any[]);
     /**
      * 获取到表达式当前最新值
      * @returns {any} 最新值

@@ -1,6 +1,7 @@
 import { IResponseDataConstructor } from "../net/ResponseData";
 import IModuleConstructor from "../module/IModuleConstructor";
 import "reflect-metadata";
+import { EvalExp } from "../bind/Utils";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -44,18 +45,18 @@ export declare function BindValue(uiDict: {
  *
  * @export
  * @param {string} path ui属性路径
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator}
  */
-export declare function BindValue(path: string, exp: string): PropertyDecorator;
+export declare function BindValue(path: string, exp: EvalExp): PropertyDecorator;
 export interface BindFuncDict {
-    [path: string]: string[] | string | undefined | BindFuncDict;
+    [path: string]: (EvalExp) | (EvalExp)[] | undefined | BindFuncDict;
 }
 /**
  * 一次绑定多个方法
  *
  * @export
- * @param {BindFuncDict} funcDict ui方法和表达式字典
+ * @param {BindFuncDict} funcDict ui方法和表达式或方法字典
  * @returns {PropertyDecorator}
  */
 export declare function BindFunc(funcDict: BindFuncDict): PropertyDecorator;
@@ -64,10 +65,10 @@ export declare function BindFunc(funcDict: BindFuncDict): PropertyDecorator;
  *
  * @export
  * @param {string} path ui方法路径
- * @param {string[]|string} [exp] 参数表达式或参数表达式数组
+ * @param {(EvalExp)|(EvalExp)[]} [exp] 参数表达式或参数表达式数组
  * @returns {PropertyDecorator}
  */
-export declare function BindFunc(path: string, exp?: string[] | string): PropertyDecorator;
+export declare function BindFunc(path: string, exp?: (EvalExp) | (EvalExp)[]): PropertyDecorator;
 /**
  * 一次绑定多个事件
  *
@@ -83,20 +84,20 @@ export declare function BindOn(evtDict: {
  *
  * @export
  * @param {string} type 事件类型
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator}
  */
-export declare function BindOn(type: string, exp: string): PropertyDecorator;
+export declare function BindOn(type: string, exp: EvalExp): PropertyDecorator;
 /**
  * 为指定对象一次绑定一个事件
  *
  * @export
  * @param {string} path ui属性路径
  * @param {string} type 事件类型
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator}
  */
-export declare function BindOn(path: string, type: string, exp: string): PropertyDecorator;
+export declare function BindOn(path: string, type: string, exp: EvalExp): PropertyDecorator;
 /**
  * 一次绑定多个显示判断
  *
@@ -112,18 +113,18 @@ export declare function BindIf(uiDict: {
  *
  * @export
  * @param {string} path ui属性路径
- * @param {string} exp 表达式
+ * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator}
  */
-export declare function BindIf(path: string, exp: string): PropertyDecorator;
+export declare function BindIf(path: string, exp: EvalExp): PropertyDecorator;
 /**
  * 绑定当前显示对象的显示判断
  *
  * @export
- * @param {string} exp 表达式
+ * @param {string} exp 表达式或方法
  * @returns {PropertyDecorator}
  */
-export declare function BindIf(exp: string): PropertyDecorator;
+export declare function BindIf(exp: EvalExp): PropertyDecorator;
 /**
  * 一次绑定多个数据集合，如果要指定当前显示对象请使用$target作为key
  *
@@ -139,7 +140,7 @@ export declare function BindFor(uiDict: {
  *
  * @export
  * @param {string} name ui属性名称
- * @param {string} exp 表达式
+ * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @returns {PropertyDecorator}
  */
 export declare function BindFor(name: string, exp: string): PropertyDecorator;

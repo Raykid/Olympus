@@ -1,5 +1,6 @@
 import IMediator from "../mediator/IMediator";
 import { IWatcher, WatcherCallback } from "./Watcher";
+import { EvalExp } from "./Utils";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -25,11 +26,12 @@ export default class Bind {
      *
      * @param {*} currentTarget 作用目标，指表达式所在的显示对象
      * @param {*} target 绑定表达式本来所在的对象
-     * @param {string} exp 表达式
+     * @param {EvalExp} exp 表达式或方法
      * @param {WatcherCallback} callback 订阅器回调
-     * @param {...any[]} scopes 作用域列表，首个作用域会被当做this指向
+     * @param {*} thisArg this指向
+     * @param {...any[]} scopes 作用域列表，最后一个作用域会被当做this指向
      * @returns {IWatcher} 返回观察者本身
      * @memberof Bind
      */
-    createWatcher(currentTarget: any, target: any, exp: string, callback: WatcherCallback, ...scopes: any[]): IWatcher;
+    createWatcher(currentTarget: any, target: any, exp: EvalExp, callback: WatcherCallback, thisArg: any, ...scopes: any[]): IWatcher;
 }

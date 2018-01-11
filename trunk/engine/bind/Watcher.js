@@ -8,10 +8,10 @@ import { createEvalFunc } from "./Utils";
  * 数据更新订阅者，当依赖的数据有更新时会触发callback通知外面
 */
 var Watcher = /** @class */ (function () {
-    function Watcher(bind, currentTarget, target, exp, callback) {
+    function Watcher(bind, currentTarget, target, exp, callback, thisArg) {
         var scopes = [];
-        for (var _i = 5; _i < arguments.length; _i++) {
-            scopes[_i - 5] = arguments[_i];
+        for (var _i = 6; _i < arguments.length; _i++) {
+            scopes[_i - 6] = arguments[_i];
         }
         this._disposed = false;
         // 记录Bind实例
@@ -20,6 +20,7 @@ var Watcher = /** @class */ (function () {
         this._currentTarget = currentTarget;
         this._target = target;
         this._exp = exp;
+        this._thisArg = thisArg;
         this._scopes = scopes;
         // 将表达式和作用域解析为一个Function
         this._expFunc = createEvalFunc(exp, 1 + scopes.length);
@@ -48,11 +49,16 @@ var Watcher = /** @class */ (function () {
         };
         // 表达式求值
         try {
-            value = (_a = this._expFunc).call.apply(_a, [this._scopes[0], commonScope].concat(this._scopes));
+            value = (_a = this._expFunc).call.apply(_a, [this._thisArg].concat(this._scopes, [commonScope]));
         }
         catch (err) {
             // 输出错误日志
-            console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp + "，scopes：" + JSON.stringify(this._scopes));
+            try {
+                console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp + "，scopes：" + JSON.stringify(this._scopes));
+            }
+            catch (error) {
+                console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp);
+            }
         }
         // 移除自身记录
         Watcher.updating = null;
