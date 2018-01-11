@@ -398,30 +398,33 @@ export function BindOn(arg1, arg2, arg3) {
             var target = mediator[propertyKey];
             var currentTarget = target;
             // 组织参数字典
-            var evtDict;
             if (typeof arg1 == "string") {
-                evtDict = {};
                 if (arg3) {
                     // 指定了UI对象，先去寻找
                     var nameDict = {};
                     nameDict[arg1] = "";
-                    searchUI(nameDict, currentTarget, function (temp, key, value) {
-                        currentTarget = temp[key];
-                    });
-                    evtDict[arg2] = arg3;
+                    searchUIDepth(nameDict, mediator, target, function (currentTarget, target, type, exp) {
+                        // 添加编译指令
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileOn, arg2, arg3);
+                    }, true);
                 }
                 else {
+                    var evtDict = {};
                     evtDict[arg1] = arg2;
+                    // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                    searchUIDepth(arg1, mediator, currentTarget, function (currentTarget, target, type, exp) {
+                        // 添加编译指令
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileOn, type, exp);
+                    });
                 }
             }
             else {
-                evtDict = arg1;
+                // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+                searchUIDepth(arg1, mediator, currentTarget, function (currentTarget, target, type, exp) {
+                    // 添加编译指令
+                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileOn, type, exp);
+                });
             }
-            // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-            searchUIDepth(evtDict, mediator, currentTarget, function (currentTarget, target, type, exp) {
-                // 添加编译指令
-                BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileOn, type, exp);
-            });
         });
     };
 }
