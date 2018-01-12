@@ -136,7 +136,7 @@ export default class NetManager
             if(response)
             {
                 // 监听一次性返回
-                this.listenResponse(response, onResponse, this, true);
+                this.listenResponse(response, onResponse, request, true);
                 // 记录返回监听
                 responses.push(response);
                 // 记录数量
