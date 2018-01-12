@@ -105,6 +105,7 @@ var NetManager = /** @class */ (function () {
      * @memberof NetManager
      */
     NetManager.prototype.sendMultiRequests = function (requests, handler, thisArg, observable) {
+        var self = this;
         var responses = [];
         var leftResCount = 0;
         if (!observable)
@@ -114,7 +115,7 @@ var NetManager = /** @class */ (function () {
             var response = request.__params.response;
             if (response) {
                 // 监听一次性返回
-                this.listenResponse(response, onResponse, request, true);
+                this.listenResponse(response, onResponse, request);
                 // 记录返回监听
                 responses.push(response);
                 // 记录数量
@@ -128,7 +129,8 @@ var NetManager = /** @class */ (function () {
         function onResponse(response) {
             for (var key in responses) {
                 var temp = responses[key];
-                if (temp == response.constructor) {
+                if (temp == response.constructor && this === response.__params.request) {
+                    self.unlistenResponse(temp, onResponse, this);
                     responses[key] = response;
                     leftResCount--;
                     // 测试回调
