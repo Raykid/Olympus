@@ -29,7 +29,12 @@ export default class Dep
     public notify(extra?:any):void
     {
         this._map.forEach((watcher:Watcher)=>{
-            watcher.update(extra);
+            if(watcher.disposed)
+                // 观察者已经销毁，移除监听
+                this._map.delete(watcher);
+            else
+                // 观察者依然生效，更新之
+                watcher.update(extra);
         });
     }
 }

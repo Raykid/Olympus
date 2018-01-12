@@ -22,6 +22,14 @@ export default class Watcher implements IWatcher {
     private _expFunc;
     private _callback;
     private _disposed;
+    /**
+     * 获取该观察者是否已经被销毁
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof Watcher
+     */
+    readonly disposed: boolean;
     constructor(bind: Bind, currentTarget: any, target: any, exp: EvalExp, callback: WatcherCallback, thisArg: any, ...scopes: any[]);
     /**
      * 获取到表达式当前最新值

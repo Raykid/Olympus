@@ -29,6 +29,18 @@ export default class Watcher implements IWatcher
 
     private _disposed:boolean = false;
 
+    /**
+     * 获取该观察者是否已经被销毁
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberof Watcher
+     */
+    public get disposed():boolean
+    {
+        return this._disposed;
+    }
+
     public constructor(bind:Bind, currentTarget:any, target:any, exp:EvalExp, callback:WatcherCallback, thisArg:any, ...scopes:any[])
     {
         // 记录Bind实例

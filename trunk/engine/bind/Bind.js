@@ -50,6 +50,18 @@ var Bind = /** @class */ (function () {
             this._watcherDict[key] = watcher = new (Watcher.bind.apply(Watcher, [void 0, this, currentTarget, target, exp, callback, thisArg].concat(scopes)))();
         return watcher;
     };
+    /**
+     * 销毁绑定关系
+     *
+     * @memberof Bind
+     */
+    Bind.prototype.dispose = function () {
+        for (var key in this._watcherDict) {
+            var watcher = this._watcherDict[key];
+            watcher.dispose();
+            delete this._watcherDict[key];
+        }
+    };
     return Bind;
 }());
 export default Bind;

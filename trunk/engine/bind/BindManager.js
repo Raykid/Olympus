@@ -55,8 +55,10 @@ var BindManager = /** @class */ (function () {
      */
     BindManager.prototype.unbind = function (mediator) {
         var bindData = this._bindDict.get(mediator);
-        if (bindData)
+        if (bindData) {
+            bindData.bind.dispose();
             this._bindDict.delete(mediator);
+        }
         return bindData && bindData.bind;
     };
     BindManager.prototype.addBindHandler = function (mediator, callback) {

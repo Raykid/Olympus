@@ -29,6 +29,20 @@ var Watcher = /** @class */ (function () {
         // 进行首次更新
         this.update();
     }
+    Object.defineProperty(Watcher.prototype, "disposed", {
+        /**
+         * 获取该观察者是否已经被销毁
+         *
+         * @readonly
+         * @type {boolean}
+         * @memberof Watcher
+         */
+        get: function () {
+            return this._disposed;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 获取到表达式当前最新值
      * @returns {any} 最新值

@@ -59,7 +59,11 @@ export default class BindManager
     public unbind(mediator:IMediator):Bind
     {
         var bindData:BindData = this._bindDict.get(mediator);
-        if(bindData) this._bindDict.delete(mediator);
+        if(bindData)
+        {
+            bindData.bind.dispose();
+            this._bindDict.delete(mediator);
+        }
         return bindData && bindData.bind;
     }
 

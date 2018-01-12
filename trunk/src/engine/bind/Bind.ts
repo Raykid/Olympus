@@ -52,4 +52,19 @@ export default class Bind
         if(!watcher) this._watcherDict[key] = watcher = new Watcher(this, currentTarget, target, exp, callback, thisArg, ...scopes);
         return watcher;
     }
+
+    /**
+     * 销毁绑定关系
+     * 
+     * @memberof Bind
+     */
+    public dispose():void
+    {
+        for(var key in this._watcherDict)
+        {
+            var watcher:Watcher = this._watcherDict[key];
+            watcher.dispose();
+            delete this._watcherDict[key];
+        }
+    }
 }

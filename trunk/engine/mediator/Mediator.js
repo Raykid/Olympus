@@ -335,6 +335,10 @@ var Mediator = /** @class */ (function () {
     Mediator.prototype.dispose = function () {
         if (this._disposed)
             return;
+        // 移除绑定
+        bindManager.unbind(this);
+        // 注销事件监听
+        this.unmapAllListeners();
         // 调用模板方法
         this.onDispose();
         // 移除显示
@@ -343,12 +347,8 @@ var Mediator = /** @class */ (function () {
             if (parent)
                 this.bridge.removeChild(parent, this.skin);
         }
-        // 注销事件监听
-        this.unmapAllListeners();
         // 移除表现层桥
         this.bridge = null;
-        // 移除绑定
-        bindManager.unbind(this);
         // 移除ViewModel
         this._viewModel = null;
         // 移除绑定目标数组

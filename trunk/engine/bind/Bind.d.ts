@@ -34,4 +34,10 @@ export default class Bind {
      * @memberof Bind
      */
     createWatcher(currentTarget: any, target: any, exp: EvalExp, callback: WatcherCallback, thisArg: any, ...scopes: any[]): IWatcher;
+    /**
+     * 销毁绑定关系
+     *
+     * @memberof Bind
+     */
+    dispose(): void;
 }

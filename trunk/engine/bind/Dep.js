@@ -23,8 +23,14 @@ var Dep = /** @class */ (function () {
      * @param extra 可能的额外数据
      */
     Dep.prototype.notify = function (extra) {
+        var _this = this;
         this._map.forEach(function (watcher) {
-            watcher.update(extra);
+            if (watcher.disposed)
+                // 观察者已经销毁，移除监听
+                _this._map.delete(watcher);
+            else
+                // 观察者依然生效，更新之
+                watcher.update(extra);
         });
     };
     return Dep;
