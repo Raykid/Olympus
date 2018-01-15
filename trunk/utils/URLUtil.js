@@ -33,28 +33,37 @@ export function isAbsolutePath(url) {
 /**
  * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
  * @param url 要统一protocol的url
+ * @param {string} [protocol] 要统一成的protocol，不传则根据当前页面的protocol使用。根据标准，protocol是要携带:的，比如“http:”
  */
-export function validateProtocol(url) {
+export function validateProtocol(url, protocol) {
     if (url == null)
         return null;
     var index = url.indexOf("://");
     if (index < 0)
         return url;
-    var protocol = url.substring(0, index);
-    // 调整http和https
-    if (protocol == "http" || protocol == "https") {
-        return window.location.protocol + url.substr(index + 1);
-    }
-    // 调整ws和wss
-    if (protocol == "ws" || protocol == "wss") {
-        if (window.location.protocol == "https:")
-            protocol = "wss";
-        else
-            protocol = "ws";
+    // 因为protocol是要携带:的，所以index自加1
+    index++;
+    if (protocol) {
+        // 直接使用传递的protocol
         return protocol + url.substr(index);
     }
-    // 不需要调整
-    return url;
+    else {
+        protocol = url.substring(0, index);
+        // 调整http和https
+        if (protocol == "http:" || protocol == "https:") {
+            return window.location.protocol + url.substr(index);
+        }
+        // 调整ws和wss
+        if (protocol == "ws:" || protocol == "wss:") {
+            if (window.location.protocol == "https:")
+                protocol = "wss:";
+            else
+                protocol = "ws:";
+            return protocol + url.substr(index);
+        }
+        // 不需要调整
+        return url;
+    }
 }
 /**
  * 替换url中的host

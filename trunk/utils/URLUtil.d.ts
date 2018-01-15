@@ -12,8 +12,9 @@ export declare function isAbsolutePath(url: string): boolean;
 /**
  * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
  * @param url 要统一protocol的url
+ * @param {string} [protocol] 要统一成的protocol，不传则根据当前页面的protocol使用。根据标准，protocol是要携带:的，比如“http:”
  */
-export declare function validateProtocol(url: string): string;
+export declare function validateProtocol(url: string, protocol?: string): string;
 /**
  * 替换url中的host
  * @param url       url

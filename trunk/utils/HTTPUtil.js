@@ -49,9 +49,8 @@ export function load(params) {
         url = environment.toCDNHostURL(url);
     }
     else {
-        // 根据参数需求合法化protocol
-        if (params.validateProtocol !== false)
-            url = validateProtocol(url);
+        // 合法化protocol
+        url = validateProtocol(url, params.forceHTTPS ? "https:" : null);
         // 规整一下url
         url = trimURL(url);
     }
