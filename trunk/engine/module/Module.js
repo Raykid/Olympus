@@ -180,16 +180,41 @@ var Module = /** @class */ (function () {
     Module.prototype.onLoadAssets = function (err) {
     };
     /**
+     * 模块打开方法，通常由ModuleManager调用
+     *
+     * @param {*} [data] 传递给模块的数据
+     * @memberof Module
+     */
+    Module.prototype.open = function (data) {
+        // 调用自身onOpen方法
+        this.onOpen(data);
+        // 调用所有已托管中介者的open方法
+        for (var _i = 0, _a = this._mediators; _i < _a.length; _i++) {
+            var mediator = _a[_i];
+            mediator.open(data);
+        }
+    };
+    /**
      * 打开模块时调用，可以重写
      *
      * @param {*} [data] 传递给模块的数据
      * @memberof Module
      */
     Module.prototype.onOpen = function (data) {
-        // 调用所有已托管中介者的open方法
-        for (var _i = 0, _a = this._mediators; _i < _a.length; _i++) {
+    };
+    /**
+     * 模块关闭方法，通常由ModuleManager调用
+     *
+     * @param {*} [data] 传递给模块的数据
+     * @memberof Module
+     */
+    Module.prototype.close = function (data) {
+        // 调用自身onClose方法
+        this.onClose(data);
+        // 调用所有已托管中介者的close方法
+        for (var _i = 0, _a = this._mediators.concat(); _i < _a.length; _i++) {
             var mediator = _a[_i];
-            mediator.open(data);
+            mediator.close(data);
         }
     };
     /**
@@ -199,11 +224,6 @@ var Module = /** @class */ (function () {
      * @memberof Module
      */
     Module.prototype.onClose = function (data) {
-        // 调用所有已托管中介者的close方法
-        for (var _i = 0, _a = this._mediators.concat(); _i < _a.length; _i++) {
-            var mediator = _a[_i];
-            mediator.close(data);
-        }
     };
     /**
      * 模块切换到前台时调用（open之后或者其他模块被关闭时），可以重写

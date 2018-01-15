@@ -208,6 +208,23 @@ export default abstract class Module implements IModule
     }
 
     /**
+     * 模块打开方法，通常由ModuleManager调用
+     * 
+     * @param {*} [data] 传递给模块的数据
+     * @memberof Module
+     */
+    public open(data?:any):void
+    {
+        // 调用自身onOpen方法
+        this.onOpen(data);
+        // 调用所有已托管中介者的open方法
+        for(var mediator of this._mediators)
+        {
+            mediator.open(data);
+        }
+    }
+
+    /**
      * 打开模块时调用，可以重写
      * 
      * @param {*} [data] 传递给模块的数据
@@ -215,10 +232,22 @@ export default abstract class Module implements IModule
      */
     public onOpen(data?:any):void
     {
-        // 调用所有已托管中介者的open方法
-        for(var mediator of this._mediators)
+    }
+
+    /**
+     * 模块关闭方法，通常由ModuleManager调用
+     * 
+     * @param {*} [data] 传递给模块的数据
+     * @memberof Module
+     */
+    public close(data?:any):void
+    {
+        // 调用自身onClose方法
+        this.onClose(data);
+        // 调用所有已托管中介者的close方法
+        for(var mediator of this._mediators.concat())
         {
-            mediator.open(data);
+            mediator.close(data);
         }
     }
 
@@ -230,11 +259,6 @@ export default abstract class Module implements IModule
      */
     public onClose(data?:any):void
     {
-        // 调用所有已托管中介者的close方法
-        for(var mediator of this._mediators.concat())
-        {
-            mediator.close(data);
-        }
     }
 
     /**

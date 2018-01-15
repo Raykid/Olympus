@@ -38,8 +38,12 @@ export default interface IModule extends IDisposable, IObservable, IModuleDepend
     constainsMediator(mediator:IModuleMediator):boolean;
     /** 当模块资源加载完毕后调用 */
     onLoadAssets(err?:Error):void;
+    /** 打开模块时由ModuleManager调用 */
+    open(data?:any):void;
     /** 打开模块时调用 */
     onOpen(data?:any):void;
+    /** 关闭模块时由ModuleManager调用 */
+    close(data?:any):void;
     /** 关闭模块时调用 */
     onClose(data?:any):void;
     /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */

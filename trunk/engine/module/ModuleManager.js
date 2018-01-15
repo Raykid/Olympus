@@ -237,8 +237,8 @@ var ModuleManager = /** @class */ (function () {
                             target.responses = responses;
                             // 关闭标识符
                             this._opening = null;
-                            // 调用onOpen接口
-                            target.onOpen(data);
+                            // 调用open接口
+                            target.open(data);
                             // 调用onDeactivate接口
                             this.deactivateModule(fromModule, cls, data);
                             // 调用onActivate接口
@@ -278,7 +278,7 @@ var ModuleManager = /** @class */ (function () {
         }
     };
     /**
-     * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
+     * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
      * @param {IModuleConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
@@ -308,8 +308,8 @@ var ModuleManager = /** @class */ (function () {
             var toModule = to && to[1];
             // 调用onDeactivate接口
             this.deactivateModule(target, to && to[0], data);
-            // 调用onClose接口
-            target.onClose(data);
+            // 调用close接口
+            target.close(data);
             // 调用onActivate接口
             this.activateModule(toModule, cls, data);
             // 派发消息
@@ -318,8 +318,8 @@ var ModuleManager = /** @class */ (function () {
         else {
             // 数据先行
             this._moduleStack.splice(index, 1);
-            // 调用onClose接口
-            target.onClose(data);
+            // 调用close接口
+            target.close(data);
         }
     };
     ModuleManager = __decorate([

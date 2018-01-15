@@ -76,7 +76,7 @@ export default class ModuleManager {
      */
     open(clsOrName: IModuleConstructor | string, data?: any, replace?: boolean): void;
     /**
-     * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发onClose
+     * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
      * @param {IModuleConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数

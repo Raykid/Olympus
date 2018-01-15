@@ -123,12 +123,26 @@ export default abstract class Module implements IModule {
      */
     onLoadAssets(err?: Error): void;
     /**
+     * 模块打开方法，通常由ModuleManager调用
+     *
+     * @param {*} [data] 传递给模块的数据
+     * @memberof Module
+     */
+    open(data?: any): void;
+    /**
      * 打开模块时调用，可以重写
      *
      * @param {*} [data] 传递给模块的数据
      * @memberof Module
      */
     onOpen(data?: any): void;
+    /**
+     * 模块关闭方法，通常由ModuleManager调用
+     *
+     * @param {*} [data] 传递给模块的数据
+     * @memberof Module
+     */
+    close(data?: any): void;
     /**
      * 关闭模块时调用，可以重写
      *
