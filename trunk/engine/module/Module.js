@@ -186,6 +186,9 @@ var Module = /** @class */ (function () {
      * @memberof Module
      */
     Module.prototype.open = function (data) {
+        // 如果没有传递data则用一个空的Object代替
+        if (data === undefined)
+            data = {};
         // 调用自身onOpen方法
         this.onOpen(data);
         // 调用所有已托管中介者的open方法
