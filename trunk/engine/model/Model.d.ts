@@ -25,6 +25,13 @@ export default abstract class Model implements IObservable {
      * @memberof Model
      */
     readonly parent: IObservable;
+    constructor();
+    /**
+     * 在框架初始化完毕时调用
+     *
+     * @memberof Model
+     */
+    onInitialized(): void;
     /**
      * 派发内核消息
      *

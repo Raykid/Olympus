@@ -2,6 +2,7 @@ import { core } from "../../core/Core";
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
+import EngineMessage from "../message/EngineMessage";
 
 /**
  * @author Raykid
@@ -34,6 +35,21 @@ export default abstract class Model implements IObservable
     public get parent():IObservable
     {
         return null;
+    }
+
+    public constructor()
+    {
+        core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
+    }
+
+    /**
+     * 在框架初始化完毕时调用
+     * 
+     * @memberof Model
+     */
+    public onInitialized():void
+    {
+        // 留待子类完善
     }
 
     /**

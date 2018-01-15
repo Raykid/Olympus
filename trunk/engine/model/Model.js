@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import EngineMessage from "../message/EngineMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -9,6 +10,7 @@ import { core } from "../../core/Core";
 */
 var Model = /** @class */ (function () {
     function Model() {
+        core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
     }
     Object.defineProperty(Model.prototype, "observable", {
         /**
@@ -37,6 +39,14 @@ var Model = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * 在框架初始化完毕时调用
+     *
+     * @memberof Model
+     */
+    Model.prototype.onInitialized = function () {
+        // 留待子类完善
+    };
     Model.prototype.dispatch = function () {
         var params = [];
         for (var _i = 0; _i < arguments.length; _i++) {
