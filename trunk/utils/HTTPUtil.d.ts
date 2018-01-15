@@ -30,6 +30,13 @@ export interface IHTTPRequestParams {
      */
     useCDN?: boolean;
     /**
+     * 是否合法化http头，默认是true
+     *
+     * @type {boolean}
+     * @memberof IHTTPRequestParams
+     */
+    validateProtocol?: boolean;
+    /**
      * HTTP方法类型，默认是GET
      *
      * @type {HTTPMethod}

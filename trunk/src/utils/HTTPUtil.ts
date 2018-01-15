@@ -38,6 +38,13 @@ export interface IHTTPRequestParams
      */
     useCDN?:boolean;
     /**
+     * 是否合法化http头，默认是true
+     * 
+     * @type {boolean}
+     * @memberof IHTTPRequestParams
+     */
+    validateProtocol?:boolean;
+    /**
      * HTTP方法类型，默认是GET
      * 
      * @type {HTTPMethod}
@@ -142,8 +149,9 @@ export function load(params:IHTTPRequestParams):void
     }
     else
     {
-        // 合法化一下protocol
-        url = validateProtocol(url);
+        // 根据参数需求合法化protocol
+        if(params.validateProtocol !== false)
+            url = validateProtocol(url);
         // 规整一下url
         url = trimURL(url);
     }
