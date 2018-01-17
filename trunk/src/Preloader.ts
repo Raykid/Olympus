@@ -322,9 +322,10 @@ namespace olympus
                 url = version.wrapHashUrl(url);
                 // 请求文件
                 var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+                xhr.open("GET", url, true);
+                // responseType设置要在open之后，否则IE10和IE11会报错
                 xhr.responseType = "text";
                 xhr.onreadystatechange = onReadyStateChange;
-                xhr.open("GET", url, true);
                 xhr.send(null);
             }
         }

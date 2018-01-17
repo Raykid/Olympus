@@ -154,10 +154,8 @@ export function load(params:IHTTPRequestParams):void
         // 规整一下url
         url = trimURL(url);
     }
-    // 生成并初始化xhr
+    // 生成xhr
     var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
-    if(params.responseType) xhr.responseType = params.responseType;
-    xhr.onreadystatechange = onReadyStateChange;
     // 发送
     send();
 
@@ -187,6 +185,9 @@ export function load(params:IHTTPRequestParams):void
         }
         // 打开XHR
         xhr.open(method, url, true);
+        // 初始化，responseType必须在open之后设置，否则IE10和IE11会报错
+        if(params.responseType) xhr.responseType = params.responseType;
+        xhr.onreadystatechange = onReadyStateChange;
         // 添加自定义请求头
         for(var key in params.headerDict)
         {
