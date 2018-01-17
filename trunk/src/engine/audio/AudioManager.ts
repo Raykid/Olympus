@@ -18,7 +18,14 @@ import AudioContextImpl from "./AudioContextImpl";
 @Injectable
 export default class AudioManager
 {
-    private _soundImpl:IAudio = new AudioTagImpl();
+    public constructor()
+    {
+        this._soundImpl = new AudioTagImpl();
+        // 由于IE可能不支持AudioContext，因此如果是IE则要改用Audio标签实现
+        this._musicImpl = (window["AudioContext"] ? new AudioContextImpl() : this._soundImpl);
+    }
+
+    private _soundImpl:IAudio;
     /**
      * 注册Sound音频实现对象
      * 
@@ -102,7 +109,7 @@ export default class AudioManager
         this._soundImpl.stopAll();
     }
 
-    private _musicImpl:IAudio = new AudioContextImpl();
+    private _musicImpl:IAudio;
     /**
      * 注册Music音频实现对象
      * 

@@ -10,6 +10,7 @@ import IAudio, { AudioPlayParams } from "./IAudio";
  * Music：使用AudioContext播放，可以一定程度上越过点击事件检查，但无法跨域播放，适合播放背景音乐
 */
 export default class AudioManager {
+    constructor();
     private _soundImpl;
     /**
      * 注册Sound音频实现对象

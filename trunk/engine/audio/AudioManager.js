@@ -4,6 +4,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
 import AudioTagImpl from "./AudioTagImpl";
@@ -21,7 +24,8 @@ import AudioContextImpl from "./AudioContextImpl";
 var AudioManager = /** @class */ (function () {
     function AudioManager() {
         this._soundImpl = new AudioTagImpl();
-        this._musicImpl = new AudioContextImpl();
+        // 由于IE可能不支持AudioContext，因此如果是IE则要改用Audio标签实现
+        this._musicImpl = (window["AudioContext"] ? new AudioContextImpl() : this._soundImpl);
     }
     /**
      * 注册Sound音频实现对象
@@ -160,7 +164,8 @@ var AudioManager = /** @class */ (function () {
         this._musicImpl.stopAll();
     };
     AudioManager = __decorate([
-        Injectable
+        Injectable,
+        __metadata("design:paramtypes", [])
     ], AudioManager);
     return AudioManager;
 }());
