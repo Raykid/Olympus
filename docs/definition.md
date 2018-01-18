@@ -11,9 +11,9 @@ ModuleManager
 #### 描述
 - 整个应用程序完全是由启动配置和[1, +∞)个模块组合而成的
 - 每个模块都拥有自己独立的资源加载、初始化消息派发与接收、界面组织与展现、销毁与资源回收等功能
-- 一个模块通常由一个人完成，是应用程序划分的最小单位，因此模块的粒度需要根据需要进行把控，过大则不够灵活，过小则开销太大。通常采取一个[界面](https://github.com/Raykid/Olympus/blob/master/docs/definition.md#界面)对应一个模块
-- 模块之间不可相互引用，必须通过[本地消息系统](https://github.com/Raykid/Olympus/blob/master/docs/message.md)相互通信，从而消除模块间相互依赖的可能性
-- 模块内部由[0, +∞)个[界面](https://github.com/Raykid/Olympus/blob/master/docs/definition.md#界面)组成
+- 一个模块通常由一个人完成，是应用程序划分的最小单位，因此模块的粒度需要根据需要进行把控，过大则不够灵活，过小则开销太大。通常采取一个[界面](./definition.md#界面)对应一个模块
+- 模块之间不可相互引用，必须通过[本地消息系统](./message.md)相互通信，从而消除模块间相互依赖的可能性
+- 模块内部由[0, +∞)个[界面](./definition.md#界面)组成
   - 逻辑模块：界面数是0。即没有界面逻辑，全部为业务逻辑的模块。可用于制作条件跳转模块（根据条件判断要跳转到哪个模块，类似HTTP的302状态码的功能）
   - 界面模块：界面数大于0。绝大多数模块都是这种类型
 
@@ -42,10 +42,10 @@ ModuleManager
 #### Mediator的功能
 界面实体通常是DOM标签，比如div标签，或者egret显示对象，他们本身不具备和Olympus框架交互的能力，Mediator作为他们和Olympus交互的媒介，为界面实体扩展出了如下功能
 
-- [依赖注入](https://github.com/Raykid/Olympus/blob/master/docs/injection.md)：可以注入数据层对象以便捷操作数据层，也可以注入工具对象，使用其提供的工具方法
-- [数据绑定](https://github.com/Raykid/Olympus/blob/master/docs/bindings.md)：采用MVVM架构、基于TypeScript装饰器和元数据反射功能实现的数据绑定，让界面开发更简洁
-- [本地消息通信](https://github.com/Raykid/Olympus/blob/master/docs/message.md)：可以便捷地发送和接收本地事件，与模块外进行沟通
-- [远程消息通信](https://github.com/Raykid/Olympus/blob/master/docs/remote.md)：可以便捷地发送和接收由服务器配置的、强类型的远程通讯消息
+- [依赖注入](./injection.md)：可以注入数据层对象以便捷操作数据层，也可以注入工具对象，使用其提供的工具方法
+- [数据绑定](./bindings.md)：采用MVVM架构、基于TypeScript装饰器和元数据反射功能实现的数据绑定，让界面开发更简洁
+- [本地消息通信](./message.md)：可以便捷地发送和接收本地事件，与模块外进行沟通
+- [远程消息通信](./remote.md)：可以便捷地发送和接收由服务器配置的、强类型的远程通讯消息
 
 #### Mediator分类
 - 组件（Component）：可复用于另外一个任意类型界面中的最灵活的界面类型，需要自行添加和移除显示。父类为Mediator

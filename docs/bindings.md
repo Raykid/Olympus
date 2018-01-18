@@ -1,5 +1,5 @@
 #### 数据绑定
-如下就是一个简单的MVVM数据绑定示例，使用TypeScript标签为你的界面绑定数据，更详细的例子请看https://github.com/Raykid/Olympus/blob/master/test/modules/FirstModule.ts
+如下就是一个简单的MVVM数据绑定示例，使用TypeScript标签为你的界面绑定数据，更详细的例子请看[FirstModule](../test/modules/FirstModule.ts)
 
     @DOMMediatorClass("./modules/test.html")
     class FirstMediator extends SceneMediator
