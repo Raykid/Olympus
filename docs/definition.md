@@ -19,7 +19,7 @@ ModuleManager
 
 #### 示例
 
-开发一个模块需要声明一个class，继承自Module，并且使用@ModuleClass装饰器进行修饰，如下
+开发一个模块需要声明一个class，继承自Module，并且使用@ModuleClass装饰器进行修饰。如下代码示范了一个最简单的模块的写法：
 
     import Module from 'olympus-r/engine/module/Module';
     import { ModuleClass, DelegateMediator } from 'olympus-r/engine/injector/Injector';
@@ -51,3 +51,15 @@ ModuleManager
 - 组件（Component）：可复用于另外一个任意类型界面中的最灵活的界面类型，需要自行添加和移除显示。父类为Mediator
 - 弹窗（Panel）：不覆盖全屏，同一时间可以有[0, +∞)个实例显示的界面类型，由PanelManager管理添加和移除显示，拥有动画弹出和关闭能力。父类为PanelMediator
 - 场景（Scene）：覆盖全屏，同一时间有且仅有一个实例显示的界面类型，由SceneManager管理添加和移除显示，拥有动画切换场景能力。父类为SceneMediator
+
+#### @MediatorClass装饰器
+
+Mediator需要使用@MediatorClass装饰器进行装饰才能具有完整的界面中介者的功能。@MediatorClass根据表现层不同也有所区别，分类如下：
+- @DOMMediatorClass：标识此Mediator操作的是DOM界面实体
+- @EgretMediatorClass：标识此Mediator操作的是Egret界面实体
+
+具体描述请看[装饰器](./decorator.md)章节。
+
+#### 示例
+
+开发一个界面需要声明一个class，根据实际需要继承自上述分类中的任意一个，并且使用@MediatorClass装饰器进行修饰。如下代码示范了一个最简单的界面Mediator的写法：

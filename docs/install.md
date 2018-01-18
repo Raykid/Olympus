@@ -1,3 +1,5 @@
+# Olympus安装
+
 #### npm安装
 安装Olympus主库：`npm i olympus-r`;
 

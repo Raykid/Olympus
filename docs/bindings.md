@@ -1,4 +1,4 @@
-#### 数据绑定
+# Olympus数据绑定
 如下就是一个简单的MVVM数据绑定示例，使用TypeScript标签为你的界面绑定数据，更详细的例子请看[FirstModule](../test/modules/FirstModule.ts)
 
     @DOMMediatorClass("./modules/test.html")
