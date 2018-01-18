@@ -288,6 +288,28 @@ export default class EgretBridge implements IBridge
         
         function initEgret(renderMode:string):void
         {
+            if(window["eui"])
+            {
+                // 篡改eui.DataGroup.commitProperties和getVirtualElementAt方法，为renderer添加一个标签以修复列表首项渲染多次的bug
+                var oriCommitProperties:Function = eui.DataGroup.prototype["commitProperties"];
+                eui.DataGroup.prototype["commitProperties"] = function():any
+                {
+                    if(this.__egret_datagroup_state__ < 1)
+                        this.__egret_datagroup_state__ = 1;
+                    var result:any = oriCommitProperties.apply(this, arguments);
+                    if(this.__egret_datagroup_state__ < 2)
+                        this.__egret_datagroup_state__ = 2;
+                    return result;
+                };
+                var oriGetVirtualElementAt:Function = eui.DataGroup.prototype["getVirtualElementAt"];
+                eui.DataGroup.prototype["getVirtualElementAt"] = function():any
+                {
+                    var result:any = oriGetVirtualElementAt.apply(this, arguments);
+                    if(this.__egret_datagroup_state__ < 3)
+                        this.__egret_datagroup_state__ = 3;
+                    return result;
+                }
+            }
             // 启动Egret引擎
             egret.runEgret({
                 renderMode: renderMode,
@@ -577,48 +599,29 @@ export default class EgretBridge implements IBridge
         wrapEUIList(target, (data:any, renderer:eui.IItemRenderer)=>{
             // 取出key
             var key:any;
-            // clone对象还存在则说明首次遍历还未结束
-            var firstRender:boolean = (memento.cloneDatas != null);
-            var datas:any = (firstRender ? memento.cloneDatas : memento.datas);
-            // 遍历memento的datas属性（在valuateBindFor时被赋值）
-            if(datas instanceof Array)
+            var datas:any = memento.datas;
+            if(target["__egret_datagroup_state__"] === 1 || target["__egret_datagroup_state__"] === 3)
             {
-                var index:number = renderer.itemIndex;
-                if(datas[index] != null)
+                // 遍历memento的datas属性（在valuateBindFor时被赋值）
+                if(datas instanceof Array)
                 {
-                    key = index;
-                    // 首次渲染需要去重
-                    if(firstRender)
-                    {
-                        delete datas[index];
-                        // 如果所有值都已经遍历过一遍则移除cloneDatas
-                        if(isEmpty(datas))
-                            delete memento.cloneDatas;
-                    }
+                    key = renderer.itemIndex;
                 }
-            }
-            else
-            {
-                for(var i in datas)
+                else
                 {
-                    if(datas[i] === data)
+                    for(var i in datas)
                     {
-                        // 这就是我们要找的key
-                        key = i;
-                        // 首次渲染需要去重
-                        if(firstRender)
+                        if(datas[i] === data)
                         {
-                            delete datas[i];
-                            // 如果所有值都已经遍历过一遍则移除cloneDatas
-                            if(isEmpty(datas))
-                                delete memento.cloneDatas;
+                            // 这就是我们要找的key
+                            key = i;
+                            break;
                         }
-                        break;
                     }
                 }
+                // 调用回调
+                if(key != null) rendererHandler(key, data, renderer);
             }
-            // 调用回调
-            if(key != null) rendererHandler(key, data, renderer);
         });
         return memento;
     }
@@ -634,13 +637,14 @@ export default class EgretBridge implements IBridge
     public valuateBindFor(target:eui.DataGroup, datas:any, memento:any):void
     {
         var provider:eui.ICollection;
-        // 设置memento原始datas
+        // 初始化列表状态
+        target["__egret_datagroup_state__"] = 0;
+        // 设置memento
         memento.datas = datas;
         // 复制datas
         if(datas instanceof Array)
         {
             provider = new eui.ArrayCollection(datas);
-            datas = datas.concat();
         }
         else
         {
@@ -651,10 +655,7 @@ export default class EgretBridge implements IBridge
                 list.push(datas[key]);
             }
             provider = new eui.ArrayCollection(list);
-            datas = cloneObject(datas);
         }
-        // 设置memento复制datas
-        memento.cloneDatas = datas;
         // 赋值
         target.dataProvider = provider;
     }
