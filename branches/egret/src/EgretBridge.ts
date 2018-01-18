@@ -294,19 +294,15 @@ export default class EgretBridge implements IBridge
                 var oriCommitProperties:Function = eui.DataGroup.prototype["commitProperties"];
                 eui.DataGroup.prototype["commitProperties"] = function():any
                 {
-                    if(this.__egret_datagroup_state__ < 1)
                         this.__egret_datagroup_state__ = 1;
                     var result:any = oriCommitProperties.apply(this, arguments);
-                    if(this.__egret_datagroup_state__ < 2)
-                        this.__egret_datagroup_state__ = 2;
                     return result;
                 };
                 var oriGetVirtualElementAt:Function = eui.DataGroup.prototype["getVirtualElementAt"];
                 eui.DataGroup.prototype["getVirtualElementAt"] = function():any
                 {
+                        this.__egret_datagroup_state__ = 2;
                     var result:any = oriGetVirtualElementAt.apply(this, arguments);
-                    if(this.__egret_datagroup_state__ < 3)
-                        this.__egret_datagroup_state__ = 3;
                     return result;
                 }
             }
@@ -600,27 +596,41 @@ export default class EgretBridge implements IBridge
             // 取出key
             var key:any;
             var datas:any = memento.datas;
-            if(target["__egret_datagroup_state__"] === 1 || target["__egret_datagroup_state__"] === 3)
+            // 遍历memento的datas属性（在valuateBindFor时被赋值）
+            if(datas instanceof Array)
             {
-                // 遍历memento的datas属性（在valuateBindFor时被赋值）
-                if(datas instanceof Array)
+                key = renderer.itemIndex;
+            }
+            else
+            {
+                for(var i in datas)
                 {
-                    key = renderer.itemIndex;
-                }
-                else
-                {
-                    for(var i in datas)
+                    if(datas[i] === data)
                     {
-                        if(datas[i] === data)
+                        // 这就是我们要找的key
+                        key = i;
+                        break;
+                    }
+                }
+            }
+            // 调用回调
+            if (key != null)
+            {
+                if(memento.syncDict)
+                {
+                    if(!memento.syncDict[key])
+                    {
+                        if(target["__egret_datagroup_state__"] === 1 || target["__egret_datagroup_state__"] === 2)
                         {
-                            // 这就是我们要找的key
-                            key = i;
-                            break;
+                            memento.syncDict[key] = data;
+                            rendererHandler(key, data, renderer);
                         }
                     }
                 }
-                // 调用回调
-                if(key != null) rendererHandler(key, data, renderer);
+                else
+                {
+                    rendererHandler(key, data, renderer);
+                }
             }
         });
         return memento;
@@ -641,6 +651,11 @@ export default class EgretBridge implements IBridge
         target["__egret_datagroup_state__"] = 0;
         // 设置memento
         memento.datas = datas;
+        memento.syncDict = {};
+        setTimeout(() => {
+            // 一次渲染后解锁
+            delete memento.syncDict;
+        }, 0);
         // 复制datas
         if(datas instanceof Array)
         {

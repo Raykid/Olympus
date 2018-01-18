@@ -269,18 +269,14 @@ var EgretBridge = /** @class */ (function () {
                 // 篡改eui.DataGroup.commitProperties和getVirtualElementAt方法，为renderer添加一个标签以修复列表首项渲染多次的bug
                 var oriCommitProperties = eui.DataGroup.prototype["commitProperties"];
                 eui.DataGroup.prototype["commitProperties"] = function () {
-                    if (this.__egret_datagroup_state__ < 1)
-                        this.__egret_datagroup_state__ = 1;
+                    this.__egret_datagroup_state__ = 1;
                     var result = oriCommitProperties.apply(this, arguments);
-                    if (this.__egret_datagroup_state__ < 2)
-                        this.__egret_datagroup_state__ = 2;
                     return result;
                 };
                 var oriGetVirtualElementAt = eui.DataGroup.prototype["getVirtualElementAt"];
                 eui.DataGroup.prototype["getVirtualElementAt"] = function () {
+                    this.__egret_datagroup_state__ = 2;
                     var result = oriGetVirtualElementAt.apply(this, arguments);
-                    if (this.__egret_datagroup_state__ < 3)
-                        this.__egret_datagroup_state__ = 3;
                     return result;
                 };
             }
@@ -537,23 +533,32 @@ var EgretBridge = /** @class */ (function () {
             // 取出key
             var key;
             var datas = memento.datas;
-            if (target["__egret_datagroup_state__"] === 1 || target["__egret_datagroup_state__"] === 3) {
-                // 遍历memento的datas属性（在valuateBindFor时被赋值）
-                if (datas instanceof Array) {
-                    key = renderer.itemIndex;
+            // 遍历memento的datas属性（在valuateBindFor时被赋值）
+            if (datas instanceof Array) {
+                key = renderer.itemIndex;
+            }
+            else {
+                for (var i in datas) {
+                    if (datas[i] === data) {
+                        // 这就是我们要找的key
+                        key = i;
+                        break;
+                    }
                 }
-                else {
-                    for (var i in datas) {
-                        if (datas[i] === data) {
-                            // 这就是我们要找的key
-                            key = i;
-                            break;
+            }
+            // 调用回调
+            if (key != null) {
+                if (memento.syncDict) {
+                    if (!memento.syncDict[key]) {
+                        if (target["__egret_datagroup_state__"] === 1 || target["__egret_datagroup_state__"] === 2) {
+                            memento.syncDict[key] = data;
+                            rendererHandler(key, data, renderer);
                         }
                     }
                 }
-                // 调用回调
-                if (key != null)
+                else {
                     rendererHandler(key, data, renderer);
+                }
             }
         });
         return memento;
@@ -572,6 +577,11 @@ var EgretBridge = /** @class */ (function () {
         target["__egret_datagroup_state__"] = 0;
         // 设置memento
         memento.datas = datas;
+        memento.syncDict = {};
+        setTimeout(function () {
+            // 一次渲染后解锁
+            delete memento.syncDict;
+        }, 0);
         // 复制datas
         if (datas instanceof Array) {
             provider = new eui.ArrayCollection(datas);
