@@ -8,7 +8,7 @@ import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import IMediator from "olympus-r/engine/mediator/IMediator";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import { cloneObject } from "olympus-r/utils/ObjectUtil";
+import { cloneObject, isEmpty } from "olympus-r/utils/ObjectUtil";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
@@ -577,7 +577,9 @@ export default class EgretBridge implements IBridge
         wrapEUIList(target, (data:any, renderer:eui.IItemRenderer)=>{
             // 取出key
             var key:any;
-            var datas:any = memento.datas;
+            // clone对象还存在则说明首次遍历还未结束
+            var firstRender:boolean = (memento.cloneDatas != null);
+            var datas:any = (firstRender ? memento.cloneDatas : memento.datas);
             // 遍历memento的datas属性（在valuateBindFor时被赋值）
             if(datas instanceof Array)
             {
@@ -585,7 +587,14 @@ export default class EgretBridge implements IBridge
                 if(datas[index] != null)
                 {
                     key = index;
-                    delete datas[index];
+                    // 首次渲染需要去重
+                    if(firstRender)
+                    {
+                        delete datas[index];
+                        // 如果所有值都已经遍历过一遍则移除cloneDatas
+                        if(isEmpty(datas))
+                            delete memento.cloneDatas;
+                    }
                 }
             }
             else
@@ -596,7 +605,14 @@ export default class EgretBridge implements IBridge
                     {
                         // 这就是我们要找的key
                         key = i;
-                        delete datas[i];
+                        // 首次渲染需要去重
+                        if(firstRender)
+                        {
+                            delete datas[i];
+                            // 如果所有值都已经遍历过一遍则移除cloneDatas
+                            if(isEmpty(datas))
+                                delete memento.cloneDatas;
+                        }
                         break;
                     }
                 }
@@ -618,6 +634,9 @@ export default class EgretBridge implements IBridge
     public valuateBindFor(target:eui.DataGroup, datas:any, memento:any):void
     {
         var provider:eui.ICollection;
+        // 设置memento原始datas
+        memento.datas = datas;
+        // 复制datas
         if(datas instanceof Array)
         {
             provider = new eui.ArrayCollection(datas);
@@ -634,8 +653,8 @@ export default class EgretBridge implements IBridge
             provider = new eui.ArrayCollection(list);
             datas = cloneObject(datas);
         }
-        // 设置memento
-        memento.datas = datas;
+        // 设置memento复制datas
+        memento.cloneDatas = datas;
         // 赋值
         target.dataProvider = provider;
     }

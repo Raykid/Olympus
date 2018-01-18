@@ -1,7 +1,7 @@
 /// <amd-module name="EgretBridge"/>
 import { core } from "olympus-r/core/Core";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import { cloneObject } from "olympus-r/utils/ObjectUtil";
+import { cloneObject, isEmpty } from "olympus-r/utils/ObjectUtil";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
@@ -518,13 +518,21 @@ var EgretBridge = /** @class */ (function () {
         wrapEUIList(target, function (data, renderer) {
             // 取出key
             var key;
-            var datas = memento.datas;
+            // clone对象还存在则说明首次遍历还未结束
+            var firstRender = (memento.cloneDatas != null);
+            var datas = (firstRender ? memento.cloneDatas : memento.datas);
             // 遍历memento的datas属性（在valuateBindFor时被赋值）
             if (datas instanceof Array) {
                 var index = renderer.itemIndex;
                 if (datas[index] != null) {
                     key = index;
-                    delete datas[index];
+                    // 首次渲染需要去重
+                    if (firstRender) {
+                        delete datas[index];
+                        // 如果所有值都已经遍历过一遍则移除cloneDatas
+                        if (isEmpty(datas))
+                            delete memento.cloneDatas;
+                    }
                 }
             }
             else {
@@ -532,7 +540,13 @@ var EgretBridge = /** @class */ (function () {
                     if (datas[i] === data) {
                         // 这就是我们要找的key
                         key = i;
-                        delete datas[i];
+                        // 首次渲染需要去重
+                        if (firstRender) {
+                            delete datas[i];
+                            // 如果所有值都已经遍历过一遍则移除cloneDatas
+                            if (isEmpty(datas))
+                                delete memento.cloneDatas;
+                        }
                         break;
                     }
                 }
@@ -553,6 +567,9 @@ var EgretBridge = /** @class */ (function () {
      */
     EgretBridge.prototype.valuateBindFor = function (target, datas, memento) {
         var provider;
+        // 设置memento原始datas
+        memento.datas = datas;
+        // 复制datas
         if (datas instanceof Array) {
             provider = new eui.ArrayCollection(datas);
             datas = datas.concat();
@@ -566,8 +583,8 @@ var EgretBridge = /** @class */ (function () {
             provider = new eui.ArrayCollection(list);
             datas = cloneObject(datas);
         }
-        // 设置memento
-        memento.datas = datas;
+        // 设置memento复制datas
+        memento.cloneDatas = datas;
         // 赋值
         target.dataProvider = provider;
     };
