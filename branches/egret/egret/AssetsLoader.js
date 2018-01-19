@@ -56,7 +56,7 @@ var AssetsLoader = /** @class */ (function () {
             RES.addEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
             RES.addEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
             RES.addEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
-            groups = groups.concat();
+            var temp = groups.concat();
             pgsDict = {};
             for (var i in groups) {
                 var group = groups[i];
@@ -90,12 +90,12 @@ var AssetsLoader = /** @class */ (function () {
             // 调用单一完毕回调
             this._handler.oneComplete && this._handler.oneComplete(groupDict[evt.groupName]);
             // 测试是否全部完毕
-            var index = groups.indexOf(evt.groupName);
+            var index = temp.indexOf(evt.groupName);
             if (index >= 0) {
                 // 移除加载组名
-                groups.splice(index, 1);
+                temp.splice(index, 1);
                 // 判断是否全部完成
-                if (groups.length == 0) {
+                if (temp.length == 0) {
                     // 移除事件监听
                     RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
                     RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
