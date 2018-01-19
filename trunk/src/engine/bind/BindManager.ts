@@ -226,6 +226,17 @@ export default class BindManager
                 };
             }
             mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
+            // 如果__bind_sub_events__列表存在，则将事件记录到target上，
+            var events:BindEventData[] = target.__bind_sub_events__;
+            if(events)
+            {
+                events.push({
+                    target: currentTarget,
+                    type: type,
+                    handler: handler,
+                    thisArg: mediator.viewModel
+                });
+            }
         });
     }
 
@@ -308,6 +319,15 @@ export default class BindManager
                 var subEnvModels:any[] = envModels.concat();
                 // 插入环境变量
                 subEnvModels.unshift(commonScope);
+                // 如果renderer已经有事件列表了，说明renderer是被重用的，删除所有事件
+                var events:BindEventData[] = renderer.__bind_sub_events__;
+                for(var i in events)
+                {
+                    var data:BindEventData = events.pop();
+                    mediator.bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
+                }
+                // 为renderer设置子对象事件列表
+                if(!events) renderer.__bind_sub_events__ = [];
                 // 触发回调，进行内部编译
                 callback && callback(value, renderer, subEnvModels);
             });
@@ -429,6 +449,14 @@ interface BindData
 {
     bind:Bind;
     callbacks:(()=>void)[];
+}
+
+interface BindEventData
+{
+    target:any;
+    type:string;
+    handler:Function;
+    thisArg:any;
 }
 
 /** 再额外导出一个单例 */
