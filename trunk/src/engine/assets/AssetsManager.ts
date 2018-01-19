@@ -131,7 +131,10 @@ export default class AssetsManager
             else
             {
                 // 没有就去加载
-                this._assetsDict[path] = value = [complete];
+                this._assetsDict[path] = value = [(result:any)=>{
+                    oneComplete && oneComplete(keyOrPath, result);
+                    complete && complete(result);
+                }];
                 load({
                     url: version.wrapHashUrl(path),
                     useCDN: true,

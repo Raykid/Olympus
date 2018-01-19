@@ -103,7 +103,10 @@ var AssetsManager = /** @class */ (function () {
             }
             else {
                 // 没有就去加载
-                this._assetsDict[path] = value = [complete];
+                this._assetsDict[path] = value = [function (result) {
+                        oneComplete && oneComplete(keyOrPath, result);
+                        complete && complete(result);
+                    }];
                 load({
                     url: version.wrapHashUrl(path),
                     useCDN: true,
