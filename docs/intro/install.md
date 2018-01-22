@@ -1,7 +1,7 @@
 # Olympus安装
 
 #### npm安装
-安装Olympus主库：`npm i olympus-r`;
+安装Olympus 本体库：`npm i olympus-r`;
 
 安装Olympus DOM表现层库：`npm i olympus-r-dom`;
 

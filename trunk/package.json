@@ -16,7 +16,7 @@
   "main": "Olympus.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "typedoc": "node_modules/.bin/typedoc --readme none --mode modules --theme minimal --out docs src/"
   },
   "repository": {
     "type": "git",
@@ -37,5 +37,7 @@
   "dependencies": {
     "reflect-metadata": "^0.1.10"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "typedoc": "^0.9.0"
+  }
 }

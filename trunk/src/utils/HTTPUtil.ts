@@ -202,7 +202,7 @@ export function load(params:IHTTPRequestParams):void
         switch(xhr.readyState)
         {
             case 2:// 已经发送，开始计时
-                timeoutId = setTimeout(abortAndRetry, timeout);
+                timeoutId = window.setTimeout(abortAndRetry, timeout);
                 break;
             case 4:// 接收完毕
                 // 停止计时

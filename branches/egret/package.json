@@ -11,7 +11,7 @@
   "main": "Egret.js",
   "types": "index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "typedoc": "node_modules/.bin/typedoc --readme none --mode modules --theme minimal --out docs src/"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
   "homepage": "https://github.com/Raykid/Olympus#readme",
   "dependencies": {},
   "devDependencies": {
-    "olympus-r": "^0.4.9"
+    "olympus-r": "^0.4.9",
+    "typedoc": "^0.9.0"
   }
 }
