@@ -22,8 +22,8 @@
 
 由于Olympus被设计成“1 vs. n”的方式（即一套业务逻辑对应多套表现层的桥接模式，举例：业务层执行addChild，实际在DOM中执行的是appendChild，在Egret中执行的是addChild），因此代码被分拆到了多个部分中，可根据实际情况选择所需的表现层与本体进行搭配使用。当前所有库的API目录如下
 
-- ### [API-本体](./trunk/docs/index.html)
+- ### [API-本体](https://raykid.github.io/Olympus/trunk/docs/index.html)
 
-- ### [API-DOM表现层](./branches/dom/docs/index.html)
+- ### [API-DOM表现层](https://raykid.github.io/Olympus/branches/dom/docs/index.html)
 
-- ### [API-Egret表现层](./branches/egret/docs/index.html)
+- ### [API-Egret表现层](https://raykid.github.io/Olympus/branches/egret/docs/index.html)
