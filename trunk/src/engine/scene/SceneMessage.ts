@@ -24,4 +24,12 @@ export default class SceneMessage
      * @memberof SceneMessage
      */
     public static SCENE_AFTER_CHANGE:string = "sceneAfterChange";
+    /**
+     * 场景栈数据变化消息
+     * 
+     * @static
+     * @type {string}
+     * @memberof SceneMessage
+     */
+    public static SCENE_STACK_CHANGE:string = "sceneStackChange";
 }

@@ -15,7 +15,7 @@ export interface IInjectableParams {
     type: IConstructor | string;
 }
 /**
- * 核心上下文对象，负责内核消息消息转发、对象注入等核心功能的实现
+ * 核心上下文对象，负责内核消息转发、对象注入等核心功能的实现
  *
  * @export
  * @class Core

@@ -25,6 +25,14 @@ var SceneMessage = /** @class */ (function () {
      * @memberof SceneMessage
      */
     SceneMessage.SCENE_AFTER_CHANGE = "sceneAfterChange";
+    /**
+     * 场景栈数据变化消息
+     *
+     * @static
+     * @type {string}
+     * @memberof SceneMessage
+     */
+    SceneMessage.SCENE_STACK_CHANGE = "sceneStackChange";
     return SceneMessage;
 }());
 export default SceneMessage;

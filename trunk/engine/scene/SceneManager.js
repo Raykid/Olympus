@@ -87,6 +87,8 @@ var SceneManager = /** @class */ (function () {
             var lastScene = _this._sceneStack[0];
             // 数据先行
             _this._sceneStack[0] = scene;
+            // 派发消息
+            core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
             // 调用接口
             lastScene && lastScene.__close(data);
             scene.__open(data);
@@ -110,6 +112,8 @@ var SceneManager = /** @class */ (function () {
         wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || none, ChangeType.Push, function () {
             // 数据先行
             _this._sceneStack.unshift(scene);
+            // 派发消息
+            core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
             // 调用接口
             scene.__open(data);
         });
@@ -151,6 +155,8 @@ var SceneManager = /** @class */ (function () {
         this.doChange(scene, to, data, policy, ChangeType.Pop, function () {
             // 数据先行
             _this._sceneStack.splice(_this._sceneStack.indexOf(scene), 1);
+            // 派发消息
+            core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
         }, function () {
             // 调用接口
             scene.__close(data);

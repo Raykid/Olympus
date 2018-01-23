@@ -95,6 +95,8 @@ export default class SceneManager
                 var lastScene:IScene = this._sceneStack[0];
                 // 数据先行
                 this._sceneStack[0] = scene;
+                // 派发消息
+                core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
                 // 调用接口
                 lastScene && lastScene.__close(data);
                 scene.__open(data);
@@ -128,6 +130,8 @@ export default class SceneManager
             ()=>{
                 // 数据先行
                 this._sceneStack.unshift(scene);
+                // 派发消息
+                core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
                 // 调用接口
                 scene.__open(data);
             }
@@ -186,6 +190,8 @@ export default class SceneManager
             ()=>{
                 // 数据先行
                 this._sceneStack.splice(this._sceneStack.indexOf(scene), 1);
+                // 派发消息
+                core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
             },
             ()=>{
                 // 调用接口
