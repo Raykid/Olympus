@@ -2,9 +2,11 @@
 
 - ### [简介](./docs/summary.md)
 
-- ### [安装](./docs/install.md)
+- ### [安装、配置与发布](./docs/install.md)
 
-- ### [定义](./docs/definition.md)
+- ### [脚手架工具](./docs/scaffold.md)
+
+- ### [抽象定义](./docs/definition.md)
 
 - ### [装饰器](./docs/decorator.md)
 

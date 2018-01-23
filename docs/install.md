@@ -1,4 +1,4 @@
-# Olympus安装
+# Olympus安装、配置与发布
 
 #### npm安装
 安装Olympus 本体库：`npm i olympus-r`;
@@ -18,3 +18,23 @@
 - moduleResolution：node（否则import代码会很麻烦且丑陋）
 - experimentalDecorators：true（否则用不了装饰器）
 - emitDecoratorMetadata：true（否则装饰器无法获取类型信息）
+
+#### 代码引用方式
+
+使用ts提供的三斜线语法可以便捷地引用olympus库，如下
+
+    /// <reference types="olympus-r"/>
+    /// <reference types="olympus-r-dom"/>
+    /// <reference types="olympus-r-egret"/>
+
+注意：三斜线引用必须写在文件最顶部，连import语句也要写在它的后面才行
+
+#### 推荐IDE
+
+目前已经验证过VSCode是最好用的IDE，idea系列尚未验证
+
+#### 推荐发布方式
+
+- webpack
+- gulp
+- 只要你能发出来，用什么其实都是可以的
