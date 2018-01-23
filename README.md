@@ -1,4 +1,4 @@
-# Olympus介绍
+# Olympus用户手册
 
 - ### [简介](./docs/summary.md)
 
@@ -14,7 +14,7 @@
 
 - ### [表现层桥](./docs/bridge.md)
 
-- ### [本地消息](./docs/message.md)
+- ### [多核本地消息](./docs/message.md)
 
 - ### [远程通讯](./docs/remote.md)
 
