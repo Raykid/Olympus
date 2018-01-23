@@ -10,10 +10,6 @@
 
 - ### [表现层桥](./docs/intro/bridge.md)
 
-- ### [依赖注入](./docs/intro/injection.md)
-
-- ### [数据绑定](./docs/intro/bindings.md)
-
 - ### [本地消息](./docs/intro/message.md)
 
 - ### [远程通讯](./docs/intro/remote.md)

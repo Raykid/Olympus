@@ -1,10 +1,234 @@
-# Olympus常规装饰器
+# Olympus装饰器
 
-Olympus大量使用TypeScript装饰器对开发效率进行优化，下面是用到的Olympus装饰器
+Olympus大量使用了TypeScript装饰器。原则上所有装饰器都可以使用原始方式代替，但使用装饰器会大大提高开发效率
+
+当前流行的ECMAScript标准尚未支持装饰器功能（要到ES7才能支持，当前流行的是ES6），因此目前若要使用装饰器，只能用TypeScript开发
+
+下面是所有Olympus装饰器
+
+- [Olympus模块装饰器](#olympus模块装饰器)
+    - [@ModelClass](#modelclass)
+    - [@MediatorClass](#mediatorclass)
+        - [@DOMMediatorClass](#dommediatorclass)
+        - [@EgretSkin](#egretskin)
+        - [@EgretMediatorClass](#egretmediatorclass)
+    - [@ModuleClass](#moduleclass)
+    - [@DelegateMediator](#delegatemediator)
+- [Olympus本地消息装饰器](#olympus本地消息装饰器)
+    - [@MessageHandler](#messagehandler)
+    - [@GlobalMessageHandler](#globalmessagehandler)
+- [Olympus远程通讯装饰器](#olympus远程通讯装饰器)
+    - [@ResponseHandler](#responsehandler)
+    - [@GlobalResponseHandler](#globalresponsehandler)
+- [Olympus依赖注入装饰器](#olympus依赖注入装饰器)
+    - [@Injectable](#injectable)
+    - [@Inject](#inject)
+- [Olympus数据绑定装饰器](#olympus数据绑定装饰器)
+    - [@BindValue](#bindvalue)
+    - [@BindFunc](#bindfunc)
+    - [@BindOn](#bindon)
+    - [@BindIf](#bindif)
+    - [@BindFor](#bindfor)
+
+# Olympus模块装饰器
+
+## ModelClass
+
+类级装饰器，标识一个类是一个数据模型（Model）。除了具有@Injectable装饰器的功能外，还可以在类内部使用变量级和方法级装饰器（@Injectable不能在类内部使用变量级和方法级装饰器）。
+
+    @ModelClass
+    class SomeModel extends Model
+    {
+        // 在Model内部可以使用变量级装饰器
+        @Inject
+        private _otherModel:OtherModel;
+
+        // 在Model内部可以使用方法级装饰器
+        @MessageHandler("MsgDispatched")
+        private onMsgDispatched():void
+        {
+        }
+    }
+
+## MediatorClass
+
+类级装饰器，标识一个类是一个界面中介者（Mediator）。具有可以在类内部使用变量级和方法级装饰器的能力，但类不可被注入（区别于Model）
+
+    @MediatorClass
+    class SomeMediator extends Mediator
+    {
+        // 在Mediator内部可以使用变量级装饰器
+        @Inject
+        private _someModel:SomeModel;
+
+        // 在Mediator内部可以使用方法级装饰器
+        @MessageHandler("MsgDispatched")
+        private onMsgDispatched():void
+        {
+        }
+    }
+
+## DOMMediatorClass
+
+类级装饰器，对DOM界面开发进行的封装。除了具有@MediatorClass的功能外，还集成了对DOM界面的操作功能，包括初始化、反射引用等
+
+#### DOM模板用法
+
+    // 传入模板路径。注意：相对路径起始地址为项目入口html页面，不是当前ts文件
+    @DOMMediatorClass("./template.html")
+    class DOMMediator extends Mediator
+    {
+    }
+
+#### DOM字符串用法
+
+    @DOMMediatorClass("<div id='myDiv'>这是一个DOM字符串</div>")
+    class DOMMediator extends Mediator
+    {
+        // 字符串中拥有id的节点都会被反射到Mediator中，模板用法中也支持反射
+        private myDiv:HTMLDivElement;
+    }
+
+## EgretSkin
+
+类级装饰器，标识某个Mediator是操作Egret显示对象的Mediator
+
+#### 可以且应该与@MediatorClass共同使用，但有个简洁用法请参考：[EgretMediatorClass](#egretmediatorclass)装饰器
+
+    // 在EgretWing中拥有一个导出类名为SomeSkin的皮肤
+    @EgretSkin("SomeSkin")
+    @MediatorClass
+    class EgretMediator extends Mediator
+    {
+    }
+
+## EgretMediatorClass
+
+类级装饰器，对Egret界面开发进行的封装。标识某个Mediator是操作Egret显示对象的Mediator，等价于@EgretSkin和@MediatorClass两个装饰器共同作用
+
+#### 上例完全可以写成这样
+
+    // 在EgretWing中拥有一个导出类名为SomeSkin的皮肤
+    @EgretMediatorClass("SomeSkin")
+    class EgretMediator extends Mediator
+    {
+    }
+
+#### 如果皮肤中拥有id为someId的eui.Button，则可反射到Mediator中
+
+    @EgretMediatorClass("SomeSkin")
+    class EgretMediator extends Mediator
+    {
+        // 只要皮肤中起了id，便可以反射到Mediator中
+        private someId:eui.Button;
+    }
+
+## ModuleClass
+
+类级装饰器，标识一个类是一个业务模块（Module）。除了具有@MediatorClass的功能外，还具有组合任意多个Mediator的能力
+
+    @ModuleClass
+    class SomeModule extends Module
+    {
+        // 在Module内部可以使用变量级装饰器
+        @Inject
+        private _someModel:SomeModel;
+
+        // 在Module内部可以使用方法级装饰器
+        @MessageHandler("MsgDispatched")
+        private onMsgDispatched():void
+        {
+        }
+
+        // 在Module内部可以通过@DelegateMediator装饰器托管任意多个Mediator
+        @DelegateMediator
+        private _someMediator:SomeMediator;
+        @DelegateMediator
+        private _otherMediator:OtherMediator;
+    }
+
+## DelegateMediator
+
+变量级装饰器，只能用在Module内部，将Mediator托管给Module，托管后的Mediator所有操作完全与Module同步，即Mediator的onOpen方法和onDispose方法都会与Module的同名方法同时执行
+
+对应底层操作：[Module.delegateMediator](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html#delegatemediator)
+
+    class SomeModule extends Module
+    {
+        // 在Module内部可以通过@DelegateMediator装饰器托管任意多个Mediator
+        @DelegateMediator
+        private _someMediator:SomeMediator;
+        @DelegateMediator
+        private _otherMediator:OtherMediator;
+    }
+
+# Olympus本地消息装饰器
+
+Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级消息内核。在二级消息内核上派发的消息会被冒泡到顶级内核，但顶级内核中的消息不会反向流转
+
+更多信息请参考[多核本地消息](./message.md)章节
+
+## MessageHandler
+
+方法级装饰器，将某个方法绑定到某个本地消息上，当该类型的本地消息派发时会执行该方法
+
+对应的底层操作：[Module.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html#listen)、[Mediator.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_mediator_mediator_.mediator.html#listen)、[core.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_core_core_.core.html#listen)
+
+    class SomeMediator
+    {
+        // 参数化用法
+        @MessageHandler("MsgDispatch")
+        private onMsgDispatch():void
+        {
+        }
+
+        // 无参数化用法，要求方法首个参数类型必须为IMessage的实现类
+        @MessageHandler
+        private onAnotherMsgDispatch(msg:AnotherMsg):void
+        {
+        }
+    }
+
+## GlobalMessageHandler
+
+方法级装饰器，和@MessageHandler类似，区别是@GlobalMessageHandler会明确监听最顶级消息内核中的消息，@MessageHandler则根据装饰器所属消息内核而有所区别
+
+# Olympus远程通讯装饰器
+
+Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级消息内核。在二级消息内核上派发的消息会被冒泡到顶级内核，但顶级内核中的消息不会反向流转
+
+更多信息请参考[远程通讯](./remote.md)章节
+
+## ResponseHandler
+
+方法级装饰器，将某个方法绑定到某个远程消息上，当该类型的远程消息收到服务器返回时会执行该方法
+
+对应的底层操作：[netManager.listenResponse](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_net_netmanager_.netmanager.html#listenresponse)
+
+    class SomeMediator
+    {
+        // 参数化用法
+        @ResponseHandler(SomeResponse)
+        private onMsgDispatch():void
+        {
+        }
+
+        // 无参数化用法，要求方法首个参数类型必须为ResponseData的子类
+        @ResponseHandler
+        private onAnotherMsgDispatch(res:SomeResponse):void
+        {
+        }
+    }
+
+## GlobalResponseHandler
+
+方法级装饰器，和@ResponseHandler类似，区别是@GlobalResponseHandler会明确监听最顶级消息内核中的通讯返回，@ResponseHandler则根据装饰器所属消息内核而有所区别
+
+# Olympus依赖注入装饰器
 
 ## Injectable
 
-类级装饰器，用来标识某个类在程序初始化时生成单例并注入到core中，且可以通过[Inject](./decorator.md#inject)装饰器注入。
+类级装饰器，用来标识某个类在程序初始化时生成单例并注入到core中，且可以通过[Inject](#inject)装饰器注入。
 
 对应的底层操作：[core.mapInject](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_core_core_.core.html#mapinject)、[core.mapInjectValue](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_core_core_.core.html#mapinjectvalue)
 
@@ -87,189 +311,7 @@ Olympus大量使用TypeScript装饰器对开发效率进行优化，下面是用
         private _someClass:SomeClass;
     }
 
-## ModelClass
-
-类级装饰器，标识一个类是一个数据模型（Model）。除了具有@Injectable装饰器的功能外，还可以在类内部使用变量级和方法级装饰器（@Injectable不能在类内部使用变量级和方法级装饰器）。
-
-    @ModelClass
-    class SomeModel extends Model
-    {
-        // 在Model内部可以使用变量级装饰器
-        @Inject
-        private _otherModel:OtherModel;
-
-        // 在Model内部可以使用方法级装饰器
-        @MessageHandler("MsgDispatched")
-        private onMsgDispatched():void
-        {
-        }
-    }
-
-## MediatorClass
-
-类级装饰器，标识一个类是一个界面中介者（Mediator）。具有可以在类内部使用变量级和方法级装饰器的能力，但类不可被注入（区别于Model）
-
-    @MediatorClass
-    class SomeMediator extends Mediator
-    {
-        // 在Mediator内部可以使用变量级装饰器
-        @Inject
-        private _someModel:SomeModel;
-
-        // 在Mediator内部可以使用方法级装饰器
-        @MessageHandler("MsgDispatched")
-        private onMsgDispatched():void
-        {
-        }
-    }
-
-## DOMMediatorClass
-
-类级装饰器，除了具有@MediatorClass的功能外，还集成了对DOM界面的操作功能，包括初始化、反射引用等
-
-#### DOM模板用法
-
-    // 传入模板路径。注意：相对路径起始地址为项目入口html页面，不是当前ts文件
-    @DOMMediatorClass("./template.html")
-    class DOMMediator extends Mediator
-    {
-    }
-
-#### DOM字符串用法
-
-    @DOMMediatorClass("<div id='myDiv'>这是一个DOM字符串</div>")
-    class DOMMediator extends Mediator
-    {
-        // 字符串中拥有id的节点都会被反射到Mediator中，模板用法中也支持反射
-        private myDiv:HTMLDivElement;
-    }
-
-## EgretSkin
-
-类级装饰器，标识某个Mediator是操作Egret显示对象的Mediator
-
-#### 可以且应该与@MediatorClass共同使用，但有个简洁用法请参考：[EgretMediatorClass](./decorator.md#egretmediatorclass)装饰器
-
-    // 在EgretWing中拥有一个导出类名为SomeSkin的皮肤
-    @EgretSkin("SomeSkin")
-    @MediatorClass
-    class EgretMediator extends Mediator
-    {
-    }
-
-## EgretMediatorClass
-
-类级装饰器，标识某个Mediator是操作Egret显示对象的Mediator，等价于@EgretSkin和@MediatorClass两个装饰器共同作用
-
-#### 上例完全可以写成这样
-
-    // 在EgretWing中拥有一个导出类名为SomeSkin的皮肤
-    @EgretMediatorClass("SomeSkin")
-    class EgretMediator extends Mediator
-    {
-    }
-
-#### 如果皮肤中拥有id为someId的eui.Button，则可反射到Mediator中
-
-    @EgretMediatorClass("SomeSkin")
-    class EgretMediator extends Mediator
-    {
-        // 只要皮肤中起了id，便可以反射到Mediator中
-        private someId:eui.Button;
-    }
-
-## ModuleClass
-
-类级装饰器，标识一个类是一个业务模块（Module）。除了具有@MediatorClass的功能外，还具有组合任意多个Mediator的能力
-
-    @ModuleClass
-    class SomeModule extends Module
-    {
-        // 在Module内部可以使用变量级装饰器
-        @Inject
-        private _someModel:SomeModel;
-
-        // 在Module内部可以使用方法级装饰器
-        @MessageHandler("MsgDispatched")
-        private onMsgDispatched():void
-        {
-        }
-
-        // 在Module内部可以通过@DelegateMediator装饰器托管任意多个Mediator
-        @DelegateMediator
-        private _someMediator:SomeMediator;
-        @DelegateMediator
-        private _otherMediator:OtherMediator;
-    }
-
-## MessageHandler
-
-方法级装饰器，将某个方法绑定到某个本地消息上，当该类型的本地消息派发时会执行该方法。请参考[多核本地消息](./message.md)章节
-
-对应的底层操作：[Module.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html#listen)、[Mediator.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_mediator_mediator_.mediator.html#listen)、[core.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_core_core_.core.html#listen)
-
-    class SomeMediator
-    {
-        // 参数化用法
-        @MessageHandler("MsgDispatch")
-        private onMsgDispatch():void
-        {
-        }
-
-        // 无参数化用法，要求方法首个参数类型必须为IMessage的实现类
-        @MessageHandler
-        private onAnotherMsgDispatch(msg:AnotherMsg):void
-        {
-        }
-    }
-
-## GlobalMessageHandler
-
-方法级装饰器，和@MessageHandler类似，区别是@GlobalMessageHandler会明确监听最顶级消息内核中的消息，@MessageHandler则根据装饰器所属消息内核而有所区别
-
-Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级消息内核。在二级消息内核上派发的消息会被冒泡到顶级内核，但顶级内核中的消息不会反向流转。请参考[多核本地消息](./message.md)章节
-
-## ResponseHandler
-
-方法级装饰器，将某个方法绑定到某个远程消息上，当该类型的远程消息收到服务器返回时会执行该方法。请参考[远程通讯](./remote.md)章节
-
-对应的底层操作：[netManager.listenResponse](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_net_netmanager_.netmanager.html#listenresponse)
-
-    class SomeMediator
-    {
-        // 参数化用法
-        @ResponseHandler(SomeResponse)
-        private onMsgDispatch():void
-        {
-        }
-
-        // 无参数化用法，要求方法首个参数类型必须为ResponseData的子类
-        @ResponseHandler
-        private onAnotherMsgDispatch(res:SomeResponse):void
-        {
-        }
-    }
-
-## GlobalResponseHandler
-
-方法级装饰器，和@ResponseHandler类似，区别是@GlobalResponseHandler会明确监听最顶级消息内核中的通讯返回，@ResponseHandler则根据装饰器所属消息内核而有所区别
-
-Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级消息内核。在二级消息内核上派发的消息会被冒泡到顶级内核，但顶级内核中的消息不会反向流转。请参考[远程通讯](./remote.md)章节
-
-## DelegateMediator
-
-变量级装饰器，只能用在Module内部，将Mediator托管给Module，托管后的Mediator所有操作完全与Module同步，即Mediator的onOpen方法和onDispose方法都会与Module的同名方法同时执行
-
-    class SomeModule extends Module
-    {
-        // 在Module内部可以通过@DelegateMediator装饰器托管任意多个Mediator
-        @DelegateMediator
-        private _someMediator:SomeMediator;
-        @DelegateMediator
-        private _otherMediator:OtherMediator;
-    }
-
-# Olympus MVVM数据绑定装饰器
+# Olympus数据绑定装饰器
 
 Olympus中的数据绑定都是通过TypeScript装饰器实现的，基于表现层提供的反射功能将显示对象反射到Mediator中，再在显示对象上添加装饰器来实现MVVM数据绑定
 
@@ -574,6 +616,8 @@ ViewModel本身也可以嵌套结构，例如上面的示例可以简化为如�
 
 所有写在@BindFor下方的绑定表达式会作为@BindFor的子表达式，为每一个渲染器显示对象都绑定一份，在渲染器显示对象生成时被编译
 
+@BindFor可以遍历数组，也可以遍历Object
+
 #### 重载1：绑定当前显示对象
 
 使用in表达式：
@@ -616,3 +660,24 @@ ViewModel本身也可以嵌套结构，例如上面的示例可以简化为如�
     // 输出：<div id='myDiv'>a</div>
     //      <div id='myDiv'>b</div>
     //      <div id='myDiv'>c</div>
+
+#### 重载2：绑定寻址显示对象
+
+    @DOMMediatorClass("<div id='myDiv'></div>")
+    class SomeMediator extends Mediator
+    {
+        // 假设myDiv上有一个subDiv显示对象
+        @BindFor("subDiv", "value of list")
+        // 这时这个@BindValue操作的就是subDiv的textContent，而不是myDiv
+        @BindValue("textContent", "value")
+        private myDiv:HTMLElement;
+
+        public onOpen():void
+        {
+            this.viewModel = {
+                list: ["a", "b", "c"]
+            };
+        }
+    }
+
+@BindFor的寻址功能与@BindValue完全一致
