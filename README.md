@@ -1,18 +1,22 @@
 # Olympus介绍
 
-- ### [简介](./docs/intro/summary.md)
+- ### [简介](./docs/summary.md)
 
-- ### [安装](./docs/intro/install.md)
+- ### [安装](./docs/install.md)
 
-- ### [定义](./docs/intro/definition.md)
+- ### [定义](./docs/definition.md)
 
-- ### [装饰器](./docs/intro/decorator.md)
+- ### [装饰器](./docs/decorator.md)
 
-- ### [表现层桥](./docs/intro/bridge.md)
+- ### [依赖注入](./docs/injection.md)
 
-- ### [本地消息](./docs/intro/message.md)
+- ### [数据绑定](./docs/bindings.md)
 
-- ### [远程通讯](./docs/intro/remote.md)
+- ### [表现层桥](./docs/bridge.md)
+
+- ### [本地消息](./docs/message.md)
+
+- ### [远程通讯](./docs/remote.md)
 
 # Olympus API
 

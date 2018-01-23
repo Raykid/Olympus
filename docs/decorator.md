@@ -226,6 +226,8 @@ Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级
 
 # Olympus依赖注入装饰器
 
+更多信息请参考[依赖注入](./injection.md)章节
+
 ## Injectable
 
 类级装饰器，用来标识某个类在程序初始化时生成单例并注入到core中，且可以通过[Inject](#inject)装饰器注入。
@@ -315,13 +317,17 @@ Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级
 
 Olympus中的数据绑定都是通过TypeScript装饰器实现的，基于表现层提供的反射功能将显示对象反射到Mediator中，再在显示对象上添加装饰器来实现MVVM数据绑定
 
-绑定装饰器全部为变量级装饰器，且均只能写在Mediator内部
+绑定装饰器全部为变量级装饰器，且均只能写在Mediator内部。每个绑定装饰器都有bindManager提供的底层方法对应，但使用过于复杂，不建议直接使用底层方法
 
 由于不同表现层的绑定写法完全一样，因此绑定装饰器仅以DOM表现层举例，其他表现层的绑定请以此类推
+
+更多信息请参考[数据绑定](./bindings.md)章节
 
 ## BindValue
 
 绑定显示对象属性
+
+对应底层操作：[bindManager.bindValue](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_bind_bindmanager_.bindmanager.html#bindvalue)
 
 #### 重载1：一次绑定一个属性
 
@@ -406,6 +412,8 @@ ViewModel本身也可以嵌套结构，例如上面的示例可以简化为如�
 
 绑定显示对象方法，与@BindValue类似，区别是@BindValue是赋值显示对象的属性，@BindFunc会执行显示对象的方法
 
+对应底层操作：[bindManager.bindFunc](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_bind_bindmanager_.bindmanager.html#bindfunc)
+
 #### 重载1：一次绑定一个方法
 
     @DOMMediatorClass("<div id='myDiv'></div>")
@@ -454,6 +462,8 @@ ViewModel本身也可以嵌套结构，例如上面的示例可以简化为如�
 ## BindOn
 
 为显示对象添加事件监听
+
+对应底层操作：[bindManager.bindOn](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_bind_bindmanager_.bindmanager.html#bindon)
 
 #### 重载1：一次添加一个监听
 
@@ -541,6 +551,8 @@ ViewModel本身也可以嵌套结构，例如上面的示例可以简化为如�
 - 控制显示对象的显示和隐藏（添加删除显示列表，而不是控制visible或alpha）
 - 控制子对象的绑定编译（表达式求值为false时不会进行子对象编译，直到第一次变为true）
 
+对应底层操作：[bindManager.bindIf](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_bind_bindmanager_.bindmanager.html#bindif)
+
 #### 重载1： 绑定当前显示对象
 
     @DOMMediatorClass("<div id='myDiv'></div>")
@@ -617,6 +629,8 @@ ViewModel本身也可以嵌套结构，例如上面的示例可以简化为如�
 所有写在@BindFor下方的绑定表达式会作为@BindFor的子表达式，为每一个渲染器显示对象都绑定一份，在渲染器显示对象生成时被编译
 
 @BindFor可以遍历数组，也可以遍历Object
+
+对应底层操作：[bindManager.bindFor](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_bind_bindmanager_.bindmanager.html#bindfor)
 
 #### 重载1：绑定当前显示对象
 
