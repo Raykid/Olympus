@@ -138,8 +138,10 @@ var Core = /** @class */ (function () {
      */
     Core.prototype.mapInjectValue = function (value, type) {
         // 如果是字符串则记录类型构造函数映射
-        if (!(type instanceof Function) || !type.prototype)
-            type = this._injectStrDict[type] = value.constructor;
+        if (!(type instanceof Function) || !type.prototype) {
+            this._injectStrDict.set(type, value.constructor);
+            type = value.constructor;
+        }
         // 记录已注入的单例
         this._injectDict.set(value.constructor, value);
         // 开始注入
@@ -154,7 +156,7 @@ var Core = /** @class */ (function () {
     Core.prototype.unmapInject = function (type) {
         // 如果是字符串则记录类型构造函数映射
         if (!(type instanceof Function) || !type.prototype)
-            type = this._injectStrDict[type];
+            type = this._injectStrDict.get(type);
         Reflect.deleteMetadata("design:type", type);
     };
     /**
@@ -166,7 +168,7 @@ var Core = /** @class */ (function () {
      */
     Core.prototype.getInject = function (type) {
         if (!(type instanceof Function) || !type.prototype)
-            type = this._injectStrDict[type];
+            type = this._injectStrDict.get(type);
         if (type) {
             // 需要用原始的构造函数取
             type = type["__ori_constructor__"] || type;

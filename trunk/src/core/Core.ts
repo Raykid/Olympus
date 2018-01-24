@@ -187,7 +187,10 @@ export default class Core implements IObservable
     {
         // 如果是字符串则记录类型构造函数映射
         if(!(type instanceof Function) || !type.prototype)
-            type = this._injectStrDict[type] = value.constructor;
+        {
+            this._injectStrDict.set(type, value.constructor);
+            type = value.constructor;
+        }
         // 记录已注入的单例
         this._injectDict.set(value.constructor, value);
         // 开始注入
@@ -203,7 +206,8 @@ export default class Core implements IObservable
     public unmapInject(type:any):void
     {
         // 如果是字符串则记录类型构造函数映射
-        if(!(type instanceof Function) || !type.prototype) type = this._injectStrDict[type];
+        if(!(type instanceof Function) || !type.prototype)
+            type = this._injectStrDict.get(type);
         Reflect.deleteMetadata("design:type", type);
     }
 
@@ -217,7 +221,7 @@ export default class Core implements IObservable
     public getInject(type:any):any
     {
         if(!(type instanceof Function) || !type.prototype)
-            type = this._injectStrDict[type];
+            type = this._injectStrDict.get(type);
         if(type)
         {
             // 需要用原始的构造函数取
