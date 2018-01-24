@@ -31,7 +31,7 @@ export function mutate(data:any):any
     // 如果是简单类型，则啥也不做
     if(!data || typeof data != "object") return data;
     // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
-    var keys:string[] = Object.keys(data).concat(Object.keys(data.__proto__));
+    var keys:string[] = Object.keys(data).concat(Object.keys(data.__proto__ || {}));
     // 去重
     var temp:any = {};
     for(var key of keys)
@@ -54,7 +54,7 @@ function mutateObject(data:any, key:string):void
     {
         dep = new Dep();
         // 判断本来这个属性是值属性还是getter/setter属性，要有不同的操作方式
-        var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__, key);
+        var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__ || {}, key);
         if(desc)
         {
             // 如果是数组，则要进行过一下数组变异

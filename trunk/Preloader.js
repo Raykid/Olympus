@@ -9,6 +9,16 @@
 var olympus;
 (function (olympus) {
     /**
+     * 获取当前页面的origin，会兼容IE10以下
+     *
+     * @returns {string}
+     */
+    function getCurOrigin() {
+        if (window.location.origin)
+            return window.location.origin;
+        return (window.location.protocol + "//" + window.location.host);
+    }
+    /**
      * 规整url
      * @param url
      */
@@ -98,7 +108,7 @@ var olympus;
      */
     function wrapHost(url, host, forced) {
         if (forced === void 0) { forced = false; }
-        host = host || window.location.origin;
+        host = host || getCurOrigin();
         var re = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
         var arr = url.match(re);
         if (arr && arr.length > 0) {
@@ -267,7 +277,7 @@ var olympus;
     function preload(jsFiles, host, callback) {
         // 使用host默认值
         if (!host)
-            host = window.location.origin;
+            host = getCurOrigin();
         // 首先初始化version
         version.initialize(preloadOne);
         function preloadOne() {

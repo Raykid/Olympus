@@ -1,4 +1,11 @@
 /**
+ * 获取当前页面的origin，会兼容IE10以下
+ *
+ * @export
+ * @returns {string}
+ */
+export declare function getCurOrigin(): string;
+/**
  * 规整url
  * @param url
  */

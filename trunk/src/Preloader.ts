@@ -8,6 +8,18 @@
 */
 namespace olympus
 {
+    
+    /**
+     * 获取当前页面的origin，会兼容IE10以下
+     * 
+     * @returns {string} 
+     */
+    function getCurOrigin():string
+    {
+        if(window.location.origin) return window.location.origin;
+        return (window.location.protocol + "//" + window.location.host);
+    }
+
     /**
      * 规整url
      * @param url
@@ -105,7 +117,7 @@ namespace olympus
      */
     function wrapHost(url:string, host:string, forced:boolean = false):string
     {
-        host = host || window.location.origin;
+        host = host || getCurOrigin();
         var re: RegExp = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
         var arr: string[] = url.match(re);
         if (arr && arr.length > 0)
@@ -302,7 +314,7 @@ namespace olympus
     export function preload(jsFiles:string[], host?:string, callback?:()=>void):void
     {
         // 使用host默认值
-        if(!host) host = window.location.origin;
+        if(!host) host = getCurOrigin();
         // 首先初始化version
         version.initialize(preloadOne);
         

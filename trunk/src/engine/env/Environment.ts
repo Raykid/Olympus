@@ -1,6 +1,6 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
-import { wrapHost } from "../../utils/URLUtil";
+import { wrapHost, getCurOrigin } from "../../utils/URLUtil";
 
 /**
  * @author Raykid
@@ -49,8 +49,8 @@ export default class Environment
     public getHost(index:number=0):string
     {
         var hosts:string[] = this._hostsDict[this._env];
-        if(!hosts) return window.location.origin;
-        return (hosts[index] || window.location.origin);
+        if(!hosts) return getCurOrigin();
+        return (hosts[index] || getCurOrigin());
     }
 
     private _cdnsDict:{[env:string]:string[]};
@@ -76,8 +76,8 @@ export default class Environment
     public get curCDNHost():string
     {
         var cdns:string[] = this._cdnsDict[this._env];
-        if(!cdns) return window.location.origin;
-        return (cdns[this._curCDNIndex] || window.location.origin);
+        if(!cdns) return getCurOrigin();
+        return (cdns[this._curCDNIndex] || getCurOrigin());
     }
     /**
      * 切换下一个CDN

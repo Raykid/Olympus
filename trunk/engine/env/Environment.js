@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
-import { wrapHost } from "../../utils/URLUtil";
+import { wrapHost, getCurOrigin } from "../../utils/URLUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -57,8 +57,8 @@ var Environment = /** @class */ (function () {
         if (index === void 0) { index = 0; }
         var hosts = this._hostsDict[this._env];
         if (!hosts)
-            return window.location.origin;
-        return (hosts[index] || window.location.origin);
+            return getCurOrigin();
+        return (hosts[index] || getCurOrigin());
     };
     Object.defineProperty(Environment.prototype, "cdnsDict", {
         /**
@@ -85,8 +85,8 @@ var Environment = /** @class */ (function () {
         get: function () {
             var cdns = this._cdnsDict[this._env];
             if (!cdns)
-                return window.location.origin;
-            return (cdns[this._curCDNIndex] || window.location.origin);
+                return getCurOrigin();
+            return (cdns[this._curCDNIndex] || getCurOrigin());
         },
         enumerable: true,
         configurable: true

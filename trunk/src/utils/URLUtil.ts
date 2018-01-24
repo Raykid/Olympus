@@ -1,6 +1,18 @@
 import { extendObject } from "./ObjectUtil";
 
 /**
+ * 获取当前页面的origin，会兼容IE10以下
+ * 
+ * @export
+ * @returns {string} 
+ */
+export function getCurOrigin():string
+{
+    if(window.location.origin) return window.location.origin;
+    return (window.location.protocol + "//" + window.location.host);
+}
+
+/**
  * 规整url
  * @param url
  */
@@ -80,7 +92,7 @@ export function validateProtocol(url:string, protocol?:string):string
  */
 export function wrapHost(url:string, host:string, forced:boolean = false):string
 {
-    host = host || window.location.origin;
+    host = host || getCurOrigin();
     var re: RegExp = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
     var arr: string[] = url.match(re);
     if (arr && arr.length > 0)

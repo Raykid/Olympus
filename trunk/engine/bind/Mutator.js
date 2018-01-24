@@ -29,7 +29,7 @@ export function mutate(data) {
     if (!data || typeof data != "object")
         return data;
     // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
-    var keys = Object.keys(data).concat(Object.keys(data.__proto__));
+    var keys = Object.keys(data).concat(Object.keys(data.__proto__ || {}));
     // 去重
     var temp = {};
     for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
@@ -48,7 +48,7 @@ function mutateObject(data, key) {
     if (!dep) {
         dep = new Dep();
         // 判断本来这个属性是值属性还是getter/setter属性，要有不同的操作方式
-        var desc = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__, key);
+        var desc = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__ || {}, key);
         if (desc) {
             // 如果是数组，则要进行过一下数组变异
             if (data[key] instanceof Array) {
