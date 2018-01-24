@@ -43,7 +43,12 @@ var AssetsManager = /** @class */ (function () {
      */
     AssetsManager.prototype.getAssets = function (keyOrPath) {
         var path = this._keyDict[keyOrPath] || keyOrPath;
-        return this._assetsDict[path];
+        var result = this._assetsDict[path];
+        // 如果是个数组则表示正在加载中，返回undefined
+        if (result instanceof Array)
+            return undefined;
+        else
+            return result;
     };
     /**
      * 加载资源，如果已加载过则同步回调，如果未加载则加载后异步回调
