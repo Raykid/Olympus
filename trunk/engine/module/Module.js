@@ -229,6 +229,15 @@ var Module = /** @class */ (function () {
     Module.prototype.onClose = function (data) {
     };
     /**
+     * 其他模块被关闭时调用，可以重写
+     *
+     * @param {IModuleConstructor|undefined} from 从哪个模块切换过来
+     * @param {*} [data] 传递给模块的数据
+     * @memberof Module
+     */
+    Module.prototype.onWakeUp = function (from, data) {
+    };
+    /**
      * 模块切换到前台时调用（open之后或者其他模块被关闭时），可以重写
      *
      * @param {IModuleConstructor|undefined} from 从哪个模块切换过来

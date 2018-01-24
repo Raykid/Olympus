@@ -46,6 +46,8 @@ export default interface IModule extends IDisposable, IObservable, IModuleDepend
     close(data?:any):void;
     /** 关闭模块时调用 */
     onClose(data?:any):void;
+    /** 其他模块被关闭时调用 */
+    onWakeUp(from:IModuleConstructor|undefined, data?:any):void;
     /** 模块切换到前台时调用（open之后或者其他模块被关闭时） */
     onActivate(from:IModuleConstructor|undefined, data?:any):void;
     /** 模块切换到后台是调用（close之后或者其他模块打开时） */

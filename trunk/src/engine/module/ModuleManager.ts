@@ -337,6 +337,8 @@ export default class ModuleManager
             target.close(data);
             // 调用onActivate接口
             this.activateModule(toModule, cls, data);
+            // 调用onWakeUp接口
+            toModule.onWakeUp(cls, data);
             // 派发消息
             core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
         }
