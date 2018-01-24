@@ -45,7 +45,12 @@ export function wrapConstruct(cls:IConstructor):IConstructor
     function onConstruct(args:any[]):void
     {
         // 恢复__proto__
-        this["__proto__"] = cls.prototype;
+        Object.defineProperty(this, "__proto__", {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: cls.prototype
+        });
         // 调用父类构造函数构造实例
         cls.apply(this, args);
         // 调用回调

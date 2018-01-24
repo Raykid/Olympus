@@ -40,7 +40,12 @@ export function wrapConstruct(cls) {
     return func;
     function onConstruct(args) {
         // 恢复__proto__
-        this["__proto__"] = cls.prototype;
+        Object.defineProperty(this, "__proto__", {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: cls.prototype
+        });
         // 调用父类构造函数构造实例
         cls.apply(this, args);
         // 调用回调

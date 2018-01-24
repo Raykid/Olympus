@@ -126,7 +126,12 @@ function mutateObject(data, key) {
 }
 function mutateArray(arr, dep) {
     // 变异当前数组
-    arr["__proto__"] = defineReactiveArray(dep);
+    Object.defineProperty(arr, "__proto__", {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: defineReactiveArray(dep)
+    });
     // 遍历当前数组，将内容对象全部变异
     for (var i = 0, len = arr.length; i < len; i++) {
         mutate(arr[i]);
