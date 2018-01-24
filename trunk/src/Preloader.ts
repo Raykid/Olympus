@@ -168,6 +168,7 @@ namespace olympus
          */
         public initialize(handler:()=>void):void
         {
+            var self:Version = this;
             if(window["__Olympus_Version_hashDict__"])
             {
                 // 之前在哪加载过，无需再次加载，直接使用
@@ -178,6 +179,10 @@ namespace olympus
             {
                 // 去加载version.cfg
                 var request:XMLHttpRequest = null;
+                if(window["XDomainRequest"])
+                {
+                    request = new window["XDomainRequest"]();
+                }
                 if (window["XMLHttpRequest"])
                 {
                     // code for IE7+, Firefox, Chrome, Opera, Safari
@@ -189,38 +194,36 @@ namespace olympus
                     request = new ActiveXObject("Microsoft.XMLHTTP");
                 }
                 // 注册回调函数
-                request.onreadystatechange = (evt:Event)=>
+                request.onload = function(evt:Event):void
                 {
-                    var request:XMLHttpRequest = evt.target as XMLHttpRequest;
-                    //判断对象状态是交互完成，接收服务器返回的数据
-                    if (request.readyState == 4)
-                    {
-                        if(request.status == 200)
-                        {
-                            var fileName:string = request["fileName"];
-                            var responseText = request.responseText;
-                            var lines:string[] = responseText.split("\n");
-                            for(var i in lines)
-                            {
-                                var line:string = lines[i];
-                                var arr:string[] = line.split("  ");
-                                if(arr.length == 2)
-                                {
-                                    var key:string = arr[1].substr(2);
-                                    var value:string = arr[0];
-                                    this._hashDict[key] = value;
-                                }
-                            }
-                            // 在window上挂一份
-                            window["__Olympus_Version_hashDict__"] = this._hashDict;
-                        }
-                        handler();
-                    }
+                    onLoad(evt);
+                    handler();
                 };
+                request.onerror = handler;
                 // 设置连接信息
                 request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
                 // 发送数据，开始和服务器进行交互
                 request.send();
+            }
+
+            function onLoad(evt:Event):void
+            {
+                var request:XMLHttpRequest = evt.target as XMLHttpRequest;
+                var responseText = request.responseText;
+                var lines:string[] = responseText.split("\n");
+                for(var i in lines)
+                {
+                    var line:string = lines[i];
+                    var arr:string[] = line.split("  ");
+                    if(arr.length == 2)
+                    {
+                        var key:string = arr[1].substr(2);
+                        var value:string = arr[0];
+                        self._hashDict[key] = value;
+                    }
+                }
+                // 在window上挂一份
+                window["__Olympus_Version_hashDict__"] = self._hashDict;
             }
         }
     
@@ -333,27 +336,24 @@ namespace olympus
                 // 添加Version
                 url = version.wrapHashUrl(url);
                 // 请求文件
-                var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+                var xhr:XMLHttpRequest = (window["XDomainRequest"] ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
                 xhr.open("GET", url, true);
                 // responseType设置要在open之后，否则IE10和IE11会报错
                 xhr.responseType = "text";
-                xhr.onreadystatechange = onReadyStateChange;
+                xhr.onload = onLoad;
                 xhr.send(null);
             }
         }
-        
-        function onReadyStateChange(evt:Event):void
+
+        function onLoad(evt:Event):void
         {
             var xhr:XMLHttpRequest = <XMLHttpRequest>evt.target;
-            if(xhr.readyState == 4 && xhr.status == 200)
-            {
-                // 将脚本内容以script标签形式添加到DOM中，这样运行的脚本不会跨域
-                var script:HTMLScriptElement = document.createElement("script");
-                script.innerHTML = xhr.responseText;
-                document.body.appendChild(script);
-                // 加载下一个
-                preloadOne();
-            }
+            // 将脚本内容以script标签形式添加到DOM中，这样运行的脚本不会跨域
+            var script:HTMLScriptElement = document.createElement("script");
+            script.innerHTML = xhr.responseText;
+            document.body.appendChild(script);
+            // 加载下一个
+            preloadOne();
         }
     }
 }

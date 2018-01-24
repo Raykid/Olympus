@@ -155,7 +155,7 @@ export function load(params:IHTTPRequestParams):void
         url = trimURL(url);
     }
     // 生成xhr
-    var xhr:XMLHttpRequest = (window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+    var xhr:XMLHttpRequest = (window["XDomainRequest"] ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
     // 发送
     send();
 
@@ -187,7 +187,8 @@ export function load(params:IHTTPRequestParams):void
         xhr.open(method, url, true);
         // 初始化，responseType必须在open之后设置，否则IE10和IE11会报错
         if(params.responseType) xhr.responseType = params.responseType;
-        xhr.onreadystatechange = onReadyStateChange;
+        xhr.onload = onLoad;
+        xhr.onerror = onError;
         // 添加自定义请求头
         for(var key in params.headerDict)
         {
@@ -195,45 +196,44 @@ export function load(params:IHTTPRequestParams):void
         }
         // 开始发送
         xhr.send(sendData);
+        // 开始计时
+        timeoutId = window.setTimeout(abortAndRetry, timeout);
     }
 
-    function onReadyStateChange():void
+    function onLoad(evt:Event):void
     {
-        switch(xhr.readyState)
+        // 停止计时
+        timeoutId && clearTimeout(timeoutId);
+        timeoutId = 0;
+        // 成功回调
+        params.onResponse && params.onResponse(xhr.response);
+    }
+
+    function onError():void
+    {
+        // 停止计时
+        timeoutId && clearTimeout(timeoutId);
+        timeoutId = 0;
+        // 失败重试
+        if(retryTimes > 0)
         {
-            case 2:// 已经发送，开始计时
-                timeoutId = window.setTimeout(abortAndRetry, timeout);
-                break;
-            case 4:// 接收完毕
-                // 停止计时
-                timeoutId && clearTimeout(timeoutId);
-                timeoutId = 0;
-                if(xhr.status == 200)
-                {
-                    // 成功回调
-                    params.onResponse && params.onResponse(xhr.response);
-                }
-                else if(retryTimes > 0)
-                {
-                    // 没有超过重试上限则重试
-                    abortAndRetry();
-                }
-                else
-                {
-                    // 出错，如果使用CDN功能则尝试切换
-                    if(params.useCDN && !environment.nextCDN())
-                    {
-                        // 还没切换完，重新加载
-                        load(params);
-                    }
-                    else
-                    {
-                        // 切换完了还失败，则汇报错误
-                        var err:Error = new Error(xhr.status + " " + xhr.statusText);
-                        params.onError && params.onError(err);
-                    }
-                }
-                break;
+            // 没有超过重试上限则重试
+            abortAndRetry();
+        }
+        else
+        {
+            // 出错，如果使用CDN功能则尝试切换
+            if(params.useCDN && !environment.nextCDN())
+            {
+                // 还没切换完，重新加载
+                load(params);
+            }
+            else
+            {
+                // 切换完了还失败，则汇报错误
+                var err:Error = new Error(xhr.status + " " + xhr.statusText);
+                params.onError && params.onError(err);
+            }
         }
     }
 

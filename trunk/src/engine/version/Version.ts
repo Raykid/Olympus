@@ -23,6 +23,7 @@ export default class Version
      */
     public initialize(handler:()=>void):void
     {
+        var self:Version = this;
         if(window["__Olympus_Version_hashDict__"])
         {
             // 之前在哪加载过，无需再次加载，直接使用
@@ -33,6 +34,10 @@ export default class Version
         {
             // 去加载version.cfg
             var request:XMLHttpRequest = null;
+            if(window["XDomainRequest"])
+            {
+                request = new window["XDomainRequest"]();
+            }
             if (window["XMLHttpRequest"])
             {
                 // code for IE7+, Firefox, Chrome, Opera, Safari
@@ -44,38 +49,36 @@ export default class Version
                 request = new ActiveXObject("Microsoft.XMLHTTP");
             }
             // 注册回调函数
-            request.onreadystatechange = (evt:Event)=>
+            request.onload = function(evt:Event):void
             {
-                var request:XMLHttpRequest = evt.target as XMLHttpRequest;
-                //判断对象状态是交互完成，接收服务器返回的数据
-                if (request.readyState == 4)
-                {
-                    if(request.status == 200)
-                    {
-                        var fileName:string = request["fileName"];
-                        var responseText = request.responseText;
-                        var lines:string[] = responseText.split("\n");
-                        for(var i in lines)
-                        {
-                            var line:string = lines[i];
-                            var arr:string[] = line.split("  ");
-                            if(arr.length == 2)
-                            {
-                                var key:string = arr[1].substr(2);
-                                var value:string = arr[0];
-                                this._hashDict[key] = value;
-                            }
-                        }
-                        // 在window上挂一份
-                        window["__Olympus_Version_hashDict__"] = this._hashDict;
-                    }
-                    handler();
-                }
+                onLoad(evt);
+                handler();
             };
+            request.onerror = handler;
             // 设置连接信息
             request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
             // 发送数据，开始和服务器进行交互
             request.send();
+        }
+
+        function onLoad(evt:Event):void
+        {
+            var request:XMLHttpRequest = evt.target as XMLHttpRequest;
+            var responseText = request.responseText;
+            var lines:string[] = responseText.split("\n");
+            for(var i in lines)
+            {
+                var line:string = lines[i];
+                var arr:string[] = line.split("  ");
+                if(arr.length == 2)
+                {
+                    var key:string = arr[1].substr(2);
+                    var value:string = arr[0];
+                    self._hashDict[key] = value;
+                }
+            }
+            // 在window上挂一份
+            window["__Olympus_Version_hashDict__"] = self._hashDict;
         }
     }
 

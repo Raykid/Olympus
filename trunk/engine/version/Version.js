@@ -26,7 +26,7 @@ var Version = /** @class */ (function () {
      * @memberof Version
      */
     Version.prototype.initialize = function (handler) {
-        var _this = this;
+        var self = this;
         if (window["__Olympus_Version_hashDict__"]) {
             // 之前在哪加载过，无需再次加载，直接使用
             this._hashDict = window["__Olympus_Version_hashDict__"];
@@ -35,6 +35,9 @@ var Version = /** @class */ (function () {
         else {
             // 去加载version.cfg
             var request = null;
+            if (window["XDomainRequest"]) {
+                request = new window["XDomainRequest"]();
+            }
             if (window["XMLHttpRequest"]) {
                 // code for IE7+, Firefox, Chrome, Opera, Safari
                 request = new XMLHttpRequest();
@@ -44,33 +47,31 @@ var Version = /** @class */ (function () {
                 request = new ActiveXObject("Microsoft.XMLHTTP");
             }
             // 注册回调函数
-            request.onreadystatechange = function (evt) {
-                var request = evt.target;
-                //判断对象状态是交互完成，接收服务器返回的数据
-                if (request.readyState == 4) {
-                    if (request.status == 200) {
-                        var fileName = request["fileName"];
-                        var responseText = request.responseText;
-                        var lines = responseText.split("\n");
-                        for (var i in lines) {
-                            var line = lines[i];
-                            var arr = line.split("  ");
-                            if (arr.length == 2) {
-                                var key = arr[1].substr(2);
-                                var value = arr[0];
-                                _this._hashDict[key] = value;
-                            }
-                        }
-                        // 在window上挂一份
-                        window["__Olympus_Version_hashDict__"] = _this._hashDict;
-                    }
-                    handler();
-                }
+            request.onload = function (evt) {
+                onLoad(evt);
+                handler();
             };
+            request.onerror = handler;
             // 设置连接信息
             request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
             // 发送数据，开始和服务器进行交互
             request.send();
+        }
+        function onLoad(evt) {
+            var request = evt.target;
+            var responseText = request.responseText;
+            var lines = responseText.split("\n");
+            for (var i in lines) {
+                var line = lines[i];
+                var arr = line.split("  ");
+                if (arr.length == 2) {
+                    var key = arr[1].substr(2);
+                    var value = arr[0];
+                    self._hashDict[key] = value;
+                }
+            }
+            // 在window上挂一份
+            window["__Olympus_Version_hashDict__"] = self._hashDict;
         }
     };
     /**
