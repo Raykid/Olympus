@@ -19,15 +19,18 @@ import { Injectable } from "../../core/injector/Injector";
 */
 var Hash = /** @class */ (function () {
     function Hash() {
-        this._params = {};
-        this._direct = false;
         this._keepHash = false;
         this._hash = window.location.hash;
-        var reg = /#([^\?&]+)(\?([^\?&=]+=[^\?&=]+)(&([^\?&=]+=[^\?&=]+))*)?/;
-        var result = reg.exec(this._hash);
-        if (result) {
-            // 解析模块名称
-            this._moduleName = result[1];
+        this._moduleDataDict = {};
+        this._moduleDatas = [];
+        var reg = /#([^\?&#]+)?(\?([^\?&=#]+=[^\?&=#]+)(&([^\?&=#]+=[^\?&=#]+))*)?/g;
+        var result;
+        while (result = reg.exec(this._hash)) {
+            var data = {
+                name: result[1],
+                params: {},
+                direct: false
+            };
             // 解析模块参数
             var paramsStr = result[2];
             if (paramsStr != null) {
@@ -40,20 +43,23 @@ var Hash = /** @class */ (function () {
                         // 键和值都要做一次URL解码
                         var key = decodeURIComponent(temp[0]);
                         var value = decodeURIComponent(temp[1]);
-                        this._params[key] = value;
+                        data.params[key] = value;
                     }
                 }
             }
             // 处理direct参数
-            this._direct = (this._params.direct == "true");
-            delete this._params.direct;
+            data.direct = (data.params.direct == "true");
+            delete data.params.direct;
             // 处理keepHash参数
-            this._keepHash = (this._params.keepHash == "true");
-            delete this._params.keepHash;
-            // 如果keepHash不是true，则移除哈希值
-            if (!this._keepHash)
-                window.location.hash = "";
+            this._keepHash = this._keepHash || (data.params.keepHash == "true");
+            delete data.params.keepHash;
+            // 记录模块跳转数据
+            this._moduleDataDict[data.name] = data;
+            this._moduleDatas.push(data);
         }
+        // 如果keepHash不是true，则移除哈希值
+        if (!this._keepHash)
+            window.location.hash = "";
     }
     Object.defineProperty(Hash.prototype, "hash", {
         /**
@@ -69,44 +75,34 @@ var Hash = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Hash.prototype, "moduleName", {
+    Object.defineProperty(Hash.prototype, "moduleDatas", {
         /**
-         * 获取模块名
+         * 获取模块跳转数据数组
          *
          * @readonly
-         * @type {string}
+         * @type {IHashModuleData[]}
          * @memberof Hash
          */
         get: function () {
-            return this._moduleName;
+            return this._moduleDatas;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Hash.prototype, "params", {
+    Object.defineProperty(Hash.prototype, "firstModuleParams", {
         /**
-         * 获取传递给模块的参数
+         * 获取传递给首模块的参数，首模块数据的传递方式为位于第一个#后且不填写模块名
          *
          * @readonly
-         * @type {{[key:string]:string}}
+         * @type {*}
          * @memberof Hash
          */
         get: function () {
-            return this._params;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Hash.prototype, "direct", {
-        /**
-         * 获取是否直接跳转模块
-         *
-         * @readonly
-         * @type {boolean}
-         * @memberof Hash
-         */
-        get: function () {
-            return this._direct;
+            var data = this._moduleDatas[0];
+            if (!data)
+                return undefined;
+            // 如果传递的第一个模块有名字，则不认为是传递给首模块的
+            return (data.name ? undefined : data.params);
         },
         enumerable: true,
         configurable: true
@@ -129,11 +125,13 @@ var Hash = /** @class */ (function () {
      * 获取指定哈希参数
      *
      * @param {string} key 参数名
+     * @param {string} [moduleName] 参数所属模块名，不传则获取第一个模块的参数
      * @returns {string} 参数值
      * @memberof Hash
      */
-    Hash.prototype.getParam = function (key) {
-        return this._params[key];
+    Hash.prototype.getParam = function (key, moduleName) {
+        var data = (moduleName ? this._moduleDataDict[moduleName] : this._moduleDatas[0]);
+        return (data && data.params[key]);
     };
     Hash = __decorate([
         Injectable,

@@ -16,35 +16,24 @@ export default class Hash {
      * @memberof Hash
      */
     readonly hash: string;
-    private _moduleName;
+    private _moduleDataDict;
+    private _moduleDatas;
     /**
-     * 获取模块名
+     * 获取模块跳转数据数组
      *
      * @readonly
-     * @type {string}
+     * @type {IHashModuleData[]}
      * @memberof Hash
      */
-    readonly moduleName: string;
-    private _params;
+    readonly moduleDatas: IHashModuleData[];
     /**
-     * 获取传递给模块的参数
+     * 获取传递给首模块的参数，首模块数据的传递方式为位于第一个#后且不填写模块名
      *
      * @readonly
-     * @type {{[key:string]:string}}
+     * @type {*}
      * @memberof Hash
      */
-    readonly params: {
-        [key: string]: string;
-    };
-    private _direct;
-    /**
-     * 获取是否直接跳转模块
-     *
-     * @readonly
-     * @type {boolean}
-     * @memberof Hash
-     */
-    readonly direct: boolean;
+    readonly firstModuleParams: any;
     private _keepHash;
     /**
      * 获取是否保持哈希值
@@ -59,10 +48,16 @@ export default class Hash {
      * 获取指定哈希参数
      *
      * @param {string} key 参数名
+     * @param {string} [moduleName] 参数所属模块名，不传则获取第一个模块的参数
      * @returns {string} 参数值
      * @memberof Hash
      */
-    getParam(key: string): string;
+    getParam(key: string, moduleName?: string): string;
+}
+export interface IHashModuleData {
+    name: string;
+    params: any;
+    direct: boolean;
 }
 /** 再额外导出一个单例 */
 export declare const hash: Hash;

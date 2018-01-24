@@ -123,10 +123,14 @@ var Engine = /** @class */ (function () {
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
-        moduleManager.open(this._initParams.firstModule);
+        moduleManager.open(this._initParams.firstModule, hash.firstModuleParams);
         // 如果有哈希模块则打开之
-        if (hash.moduleName)
-            moduleManager.open(hash.moduleName, hash.params, hash.direct);
+        for (var i in hash.moduleDatas) {
+            var data = hash.moduleDatas[i];
+            // 如果模块没有名字则不进行操作
+            if (data.name)
+                moduleManager.open(data.name, data.params, data.direct);
+        }
     };
     Engine.prototype.onModuleChange = function (from) {
         // 调用进度回调，全部过程完毕，100%

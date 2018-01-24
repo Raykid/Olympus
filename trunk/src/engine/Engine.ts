@@ -19,7 +19,7 @@ import AudioManager from "./audio/AudioManager";
 import Environment, { environment } from "./env/Environment";
 import Explorer from "./env/Explorer";
 import WindowExternal from "./env/WindowExternal";
-import Hash, { hash } from "./env/Hash";
+import Hash, { hash, IHashModuleData } from "./env/Hash";
 import Query from "./env/Query";
 import Shell from "./env/Shell";
 import Version, { version } from "./version/Version";
@@ -151,10 +151,15 @@ export default class Engine
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
-        moduleManager.open(this._initParams.firstModule);
+        moduleManager.open(this._initParams.firstModule, hash.firstModuleParams);
         // 如果有哈希模块则打开之
-        if(hash.moduleName)
-            moduleManager.open(hash.moduleName, hash.params, hash.direct);
+        for(var i in hash.moduleDatas)
+        {
+            var data:IHashModuleData = hash.moduleDatas[i];
+            // 如果模块没有名字则不进行操作
+            if(data.name)
+                moduleManager.open(data.name, data.params, data.direct);
+        }
     }
 
     private onModuleChange(from:IModuleConstructor):void

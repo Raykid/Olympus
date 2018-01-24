@@ -25,43 +25,33 @@ export default class Hash
         return this._hash;
     }
 
-    private _moduleName:string;
+    private _moduleDataDict:{[name:string]:IHashModuleData};
+    private _moduleDatas:IHashModuleData[];
     /**
-     * 获取模块名
+     * 获取模块跳转数据数组
      * 
      * @readonly
-     * @type {string}
+     * @type {IHashModuleData[]}
      * @memberof Hash
      */
-    public get moduleName():string
+    public get moduleDatas():IHashModuleData[]
     {
-        return this._moduleName;
+        return this._moduleDatas;
     }
 
-    private _params:{[key:string]:string} = {};
     /**
-     * 获取传递给模块的参数
+     * 获取传递给首模块的参数，首模块数据的传递方式为位于第一个#后且不填写模块名
      * 
      * @readonly
-     * @type {{[key:string]:string}}
+     * @type {*}
      * @memberof Hash
      */
-    public get params():{[key:string]:string}
+    public get firstModuleParams():any
     {
-        return this._params;
-    }
-
-    private _direct:boolean = false;
-    /**
-     * 获取是否直接跳转模块
-     * 
-     * @readonly
-     * @type {boolean}
-     * @memberof Hash
-     */
-    public get direct():boolean
-    {
-        return this._direct;
+        var data:IHashModuleData = this._moduleDatas[0];
+        if(!data) return undefined;
+        // 如果传递的第一个模块有名字，则不认为是传递给首模块的
+        return (data.name ? undefined : data.params);
     }
 
     private _keepHash:boolean = false;
@@ -80,12 +70,17 @@ export default class Hash
     public constructor()
     {
         this._hash = window.location.hash;
-        var reg:RegExp = /#([^\?&]+)(\?([^\?&=]+=[^\?&=]+)(&([^\?&=]+=[^\?&=]+))*)?/;
-        var result:RegExpExecArray = reg.exec(this._hash);
-        if(result)
+        this._moduleDataDict = {};
+        this._moduleDatas = [];
+        var reg:RegExp = /#([^\?&#]+)?(\?([^\?&=#]+=[^\?&=#]+)(&([^\?&=#]+=[^\?&=#]+))*)?/g;
+        var result:RegExpExecArray;
+        while(result = reg.exec(this._hash))
         {
-            // 解析模块名称
-            this._moduleName = result[1];
+            var data:IHashModuleData = {
+                name: result[1],
+                params: {},
+                direct: false
+            };
             // 解析模块参数
             var paramsStr:string = result[2];
             if(paramsStr != null)
@@ -101,32 +96,45 @@ export default class Hash
                         // 键和值都要做一次URL解码
                         var key:string = decodeURIComponent(temp[0]);
                         var value:string = decodeURIComponent(temp[1]);
-                        this._params[key] = value;
+                        data.params[key] = value;
                     }
                 }
             }
             // 处理direct参数
-            this._direct = (this._params.direct == "true");
-            delete this._params.direct;
+            data.direct = (data.params.direct == "true");
+            delete data.params.direct;
             // 处理keepHash参数
-            this._keepHash = (this._params.keepHash == "true");
-            delete this._params.keepHash;
-            // 如果keepHash不是true，则移除哈希值
-            if(!this._keepHash) window.location.hash = "";
+            this._keepHash = this._keepHash || (data.params.keepHash == "true");
+            delete data.params.keepHash;
+            // 记录模块跳转数据
+            this._moduleDataDict[data.name] = data;
+            this._moduleDatas.push(data);
         }
+        // 如果keepHash不是true，则移除哈希值
+        if(!this._keepHash) window.location.hash = "";
     }
 
     /**
      * 获取指定哈希参数
      * 
      * @param {string} key 参数名
+     * @param {string} [moduleName] 参数所属模块名，不传则获取第一个模块的参数
      * @returns {string} 参数值
      * @memberof Hash
      */
-    public getParam(key:string):string
+    public getParam(key:string, moduleName?:string):string
     {
-        return this._params[key];
+        var data:IHashModuleData = (moduleName ? this._moduleDataDict[moduleName] : this._moduleDatas[0]);
+        return (data && data.params[key]);
     }
 }
+
+export interface IHashModuleData
+{
+    name:string;
+    params:any;
+    direct:boolean;
+}
+
 /** 再额外导出一个单例 */
 export const hash:Hash = core.getInject(Hash);
