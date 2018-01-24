@@ -75,6 +75,7 @@ export default class ModuleManager {
      * @memberof ModuleManager
      */
     open(clsOrName: IModuleConstructor | string, data?: any, replace?: boolean): void;
+    private onFinishOpen();
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *

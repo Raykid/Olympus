@@ -194,6 +194,10 @@ var ModuleManager = /** @class */ (function () {
                     maskFlag = false;
                     // 停止加载，调用模块加载失败接口
                     target.onLoadAssets(err);
+                    // 移除先行数据
+                    _this._moduleStack.shift();
+                    // 结束一次模块开启
+                    _this.onFinishOpen();
                 }
                 else if (mediators.length > 0) {
                     var mediator = mediators.shift();
@@ -222,6 +226,10 @@ var ModuleManager = /** @class */ (function () {
                     assetsManager.loadAssets(target.listJsFiles(), function (results) {
                         if (results instanceof Error) {
                             target.onLoadAssets(results);
+                            // 移除先行数据
+                            _this._moduleStack.shift();
+                            // 结束一次模块开启
+                            _this.onFinishOpen();
                             return;
                         }
                         if (results) {
@@ -235,8 +243,6 @@ var ModuleManager = /** @class */ (function () {
                         netManager.sendMultiRequests(requests, function (responses) {
                             // 赋值responses
                             target.responses = responses;
-                            // 关闭标识符
-                            this._opening = null;
                             // 调用open接口
                             target.open(data);
                             // 调用onDeactivate接口
@@ -248,9 +254,8 @@ var ModuleManager = /** @class */ (function () {
                                 this.close(from && from[0], data);
                             // 派发消息
                             core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
-                            // 如果有缓存的模块需要打开则打开之
-                            if (this._openCache.length > 0)
-                                this.open.apply(this, this._openCache.shift());
+                            // 结束一次模块开启
+                            this.onFinishOpen();
                         }, _this, target.observable);
                     });
                 }
@@ -269,13 +274,20 @@ var ModuleManager = /** @class */ (function () {
             }
             // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
             this.close(after[0][0], data);
-            // 关闭标识符
-            this._opening = null;
+            // 结束一次模块开启
+            this.onFinishOpen();
         }
         else {
-            // 关闭标识符
-            this._opening = null;
+            // 结束一次模块开启
+            this.onFinishOpen();
         }
+    };
+    ModuleManager.prototype.onFinishOpen = function () {
+        // 关闭标识符
+        this._opening = null;
+        // 如果有缓存的模块需要打开则打开之
+        if (this._openCache.length > 0)
+            this.open.apply(this, this._openCache.shift());
     };
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close

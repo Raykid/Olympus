@@ -211,6 +211,10 @@ export default class ModuleManager
                     maskFlag = false;
                     // 停止加载，调用模块加载失败接口
                     target.onLoadAssets(err);
+                    // 移除先行数据
+                    this._moduleStack.shift();
+                    // 结束一次模块开启
+                    this.onFinishOpen();
                 }
                 else if(mediators.length > 0)
                 {
@@ -242,6 +246,10 @@ export default class ModuleManager
                         if(results instanceof Error)
                         {
                             target.onLoadAssets(results);
+                            // 移除先行数据
+                            this._moduleStack.shift();
+                            // 结束一次模块开启
+                            this.onFinishOpen();
                             return;
                         }
                         if(results)
@@ -257,8 +265,6 @@ export default class ModuleManager
                         {
                             // 赋值responses
                             target.responses = responses;
-                            // 关闭标识符
-                            this._opening = null;
                             // 调用open接口
                             target.open(data);
                             // 调用onDeactivate接口
@@ -269,9 +275,8 @@ export default class ModuleManager
                             if(replace) this.close(from && from[0], data);
                             // 派发消息
                             core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
-                            // 如果有缓存的模块需要打开则打开之
-                            if(this._openCache.length > 0)
-                                this.open.apply(this, this._openCache.shift());
+                            // 结束一次模块开启
+                            this.onFinishOpen();
                         }, this, target.observable);
                     });
                 }
@@ -293,14 +298,23 @@ export default class ModuleManager
             }
             // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
             this.close(after[0][0], data);
-            // 关闭标识符
-            this._opening = null;
+            // 结束一次模块开启
+            this.onFinishOpen();
         }
         else
         {
-            // 关闭标识符
-            this._opening = null;
+            // 结束一次模块开启
+            this.onFinishOpen();
         }
+    }
+
+    private onFinishOpen():void
+    {
+        // 关闭标识符
+        this._opening = null;
+        // 如果有缓存的模块需要打开则打开之
+        if(this._openCache.length > 0)
+        this.open.apply(this, this._openCache.shift());
     }
 
     /**

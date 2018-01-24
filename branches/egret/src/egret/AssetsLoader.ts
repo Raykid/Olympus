@@ -173,6 +173,10 @@ export default class AssetsLoader
                 }
                 else
                 {
+                    // 移除事件监听
+                    RES.removeEventListener(RES.ResourceEvent.GROUP_PROGRESS, onProgress, this);
+                    RES.removeEventListener(RES.ResourceEvent.GROUP_COMPLETE, onOneComplete, this);
+                    RES.removeEventListener(RES.ResourceEvent.GROUP_LOAD_ERROR, onOneError, this);
                     // 调用模板方法
                     this._handler.oneError && this._handler.oneError(evt);
                     // 切换CDN失败了，弹出提示，使用户可以手动刷新页面

@@ -252,8 +252,33 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
             var mediator:IModuleMediator = instance[propertyKey];
             if(mediator === undefined)
             {
+                // 篡改属性
+                Object.defineProperty(instance, propertyKey, {
+                    configurable: true,
+                    enumerable: true,
+                    get: function():IModuleMediator
+                    {
+                        return mediator;
+                    },
+                    set: function(value:IModuleMediator):void
+                    {
+                        if(value == mediator) return;
+                        // 取消托管中介者
+                        if(mediator)
+                        {
+                            this.undelegateMediator(mediator);
+                        }
+                        // 设置中介者
+                        mediator = value;
+                        // 托管新的中介者
+                        if(mediator)
+                        {
+                            this.delegateMediator(mediator);
+                        }
+                    }
+                });
                 var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
-                instance[propertyKey] = mediator = new cls();
+                instance[propertyKey] = new cls();
             }
             // 赋值所属模块
             mediator["_dependModuleInstance"] = instance;
@@ -283,32 +308,6 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
                 instance[propertyKey] = undefined;
             }
         });
-        // 篡改属性
-        var mediator:IModuleMediator;
-        return {
-            configurable: true,
-            enumerable: true,
-            get: function():IModuleMediator
-            {
-                return mediator;
-            },
-            set: function(value:IModuleMediator):void
-            {
-                if(value == mediator) return;
-                // 取消托管中介者
-                if(mediator)
-                {
-                    this.undelegateMediator(mediator);
-                }
-                // 设置中介者
-                mediator = value;
-                // 托管新的中介者
-                if(mediator)
-                {
-                    this.delegateMediator(mediator);
-                }
-            }
-        };
     }
 }
 
