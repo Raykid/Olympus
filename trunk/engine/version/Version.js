@@ -35,11 +35,12 @@ var Version = /** @class */ (function () {
         else {
             // 去加载version.cfg
             var request = null;
-            if (window["XDomainRequest"]) {
+            if (window["XDomainRequest"] && navigator.userAgent.indexOf("MSIE 10.") < 0) {
+                // code for IE7 - IE9
                 request = new window["XDomainRequest"]();
             }
             if (window["XMLHttpRequest"]) {
-                // code for IE7+, Firefox, Chrome, Opera, Safari
+                // code for IE10, Firefox, Chrome, Opera, Safari
                 request = new XMLHttpRequest();
             }
             else if (window["ActiveXObject"]) {

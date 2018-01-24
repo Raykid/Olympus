@@ -179,13 +179,14 @@ namespace olympus
             {
                 // 去加载version.cfg
                 var request:XMLHttpRequest = null;
-                if(window["XDomainRequest"])
+                if(window["XDomainRequest"] && navigator.userAgent.indexOf("MSIE 10.") < 0)
                 {
+                    // code for IE7 - IE9
                     request = new window["XDomainRequest"]();
                 }
                 if (window["XMLHttpRequest"])
                 {
-                    // code for IE7+, Firefox, Chrome, Opera, Safari
+                    // code for IE10, Firefox, Chrome, Opera, Safari
                     request = new XMLHttpRequest();
                 }
                 else if (window["ActiveXObject"])
@@ -336,7 +337,7 @@ namespace olympus
                 // 添加Version
                 url = version.wrapHashUrl(url);
                 // 请求文件
-                var xhr:XMLHttpRequest = (window["XDomainRequest"] ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+                var xhr:XMLHttpRequest = (window["XDomainRequest"] && navigator.userAgent.indexOf("MSIE 10.") < 0 ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
                 xhr.open("GET", url, true);
                 // responseType设置要在open之后，否则IE10和IE11会报错
                 xhr.responseType = "text";

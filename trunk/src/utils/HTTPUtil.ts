@@ -155,7 +155,7 @@ export function load(params:IHTTPRequestParams):void
         url = trimURL(url);
     }
     // 生成xhr
-    var xhr:XMLHttpRequest = (window["XDomainRequest"] ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+    var xhr:XMLHttpRequest = (window["XDomainRequest"] && navigator.userAgent.indexOf("MSIE 10.") < 0 ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
     // 发送
     send();
 
