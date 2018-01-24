@@ -194,7 +194,7 @@ export default class Core implements IObservable
         // 记录已注入的单例
         this._injectDict.set(value.constructor, value);
         // 开始注入
-        Reflect.defineMetadata("design:type", value, type || value.constructor);
+        Reflect.defineMetadata("design:type", value, type["__ori_constructor__"] || type);
     }
 
     /**
@@ -208,7 +208,7 @@ export default class Core implements IObservable
         // 如果是字符串则记录类型构造函数映射
         if(!(type instanceof Function) || !type.prototype)
             type = this._injectStrDict.get(type);
-        Reflect.deleteMetadata("design:type", type);
+        Reflect.deleteMetadata("design:type", type["__ori_constructor__"] || type);
     }
 
     /**
