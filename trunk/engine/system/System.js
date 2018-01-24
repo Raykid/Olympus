@@ -23,7 +23,7 @@ var System = /** @class */ (function () {
         this._nextFrameList = [];
         this._timer = 0;
         var self = this;
-        if (requestAnimationFrame instanceof Function) {
+        if (window.requestAnimationFrame instanceof Function) {
             requestAnimationFrame(onRequestAnimationFrame);
         }
         else {

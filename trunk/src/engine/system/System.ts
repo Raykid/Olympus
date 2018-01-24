@@ -30,7 +30,7 @@ export default class System
     public constructor()
     {
         var self:System = this;
-        if(requestAnimationFrame instanceof Function)
+        if(window.requestAnimationFrame instanceof Function)
         {
             requestAnimationFrame(onRequestAnimationFrame);
         }
