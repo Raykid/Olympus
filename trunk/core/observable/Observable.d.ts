@@ -1,4 +1,3 @@
-import IDisposable from "../interfaces/IDisposable";
 import IMessage from "../message/IMessage";
 import ICommandConstructor from "../command/ICommandConstructor";
 import IObservable from "./IObservable";
@@ -10,7 +9,7 @@ import IObservable from "./IObservable";
  *
  * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
 */
-export default class Observable implements IObservable, IDisposable {
+export default class Observable implements IObservable {
     private _parent;
     private _listenerDict;
     /**

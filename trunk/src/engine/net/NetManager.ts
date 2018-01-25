@@ -193,8 +193,13 @@ export default class NetManager
             if(request)
             {
                 response.__params.request = request;
-                // 如果有配对请求，则将返回值发送到请求所在的原始内核里
-                observable = request.__oriObservable;
+                // 由上至下找到最远的一个有效内核
+                for(var i:number = request.__observables.length - 1; i >= 0; i--)
+                {
+                    var temp:IObservable = request.__observables[i];
+                    if(!temp || temp["disposed"]) break;
+                    else observable = temp;
+                }
             }
             // 派发事件
             observable.dispatch(NetMessage.NET_RESPONSE, response, response.__params.request);

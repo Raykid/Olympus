@@ -61,22 +61,8 @@ var Observable = /** @class */ (function () {
         var _a;
     };
     Observable.prototype.doDispatch = function (msg) {
-        // 设置所属内核
-        Object.defineProperty(msg, "__observable", {
-            configurable: true,
-            enumerable: false,
-            value: this,
-            writable: false
-        });
-        // 设置所属原始内核
-        if (!msg.__oriObservable) {
-            Object.defineProperty(msg, "__oriObservable", {
-                configurable: true,
-                enumerable: false,
-                value: this,
-                writable: false
-            });
-        }
+        // 记录流转内核
+        msg.__observables.push(this);
         // 触发命令
         this.handleCommands(msg);
         // 触发用listen形式监听的消息

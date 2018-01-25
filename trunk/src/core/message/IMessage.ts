@@ -32,4 +32,18 @@ export default interface IMessage
      * @memberof IMessage
      */
     readonly __oriObservable:IObservable;
+    /**
+     * 消息派发内核列表
+     * 
+     * @type {IObservable}
+     * @memberof IMessage
+     */
+    readonly __observables:IObservable[];
+
+    /**
+     * 再次发送消息，会使用首个内核重新发送该消息
+     * 
+     * @memberof IMessage
+     */
+    redispatch():void;
 }

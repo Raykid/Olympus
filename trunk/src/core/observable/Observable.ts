@@ -13,7 +13,7 @@ import IObservable from "./IObservable";
  * 
  * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
 */
-export default class Observable implements IObservable, IDisposable
+export default class Observable implements IObservable
 {
     private _parent:IObservable;
     private _listenerDict:{[type:string]:IMessageData[]} = {};
@@ -68,23 +68,8 @@ export default class Observable implements IObservable, IDisposable
 
     private doDispatch(msg:IMessage):void
     {
-        // 设置所属内核
-        Object.defineProperty(msg, "__observable", {
-            configurable: true,
-            enumerable: false,
-            value: this,
-            writable: false
-        });
-        // 设置所属原始内核
-        if(!msg.__oriObservable)
-        {
-            Object.defineProperty(msg, "__oriObservable", {
-                configurable: true,
-                enumerable: false,
-                value: this,
-                writable: false
-            });
-        }
+        // 记录流转内核
+        msg.__observables.push(this);
         // 触发命令
         this.handleCommands(msg);
         // 触发用listen形式监听的消息

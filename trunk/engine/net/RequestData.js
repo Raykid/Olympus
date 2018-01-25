@@ -7,15 +7,61 @@ var RequestData = /** @class */ (function () {
          * @memberof RequestData
          */
         this.__userData = {};
+        /**
+         * 消息派发内核列表
+         *
+         * @type {IObservable}
+         * @memberof RequestData
+         */
+        this.__observables = [];
+        // 禁掉部分本地变量的可遍历性
         Object.defineProperties(this, {
             __userData: {
                 configurable: true,
                 enumerable: false,
                 writable: true,
                 value: this.__userData
+            },
+            __observables: {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: this.__observables
+            },
+            __policy: {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: this.__policy
             }
         });
     }
+    Object.defineProperty(RequestData.prototype, "__observable", {
+        /**
+         * 消息当前所属内核
+         *
+         * @type {IObservable}
+         * @memberof RequestData
+         */
+        get: function () {
+            return this.__observables[0];
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(RequestData.prototype, "__oriObservable", {
+        /**
+         * 消息所属的原始内核（第一个派发到的内核）
+         *
+         * @type {IObservable}
+         * @memberof RequestData
+         */
+        get: function () {
+            return this.__observables[this.__observables.length - 1];
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(RequestData.prototype, "type", {
         /**
          * 获取请求消息类型字符串
@@ -30,6 +76,14 @@ var RequestData = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * 再次发送消息，会使用首个内核重新发送该消息
+     *
+     * @memberof RequestData
+     */
+    RequestData.prototype.redispatch = function () {
+        this.__oriObservable.dispatch(this);
+    };
     return RequestData;
 }());
 export default RequestData;

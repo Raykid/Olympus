@@ -63,19 +63,26 @@ export default abstract class RequestData implements IMessage {
      */
     __userData: any;
     /**
-     * 请求所属内核
+     * 消息派发内核列表
      *
      * @type {IObservable}
      * @memberof RequestData
      */
-    __observable: IObservable;
+    __observables: IObservable[];
+    /**
+     * 消息当前所属内核
+     *
+     * @type {IObservable}
+     * @memberof RequestData
+     */
+    readonly __observable: IObservable;
     /**
      * 消息所属的原始内核（第一个派发到的内核）
      *
      * @type {IObservable}
      * @memberof RequestData
      */
-    __oriObservable: IObservable;
+    readonly __oriObservable: IObservable;
     /**
      * 请求参数，可以运行时修改
      *
@@ -101,6 +108,12 @@ export default abstract class RequestData implements IMessage {
      */
     readonly type: string;
     constructor();
+    /**
+     * 再次发送消息，会使用首个内核重新发送该消息
+     *
+     * @memberof RequestData
+     */
+    redispatch(): void;
 }
 /** 导出公共消息参数对象 */
 export declare var commonData: any;

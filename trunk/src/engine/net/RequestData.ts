@@ -68,19 +68,32 @@ export default abstract class RequestData implements IMessage
      */
     public __userData:any = {};
     /**
-     * 请求所属内核
+     * 消息派发内核列表
      * 
      * @type {IObservable}
      * @memberof RequestData
      */
-    public __observable:IObservable;
+    public __observables:IObservable[] = [];
+    /**
+     * 消息当前所属内核
+     * 
+     * @type {IObservable}
+     * @memberof RequestData
+     */
+    public get __observable():IObservable
+    {
+        return this.__observables[0];
+    }
     /**
      * 消息所属的原始内核（第一个派发到的内核）
      * 
      * @type {IObservable}
      * @memberof RequestData
      */
-    public __oriObservable:IObservable;
+    public get __oriObservable():IObservable
+    {
+        return this.__observables[this.__observables.length - 1];
+    }
     /**
      * 请求参数，可以运行时修改
      * 
@@ -112,14 +125,37 @@ export default abstract class RequestData implements IMessage
 
     public constructor()
     {
+        // 禁掉部分本地变量的可遍历性
         Object.defineProperties(this, {
             __userData: {
                 configurable: true,
                 enumerable: false,
                 writable: true,
                 value: this.__userData
+            },
+            __observables: {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: this.__observables
+            },
+            __policy: {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: this.__policy
             }
         });
+    }
+
+    /**
+     * 再次发送消息，会使用首个内核重新发送该消息
+     * 
+     * @memberof RequestData
+     */
+    public redispatch():void
+    {
+        this.__oriObservable.dispatch(this);
     }
 }
 
