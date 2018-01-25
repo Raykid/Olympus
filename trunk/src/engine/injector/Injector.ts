@@ -147,20 +147,20 @@ function doMessageHandler(cls:IConstructor, key:string, type:IConstructor, inMod
         {
             // 如果是Mediator，则需要等到被托管后再执行注册
             addDelegateHandler(instance, ()=>{
-                var observable:IObservable = inModule ? instance : core;
+                var observable:IObservable = inModule ? instance.observable || core.observable : core.observable;
                 observable.listen(type, instance[key], instance);
             });
         }
         else
         {
-            var observable:IObservable = inModule ? instance : core;
+            var observable:IObservable = inModule ? instance.observable || core.observable : core.observable;
             observable.listen(type, instance[key], instance);
         }
     });
     // 监听销毁
     listenDispose(cls, function(instance:IObservable):void
     {
-        var observable:IObservable = inModule ? instance : core;
+        var observable:IObservable = inModule ? instance.observable || core.observable : core.observable;
         observable.unlisten(type, instance[key], instance);
     });
 }
