@@ -62,6 +62,12 @@ export default class Observable implements IObservable
                 else
                     // 如果是其他消息，则直接将消息体传给回调
                     temp.handler.call(temp.thisArg, msg);
+                // 如果是一次性监听则移除之
+                if(temp.once)
+                {
+                    this.unlisten(msg.type, temp.handler, temp.thisArg, temp.once);
+                    this.unlisten(msg.constructor.toString(), temp.handler, temp.thisArg, temp.once);
+                }
             }
         }
     }
@@ -117,9 +123,10 @@ export default class Observable implements IObservable
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否一次性监听
      * @memberof Observable
      */
-    public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public listen(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
         // 销毁判断
         if(this._disposed) return;
@@ -134,7 +141,7 @@ export default class Observable implements IObservable
             if(temp.handler == handler && temp.thisArg == thisArg) return;
         }
         // 添加监听
-        listeners.push({handler: handler, thisArg: thisArg});
+        listeners.push({handler: handler, thisArg: thisArg, once: once});
     }
 
     /**
@@ -143,9 +150,10 @@ export default class Observable implements IObservable
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否一次性监听
      * @memberof Observable
      */
-    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
         // 销毁判断
         if(this._disposed) return;
@@ -158,7 +166,7 @@ export default class Observable implements IObservable
             {
                 var temp:IMessageData = listeners[i];
                 // 如果已经存在监听则直接返回
-                if(temp.handler == handler && temp.thisArg == thisArg)
+                if(temp.handler == handler && temp.thisArg == thisArg && temp.once == once)
                 {
                     listeners.splice(i, 1);
                     break;
@@ -249,4 +257,5 @@ interface IMessageData
 {
     handler:Function;
     thisArg:any;
+    once:boolean;
 }

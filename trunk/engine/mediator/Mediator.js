@@ -290,10 +290,12 @@ var Mediator = /** @class */ (function () {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof IModuleObservable
      */
-    Mediator.prototype.listen = function (type, handler, thisArg) {
-        this.observable.listen(type, handler, thisArg);
+    Mediator.prototype.listen = function (type, handler, thisArg, once) {
+        if (once === void 0) { once = false; }
+        this.observable.listen(type, handler, thisArg, once);
     };
     /**
      * 移除消息监听
@@ -301,10 +303,12 @@ var Mediator = /** @class */ (function () {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof IModuleObservable
      */
-    Mediator.prototype.unlisten = function (type, handler, thisArg) {
-        this.observable.unlisten(type, handler, thisArg);
+    Mediator.prototype.unlisten = function (type, handler, thisArg, once) {
+        if (once === void 0) { once = false; }
+        this.observable.unlisten(type, handler, thisArg, once);
     };
     /**
      * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行

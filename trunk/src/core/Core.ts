@@ -97,11 +97,12 @@ export default class Core implements IObservable
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof Core
      */
-    public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public listen(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
-        this._observable.listen(type, handler, thisArg);
+        this._observable.listen(type, handler, thisArg, once);
     }
 
     /**
@@ -110,11 +111,12 @@ export default class Core implements IObservable
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof Core
      */
-    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
-        this._observable.unlisten(type, handler, thisArg);
+        this._observable.unlisten(type, handler, thisArg, once);
     }
     
     /**

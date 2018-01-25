@@ -56,6 +56,11 @@ var Observable = /** @class */ (function () {
                 else
                     // 如果是其他消息，则直接将消息体传给回调
                     temp.handler.call(temp.thisArg, msg);
+                // 如果是一次性监听则移除之
+                if (temp.once) {
+                    this.unlisten(msg.type, temp.handler, temp.thisArg, temp.once);
+                    this.unlisten(msg.constructor.toString(), temp.handler, temp.thisArg, temp.once);
+                }
             }
         }
         var _a;
@@ -96,9 +101,11 @@ var Observable = /** @class */ (function () {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否一次性监听
      * @memberof Observable
      */
-    Observable.prototype.listen = function (type, handler, thisArg) {
+    Observable.prototype.listen = function (type, handler, thisArg, once) {
+        if (once === void 0) { once = false; }
         // 销毁判断
         if (this._disposed)
             return;
@@ -114,7 +121,7 @@ var Observable = /** @class */ (function () {
                 return;
         }
         // 添加监听
-        listeners.push({ handler: handler, thisArg: thisArg });
+        listeners.push({ handler: handler, thisArg: thisArg, once: once });
     };
     /**
      * 移除内核消息监听
@@ -122,9 +129,11 @@ var Observable = /** @class */ (function () {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否一次性监听
      * @memberof Observable
      */
-    Observable.prototype.unlisten = function (type, handler, thisArg) {
+    Observable.prototype.unlisten = function (type, handler, thisArg, once) {
+        if (once === void 0) { once = false; }
         // 销毁判断
         if (this._disposed)
             return;
@@ -135,7 +144,7 @@ var Observable = /** @class */ (function () {
             for (var i = 0, len = listeners.length; i < len; i++) {
                 var temp = listeners[i];
                 // 如果已经存在监听则直接返回
-                if (temp.handler == handler && temp.thisArg == thisArg) {
+                if (temp.handler == handler && temp.thisArg == thisArg && temp.once == once) {
                     listeners.splice(i, 1);
                     break;
                 }

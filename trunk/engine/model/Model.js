@@ -60,10 +60,12 @@ var Model = /** @class */ (function () {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof Model
      */
-    Model.prototype.listen = function (type, handler, thisArg) {
-        core.listen(type, handler, thisArg);
+    Model.prototype.listen = function (type, handler, thisArg, once) {
+        if (once === void 0) { once = false; }
+        core.listen(type, handler, thisArg, once);
     };
     /**
      * 移除内核消息监听
@@ -71,10 +73,12 @@ var Model = /** @class */ (function () {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof Model
      */
-    Model.prototype.unlisten = function (type, handler, thisArg) {
-        core.unlisten(type, handler, thisArg);
+    Model.prototype.unlisten = function (type, handler, thisArg, once) {
+        if (once === void 0) { once = false; }
+        core.unlisten(type, handler, thisArg, once);
     };
     /**
      * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行

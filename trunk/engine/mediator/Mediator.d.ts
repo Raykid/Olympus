@@ -206,18 +206,20 @@ export default class Mediator implements IModuleMediator {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof IModuleObservable
      */
-    listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
+    listen(type: IConstructor | string, handler: Function, thisArg?: any, once?: boolean): void;
     /**
      * 移除消息监听
      *
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof IModuleObservable
      */
-    unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
+    unlisten(type: IConstructor | string, handler: Function, thisArg?: any, once?: boolean): void;
     /**
      * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
      *

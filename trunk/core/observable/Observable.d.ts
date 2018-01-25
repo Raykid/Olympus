@@ -50,18 +50,20 @@ export default class Observable implements IObservable {
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否一次性监听
      * @memberof Observable
      */
-    listen(type: IConstructor | string, handler: Function, thisArg?: any): void;
+    listen(type: IConstructor | string, handler: Function, thisArg?: any, once?: boolean): void;
     /**
      * 移除内核消息监听
      *
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否一次性监听
      * @memberof Observable
      */
-    unlisten(type: IConstructor | string, handler: Function, thisArg?: any): void;
+    unlisten(type: IConstructor | string, handler: Function, thisArg?: any, once?: boolean): void;
     private _commandDict;
     private handleCommands(msg);
     /**

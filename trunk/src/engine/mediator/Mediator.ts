@@ -349,11 +349,12 @@ export default class Mediator implements IModuleMediator
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof IModuleObservable
      */
-    public listen(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public listen(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
-        this.observable.listen(type, handler, thisArg);
+        this.observable.listen(type, handler, thisArg, once);
     }
 
     /**
@@ -362,11 +363,12 @@ export default class Mediator implements IModuleMediator
      * @param {string} type 消息类型
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
+     * @param {boolean} [once=false] 是否是一次性监听
      * @memberof IModuleObservable
      */
-    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any):void
+    public unlisten(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
-        this.observable.unlisten(type, handler,thisArg);
+        this.observable.unlisten(type, handler, thisArg, once);
     }
 
     /**
