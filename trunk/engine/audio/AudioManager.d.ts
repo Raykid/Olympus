@@ -10,6 +10,8 @@ import IAudio, { AudioPlayParams } from "./IAudio";
  * Music：使用AudioContext播放，可以一定程度上越过点击事件检查，但无法跨域播放，适合播放背景音乐
 */
 export default class AudioManager {
+    private static STORAGE_KEY_MUTE_SOUND;
+    private static STORAGE_KEY_MUTE_MUSIC;
     constructor();
     private _soundImpl;
     /**
@@ -19,6 +21,14 @@ export default class AudioManager {
      * @memberof AudioManager
      */
     registerSoundImpl(soundImpl: IAudio): void;
+    private _muteSound;
+    /**
+     * 获取或设置Sound类型音频静音属性
+     *
+     * @type {boolean}
+     * @memberof AudioManager
+     */
+    muteSound: boolean;
     /**
      * 加载Sound音频
      *
@@ -69,6 +79,14 @@ export default class AudioManager {
      * @memberof AudioManager
      */
     registerMusicImpl(musicImpl: IAudio): void;
+    private _muteMusic;
+    /**
+     * 获取或设置Music类型音频静音属性
+     *
+     * @type {boolean}
+     * @memberof AudioManager
+     */
+    muteMusic: boolean;
     /**
      * 加载Music音频
      *

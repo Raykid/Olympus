@@ -9,8 +9,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
+import Shell from "../env/Shell";
 import AudioTagImpl from "./AudioTagImpl";
 import AudioContextImpl from "./AudioContextImpl";
+import EngineMessage from "../message/EngineMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -23,10 +25,18 @@ import AudioContextImpl from "./AudioContextImpl";
 */
 var AudioManager = /** @class */ (function () {
     function AudioManager() {
+        var _this = this;
         this._soundImpl = new AudioTagImpl();
         // 由于IE可能不支持AudioContext，因此如果是IE则要改用Audio标签实现
         this._musicImpl = (window["AudioContext"] ? new AudioContextImpl() : this._soundImpl);
+        core.listen(EngineMessage.INITIALIZED, function () {
+            // 读取持久化记录
+            var shell = core.getInject(Shell);
+            _this.muteSound = (shell.localStorageGet(AudioManager_1.STORAGE_KEY_MUTE_SOUND) === "true");
+            _this.muteMusic = (shell.localStorageGet(AudioManager_1.STORAGE_KEY_MUTE_MUSIC) === "true");
+        });
     }
+    AudioManager_1 = AudioManager;
     /**
      * 注册Sound音频实现对象
      *
@@ -36,6 +46,30 @@ var AudioManager = /** @class */ (function () {
     AudioManager.prototype.registerSoundImpl = function (soundImpl) {
         this._soundImpl = soundImpl;
     };
+    Object.defineProperty(AudioManager.prototype, "muteSound", {
+        /**
+         * 获取或设置Sound类型音频静音属性
+         *
+         * @type {boolean}
+         * @memberof AudioManager
+         */
+        get: function () {
+            return this._muteSound;
+        },
+        set: function (value) {
+            if (value === this._muteSound)
+                return;
+            this._muteSound = value;
+            // 持久化
+            var shell = core.getInject(Shell);
+            shell.localStorageSet(AudioManager_1.STORAGE_KEY_MUTE_SOUND, value + "");
+            // 如果静音则立即停止播放所有Sound
+            if (value)
+                this.stopAllSound();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 加载Sound音频
      *
@@ -52,6 +86,9 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.playSound = function (params) {
+        // 判断静音
+        if (this._muteSound)
+            return;
         // 停止其他音频
         if (params.stopOthers) {
             this.stopAllSound();
@@ -104,6 +141,30 @@ var AudioManager = /** @class */ (function () {
     AudioManager.prototype.registerMusicImpl = function (musicImpl) {
         this._musicImpl = musicImpl;
     };
+    Object.defineProperty(AudioManager.prototype, "muteMusic", {
+        /**
+         * 获取或设置Music类型音频静音属性
+         *
+         * @type {boolean}
+         * @memberof AudioManager
+         */
+        get: function () {
+            return this._muteMusic;
+        },
+        set: function (value) {
+            if (value === this._muteMusic)
+                return;
+            this._muteMusic = value;
+            // 持久化
+            var shell = core.getInject(Shell);
+            shell.localStorageSet(AudioManager_1.STORAGE_KEY_MUTE_MUSIC, value + "");
+            // 如果静音则立即停止播放所有Sound
+            if (value)
+                this.stopAllMusics();
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 加载Music音频
      *
@@ -120,6 +181,9 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.playMusic = function (params) {
+        // 判断静音
+        if (this._muteMusic)
+            return;
         // 停止其他音频
         if (params.stopOthers) {
             this.stopAllSound();
@@ -163,11 +227,14 @@ var AudioManager = /** @class */ (function () {
     AudioManager.prototype.stopAllMusics = function () {
         this._musicImpl.stopAll();
     };
-    AudioManager = __decorate([
+    AudioManager.STORAGE_KEY_MUTE_SOUND = "AudioManager::muteSound";
+    AudioManager.STORAGE_KEY_MUTE_MUSIC = "AudioManager::muteMusic";
+    AudioManager = AudioManager_1 = __decorate([
         Injectable,
         __metadata("design:paramtypes", [])
     ], AudioManager);
     return AudioManager;
+    var AudioManager_1;
 }());
 export default AudioManager;
 /** 再额外导出一个单例 */
