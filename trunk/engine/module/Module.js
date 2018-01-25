@@ -33,20 +33,6 @@ var Module = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Module.prototype, "bgMusic", {
-        /**
-         * 获取背景音乐URL
-         *
-         * @readonly
-         * @type {string}
-         * @memberof Module
-         */
-        get: function () {
-            return null;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Module.prototype, "dependModuleInstance", {
         /**
          * 所属的模块引用

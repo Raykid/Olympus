@@ -39,13 +39,12 @@ export default abstract class Module implements IModule {
      */
     readonly disposed: boolean;
     /**
-     * 获取背景音乐URL
+     * 背景音乐URL
      *
-     * @readonly
      * @type {string}
      * @memberof Module
      */
-    readonly bgMusic: string;
+    bgMusic: string;
     /**
      * 所属的模块引用
      *

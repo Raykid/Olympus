@@ -53,16 +53,12 @@ export default abstract class Module implements IModule
     }
 
     /**
-     * 获取背景音乐URL
+     * 背景音乐URL
      * 
-     * @readonly
      * @type {string}
      * @memberof Module
      */
-    public get bgMusic():string
-    {
-        return null;
-    }
+    public bgMusic:string;
 
     /**
      * 所属的模块引用
