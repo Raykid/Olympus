@@ -13,7 +13,7 @@ var Observable = /** @class */ (function () {
         this._listenerDict = {};
         this._commandDict = {};
         this._disposed = false;
-        this._parent = parent && parent.observable;
+        this.parent = parent && parent.observable;
     }
     Object.defineProperty(Observable.prototype, "observable", {
         /**
@@ -28,21 +28,8 @@ var Observable = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Observable.prototype, "parent", {
-        /**
-         * 获取到父级IObservable
-         *
-         * @type {IObservable}
-         * @memberof Observable
-         */
-        get: function () {
-            return this._parent;
-        },
-        enumerable: true,
-        configurable: true
-    });
     Observable.prototype.handleMessages = function (msg) {
-        var listeners1 = this._listenerDict[msg.type];
+        var listeners1 = this._listenerDict[msg.__type];
         var listeners2 = this._listenerDict[msg.constructor.toString()];
         var listeners = (listeners1 && listeners2 ? listeners1.concat(listeners2) : listeners1 || listeners2);
         if (listeners) {
@@ -58,7 +45,7 @@ var Observable = /** @class */ (function () {
                     temp.handler.call(temp.thisArg, msg);
                 // 如果是一次性监听则移除之
                 if (temp.once) {
-                    this.unlisten(msg.type, temp.handler, temp.thisArg, temp.once);
+                    this.unlisten(msg.__type, temp.handler, temp.thisArg, temp.once);
                     this.unlisten(msg.constructor.toString(), temp.handler, temp.thisArg, temp.once);
                 }
             }
@@ -93,7 +80,7 @@ var Observable = /** @class */ (function () {
         // 额外派发一个通用事件
         this.doDispatch(new CommonMessage(CoreMessage.MESSAGE_DISPATCHED, msg));
         // 将事件转发到上一层
-        this._parent && this._parent.dispatch(msg);
+        this.parent && this.parent.dispatch(msg);
     };
     /**
      * 监听内核消息
@@ -152,7 +139,7 @@ var Observable = /** @class */ (function () {
         }
     };
     Observable.prototype.handleCommands = function (msg) {
-        var commands = this._commandDict[msg.type];
+        var commands = this._commandDict[msg.__type];
         if (commands) {
             commands = commands.concat();
             for (var _i = 0, commands_1 = commands; _i < commands_1.length; _i++) {
@@ -213,7 +200,7 @@ var Observable = /** @class */ (function () {
         if (this._disposed)
             return;
         // 移除上一层观察者引用
-        this._parent = null;
+        this.parent = null;
         // 清空所有消息监听
         this._listenerDict = null;
         // 清空所有命令

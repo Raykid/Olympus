@@ -1,4 +1,4 @@
-import SecondModule from "./SecondModule";
+import Second from "./Second";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
@@ -6,8 +6,7 @@ import SceneMediator from 'olympus-r/engine/scene/SceneMediator';
 import { Inject } from "olympus-r/core/injector/Injector";
 import ModuleManager from "olympus-r/engine/module/ModuleManager";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import Module from "olympus-r/engine/module/Module";
-import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandler, ResponseHandler, ModuleClass, DelegateMediator } from "olympus-r/engine/injector/Injector";
+import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandler, ResponseHandler } from "olympus-r/engine/injector/Injector";
 import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
 import { audioManager } from "olympus-r/engine/audio/AudioManager";
 import TestPanel from "./TestPanel";
@@ -22,7 +21,7 @@ import TestPanel from "./TestPanel";
 */
 
 @DOMMediatorClass("./modules/test.html")
-class ThirdMediator extends SceneMediator
+export default class Third extends SceneMediator
 {
     @Inject
     private moduleManager:ModuleManager;
@@ -44,7 +43,7 @@ class ThirdMediator extends SceneMediator
     @BindValue("textContent", "fuckModel.fuck")
     public fuck:HTMLElement;
 
-    public listAssets():string[]
+    public onListAssets():string[]
     {
         return ["./modules/test.html"];
     }
@@ -56,22 +55,15 @@ class ThirdMediator extends SceneMediator
             fuckText: "fuck you",
             onClickBtn: ()=>{
                 this.viewModel.fuckText = "clicked";
-                this.moduleManager.open(SecondModule, null, true);
+                this.moduleManager.open(Second, null, true);
             },
             onClickText: ()=>{
                 this.moduleManager.open(TestPanel);
             },
             onClickFuck: ()=>{
-                this.moduleManager.close(ThirdModule);
+                this.moduleManager.close(Third);
             },
             fuckModel: this.fuckModel1
         };
     }
-}
-
-@ModuleClass
-export default class ThirdModule extends Module
-{
-    @DelegateMediator
-    private _mediator:ThirdMediator;
 }

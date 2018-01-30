@@ -22,6 +22,14 @@ export interface IInjectableParams {
  */
 export default class Core implements IObservable {
     private static _instance;
+    /**
+     * Core的disposed属性没有任何作用，仅为了实现接口，始终会返回false
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof Core
+     */
+    readonly disposed: boolean;
     constructor();
     /*********************** 下面是内核消息系统 ***********************/
     private _observable;
@@ -140,6 +148,12 @@ export default class Core implements IObservable {
      * @memberof Core
      */
     getInject(type: any): any;
+    /**
+     * Core的dispose方法没有任何作用，仅为了实现接口
+     *
+     * @memberof Core
+     */
+    dispose(): void;
 }
 /** 再额外导出一个单例 */
 export declare const core: Core;

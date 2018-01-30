@@ -15,7 +15,6 @@ import IObservable from "./IObservable";
 */
 export default class Observable implements IObservable
 {
-    private _parent:IObservable;
     private _listenerDict:{[type:string]:IMessageData[]} = {};
     
     /**
@@ -35,19 +34,16 @@ export default class Observable implements IObservable
      * @type {IObservable}
      * @memberof Observable
      */
-    public get parent():IObservable
-    {
-        return this._parent;
-    }
+    public parent:IObservable;
 
     public constructor(parent?:IObservable)
     {
-        this._parent = parent && parent.observable;
+        this.parent = parent && parent.observable;
     }
 
     private handleMessages(msg:IMessage):void
     {
-        var listeners1:IMessageData[] = this._listenerDict[msg.type];
+        var listeners1:IMessageData[] = this._listenerDict[msg.__type];
         var listeners2:IMessageData[] = this._listenerDict[msg.constructor.toString()];
         var listeners:IMessageData[] = (listeners1 && listeners2 ? listeners1.concat(listeners2) : listeners1 || listeners2);
         if(listeners)
@@ -65,7 +61,7 @@ export default class Observable implements IObservable
                 // 如果是一次性监听则移除之
                 if(temp.once)
                 {
-                    this.unlisten(msg.type, temp.handler, temp.thisArg, temp.once);
+                    this.unlisten(msg.__type, temp.handler, temp.thisArg, temp.once);
                     this.unlisten(msg.constructor.toString(), temp.handler, temp.thisArg, temp.once);
                 }
             }
@@ -114,7 +110,7 @@ export default class Observable implements IObservable
         // 额外派发一个通用事件
         this.doDispatch(new CommonMessage(CoreMessage.MESSAGE_DISPATCHED, msg));
         // 将事件转发到上一层
-        this._parent && this._parent.dispatch(msg);
+        this.parent && this.parent.dispatch(msg);
     }
 
     /**
@@ -179,7 +175,7 @@ export default class Observable implements IObservable
     
     private handleCommands(msg:IMessage):void
     {
-        var commands:(ICommandConstructor)[] = this._commandDict[msg.type];
+        var commands:(ICommandConstructor)[] = this._commandDict[msg.__type];
         if(commands)
         {
             commands = commands.concat();
@@ -238,7 +234,7 @@ export default class Observable implements IObservable
         // 销毁判断
         if(this._disposed) return;
         // 移除上一层观察者引用
-        this._parent = null;
+        this.parent = null;
         // 清空所有消息监听
         this._listenerDict = null;
         // 清空所有命令

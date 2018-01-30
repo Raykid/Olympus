@@ -1,5 +1,5 @@
-import IModule from "./IModule";
-import IModuleConstructor from "./IModuleConstructor";
+import IMediator from "../mediator/IMediator";
+import IMediatorConstructor from "../mediator/IMediatorConstructor";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -17,18 +17,18 @@ export default class ModuleManager {
      * 获取当前模块
      *
      * @readonly
-     * @type {IModuleConstructor|undefined}
+     * @type {IMediatorConstructor|undefined}
      * @memberof ModuleManager
      */
-    readonly currentModule: IModuleConstructor | undefined;
+    readonly currentModule: IMediatorConstructor | undefined;
     /**
      * 获取当前模块的实例
      *
      * @readonly
-     * @type {(IModule|undefined)}
+     * @type {(IMediator|undefined)}
      * @memberof ModuleManager
      */
-    readonly currentModuleInstance: IModule | undefined;
+    readonly currentModuleInstance: IMediator | undefined;
     /**
      * 获取活动模块数量
      *
@@ -40,50 +40,50 @@ export default class ModuleManager {
     /**
      * 获取模块在栈中的索引
      *
-     * @param {IModuleConstructor} cls 模块类型
+     * @param {IMediatorConstructor} cls 模块类型
      * @returns {number} 索引值
      * @memberof ModuleManager
      */
-    getIndex(cls: IModuleConstructor): number;
+    getIndex(cls: IMediatorConstructor): number;
     /**
      * 获取索引处模块类型
      *
      * @param {number} index 模块索引值
-     * @returns {IModuleConstructor} 模块类型
+     * @returns {IMediatorConstructor} 模块类型
      * @memberof ModuleManager
      */
-    getModule(index: number): IModuleConstructor;
+    getModule(index: number): IMediatorConstructor;
     private getAfter(cls);
     private getCurrent();
-    registerModule(cls: IModuleConstructor): void;
+    registerModule(cls: IMediatorConstructor): void;
     /**
      * 获取模块是否开启中
      *
-     * @param {IModuleConstructor} cls 要判断的模块类型
+     * @param {IMediatorConstructor} cls 要判断的模块类型
      * @returns {boolean} 是否开启
      * @memberof ModuleManager
      */
-    isOpened(cls: IModuleConstructor): boolean;
+    isOpened(cls: IMediatorConstructor): boolean;
     private activateModule(module, from, data);
     private deactivateModule(module, to, data);
     /**
      * 打开模块
      *
-     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
      * @memberof ModuleManager
      */
-    open(clsOrName: IModuleConstructor | string, data?: any, replace?: boolean): void;
+    open(clsOrName: IMediatorConstructor | string, data?: any, replace?: boolean): void;
     private onFinishOpen();
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
-     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @memberof ModuleManager
      */
-    close(clsOrName: IModuleConstructor | string, data?: any): void;
+    close(clsOrName: IMediatorConstructor | string, data?: any): void;
 }
 /** 再额外导出一个单例 */
 export declare const moduleManager: ModuleManager;

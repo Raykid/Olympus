@@ -36,7 +36,7 @@ var BridgeManager = /** @class */ (function () {
             var curModule = moduleManager.currentModuleInstance;
             if (curModule) {
                 var bridge;
-                var mediators = curModule.delegatedMediators;
+                var mediators = curModule.children;
                 for (var _i = 0, mediators_1 = mediators; _i < mediators_1.length; _i++) {
                     var mediator = mediators_1[_i];
                     if (mediator.bridge)

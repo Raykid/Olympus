@@ -1,8 +1,8 @@
-import IHasBridge from "../bridge/IHasBridge";
-import IOpenClose from "../../core/interfaces/IOpenClose";
-import IDisposable from "../../core/interfaces/IDisposable";
-import IObservable from "../../core/observable/IObservable";
-import Dictionary from "../../utils/Dictionary";
+import IMediatorBasicPart from "./IMediatorBasicPart";
+import IMediatorBindPart from "./IMediatorBindPart";
+import IMediatorTreePart from "./IMediatorTreePart";
+import IMediatorModulePart from "./IMediatorModulePart";
+import RequestData from "../net/RequestData";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -11,41 +11,7 @@ import Dictionary from "../../utils/Dictionary";
  *
  * 界面中介者接口
 */
-export default interface IMediator extends IHasBridge, IOpenClose, IDisposable, IObservable {
-    /**
-     * 获取中介者是否已被销毁
-     *
-     * @memberof IMediator
-     */
-    readonly disposed: boolean;
-    /**
-     * 打开时传递的data对象
-     *
-     * @memberof IMediator
-     */
-    readonly data: any;
-    /**
-     * ViewModel引用
-     *
-     * @type {*}
-     * @memberof IMediator
-     */
-    readonly viewModel: any;
-    /**
-     * 绑定目标数组，key是当前编译目标对象，即currentTarget；value是命令本来所在的对象，即target
-     *
-     * @type {Dictionary<any, any>[]}
-     * @memberof IMediator
-     */
-    readonly bindTargets: Dictionary<any, any>[];
-    /**
-     * 皮肤
-     *
-     * @readonly
-     * @type {*}
-     * @memberof IMediator
-     */
-    skin: any;
+export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart, IMediatorTreePart, IMediatorModulePart {
     /**
      * 当打开时调用
      *
@@ -61,29 +27,62 @@ export default interface IMediator extends IHasBridge, IOpenClose, IDisposable, 
      */
     onClose(data?: any): void;
     /**
-     * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+     * 当所需资源加载完毕后调用
      *
-     * @param {*} target 事件目标对象
-     * @param {string} type 事件类型
-     * @param {Function} handler 事件处理函数
-     * @param {*} [thisArg] this指向对象
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
      * @memberof IMediator
      */
-    mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+    onLoadAssets(err?: Error): void;
     /**
-     * 注销监听事件
+     * 其他模块被关闭回到当前模块时调用
      *
-     * @param {*} target 事件目标对象
-     * @param {string} type 事件类型
-     * @param {Function} handler 事件处理函数
-     * @param {*} [thisArg] this指向对象
+     * @param {(IMediator|undefined)} from 从哪个模块回到当前模块
+     * @param {*} [data] 可能的参数传递
      * @memberof IMediator
      */
-    unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+    onWakeUp(from: IMediator | undefined, data?: any): void;
     /**
-     * 注销所有注册在当前中介者上的事件监听
+     * 模块切换到前台时调用（与onWakeUp的区别是open时onActivate会触发，但onWakeUp不会）
      *
+     * @param {(IMediator|undefined)} from 从哪个模块来到当前模块
+     * @param {*} [data] 可能的参数传递
      * @memberof IMediator
      */
-    unmapAllListeners(): void;
+    onActivate(from: IMediator | undefined, data?: any): void;
+    /**
+     * 模块切换到后台时调用（close之后或者其他模块打开时）
+     *
+     * @param {(IMediator|undefined)} to 将要去往哪个模块
+     * @param {*} [data] 可能的参数传递
+     * @memberof IMediator
+     */
+    onDeactivate(to: IMediator | undefined, data?: any): void;
+    /**
+     * 列出模块初始化请求
+     *
+     * @returns {RequestData[]}
+     * @memberof IMediator
+     */
+    onListInitRequests(): RequestData[];
+    /**
+     * 列出所需CSS资源URL
+     *
+     * @returns {string[]}
+     * @memberof IMediator
+     */
+    onListStyleFiles(): string[];
+    /**
+     * 列出所需JS资源URL
+     *
+     * @returns {string[]}
+     * @memberof IMediator
+     */
+    onListJsFiles(): string[];
+    /**
+     * 列出中介者所需的资源数组，可重写
+     *
+     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+     * @memberof IMediator
+     */
+    onListAssets(): string[];
 }

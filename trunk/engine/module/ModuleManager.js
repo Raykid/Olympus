@@ -11,7 +11,6 @@ import ModuleMessage from "./ModuleMessage";
 import { environment } from "../env/Environment";
 import { maskManager } from "../mask/MaskManager";
 import { assetsManager } from "../assets/AssetsManager";
-import { audioManager } from "../audio/AudioManager";
 import { version } from "../version/Version";
 /**
  * @author Raykid
@@ -33,7 +32,7 @@ var ModuleManager = /** @class */ (function () {
          * 获取当前模块
          *
          * @readonly
-         * @type {IModuleConstructor|undefined}
+         * @type {IMediatorConstructor|undefined}
          * @memberof ModuleManager
          */
         get: function () {
@@ -48,7 +47,7 @@ var ModuleManager = /** @class */ (function () {
          * 获取当前模块的实例
          *
          * @readonly
-         * @type {(IModule|undefined)}
+         * @type {(IMediator|undefined)}
          * @memberof ModuleManager
          */
         get: function () {
@@ -75,7 +74,7 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 获取模块在栈中的索引
      *
-     * @param {IModuleConstructor} cls 模块类型
+     * @param {IMediatorConstructor} cls 模块类型
      * @returns {number} 索引值
      * @memberof ModuleManager
      */
@@ -90,7 +89,7 @@ var ModuleManager = /** @class */ (function () {
      * 获取索引处模块类型
      *
      * @param {number} index 模块索引值
-     * @returns {IModuleConstructor} 模块类型
+     * @returns {IMediatorConstructor} 模块类型
      * @memberof ModuleManager
      */
     ModuleManager.prototype.getModule = function (index) {
@@ -125,7 +124,7 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 获取模块是否开启中
      *
-     * @param {IModuleConstructor} cls 要判断的模块类型
+     * @param {IMediatorConstructor} cls 要判断的模块类型
      * @returns {boolean} 是否开启
      * @memberof ModuleManager
      */
@@ -134,26 +133,20 @@ var ModuleManager = /** @class */ (function () {
     };
     ModuleManager.prototype.activateModule = function (module, from, data) {
         if (module) {
-            // 调用onActivate接口
-            module.onActivate(from, data);
-            // 播放背景音乐
-            var bgMusic = module.bgMusic;
-            if (bgMusic) {
-                // 使用Music音频播放
-                audioManager.playMusic({ url: bgMusic, loop: true, stopOthers: true });
-            }
+            // 调用activate接口
+            module.activate(from, data);
         }
     };
     ModuleManager.prototype.deactivateModule = function (module, to, data) {
         if (module) {
-            // 调用onDeactivate接口
-            module.onDeactivate(to, data);
+            // 调用deactivate接口
+            module.deactivate(to, data);
         }
     };
     /**
      * 打开模块
      *
-     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
      * @memberof ModuleManager
@@ -185,31 +178,22 @@ var ModuleManager = /** @class */ (function () {
             // 记一个是否需要遮罩的flag
             var maskFlag = true;
             // 加载所有已托管中介者的资源
-            var mediators = target.delegatedMediators.concat();
-            var loadMediatorAssets = function (err) {
+            target.loadAssets(function (err) {
                 if (err) {
                     // 隐藏Loading
                     if (!maskFlag)
                         maskManager.hideLoading("module");
                     maskFlag = false;
-                    // 停止加载，调用模块加载失败接口
-                    target.onLoadAssets(err);
                     // 移除先行数据
                     _this._moduleStack.shift();
                     // 结束一次模块开启
                     _this.onFinishOpen();
-                }
-                else if (mediators.length > 0) {
-                    var mediator = mediators.shift();
-                    mediator.loadAssets(loadMediatorAssets);
                 }
                 else {
                     // 隐藏Loading
                     if (!maskFlag)
                         maskManager.hideLoading("module");
                     maskFlag = false;
-                    // 调用onLoadAssets接口
-                    target.onLoadAssets();
                     // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
                     var cssFiles = target.listStyleFiles();
                     if (cssFiles) {
@@ -225,7 +209,6 @@ var ModuleManager = /** @class */ (function () {
                     // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
                     assetsManager.loadAssets(target.listJsFiles(), function (results) {
                         if (results instanceof Error) {
-                            target.onLoadAssets(results);
                             // 移除先行数据
                             _this._moduleStack.shift();
                             // 结束一次模块开启
@@ -259,8 +242,7 @@ var ModuleManager = /** @class */ (function () {
                         }, _this, target.observable);
                     });
                 }
-            };
-            loadMediatorAssets();
+            });
             // 显示Loading
             if (maskFlag) {
                 maskManager.showLoading(null, "module");
@@ -292,7 +274,7 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
-     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @memberof ModuleManager
      */
@@ -319,13 +301,13 @@ var ModuleManager = /** @class */ (function () {
             var to = this._moduleStack[0];
             var toModule = to && to[1];
             // 调用onDeactivate接口
-            this.deactivateModule(target, to && to[0], data);
+            this.deactivateModule(target, toModule, data);
             // 调用close接口
             target.close(data);
             // 调用onActivate接口
-            this.activateModule(toModule, cls, data);
+            this.activateModule(toModule, target, data);
             // 调用onWakeUp接口
-            toModule.onWakeUp(cls, data);
+            toModule.wakeUp(target, data);
             // 派发消息
             core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
         }

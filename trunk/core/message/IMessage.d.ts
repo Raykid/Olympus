@@ -15,7 +15,7 @@ export default interface IMessage {
      * @type {string}
      * @memberof IMessage
      */
-    readonly type: string;
+    readonly __type: string;
     /**
      * 消息所属内核
      *

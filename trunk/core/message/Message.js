@@ -17,7 +17,7 @@ var Message = /** @class */ (function () {
         this.__observables = [];
         this._type = type;
     }
-    Object.defineProperty(Message.prototype, "type", {
+    Object.defineProperty(Message.prototype, "__type", {
         /**
          * 获取消息类型字符串
          *

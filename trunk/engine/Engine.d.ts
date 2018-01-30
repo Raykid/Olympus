@@ -1,6 +1,6 @@
-import IModuleConstructor from "./module/IModuleConstructor";
 import IBridge from "./bridge/IBridge";
 import IPlugin from "./plugin/IPlugin";
+import IMediatorConstructor from "./mediator/IMediatorConstructor";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -60,10 +60,10 @@ export interface IInitParams {
     /**
      * 首模块类型，框架初始化完毕后进入的模块
      *
-     * @type {IModuleConstructor}
+     * @type {IMediatorConstructor}
      * @memberof OlympusInitParams
      */
-    firstModule: IModuleConstructor;
+    firstModule: IMediatorConstructor;
     /**
      * 会在首个模块被显示出来后从页面中移除
      *

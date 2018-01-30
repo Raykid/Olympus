@@ -12,6 +12,20 @@ var Model = /** @class */ (function () {
     function Model() {
         core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
     }
+    Object.defineProperty(Model.prototype, "disposed", {
+        /**
+         * Model的disposed属性没有任何作用，仅为了实现接口，始终返回false
+         *
+         * @readonly
+         * @type {boolean}
+         * @memberof Model
+         */
+        get: function () {
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Model.prototype, "observable", {
         /**
          * 转发core.observable
@@ -100,6 +114,13 @@ var Model = /** @class */ (function () {
      */
     Model.prototype.unmapCommand = function (type, cmd) {
         core.unmapCommand(type, cmd);
+    };
+    /**
+     * Model的dispose方法没有任何作用，仅为了实现接口
+     *
+     * @memberof Model
+     */
+    Model.prototype.dispose = function () {
     };
     return Model;
 }());

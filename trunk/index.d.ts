@@ -58,17 +58,17 @@ import * as IMaskData from "./engine/mask/IMaskData";
 import * as MaskManager from "./engine/mask/MaskManager";
 
 import * as IMediator from "./engine/mediator/IMediator";
-import * as IModuleMediator from "./engine/mediator/IModuleMediator";
+import * as IMediatorBasicPart from "./engine/mediator/IMediatorBasicPart";
+import * as IMediatorBindPart from "./engine/mediator/IMediatorBindPart";
+import * as IMediatorModulePart from "./engine/mediator/IMediatorModulePart";
+import * as IMediatorTreePart from "./engine/mediator/IMediatorTreePart";
+import * as IMediatorConstructor from "./engine/mediator/IMediatorConstructor";
 import * as Mediator from "./engine/mediator/Mediator";
 
 import * as EngineMessage from "./engine/message/EngineMessage";
 
 import * as Model from "./engine/model/Model";
 
-import * as IModule from "./engine/module/IModule";
-import * as IModuleConstructor from "./engine/module/IModuleConstructor";
-import * as IModuleDependent from "./engine/module/IModuleDependent";
-import * as Module from "./engine/module/Module";
 import * as ModuleManager from "./engine/module/ModuleManager";
 import * as ModuleMessage from "./engine/module/ModuleMessage";
 

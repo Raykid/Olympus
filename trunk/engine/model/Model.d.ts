@@ -11,6 +11,14 @@ import ICommandConstructor from "../../core/command/ICommandConstructor";
 */
 export default abstract class Model implements IObservable {
     /**
+     * Model的disposed属性没有任何作用，仅为了实现接口，始终返回false
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof Model
+     */
+    readonly disposed: boolean;
+    /**
      * 转发core.observable
      *
      * @readonly
@@ -84,4 +92,10 @@ export default abstract class Model implements IObservable {
      * @memberof Model
      */
     unmapCommand(type: string, cmd: ICommandConstructor): void;
+    /**
+     * Model的dispose方法没有任何作用，仅为了实现接口
+     *
+     * @memberof Model
+     */
+    dispose(): void;
 }

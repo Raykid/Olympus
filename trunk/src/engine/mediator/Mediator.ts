@@ -1,16 +1,15 @@
 import { core } from "../../core/Core";
 import IMessage from "../../core/message/IMessage";
-import { getConstructor } from "../../utils/ConstructUtil";
-import IModuleMediator from "./IModuleMediator";
 import IBridge from "../bridge/IBridge";
-import IModule from "../module/IModule";
-import IModuleConstructor from "../module/IModuleConstructor";
 import { mutate } from "../bind/Mutator";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
-import { bindManager } from "../bind/BindManager";
 import IObservable from "../../core/observable/IObservable";
-import ResponseData from "../net/ResponseData";
 import Dictionary from "../../utils/Dictionary";
+import { bindManager } from "../bind/BindManager";
+import RequestData from "../net/RequestData";
+import ResponseData from "../net/ResponseData";
+import IMediator from "./IMediator";
+import Observable from "../../core/observable/Observable";
 
 /**
  * @author Raykid
@@ -20,7 +19,7 @@ import Dictionary from "../../utils/Dictionary";
  * 
  * 组件界面中介者基类
 */
-export default class Mediator implements IModuleMediator
+export default class Mediator implements IMediator
 {
     /**
      * 表现层桥
@@ -78,49 +77,11 @@ export default class Mediator implements IModuleMediator
         return this._disposed;
     }
     
-    private _dependModuleInstance:IModule;
-    /**
-     * 所属的模块引用，需要配合@DelegateMediator使用
-     * 
-     * @readonly
-     * @type {IModule}
-     * @memberof IMediator
-     */
-    public get dependModuleInstance():IModule
-    {
-        return this._dependModuleInstance;
-    }
-    
-    private _dependModule:IModuleConstructor;
-    /**
-     * 所属的模块类型，需要配合@DelegateMediator使用
-     * 
-     * @readonly
-     * @type {IModuleConstructor}
-     * @memberof IMediator
-     */
-    public get dependModule():IModuleConstructor
-    {
-        return this._dependModule;
-    }
-
-    /**
-     * 便捷获取被托管到的模块的初始化消息数组
-     * 
-     * @type {ResponseData[]}
-     * @memberof IModuleMediator
-     */
-    public get initResponses():ResponseData[]
-    {
-        return (this._dependModuleInstance ? this._dependModuleInstance.responses : []);
-    }
-
     private _data:any;
 
     /**
      * 打开时传递的data对象
      * 
-     * @readonly
      * @type {*}
      * @memberof Mediator
      */
@@ -128,24 +89,42 @@ export default class Mediator implements IModuleMediator
     {
         return this._data;
     }
+    public set data(value:any)
+    {
+        this._data = value;
+        // 递归设置子中介者的data
+        for(var mediator of this._children)
+        {
+            mediator.data = value;
+        }
+    }
+
+    private _responses:ResponseData[];
+    /**
+     * 模块初始消息的返回数据
+     * 
+     * @type {ResponseData[]}
+     * @memberof Mediator
+     */
+    public get responses():ResponseData[]
+    {
+        return this._responses;
+    }
+    public set responses(value:ResponseData[])
+    {
+        this._responses = value;
+        // 递归设置子中介者的data
+        for(var mediator of this._children)
+        {
+            mediator.responses = value;
+        }
+    }
 
     public constructor(skin?:any)
     {
         if(skin) this.skin = skin;
         // 初始化绑定
         bindManager.bind(this);
-    }
-
-    /**
-     * 列出中介者所需的资源数组，可重写
-     * 但如果Mediator没有被托管在Module中则该方法不应该被重写，否则可能会有问题
-     * 
-     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-     * @memberof Mediator
-     */
-    public listAssets():string[]
-    {
-        return null;
     }
 
     /**
@@ -157,11 +136,9 @@ export default class Mediator implements IModuleMediator
      */
     public loadAssets(handler:(err?:Error)=>void):void
     {
-        var self:Mediator = this;
-        this.bridge.loadAssets(this.listAssets(), this, function(err?:Error):void
-        {
+        this.bridge.loadAssets(this.listAssets(), this, (err?:Error)=>{
             // 调用onLoadAssets接口
-            self.onLoadAssets(err);
+            this.onLoadAssets(err);
             // 调用回调
             handler(err);
         });
@@ -186,10 +163,16 @@ export default class Mediator implements IModuleMediator
      */
     public open(data?:any):any
     {
-        this._data = data;
+        this.data = data;
+        // 调用自身onOpen方法
         this.onOpen(data);
         // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
         if(!this._viewModel) this.viewModel = {};
+        // 调用所有已托管中介者的open方法
+        for(var mediator of this._children)
+        {
+            mediator.open(data);
+        }
         return this;
     }
 
@@ -202,7 +185,14 @@ export default class Mediator implements IModuleMediator
      */
     public close(data?:any):any
     {
+        // 调用所有已托管中介者的close方法
+        for(var mediator of this._children.concat())
+        {
+            mediator.close(data);
+        }
+        // 调用自身onClose方法
         this.onClose(data);
+        // 销毁自身
         this.dispose();
         return this;
     }
@@ -295,9 +285,306 @@ export default class Mediator implements IModuleMediator
             this.bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
         }
     }
+    
+    private _disposeDict:Dictionary<IMediator, ()=>void> = new Dictionary();
+    
+    private disposeChild(mediator:IMediator, oriDispose:()=>void):void
+    {
+        // 调用原始销毁方法
+        oriDispose.call(mediator);
+        // 取消托管
+        this.undelegateMediator(mediator);
+    };
+
+    /**
+     * 父中介者
+     * 
+     * @type {IMediator}
+     * @memberof Mediator
+     */
+    public parent:IMediator = null;
+
+    private _children:IMediator[] = [];
+    /**
+     * 获取所有子中介者
+     * 
+     * @type {IMediator[]}
+     * @memberof Mediator
+     */
+    public get children():IMediator[]
+    {
+        return this._children;
+    }
+
+    /**
+     * 托管子中介者
+     * 
+     * @param {IMediator} mediator 要托管的中介者
+     * @memberof Mediator
+     */
+    public delegateMediator(mediator:IMediator):void
+    {
+        if(this._children.indexOf(mediator) < 0)
+        {
+            // 托管新的中介者
+            this._children.push(mediator);
+            // 设置关系
+            mediator.parent = this;
+            // 设置observable关系
+            mediator.observable.parent = this._observable;
+            // 篡改dispose方法，以监听其dispose
+            if(mediator.hasOwnProperty("dispose"))
+                this._disposeDict.set(mediator, mediator.dispose);
+            mediator.dispose = this.disposeChild.bind(this, mediator, mediator.dispose);
+        }
+    }
+
+    /**
+     * 取消托管子中介者
+     * 
+     * @param {IMediator} mediator 要取消托管的中介者
+     * @memberof Mediator
+     */
+    public undelegateMediator(mediator:IMediator):void
+    {
+        var index:number = this._children.indexOf(mediator);
+        if(index >= 0)
+        {
+            // 取消托管中介者
+            this._children.splice(index, 1);
+            // 移除关系
+            mediator.parent = null;
+            // 移除observable关系
+            if(mediator.observable) mediator.observable.parent = null;
+            // 恢复dispose方法，取消监听dispose
+            var oriDispose:()=>void = this._disposeDict.get(mediator);
+            if(oriDispose) mediator.dispose = oriDispose;
+            else delete mediator.dispose;
+            this._disposeDict.delete(mediator);
+        }
+    }
+    
+    /**
+     * 判断指定中介者是否包含在该中介者里
+     * 
+     * @param {IMediator} mediator 要判断的中介者
+     * @returns {boolean} 
+     * @memberof Mediator
+     */
+    public constainsMediator(mediator:IMediator):boolean
+    {
+        return (this._children.indexOf(mediator) >= 0);
+    }
+    
+    /**
+     * 其他模块被关闭回到当前模块时调用
+     * 
+     * @param {(IMediator|undefined)} from 从哪个模块回到当前模块
+     * @param {*} [data] 可能的参数传递
+     * @memberof Mediator
+     */
+    public wakeUp(from:IMediator|undefined, data?:any):void
+    {
+        // 调用自身方法
+        this.onWakeUp(from, data);
+        // 递归调用子中介者方法
+        for(var mediator of this._children)
+        {
+            mediator.onWakeUp(from, data);
+        }
+    }
+
+    /**
+     * 模块切换到前台时调用（与wakeUp的区别是open时activate会触发，但wakeUp不会）
+     * 
+     * @param {(IMediator|undefined)} from 从哪个模块来到当前模块
+     * @param {*} [data] 可能的参数传递
+     * @memberof Mediator
+     */
+    public activate(from:IMediator|undefined, data?:any):void
+    {
+        // 调用自身方法
+        this.onActivate(from, data);
+        // 递归调用子中介者方法
+        for(var mediator of this._children)
+        {
+            mediator.onActivate(from, data);
+        }
+    }
+
+    /**
+     * 模块切换到后台时调用（close之后或者其他模块打开时）
+     * 
+     * @param {(IMediator|undefined)} to 将要去往哪个模块
+     * @param {*} [data] 可能的参数传递
+     * @memberof Mediator
+     */
+    public deactivate(to:IMediator|undefined, data?:any):void
+    {
+        // 调用自身方法
+        this.onDeactivate(to, data);
+        // 递归调用子中介者方法
+        for(var mediator of this._children)
+        {
+            mediator.onDeactivate(to, data);
+        }
+    }
+
+    /**
+     * 列出中介者所需的资源数组，不要手动调用或重写
+     * 
+     * @returns {string[]} 
+     * @memberof Mediator
+     */
+    public listAssets():string[]
+    {
+        // 获取自身所需资源
+        var assets:string[] = this.onListAssets() || [];
+        // 获取所有子中介者所需资源
+        for(var mediator of this._children)
+        {
+            assets.push.apply(assets, mediator.listAssets());
+        }
+        return assets;
+    }
+
+    /**
+     * 列出模块初始化请求，不要手动调用或重写
+     * 
+     * @returns {RequestData[]} 
+     * @memberof Mediator
+     */
+    public listInitRequests():RequestData[]
+    {
+        // 获取自身初始化请求
+        var requests:RequestData[] = this.onListInitRequests() || [];
+        // 获取所有子中介者所需资源
+        for(var mediator of this._children)
+        {
+            requests.push.apply(requests, mediator.listInitRequests());
+        }
+        return requests;
+    }
+    
+    /**
+     * 列出所需CSS资源URL，不要手动调用或重写
+     * 
+     * @returns {string[]} 
+     * @memberof Mediator
+     */
+    public listStyleFiles():string[]
+    {
+        // 获取自身URL
+        var files:string[] = this.onListStyleFiles() || [];
+        // 获取所有子中介者所需资源
+        for(var mediator of this._children)
+        {
+            files.push.apply(files, mediator.listStyleFiles());
+        }
+        return files;
+    }
+
+    /**
+     * 列出所需JS资源URL，不要手动调用或重写
+     * 
+     * @returns {string[]} 
+     * @memberof Mediator
+     */
+    public listJsFiles():string[]
+    {
+        // 获取自身URL
+        var files:string[] = this.onListJsFiles() || [];
+        // 获取所有子中介者所需资源
+        for(var mediator of this._children)
+        {
+            files.push.apply(files, mediator.listJsFiles());
+        }
+        return files;
+    }
+    
+    /**
+     * 其他模块被关闭回到当前模块时调用
+     * 
+     * @param {(IMediator|undefined)} from 从哪个模块回到当前模块
+     * @param {*} [data] 可能的参数传递
+     * @memberof Mediator
+     */
+    public onWakeUp(from:IMediator|undefined, data?:any):void
+    {
+        // 可重写
+    }
+
+    /**
+     * 模块切换到前台时调用（与onWakeUp的区别是open时onActivate会触发，但onWakeUp不会）
+     * 
+     * @param {(IMediator|undefined)} from 从哪个模块来到当前模块
+     * @param {*} [data] 可能的参数传递
+     * @memberof Mediator
+     */
+    public onActivate(from:IMediator|undefined, data?:any):void
+    {
+        // 可重写
+    }
+
+    /**
+     * 模块切换到后台时调用（close之后或者其他模块打开时）
+     * 
+     * @param {(IMediator|undefined)} to 将要去往哪个模块
+     * @param {*} [data] 可能的参数传递
+     * @memberof Mediator
+     */
+    public onDeactivate(to:IMediator|undefined, data?:any):void
+    {
+        // 可重写
+    }
+
+    /**
+     * 列出中介者所需的资源数组，可重写
+     * 
+     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
+     * @memberof Mediator
+     */
+    public onListAssets():string[]
+    {
+        return null;
+    }
+
+    /**
+     * 列出模块初始化请求，可重写
+     * 
+     * @returns {RequestData[]} 
+     * @memberof Mediator
+     */
+    public onListInitRequests():RequestData[]
+    {
+        return null;
+    }
+
+    /**
+     * 列出所需CSS资源URL，可重写
+     * 
+     * @returns {string[]} 
+     * @memberof Mediator
+     */
+    public onListStyleFiles():string[]
+    {
+        return null;
+    }
+
+    /**
+     * 列出所需JS资源URL，可重写
+     * 
+     * @returns {string[]} 
+     * @memberof Mediator
+     */
+    public onListJsFiles():string[]
+    {
+        return null;
+    }
 
     /*********************** 下面是模块消息系统 ***********************/
 
+    private _observable:IObservable = new Observable(core);
     /**
      * 暴露IObservable
      * 
@@ -307,25 +594,14 @@ export default class Mediator implements IModuleMediator
      */
     public get observable():IObservable
     {
-        return (this._dependModuleInstance || core).observable;
-    }
-    
-    /**
-     * 获取到父级IObservable
-     * 
-     * @type {IObservable}
-     * @memberof Mediator
-     */
-    public get parent():IObservable
-    {
-        return this.observable.parent;
+        return this._observable;
     }
     
     /**
      * 派发消息
      * 
      * @param {IMessage} msg 内核消息实例
-     * @memberof IModuleObservable
+     * @memberof Mediator
      */
     public dispatch(msg:IMessage):void;
     /**
@@ -333,14 +609,13 @@ export default class Mediator implements IModuleMediator
      * 
      * @param {string} type 消息类型
      * @param {...any[]} params 消息参数列表
-     * @memberof IModuleObservable
+     * @memberof Mediator
      */
     public dispatch(type:string, ...params:any[]):void;
     /** dispatch方法实现 */
     public dispatch(...params:any[]):void
     {
-        var observable:IObservable = this.observable;
-        observable.dispatch.apply(observable, params);
+        this._observable.dispatch.apply(this._observable, params);
     }
 
     /**
@@ -350,11 +625,11 @@ export default class Mediator implements IModuleMediator
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @param {boolean} [once=false] 是否是一次性监听
-     * @memberof IModuleObservable
+     * @memberof Mediator
      */
     public listen(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
-        this.observable.listen(type, handler, thisArg, once);
+        this._observable.listen(type, handler, thisArg, once);
     }
 
     /**
@@ -364,11 +639,11 @@ export default class Mediator implements IModuleMediator
      * @param {Function} handler 消息处理函数
      * @param {*} [thisArg] 消息this指向
      * @param {boolean} [once=false] 是否是一次性监听
-     * @memberof IModuleObservable
+     * @memberof Mediator
      */
     public unlisten(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
-        this.observable.unlisten(type, handler, thisArg, once);
+        this._observable.unlisten(type, handler, thisArg, once);
     }
 
     /**
@@ -376,11 +651,11 @@ export default class Mediator implements IModuleMediator
      * 
      * @param {string} type 要注册的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器，可以是方法形式，也可以使类形式
-     * @memberof IModuleObservable
+     * @memberof Mediator
      */
     public mapCommand(type:string, cmd:ICommandConstructor):void
     {
-        this.observable.mapCommand(type, cmd);
+        this._observable.mapCommand(type, cmd);
     }
 
     /**
@@ -389,11 +664,11 @@ export default class Mediator implements IModuleMediator
      * @param {string} type 要注销的消息类型
      * @param {(ICommandConstructor)} cmd 命令处理器
      * @returns {void} 
-     * @memberof IModuleObservable
+     * @memberof Mediator
      */
     public unmapCommand(type:string, cmd:ICommandConstructor):void
     {
-        this.observable.unmapCommand(type, cmd);
+        this._observable.unmapCommand(type, cmd);
     }
 
     /**
@@ -424,6 +699,16 @@ export default class Mediator implements IModuleMediator
         this.bindTargets = null;
         // 移除皮肤
         this.skin = null;
+        // 将所有子中介者销毁
+        for(var i:number = 0, len:number = this._children.length; i < len; i++)
+        {
+            var mediator:IMediator = this._children.pop();
+            this.undelegateMediator(mediator);
+            mediator.dispose();
+        }
+        // 移除observable
+        this._observable.dispose();
+        this._observable = null;
         // 设置已被销毁
         this._disposed = true;
     }

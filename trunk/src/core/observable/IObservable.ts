@@ -1,6 +1,7 @@
 import IConstructor from "../interfaces/IConstructor";
 import IMessage from "../message/IMessage";
 import ICommandConstructor from "../command/ICommandConstructor";
+import IDisposable from "../interfaces/IDisposable";
 
 /**
  * @author Raykid
@@ -10,7 +11,7 @@ import ICommandConstructor from "../command/ICommandConstructor";
  * 
  * 可观察接口
 */
-export default interface IObservable
+export default interface IObservable extends IDisposable
 {
     /**
      * 获取到IObservable实体，若本身就是IObservable实体则返回本身
@@ -20,12 +21,12 @@ export default interface IObservable
      */
     readonly observable:IObservable;
     /**
-     * 获取到父级IObservable
+     * 父级IObservable
      * 
      * @type {IObservable}
      * @memberof IObservable
      */
-    readonly parent:IObservable;
+    parent:IObservable;
 
     /**
      * 派发消息

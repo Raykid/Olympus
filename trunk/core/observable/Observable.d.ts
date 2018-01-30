@@ -10,7 +10,6 @@ import IObservable from "./IObservable";
  * 可观察接口的默认实现对象，会将收到的消息通知给注册的回调
 */
 export default class Observable implements IObservable {
-    private _parent;
     private _listenerDict;
     /**
      * 获取到IObservable实体，若本身就是IObservable实体则返回本身
@@ -25,7 +24,7 @@ export default class Observable implements IObservable {
      * @type {IObservable}
      * @memberof Observable
      */
-    readonly parent: IObservable;
+    parent: IObservable;
     constructor(parent?: IObservable);
     private handleMessages(msg);
     private doDispatch(msg);

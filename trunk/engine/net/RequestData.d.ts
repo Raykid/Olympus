@@ -106,7 +106,7 @@ export default abstract class RequestData implements IMessage {
      * @type {string}
      * @memberof RequestData
      */
-    readonly type: string;
+    readonly __type: string;
     constructor();
     /**
      * 再次发送消息，会使用首个内核重新发送该消息

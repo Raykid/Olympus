@@ -7,7 +7,7 @@
 /// <reference path="./egret/libs/modules/tween/tween.d.ts"/>
 
 import getParam from "./utils/InitParamsUtil";
-import FirstModule from "./modules/FirstModule";
+import First from "./modules/First";
 
 import Olympus from 'olympus-r/Olympus';
 import { environment } from 'olympus-r/engine/env/Environment';
@@ -37,7 +37,7 @@ Olympus.startup({
             // scaleMode: egret.StageScaleMode.SHOW_ALL
         })
     ],
-    firstModule: FirstModule,
+    firstModule: First,
     loadElement: "#loading",
     hostsDict: {
         dev: ["http://www.test.17zuoye.net/"],

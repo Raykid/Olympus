@@ -62,7 +62,7 @@ var RequestData = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(RequestData.prototype, "type", {
+    Object.defineProperty(RequestData.prototype, "__type", {
         /**
          * 获取请求消息类型字符串
          *
