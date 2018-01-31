@@ -131,6 +131,19 @@ export default class DOMBridge implements IBridge
         return this._panelLayer;
     }
 
+    private _promptLayer:HTMLElement;
+    /**
+     * 获取通用提示框层
+     * 
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof DOMBridge
+     */
+    public get promptLayer():HTMLElement
+    {
+        return this._promptLayer;
+    }
+
     private _maskLayer:HTMLElement;
     /**
      * 获取遮罩容器
@@ -247,6 +260,8 @@ export default class DOMBridge implements IBridge
         this._frameLayer = this.createLayer();
         // 创建弹出层
         this._panelLayer = this.createLayer();
+        // 创建通用提示框层
+        this._promptLayer = this.createLayer();
         // 创建遮罩层
         this._maskLayer = this.createLayer();
         // 创建顶级显示层
