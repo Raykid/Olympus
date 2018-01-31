@@ -21,7 +21,6 @@ export default class AudioManager {
      * @memberof AudioManager
      */
     registerSoundImpl(soundImpl: IAudio): void;
-    private _muteSound;
     /**
      * 获取或设置Sound类型音频静音属性
      *
@@ -79,7 +78,6 @@ export default class AudioManager {
      * @memberof AudioManager
      */
     registerMusicImpl(musicImpl: IAudio): void;
-    private _muteMusic;
     /**
      * 获取或设置Music类型音频静音属性
      *

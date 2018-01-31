@@ -54,18 +54,15 @@ var AudioManager = /** @class */ (function () {
          * @memberof AudioManager
          */
         get: function () {
-            return this._muteSound;
+            return this._soundImpl.mute;
         },
         set: function (value) {
-            if (value === this._muteSound)
+            if (value === this._soundImpl.mute)
                 return;
-            this._muteSound = value;
+            this._soundImpl.mute = value;
             // 持久化
             var shell = core.getInject(Shell);
             shell.localStorageSet(AudioManager_1.STORAGE_KEY_MUTE_SOUND, value + "");
-            // 如果静音则立即停止播放所有Sound
-            if (value)
-                this.stopAllSound();
         },
         enumerable: true,
         configurable: true
@@ -87,7 +84,7 @@ var AudioManager = /** @class */ (function () {
      */
     AudioManager.prototype.playSound = function (params) {
         // 判断静音
-        if (this._muteSound)
+        if (this.muteSound)
             return;
         // 停止其他音频
         if (params.stopOthers) {
@@ -149,18 +146,15 @@ var AudioManager = /** @class */ (function () {
          * @memberof AudioManager
          */
         get: function () {
-            return this._muteMusic;
+            return this._musicImpl.mute;
         },
         set: function (value) {
-            if (value === this._muteMusic)
+            if (value === this._musicImpl.mute)
                 return;
-            this._muteMusic = value;
+            this._musicImpl.mute = value;
             // 持久化
             var shell = core.getInject(Shell);
             shell.localStorageSet(AudioManager_1.STORAGE_KEY_MUTE_MUSIC, value + "");
-            // 如果静音则立即停止播放所有Sound
-            if (value)
-                this.stopAllMusics();
         },
         enumerable: true,
         configurable: true
@@ -182,7 +176,7 @@ var AudioManager = /** @class */ (function () {
      */
     AudioManager.prototype.playMusic = function (params) {
         // 判断静音
-        if (this._muteMusic)
+        if (this.muteMusic)
             return;
         // 停止其他音频
         if (params.stopOthers) {

@@ -11,8 +11,38 @@ import { environment } from "../env/Environment";
 */
 var AudioTagImpl = /** @class */ (function () {
     function AudioTagImpl() {
+        this._mute = false;
+        this._playingDict = {};
         this._audioCache = {};
     }
+    Object.defineProperty(AudioTagImpl.prototype, "mute", {
+        /**
+         * 静音状态
+         *
+         * @type {boolean}
+         * @memberof AudioTagImpl
+         */
+        get: function () {
+            return this._mute;
+        },
+        set: function (value) {
+            this._mute = value;
+            // 静音，暂停所有声音
+            for (var url in this._playingDict) {
+                if (value) {
+                    // 静音，停止音频，不可调用stop方法，因为要保持播放中的音频状态
+                    this._doStop(url);
+                }
+                else {
+                    // 非静音，播放音频
+                    var params = this._playingDict[url];
+                    this.play(params);
+                }
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 加载音频
      *
@@ -96,6 +126,8 @@ var AudioTagImpl = /** @class */ (function () {
                     data.node.play();
                     // 设置状态
                     data.status = AudioStatus.PLAYING;
+                    // 记录播放中
+                    this._playingDict[toUrl] = params;
                     // 派发播放开始事件
                     core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
                     break;
@@ -125,6 +157,9 @@ var AudioTagImpl = /** @class */ (function () {
      */
     AudioTagImpl.prototype.pause = function (url) {
         this._doStop(url);
+        // 移除播放中
+        var toUrl = environment.toCDNHostURL(url);
+        delete this._playingDict[toUrl];
     };
     /**
      * 停止音频（会重置进度）
@@ -134,6 +169,9 @@ var AudioTagImpl = /** @class */ (function () {
      */
     AudioTagImpl.prototype.stop = function (url) {
         this._doStop(url, 0);
+        // 移除播放中
+        var toUrl = environment.toCDNHostURL(url);
+        delete this._playingDict[toUrl];
     };
     /**
      * 停止所有音频
