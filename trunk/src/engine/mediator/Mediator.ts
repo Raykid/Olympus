@@ -304,6 +304,17 @@ export default class Mediator implements IMediator
      */
     public parent:IMediator = null;
 
+    /**
+     * 获取根级中介者（当做模块直接被打开的中介者）
+     * 
+     * @type {IMediator}
+     * @memberof IMediator
+     */
+    public get root():IMediator
+    {
+        return (this.parent ? this.parent.root : this);
+    }
+
     private _children:IMediator[] = [];
     /**
      * 获取所有子中介者
@@ -371,7 +382,7 @@ export default class Mediator implements IMediator
      * @returns {boolean} 
      * @memberof Mediator
      */
-    public constainsMediator(mediator:IMediator):boolean
+    public containsMediator(mediator:IMediator):boolean
     {
         return (this._children.indexOf(mediator) >= 0);
     }

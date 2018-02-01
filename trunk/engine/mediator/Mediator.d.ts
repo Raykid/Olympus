@@ -151,6 +151,13 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     parent: IMediator;
+    /**
+     * 获取根级中介者（当做模块直接被打开的中介者）
+     *
+     * @type {IMediator}
+     * @memberof IMediator
+     */
+    readonly root: IMediator;
     private _children;
     /**
      * 获取所有子中介者
@@ -180,7 +187,7 @@ export default class Mediator implements IMediator {
      * @returns {boolean}
      * @memberof Mediator
      */
-    constainsMediator(mediator: IMediator): boolean;
+    containsMediator(mediator: IMediator): boolean;
     /**
      * 其他模块被关闭回到当前模块时调用
      *

@@ -20,6 +20,14 @@ export default interface IMediatorTreePart extends IObservable
     parent:IMediator;
 
     /**
+     * 获取根级中介者（当做模块直接被打开的中介者）
+     * 
+     * @type {IMediator}
+     * @memberof IMediatorTreePart
+     */
+    readonly root:IMediator;
+
+    /**
      * 获取所有子中介者
      * 
      * @type {IMediator[]}
@@ -50,5 +58,5 @@ export default interface IMediatorTreePart extends IObservable
      * @returns {boolean} 
      * @memberof IMediatorTreePart
      */
-    constainsMediator(child:IMediator):boolean;
+    containsMediator(child:IMediator):boolean;
 }

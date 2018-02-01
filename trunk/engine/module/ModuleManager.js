@@ -6,6 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import { getConstructor } from "../../utils/ConstructUtil";
 import { netManager } from "../net/NetManager";
 import ModuleMessage from "./ModuleMessage";
 import { environment } from "../env/Environment";
@@ -146,29 +147,31 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 打开模块
      *
-     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
+     * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
      * @memberof ModuleManager
      */
-    ModuleManager.prototype.open = function (clsOrName, data, replace) {
+    ModuleManager.prototype.open = function (module, data, replace) {
         var _this = this;
         if (replace === void 0) { replace = false; }
         // 如果是字符串则获取引用
-        var cls = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName);
+        var type = (typeof module == "string" ? this._moduleDict[module] : module);
         // 非空判断
-        if (!cls)
+        if (!type)
             return;
         // 判断是否正在打开模块
         if (this._opening) {
-            this._openCache.push([cls, data, replace]);
+            this._openCache.push([type, data, replace]);
             return;
         }
-        this._opening = cls;
+        this._opening = type;
+        // 取到类型
+        var cls = getConstructor(type instanceof Function ? type : type.constructor);
         var after = this.getAfter(cls);
         if (!after) {
             // 尚未打开过，正常开启模块
-            var target = new cls();
+            var target = type instanceof Function ? new cls() : type;
             // 赋值打开参数
             target.data = data;
             // 数据先行
@@ -274,19 +277,21 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
-     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
+     * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @memberof ModuleManager
      */
-    ModuleManager.prototype.close = function (clsOrName, data) {
+    ModuleManager.prototype.close = function (module, data) {
         // 如果是字符串则获取引用
-        var cls = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName);
+        var type = (typeof module == "string" ? this._moduleDict[module] : module);
         // 非空判断
-        if (!cls)
+        if (!type)
             return;
         // 数量判断，不足一个模块时不关闭
         if (this.activeCount <= 1)
             return;
+        // 取到类型
+        var cls = getConstructor(type instanceof Function ? type : type.constructor);
         // 存在性判断
         var index = this.getIndex(cls);
         if (index < 0)

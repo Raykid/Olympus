@@ -257,6 +257,19 @@ var Mediator = /** @class */ (function () {
         this.undelegateMediator(mediator);
     };
     ;
+    Object.defineProperty(Mediator.prototype, "root", {
+        /**
+         * 获取根级中介者（当做模块直接被打开的中介者）
+         *
+         * @type {IMediator}
+         * @memberof IMediator
+         */
+        get: function () {
+            return (this.parent ? this.parent.root : this);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Mediator.prototype, "children", {
         /**
          * 获取所有子中介者
@@ -322,7 +335,7 @@ var Mediator = /** @class */ (function () {
      * @returns {boolean}
      * @memberof Mediator
      */
-    Mediator.prototype.constainsMediator = function (mediator) {
+    Mediator.prototype.containsMediator = function (mediator) {
         return (this._children.indexOf(mediator) >= 0);
     };
     /**

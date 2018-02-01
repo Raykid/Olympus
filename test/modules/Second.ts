@@ -50,7 +50,7 @@ export default class Second extends SceneMediator
             onMsg: msg=>{
                 // 表达式里使用函数可以在函数里执行复杂逻辑，并且具有代码提示
                 console.log(msg);
-                moduleManager.close(Second);
+                moduleManager.close(this);
                 return msg + " - 1";
             },
             fuck: "you",

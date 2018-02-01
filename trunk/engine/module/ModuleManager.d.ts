@@ -69,21 +69,23 @@ export default class ModuleManager {
     /**
      * 打开模块
      *
-     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
+     * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
      * @memberof ModuleManager
      */
-    open(clsOrName: IMediatorConstructor | string, data?: any, replace?: boolean): void;
+    open(module: ModuleType | string, data?: any, replace?: boolean): void;
     private onFinishOpen();
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
-     * @param {IMediatorConstructor|string} clsOrName 模块类型或名称
+     * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @memberof ModuleManager
      */
-    close(clsOrName: IMediatorConstructor | string, data?: any): void;
+    close(module: ModuleType | string, data?: any): void;
 }
+/** 规定ModuleManager支持的模块参数类型 */
+export declare type ModuleType = IMediatorConstructor | IMediator;
 /** 再额外导出一个单例 */
 export declare const moduleManager: ModuleManager;
