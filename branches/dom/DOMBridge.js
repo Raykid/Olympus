@@ -145,6 +145,20 @@ var DOMBridge = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DOMBridge.prototype, "promptLayer", {
+        /**
+         * 获取通用提示框层
+         *
+         * @readonly
+         * @type {HTMLElement}
+         * @memberof DOMBridge
+         */
+        get: function () {
+            return this._promptLayer;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DOMBridge.prototype, "maskLayer", {
         /**
          * 获取遮罩容器
@@ -241,6 +255,8 @@ var DOMBridge = /** @class */ (function () {
         this._frameLayer = this.createLayer();
         // 创建弹出层
         this._panelLayer = this.createLayer();
+        // 创建通用提示框层
+        this._promptLayer = this.createLayer();
         // 创建遮罩层
         this._maskLayer = this.createLayer();
         // 创建顶级显示层

@@ -86,6 +86,15 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly panelLayer: HTMLElement;
+    private _promptLayer;
+    /**
+     * 获取通用提示框层
+     *
+     * @readonly
+     * @type {HTMLElement}
+     * @memberof DOMBridge
+     */
+    readonly promptLayer: HTMLElement;
     private _maskLayer;
     /**
      * 获取遮罩容器

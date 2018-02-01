@@ -13,6 +13,38 @@ import { environment } from "../env/Environment";
 */
 export default class AudioTagImpl implements IAudio
 {
+    private _mute:boolean = false;
+    private _playingDict:{[url:string]:AudioPlayParams} = {};
+    /**
+     * 静音状态
+     * 
+     * @type {boolean}
+     * @memberof AudioTagImpl
+     */
+    public get mute():boolean
+    {
+        return this._mute;
+    }
+    public set mute(value:boolean)
+    {
+        this._mute = value;
+        // 静音，暂停所有声音
+        for(var url in this._playingDict)
+        {
+            if(value)
+            {
+                // 静音，停止音频，不可调用stop方法，因为要保持播放中的音频状态
+                this._doStop(url);
+            }
+            else
+            {
+                // 非静音，播放音频
+                var params:AudioPlayParams = this._playingDict[url];
+                this.play(params);
+            }
+        }
+    }
+
     private _audioCache:{[url:string]:AudioData} = {};
     /**
      * 加载音频
@@ -100,6 +132,8 @@ export default class AudioTagImpl implements IAudio
                     data.node.play();
                     // 设置状态
                     data.status = AudioStatus.PLAYING;
+                    // 记录播放中
+                    this._playingDict[toUrl] = params;
                     // 派发播放开始事件
                     core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
                     break;
@@ -133,6 +167,9 @@ export default class AudioTagImpl implements IAudio
     public pause(url:string):void
     {
         this._doStop(url);
+        // 移除播放中
+        var toUrl:string = environment.toCDNHostURL(url);
+        delete this._playingDict[toUrl];
     }
     
     /**
@@ -144,6 +181,9 @@ export default class AudioTagImpl implements IAudio
     public stop(url:string):void
     {
         this._doStop(url, 0);
+        // 移除播放中
+        var toUrl:string = environment.toCDNHostURL(url);
+        delete this._playingDict[toUrl];
     }
 
     /**

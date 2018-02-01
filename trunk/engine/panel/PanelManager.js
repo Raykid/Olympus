@@ -68,17 +68,7 @@ var PanelManager = /** @class */ (function () {
             }
         }
     };
-    /**
-     * 打开一个弹窗
-     *
-     * @param {IPanel} panel 要打开的弹窗
-     * @param {*} [data] 数据
-     * @param {boolean} [isModal=true] 是否模态弹出
-     * @param {{x:number, y:number}} [from] 弹出起点位置
-     * @returns {IPanel} 返回弹窗对象
-     * @memberof PanelManager
-     */
-    PanelManager.prototype.pop = function (panel, data, isModal, from) {
+    PanelManager.prototype.doPop = function (panel, layer, data, isModal, from) {
         var _this = this;
         if (isModal === void 0) { isModal = true; }
         if (this._panels.indexOf(panel) < 0) {
@@ -98,7 +88,7 @@ var PanelManager = /** @class */ (function () {
             policy.prepare && policy.prepare(panel);
             // 添加显示
             var bridge = panel.bridge;
-            bridge.addChild(bridge.panelLayer, panel.skin);
+            bridge.addChild(layer, panel.skin);
             // 根据优先级进行排序
             this._panels.sort(function (a, b) {
                 var priA = _this._priorities.get(a) || 0;
@@ -108,12 +98,12 @@ var PanelManager = /** @class */ (function () {
                 if (result > 0) {
                     var skinA = a.skin;
                     var skinB = b.skin;
-                    var indexA = bridge.getChildIndex(bridge.panelLayer, skinA);
-                    var indexB = bridge.getChildIndex(bridge.panelLayer, skinB);
-                    bridge.removeChild(bridge.panelLayer, skinA);
-                    bridge.removeChild(bridge.panelLayer, skinB);
-                    bridge.addChildAt(bridge.panelLayer, skinB, indexA);
-                    bridge.addChildAt(bridge.panelLayer, skinA, indexB);
+                    var indexA = bridge.getChildIndex(layer, skinA);
+                    var indexB = bridge.getChildIndex(layer, skinB);
+                    bridge.removeChild(layer, skinA);
+                    bridge.removeChild(layer, skinB);
+                    bridge.addChildAt(layer, skinB, indexA);
+                    bridge.addChildAt(layer, skinA, indexB);
                 }
                 // 返回数据，让数组也重新排序
                 return result;
@@ -131,6 +121,20 @@ var PanelManager = /** @class */ (function () {
             this.updateModalMask(panel);
         }
         return panel;
+    };
+    /**
+     * 打开一个弹窗
+     *
+     * @param {IPanel} panel 要打开的弹窗
+     * @param {*} [data] 数据
+     * @param {boolean} [isModal=true] 是否模态弹出
+     * @param {{x:number, y:number}} [from] 弹出起点位置
+     * @returns {IPanel} 返回弹窗对象
+     * @memberof PanelManager
+     */
+    PanelManager.prototype.pop = function (panel, data, isModal, from) {
+        if (isModal === void 0) { isModal = true; }
+        return this.doPop(panel, panel.bridge.panelLayer, data, isModal, from);
     };
     /**
      * 关闭一个弹窗
@@ -235,7 +239,7 @@ var PanelManager = /** @class */ (function () {
         // 设置优先级
         this._priorities.set(prompt, PanelManager_1.PRIORITY_PROMPT);
         // 显示弹窗
-        this.pop(prompt);
+        this.doPop(prompt, prompt.bridge.promptLayer);
         // 更新弹窗
         prompt.update(params);
         // 返回弹窗

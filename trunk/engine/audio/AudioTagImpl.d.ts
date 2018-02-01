@@ -8,6 +8,15 @@ import IAudio, { AudioPlayParams } from "./IAudio";
  * 使用Audio标签实现IAudio接口的实现类
 */
 export default class AudioTagImpl implements IAudio {
+    private _mute;
+    private _playingDict;
+    /**
+     * 静音状态
+     *
+     * @type {boolean}
+     * @memberof AudioTagImpl
+     */
+    mute: boolean;
     private _audioCache;
     /**
      * 加载音频

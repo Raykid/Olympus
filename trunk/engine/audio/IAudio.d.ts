@@ -7,6 +7,7 @@
  * 音频接口
 */
 export default interface IAudio {
+    mute: boolean;
     /**
      * 加载音频
      *

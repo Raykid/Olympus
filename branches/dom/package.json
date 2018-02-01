@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.4.10",
+  "version": "0.4.11",
   "description": "Olympus的DOM表现层库",
   "files": [
     "dom/",
@@ -31,11 +31,11 @@
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
   "dependencies": {
-    "@types/gsap": "^1.19.1",
+    "@types/gsap": "^1.19.2",
     "gsap": "^1.20.3"
   },
   "devDependencies": {
-    "olympus-r": "^0.4.9",
+    "olympus-r": "^0.4.60",
     "typedoc": "^0.9.0"
   }
 }

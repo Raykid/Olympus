@@ -32,6 +32,7 @@ export default class PanelManager {
      */
     isOpened(panel: IPanel): boolean;
     private updateModalMask(panel);
+    private doPop(panel, layer, data?, isModal?, from?);
     /**
      * 打开一个弹窗
      *
