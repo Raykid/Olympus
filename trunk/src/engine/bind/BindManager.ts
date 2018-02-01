@@ -9,6 +9,7 @@ import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
 import { IWatcher } from "./Watcher";
+import { getObjectHashs } from "../../utils/ObjectUtil";
 
 /**
  * @author Raykid
@@ -199,7 +200,6 @@ export default class BindManager
      */
     public bindOn(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:string, exp:EvalExp):void
     {
-        var handler:Function;
         this.addBindHandler(mediator, ()=>{
             var commonScope:any = {
                 $this: mediator,
@@ -208,15 +208,18 @@ export default class BindManager
                 $currentTarget: currentTarget,
                 $target: target
             };
+            // 计算事件hash
+            var onHash:string = getObjectHashs(currentTarget, type, exp);
             // 如果之前添加过监听，则先移除之
-            if(!handler)
+            var handler:Function = currentTarget[onHash];
+            if(handler)
             {
                 mediator.bridge.unmapListener(currentTarget, type, handler, mediator.viewModel);
                 handler = null;
             }
             // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
             if(typeof exp === "string") handler = mediator.viewModel[exp];
-            if(!handler)
+            if(!(handler instanceof Function))
             {
                 var func:Function = createRunFunc(exp, 2 + envModels.length);
                 // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
@@ -226,6 +229,8 @@ export default class BindManager
                 };
             }
             mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
+            // 将事件回调记录到显示对象上
+            currentTarget[onHash] = handler;
             // 如果__bind_sub_events__列表存在，则将事件记录到target上，
             var events:BindEventData[] = target.__bind_sub_events__;
             if(events)

@@ -10,6 +10,7 @@ import Dictionary from "../../utils/Dictionary";
 import Bind from "./Bind";
 import { evalExp, createRunFunc } from "./Utils";
 import { netManager } from "../net/NetManager";
+import { getObjectHashs } from "../../utils/ObjectUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -195,7 +196,6 @@ var BindManager = /** @class */ (function () {
      * @memberof BindManager
      */
     BindManager.prototype.bindOn = function (mediator, currentTarget, target, envModels, type, exp) {
-        var handler;
         this.addBindHandler(mediator, function () {
             var commonScope = {
                 $this: mediator,
@@ -204,15 +204,18 @@ var BindManager = /** @class */ (function () {
                 $currentTarget: currentTarget,
                 $target: target
             };
+            // 计算事件hash
+            var onHash = getObjectHashs(currentTarget, type, exp);
             // 如果之前添加过监听，则先移除之
-            if (!handler) {
+            var handler = currentTarget[onHash];
+            if (handler) {
                 mediator.bridge.unmapListener(currentTarget, type, handler, mediator.viewModel);
                 handler = null;
             }
             // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
             if (typeof exp === "string")
                 handler = mediator.viewModel[exp];
-            if (!handler) {
+            if (!(handler instanceof Function)) {
                 var func = createRunFunc(exp, 2 + envModels.length);
                 // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
                 handler = function () {
@@ -220,6 +223,8 @@ var BindManager = /** @class */ (function () {
                 };
             }
             mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
+            // 将事件回调记录到显示对象上
+            currentTarget[onHash] = handler;
             // 如果__bind_sub_events__列表存在，则将事件记录到target上，
             var events = target.__bind_sub_events__;
             if (events) {
