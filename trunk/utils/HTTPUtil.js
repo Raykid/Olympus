@@ -84,6 +84,9 @@ export function load(params) {
         // 初始化，responseType必须在open之后设置，否则IE10和IE11会报错
         if (params.responseType)
             xhr.responseType = params.responseType;
+        // 如果需要withCredentials，则设置之
+        if (params.withCredentials)
+            xhr.withCredentials = true;
         xhr.onload = onLoad;
         xhr.onerror = onError;
         // 添加自定义请求头

@@ -52,6 +52,14 @@ export interface IHTTPRequestParams
      */
     method?:HTTPMethod;
     /**
+     * 是否使用withCredentials，默认是false
+     * 
+     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/withCredentials
+     * @type {boolean}
+     * @memberof IHTTPRequestParams
+     */
+    withCredentials?:boolean;
+    /**
      * HTTP返回值类型，从XMLHttpRequestResponseType查找枚举值
      * 
      * @type {XMLHttpRequestResponseType}
@@ -187,6 +195,8 @@ export function load(params:IHTTPRequestParams):void
         xhr.open(method, url, true);
         // 初始化，responseType必须在open之后设置，否则IE10和IE11会报错
         if(params.responseType) xhr.responseType = params.responseType;
+        // 如果需要withCredentials，则设置之
+        if(params.withCredentials) xhr.withCredentials = true;
         xhr.onload = onLoad;
         xhr.onerror = onError;
         // 添加自定义请求头

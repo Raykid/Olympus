@@ -44,6 +44,14 @@ export interface IHTTPRequestParams {
      */
     method?: HTTPMethod;
     /**
+     * 是否使用withCredentials，默认是false
+     *
+     * @see https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest/withCredentials
+     * @type {boolean}
+     * @memberof IHTTPRequestParams
+     */
+    withCredentials?: boolean;
+    /**
      * HTTP返回值类型，从XMLHttpRequestResponseType查找枚举值
      *
      * @type {XMLHttpRequestResponseType}
