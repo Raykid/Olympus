@@ -52,7 +52,7 @@ export default interface IMediatorTreePart extends IObservable
     undelegateMediator(child:IMediator):void;
     
     /**
-     * 判断指定中介者是否包含在该中介者里
+     * 判断指定中介者是否包含在该中介者里（判断范围包括当前中介者和子孙级中介者）
      * 
      * @param {IMediator} child 要判断的中介者
      * @returns {boolean} 

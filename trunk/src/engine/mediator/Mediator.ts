@@ -376,7 +376,7 @@ export default class Mediator implements IMediator
     }
     
     /**
-     * 判断指定中介者是否包含在该中介者里
+     * 判断指定中介者是否包含在该中介者里（判断范围包括当前中介者和子孙级中介者）
      * 
      * @param {IMediator} mediator 要判断的中介者
      * @returns {boolean} 
@@ -384,7 +384,19 @@ export default class Mediator implements IMediator
      */
     public containsMediator(mediator:IMediator):boolean
     {
-        return (this._children.indexOf(mediator) >= 0);
+        // 首先判断自身
+        if(mediator === this) return true;
+        // 判断子中介者
+        var contains:boolean = false;
+        for(var child of this._children)
+        {
+            if(child.containsMediator(mediator))
+            {
+                contains = true;
+                break;
+            }
+        }
+        return contains;
     }
     
     /**
