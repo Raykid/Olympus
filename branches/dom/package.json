@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.4.11",
+  "version": "0.4.12",
   "description": "Olympus的DOM表现层库",
   "files": [
     "dom/",
@@ -35,7 +35,7 @@
     "gsap": "^1.20.3"
   },
   "devDependencies": {
-    "olympus-r": "^0.4.60",
+    "olympus-r": "^0.4.64",
     "typedoc": "^0.9.0"
   }
 }
