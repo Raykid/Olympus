@@ -79,13 +79,6 @@ export default interface IBridge
      */
     readonly panelLayer:any;
     /**
-     * 获取通用提示框容器
-     * 
-     * @type {*}
-     * @memberof IBridge
-     */
-    readonly promptLayer:any;
-    /**
      * 获取遮罩容器
      * 
      * @readonly

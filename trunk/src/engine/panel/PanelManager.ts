@@ -75,7 +75,17 @@ export default class PanelManager
         }
     }
 
-    private doPop(panel:IPanel, layer:any, data?:any, isModal:boolean=true, from?:{x:number, y:number}):IPanel
+    /**
+     * 打开一个弹窗
+     * 
+     * @param {IPanel} panel 要打开的弹窗
+     * @param {*} [data] 数据
+     * @param {boolean} [isModal=true] 是否模态弹出
+     * @param {{x:number, y:number}} [from] 弹出起点位置
+     * @returns {IPanel} 返回弹窗对象
+     * @memberof PanelManager
+     */
+    public pop(panel:IPanel, data?:any, isModal:boolean=true, from?:{x:number, y:number}):IPanel
     {
         if(this._panels.indexOf(panel) < 0)
         {
@@ -95,27 +105,18 @@ export default class PanelManager
             policy.prepare && policy.prepare(panel);
             // 添加显示
             var bridge:IBridge = panel.bridge;
-            bridge.addChild(layer, panel.skin);
+            bridge.addChild(panel.bridge.panelLayer, panel.skin);
             // 根据优先级进行排序
             this._panels.sort((a:IPanel, b:IPanel)=>{
                 var priA:number = this._priorities.get(a) || 0;
                 var priB:number = this._priorities.get(b) || 0;
-                // 如果a优先级大于b优先级，则表示a和b需要进行反向，将他们的显示层级对调
-                var result:number = priA - priB;
-                if(result > 0)
-                {
-                    var skinA:any = a.skin;
-                    var skinB:any = b.skin;
-                    var indexA:number = bridge.getChildIndex(layer, skinA);
-                    var indexB:number = bridge.getChildIndex(layer, skinB);
-                    bridge.removeChild(layer, skinA);
-                    bridge.removeChild(layer, skinB);
-                    bridge.addChildAt(layer, skinB, indexA);
-                    bridge.addChildAt(layer, skinA, indexB);
-                }
-                // 返回数据，让数组也重新排序
-                return result;
+                return priA - priB;
             });
+            // 根据排序后的顺序调整显示顺序
+            for(var temp of this._panels)
+            {
+                temp.bridge.addChild(temp.bridge.panelLayer, temp.skin);
+            }
             // 调用策略接口
             policy.pop(panel, ()=>{
                 // 调用回调
@@ -129,21 +130,6 @@ export default class PanelManager
             this.updateModalMask(panel);
         }
         return panel;
-    }
-
-    /**
-     * 打开一个弹窗
-     * 
-     * @param {IPanel} panel 要打开的弹窗
-     * @param {*} [data] 数据
-     * @param {boolean} [isModal=true] 是否模态弹出
-     * @param {{x:number, y:number}} [from] 弹出起点位置
-     * @returns {IPanel} 返回弹窗对象
-     * @memberof PanelManager
-     */
-    public pop(panel:IPanel, data?:any, isModal:boolean=true, from?:{x:number, y:number}):IPanel
-    {
-        return this.doPop(panel, panel.bridge.panelLayer, data, isModal, from);
     }
 
     /**
@@ -273,7 +259,7 @@ export default class PanelManager
         // 设置优先级
         this._priorities.set(prompt, PanelManager.PRIORITY_PROMPT);
         // 显示弹窗
-        this.doPop(prompt, prompt.bridge.promptLayer);
+        this.pop(prompt);
         // 更新弹窗
         prompt.update(params);
         // 返回弹窗

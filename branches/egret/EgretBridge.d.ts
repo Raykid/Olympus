@@ -89,15 +89,6 @@ export default class EgretBridge implements IBridge {
      * @memberof EgretBridge
      */
     readonly panelLayer: egret.DisplayObjectContainer;
-    private _promptLayer;
-    /**
-     * 获取通用提示框层
-     *
-     * @readonly
-     * @type {egret.DisplayObjectContainer}
-     * @memberof DOMBridge
-     */
-    readonly promptLayer: egret.DisplayObjectContainer;
     private _maskLayer;
     /**
      * 获取遮罩容器
