@@ -3,6 +3,8 @@ import * as EgretBridge from "./EgretBridge";
 import * as AssetsLoader from "./egret/AssetsLoader";
 import * as RenderMode from "./egret/RenderMode";
 
+import * as UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
+
 import * as Injector from "./egret/injector/Injector";
 
 import * as MaskEntity from "./egret/mask/MaskEntity";
