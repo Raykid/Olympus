@@ -26,7 +26,7 @@ var HTTPRequestPolicy = /** @class */ (function () {
         var httpParams = extendObject({
             url: environment.toHostURL(params.path, params.hostIndex),
             onResponse: function (result) { return netManager.__onResponse(request.__params.response.type, result, request); },
-            onError: function (err) { return netManager.__onError(err, request); },
+            onError: function (err) { return netManager.__onError(request.__params.response.type, err, request); },
             headerDict: {}
         }, params);
         // 发送

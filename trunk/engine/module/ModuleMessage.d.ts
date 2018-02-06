@@ -16,6 +16,14 @@ export default class ModuleMessage {
      */
     static MODULE_CHANGE: string;
     /**
+     * 切换模块失败消息
+     *
+     * @static
+     * @type {string}
+     * @memberof ModuleMessage
+     */
+    static MODULE_CHANGE_FAILED: string;
+    /**
      * 加载模块失败消息
      *
      * @static

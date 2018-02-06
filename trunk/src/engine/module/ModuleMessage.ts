@@ -17,6 +17,14 @@ export default class ModuleMessage
      */
     public static MODULE_CHANGE:string = "moduleChange";
     /**
+     * 切换模块失败消息
+     * 
+     * @static
+     * @type {string}
+     * @memberof ModuleMessage
+     */
+    public static MODULE_CHANGE_FAILED:string = "moduleChangeFailed";
+    /**
      * 加载模块失败消息
      * 
      * @static

@@ -99,7 +99,7 @@ var NetManager = /** @class */ (function () {
      * 发送多条请求，并且等待返回结果（如果有的话），调用回调
      *
      * @param {RequestData[]} [requests 要发送的请求列表
-     * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
+     * @param {(responses?:ResponseData[]|Error)=>void} [handler] 收到返回结果或错误后的回调函数
      * @param {*} [thisArg] this指向
      * @param {IObservable} [observable] 要发送到的内核
      * @memberof NetManager
@@ -127,15 +127,22 @@ var NetManager = /** @class */ (function () {
         // 测试回调
         testCallback();
         function onResponse(response) {
-            for (var key in responses) {
-                var temp = responses[key];
-                if (temp == response.constructor && this === response.__params.request) {
-                    self.unlistenResponse(temp, onResponse, this);
-                    responses[key] = response;
-                    leftResCount--;
-                    // 测试回调
-                    testCallback();
-                    break;
+            if (response instanceof Error) {
+                // 出错了，直接调用回调
+                handler && handler.call(thisArg, response);
+            }
+            else {
+                // 成功了
+                for (var key in responses) {
+                    var temp = responses[key];
+                    if (temp == response.constructor && this === response.__params.request) {
+                        self.unlistenResponse(temp, onResponse, this);
+                        responses[key] = response;
+                        leftResCount--;
+                        // 测试回调
+                        testCallback();
+                        break;
+                    }
                 }
             }
         }
@@ -170,18 +177,28 @@ var NetManager = /** @class */ (function () {
                 }
             }
             // 派发事件
-            observable.dispatch(NetMessage.NET_RESPONSE, response, response.__params.request);
+            observable.dispatch(NetMessage.NET_RESPONSE, response, request);
             // 递归处理事件监听
-            this.recurseResponse(type, response, observable);
+            this.recurseResponse(type, response, request, observable);
         }
         else {
             console.warn("没有找到返回结构体定义：" + type);
         }
     };
-    NetManager.prototype.recurseResponse = function (type, response, observable) {
+    NetManager.prototype.__onError = function (type, err, request) {
+        // 移除遮罩
+        maskManager.hideLoading("net");
+        // 如果有配对请求，则将返回值发送到请求所在的原始内核里
+        var observable = request && request.__oriObservable;
+        // 派发事件
+        observable.dispatch(NetMessage.NET_ERROR, err, request);
+        // 递归处理事件监听
+        this.recurseResponse(type, err, request, observable);
+    };
+    NetManager.prototype.recurseResponse = function (type, response, request, observable) {
         // 先递归父级，与消息发送时顺序相反
         if (observable.parent) {
-            this.recurseResponse(type, response, observable.parent);
+            this.recurseResponse(type, response, request, observable.parent);
         }
         // 触发事件形式监听
         var listeners = this._responseListeners[type];
@@ -191,21 +208,13 @@ var NetManager = /** @class */ (function () {
                 var listener = listeners_2[_i];
                 if (listener[3] == observable) {
                     // 必须是同核消息才能触发回调
-                    listener[0].call(listener[1], response, response.__params.request);
+                    listener[0].call(listener[1], response, request);
                     // 如果是一次性监听则移除之
                     if (listener[2])
                         this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
                 }
             }
         }
-    };
-    NetManager.prototype.__onError = function (err, request) {
-        // 移除遮罩
-        maskManager.hideLoading("net");
-        // 如果有配对请求，则将返回值发送到请求所在的原始内核里
-        var observable = request && request.__oriObservable;
-        // 派发事件
-        observable.dispatch(NetMessage.NET_ERROR, err, request);
     };
     NetManager = __decorate([
         Injectable,
