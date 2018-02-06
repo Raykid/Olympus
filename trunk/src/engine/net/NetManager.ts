@@ -21,7 +21,7 @@ import IObservable from "../../core/observable/IObservable";
 
 export interface ResponseHandler
 {
-    (response:ResponseData, request?:RequestData):void;
+    (response:ResponseData|Error, request?:RequestData):void;
 }
 
 @Injectable
@@ -120,12 +120,12 @@ export default class NetManager
      * 发送多条请求，并且等待返回结果（如果有的话），调用回调
      * 
      * @param {RequestData[]} [requests 要发送的请求列表
-     * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
+     * @param {(responses?:ResponseData[]|Error)=>void} [handler] 收到返回结果或错误后的回调函数
      * @param {*} [thisArg] this指向
      * @param {IObservable} [observable] 要发送到的内核
      * @memberof NetManager
      */
-    public sendMultiRequests(requests?:RequestData[], handler?:(responses?:ResponseData[])=>void, thisArg?:any, observable?:IObservable):void
+    public sendMultiRequests(requests?:RequestData[], handler?:(responses?:ResponseData[]|Error)=>void, thisArg?:any, observable?:IObservable):void
     {
         var self:NetManager = this;
         var responses:(IResponseDataConstructor|ResponseData)[] = [];
@@ -149,19 +149,28 @@ export default class NetManager
         // 测试回调
         testCallback();
 
-        function onResponse(response:ResponseData):void
+        function onResponse(response:ResponseData|Error):void
         {
-            for(var key in responses)
+            if(response instanceof Error)
             {
-                var temp:IResponseDataConstructor = <IResponseDataConstructor>responses[key];
-                if(temp == response.constructor && this === response.__params.request)
+                // 出错了，直接调用回调
+                handler && handler.call(thisArg, response);
+            }
+            else
+            {
+                // 成功了
+                for(var key in responses)
                 {
-                    self.unlistenResponse(temp, onResponse, this);
-                    responses[key] = response;
-                    leftResCount --;
-                    // 测试回调
-                    testCallback();
-                    break;
+                    var temp:IResponseDataConstructor = <IResponseDataConstructor>responses[key];
+                    if(temp == response.constructor && this === response.__params.request)
+                    {
+                        self.unlistenResponse(temp, onResponse, this);
+                        responses[key] = response;
+                        leftResCount --;
+                        // 测试回调
+                        testCallback();
+                        break;
+                    }
                 }
             }
         }
@@ -202,9 +211,9 @@ export default class NetManager
                 }
             }
             // 派发事件
-            observable.dispatch(NetMessage.NET_RESPONSE, response, response.__params.request);
+            observable.dispatch(NetMessage.NET_RESPONSE, response, request);
             // 递归处理事件监听
-            this.recurseResponse(type, response, observable);
+            this.recurseResponse(type, response, request, observable);
         }
         else
         {
@@ -212,12 +221,24 @@ export default class NetManager
         }
     }
 
-    private recurseResponse(type:string, response:ResponseData, observable:IObservable):void
+    public __onError(type:string, err:Error, request?:RequestData):void
+    {
+        // 移除遮罩
+        maskManager.hideLoading("net");
+        // 如果有配对请求，则将返回值发送到请求所在的原始内核里
+        var observable:IObservable = request && request.__oriObservable;
+        // 派发事件
+        observable.dispatch(NetMessage.NET_ERROR, err, request);
+        // 递归处理事件监听
+        this.recurseResponse(type, err, request, observable);
+    }
+
+    private recurseResponse(type:string, response:ResponseData|Error, request:RequestData, observable:IObservable):void
     {
         // 先递归父级，与消息发送时顺序相反
         if(observable.parent)
         {
-            this.recurseResponse(type, response, observable.parent);
+            this.recurseResponse(type, response, request, observable.parent);
         }
         // 触发事件形式监听
         var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
@@ -229,22 +250,12 @@ export default class NetManager
                 if(listener[3] == observable)
                 {
                     // 必须是同核消息才能触发回调
-                    listener[0].call(listener[1], response, response.__params.request);
+                    listener[0].call(listener[1], response, request);
                     // 如果是一次性监听则移除之
                     if(listener[2]) this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
                 }
             }
         }
-    }
-
-    public __onError(err:Error, request?:RequestData):void
-    {
-        // 移除遮罩
-        maskManager.hideLoading("net");
-        // 如果有配对请求，则将返回值发送到请求所在的原始内核里
-        var observable:IObservable = request && request.__oriObservable;
-        // 派发事件
-        observable.dispatch(NetMessage.NET_ERROR, err, request);
     }
 }
 /** 再额外导出一个单例 */

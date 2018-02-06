@@ -29,7 +29,7 @@ export class HTTPRequestPolicy implements IRequestPolicy
         var httpParams:IHTTPRequestParams = extendObject({
             url: environment.toHostURL(params.path, params.hostIndex),
             onResponse: result=>netManager.__onResponse(request.__params.response.type, result, request),
-            onError: err=>netManager.__onError(err, request),
+            onError: err=>netManager.__onError(request.__params.response.type, err, request),
             headerDict: {}
         }, params);
         // 发送

@@ -213,6 +213,8 @@ export default class ModuleManager
                     target.onLoadAssets(err);
                     // 移除先行数据
                     this._moduleStack.shift();
+                    // 派发失败消息
+                    core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
                     // 结束一次模块开启
                     this.onFinishOpen();
                 }
@@ -248,6 +250,8 @@ export default class ModuleManager
                             target.onLoadAssets(results);
                             // 移除先行数据
                             this._moduleStack.shift();
+                            // 派发失败消息
+                            core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], results);
                             // 结束一次模块开启
                             this.onFinishOpen();
                             return;
@@ -261,20 +265,30 @@ export default class ModuleManager
                         }
                         // 发送所有模块消息，模块消息默认发送全局内核
                         var requests:RequestData[] = target.listInitRequests();
-                        netManager.sendMultiRequests(requests, function(responses:ResponseData[]):void
+                        netManager.sendMultiRequests(requests, function(responses:ResponseData[]|Error):void
                         {
-                            // 赋值responses
-                            target.responses = responses;
-                            // 调用open接口
-                            target.open(data);
-                            // 调用onDeactivate接口
-                            this.deactivateModule(fromModule, cls, data);
-                            // 调用onActivate接口
-                            this.activateModule(target, from && from[0], data);
-                            // 如果replace是true，则关掉上一个模块
-                            if(replace) this.close(from && from[0], data);
-                            // 派发消息
-                            core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
+                            if(responses instanceof Error)
+                            {
+                                // 消息发送失败，移除先行数据
+                                this._moduleStack.shift();
+                                // 派发失败消息
+                                core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], responses);
+                            }
+                            else
+                            {
+                                // 赋值responses
+                                target.responses = responses;
+                                // 调用open接口
+                                target.open(data);
+                                // 调用onDeactivate接口
+                                this.deactivateModule(fromModule, cls, data);
+                                // 调用onActivate接口
+                                this.activateModule(target, from && from[0], data);
+                                // 如果replace是true，则关掉上一个模块
+                                if(replace) this.close(from && from[0], data);
+                                // 派发消息
+                                core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
+                            }
                             // 结束一次模块开启
                             this.onFinishOpen();
                         }, this, target.observable);
@@ -314,7 +328,7 @@ export default class ModuleManager
         this._opening = null;
         // 如果有缓存的模块需要打开则打开之
         if(this._openCache.length > 0)
-        this.open.apply(this, this._openCache.shift());
+            this.open.apply(this, this._openCache.shift());
     }
 
     /**

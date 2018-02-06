@@ -10,7 +10,7 @@ import IObservable from "../../core/observable/IObservable";
  * 网络管理器
 */
 export interface ResponseHandler {
-    (response: ResponseData, request?: RequestData): void;
+    (response: ResponseData | Error, request?: RequestData): void;
 }
 export default class NetManager {
     constructor();
@@ -51,16 +51,16 @@ export default class NetManager {
      * 发送多条请求，并且等待返回结果（如果有的话），调用回调
      *
      * @param {RequestData[]} [requests 要发送的请求列表
-     * @param {(responses?:ResponseData[])=>void} [handler] 收到返回结果后的回调函数
+     * @param {(responses?:ResponseData[]|Error)=>void} [handler] 收到返回结果或错误后的回调函数
      * @param {*} [thisArg] this指向
      * @param {IObservable} [observable] 要发送到的内核
      * @memberof NetManager
      */
-    sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[]) => void, thisArg?: any, observable?: IObservable): void;
+    sendMultiRequests(requests?: RequestData[], handler?: (responses?: ResponseData[] | Error) => void, thisArg?: any, observable?: IObservable): void;
     /** 这里导出不希望用户使用的方法，供框架内使用 */
     __onResponse(type: string, result: any, request?: RequestData): void | never;
-    private recurseResponse(type, response, observable);
-    __onError(err: Error, request?: RequestData): void;
+    __onError(type: string, err: Error, request?: RequestData): void;
+    private recurseResponse(type, response, request, observable);
 }
 /** 再额外导出一个单例 */
 export declare const netManager: NetManager;
