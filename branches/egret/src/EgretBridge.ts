@@ -6,6 +6,7 @@ import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
 import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
 import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
+import SceneMessage from "olympus-r/engine/scene/SceneMessage";
 import IMediator from "olympus-r/engine/mediator/IMediator";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import { cloneObject, isEmpty } from "olympus-r/utils/ObjectUtil";
@@ -17,6 +18,7 @@ import * as UIUtil from './egret/utils/UIUtil';
 import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
 import * as Injector from './egret/injector/Injector';
 import { wrapEUIList } from "./egret/utils/UIUtil";
+import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
 
 /**
  * @author Raykid
@@ -341,6 +343,8 @@ export default class EgretBridge implements IBridge
             self._topLayer = new eui.UILayer();
             self._topLayer.touchEnabled = false;
             root.addChild(self._topLayer);
+            // 插入更新屏幕命令
+            core.mapCommand(SceneMessage.SCENE_BEFORE_CHANGE, UpdateScreenSizeCommand);
             // 设置资源和主题适配器
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));

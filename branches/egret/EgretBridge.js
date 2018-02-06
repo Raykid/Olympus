@@ -1,12 +1,14 @@
 /// <amd-module name="EgretBridge"/>
 import { core } from "olympus-r/core/Core";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
+import SceneMessage from "olympus-r/engine/scene/SceneMessage";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
 import MaskEntity from "./egret/mask/MaskEntity";
 import { wrapEUIList } from "./egret/utils/UIUtil";
+import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -313,6 +315,8 @@ var EgretBridge = /** @class */ (function () {
             self._topLayer = new eui.UILayer();
             self._topLayer.touchEnabled = false;
             root.addChild(self._topLayer);
+            // 插入更新屏幕命令
+            core.mapCommand(SceneMessage.SCENE_BEFORE_CHANGE, UpdateScreenSizeCommand);
             // 设置资源和主题适配器
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
