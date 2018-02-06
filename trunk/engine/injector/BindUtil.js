@@ -133,9 +133,9 @@ export function compileIf(mediator, currentTarget, target, envModels, exp) {
             for (var _i = 0, caches_1 = caches; _i < caches_1.length; _i++) {
                 var cache = caches_1[_i];
                 cache.target.__bind_commands__ = cache.params;
+                // 继续编译
+                compile(mediator, cache.target, envModels);
             }
-            // 继续编译
-            compile(mediator, currentTarget, envModels);
             // 设置已终结标识
             terminated = true;
         }

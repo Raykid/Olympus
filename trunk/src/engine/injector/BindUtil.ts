@@ -221,9 +221,9 @@ export function compileIf(mediator:IMediator, currentTarget:ICompileTarget, targ
             for(var cache of caches)
             {
                 cache.target.__bind_commands__ = cache.params;
+                // 继续编译
+                compile(mediator, cache.target, envModels);
             }
-            // 继续编译
-            compile(mediator, currentTarget, envModels);
             // 设置已终结标识
             terminated = true;
         }
