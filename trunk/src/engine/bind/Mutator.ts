@@ -50,6 +50,7 @@ function mutateObject(data:any, key:string):void
     var depKey:string = getObjectHashs(data, key);
     // 对每个复杂类型对象都要有一个对应的依赖列表
     var dep:Dep = data[depKey];
+    var subMutated:boolean = false;
     if(!dep)
     {
         dep = new Dep();
@@ -57,11 +58,6 @@ function mutateObject(data:any, key:string):void
         var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__ || {}, key);
         if(desc)
         {
-            // 如果是数组，则要进行过一下数组变异
-            if(data[key] instanceof Array)
-            {
-                mutateArray(data[key], dep);
-            }
             // 开始变异当前属性
             if(desc.hasOwnProperty("value"))
             {
@@ -74,7 +70,19 @@ function mutateObject(data:any, key:string):void
                         var watcher:Watcher = Watcher.updating;
                         if(watcher) dep.watch(watcher);
                         // 利用闭包保存原始值
-                        return desc.value;
+                        var result:any = desc.value;
+                        // 首次获取需要变异
+                        if(!subMutated)
+                        {
+                            subMutated = true;
+                            // 如果是数组，则要进行一下数组变异
+                            if(result instanceof Array)
+                                mutateArray(result, dep);
+                            // 递归子属性
+                            mutate(result);
+                        }
+                        // 返回值
+                        return result;
                     },
                     set: v=>{
                         if(!desc.writable || v === desc.value) return;
@@ -98,8 +106,20 @@ function mutateObject(data:any, key:string):void
                         // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
                         var watcher:Watcher = Watcher.updating;
                         if(watcher) dep.watch(watcher);
-                        // 返回get方法结果
-                        return desc.get.call(data);
+                        // 获取get方法结果
+                        var result:any = desc.get.call(data);
+                        // 首次获取需要变异
+                        if(!subMutated)
+                        {
+                            subMutated = true;
+                            // 如果是数组，则要进行一下数组变异
+                            if(result instanceof Array)
+                                mutateArray(result, dep);
+                            // 递归子属性
+                            mutate(result);
+                        }
+                        // 返回值
+                        return result;
                     },
                     set: v=>{
                         if(!desc.set) return;
@@ -122,8 +142,6 @@ function mutateObject(data:any, key:string):void
             configurable: false
         });
     }
-    // 递归子属性
-    mutate(data[key]);
 }
 
 function mutateArray(arr:any[], dep:Dep):void
