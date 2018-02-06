@@ -216,10 +216,10 @@ var BindManager = /** @class */ (function () {
             if (typeof exp === "string")
                 handler = mediator.viewModel[exp];
             if (!(handler instanceof Function)) {
-                var func = createRunFunc(exp, 2 + envModels.length);
+                var func = createRunFunc(exp, 3 + envModels.length);
                 // 这里要转一手，记到闭包里一个副本，否则因为bindOn是延迟操作，到时envModel可能已被修改
-                handler = function () {
-                    func.call.apply(func, [this, commonScope].concat(envModels, [mediator.viewModel]));
+                handler = function (event) {
+                    func.call.apply(func, [this, commonScope].concat(envModels, [mediator.viewModel, { $event: event }]));
                 };
             }
             mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
