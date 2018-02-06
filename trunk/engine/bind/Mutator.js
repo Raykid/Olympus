@@ -45,15 +45,12 @@ function mutateObject(data, key) {
     var depKey = getObjectHashs(data, key);
     // 对每个复杂类型对象都要有一个对应的依赖列表
     var dep = data[depKey];
+    var subMutated = false;
     if (!dep) {
         dep = new Dep();
         // 判断本来这个属性是值属性还是getter/setter属性，要有不同的操作方式
         var desc = Object.getOwnPropertyDescriptor(data, key) || Object.getOwnPropertyDescriptor(data.__proto__ || {}, key);
         if (desc) {
-            // 如果是数组，则要进行过一下数组变异
-            if (data[key] instanceof Array) {
-                mutateArray(data[key], dep);
-            }
             // 开始变异当前属性
             if (desc.hasOwnProperty("value")) {
                 // 值属性的变异过程
@@ -66,7 +63,18 @@ function mutateObject(data, key) {
                         if (watcher)
                             dep.watch(watcher);
                         // 利用闭包保存原始值
-                        return desc.value;
+                        var result = desc.value;
+                        // 首次获取需要变异
+                        if (!subMutated) {
+                            subMutated = true;
+                            // 如果是数组，则要进行一下数组变异
+                            if (result instanceof Array)
+                                mutateArray(result, dep);
+                            // 递归子属性
+                            mutate(result);
+                        }
+                        // 返回值
+                        return result;
                     },
                     set: function (v) {
                         if (!desc.writable || v === desc.value)
@@ -94,8 +102,19 @@ function mutateObject(data, key) {
                         var watcher = Watcher.updating;
                         if (watcher)
                             dep.watch(watcher);
-                        // 返回get方法结果
-                        return desc.get.call(data);
+                        // 获取get方法结果
+                        var result = desc.get.call(data);
+                        // 首次获取需要变异
+                        if (!subMutated) {
+                            subMutated = true;
+                            // 如果是数组，则要进行一下数组变异
+                            if (result instanceof Array)
+                                mutateArray(result, dep);
+                            // 递归子属性
+                            mutate(result);
+                        }
+                        // 返回值
+                        return result;
                     },
                     set: function (v) {
                         if (!desc.set)
@@ -121,8 +140,6 @@ function mutateObject(data, key) {
             configurable: false
         });
     }
-    // 递归子属性
-    mutate(data[key]);
 }
 function mutateArray(arr, dep) {
     // 变异当前数组

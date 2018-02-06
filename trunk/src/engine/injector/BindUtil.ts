@@ -174,6 +174,28 @@ export function compileOn(mediator:IMediator, currentTarget:ICompileTarget, targ
     bindManager.bindOn(mediator, currentTarget, target, envModels, type, exp);
 }
 
+function isPosterity(mediator:IMediator, target:ICompileTarget, parent:ICompileTarget):boolean
+{
+    var tempParent:ICompileTarget = mediator.bridge.getParent(target);
+    if(!tempParent) return false;
+    else if(tempParent === parent) return true;
+    else return isPosterity(mediator, tempParent, parent);
+}
+
+function getAllSubTargets(mediator:IMediator, target:ICompileTarget):ICompileTarget[]
+{
+    var bindTargets:Dictionary<any, any>[] = mediator.bindTargets;
+    var subTargets:ICompileTarget[] = [];
+    for(var bindTarget of bindTargets)
+    {
+        bindTarget && bindTarget.forEach(tempTarget=>{
+            if(isPosterity(mediator, tempTarget, target))
+                subTargets.push(tempTarget);
+        });
+    }
+    return subTargets;
+}
+
 /**
  * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
  */
@@ -181,7 +203,14 @@ export function compileIf(mediator:IMediator, currentTarget:ICompileTarget, targ
 {
     // 将后面的编译命令缓存起来
     var bindParams:IBindParams[] = currentTarget.__bind_commands__;
-    var cached:IBindParams[] = bindParams.splice(0, bindParams.length);
+    var caches:{target:ICompileTarget, params: IBindParams[]}[] = [{target: currentTarget, params: bindParams.splice(0, bindParams.length)}];
+    // 后代节点的也要缓存住
+    var subTargets:ICompileTarget[] = getAllSubTargets(mediator, currentTarget);
+    for(var subTarget of subTargets)
+    {
+        var subBindParams:IBindParams[] = subTarget.__bind_commands__;
+        caches.push({target: subTarget, params: subBindParams.splice(0, subBindParams.length)});
+    }
     // 绑定if命令
     var terminated:boolean = false;
     bindManager.bindIf(mediator, currentTarget, target, envModels, exp, (value:boolean)=>{
@@ -189,7 +218,10 @@ export function compileIf(mediator:IMediator, currentTarget:ICompileTarget, targ
         if(!terminated && value)
         {
             // 恢复后面的命令
-            currentTarget.__bind_commands__ = cached;
+            for(var cache of caches)
+            {
+                cache.target.__bind_commands__ = cache.params;
+            }
             // 继续编译
             compile(mediator, currentTarget, envModels);
             // 设置已终结标识

@@ -89,20 +89,51 @@ export function compileFunc(mediator, currentTarget, target, envModels, name) {
 export function compileOn(mediator, currentTarget, target, envModels, type, exp) {
     bindManager.bindOn(mediator, currentTarget, target, envModels, type, exp);
 }
+function isPosterity(mediator, target, parent) {
+    var tempParent = mediator.bridge.getParent(target);
+    if (!tempParent)
+        return false;
+    else if (tempParent === parent)
+        return true;
+    else
+        return isPosterity(mediator, tempParent, parent);
+}
+function getAllSubTargets(mediator, target) {
+    var bindTargets = mediator.bindTargets;
+    var subTargets = [];
+    for (var _i = 0, bindTargets_1 = bindTargets; _i < bindTargets_1.length; _i++) {
+        var bindTarget = bindTargets_1[_i];
+        bindTarget && bindTarget.forEach(function (tempTarget) {
+            if (isPosterity(mediator, tempTarget, target))
+                subTargets.push(tempTarget);
+        });
+    }
+    return subTargets;
+}
 /**
  * 编译bindIf命令，会中止编译，直到判断条件为true时才会启动以继续编译
  */
 export function compileIf(mediator, currentTarget, target, envModels, exp) {
     // 将后面的编译命令缓存起来
     var bindParams = currentTarget.__bind_commands__;
-    var cached = bindParams.splice(0, bindParams.length);
+    var caches = [{ target: currentTarget, params: bindParams.splice(0, bindParams.length) }];
+    // 后代节点的也要缓存住
+    var subTargets = getAllSubTargets(mediator, currentTarget);
+    for (var _i = 0, subTargets_1 = subTargets; _i < subTargets_1.length; _i++) {
+        var subTarget = subTargets_1[_i];
+        var subBindParams = subTarget.__bind_commands__;
+        caches.push({ target: subTarget, params: subBindParams.splice(0, subBindParams.length) });
+    }
     // 绑定if命令
     var terminated = false;
     bindManager.bindIf(mediator, currentTarget, target, envModels, exp, function (value) {
         // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
         if (!terminated && value) {
             // 恢复后面的命令
-            currentTarget.__bind_commands__ = cached;
+            for (var _i = 0, caches_1 = caches; _i < caches_1.length; _i++) {
+                var cache = caches_1[_i];
+                cache.target.__bind_commands__ = cache.params;
+            }
             // 继续编译
             compile(mediator, currentTarget, envModels);
             // 设置已终结标识
