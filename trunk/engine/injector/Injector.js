@@ -333,7 +333,10 @@ export function BindValue(arg1, arg2) {
             var uiDict;
             if (typeof arg1 == "string") {
                 uiDict = {};
-                uiDict[arg1] = arg2;
+                if (arg2)
+                    uiDict[arg1] = arg2;
+                else
+                    uiDict[""] = arg1;
             }
             else {
                 uiDict = arg1;
