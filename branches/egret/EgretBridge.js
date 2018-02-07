@@ -281,6 +281,30 @@ var EgretBridge = /** @class */ (function () {
                     var result = oriGetVirtualElementAt.apply(this, arguments);
                     return result;
                 };
+                // 篡改eui.registerBindable方法，把__bindables__赋值变为不可遍历的属性
+                var oriRegisterBindable = eui.registerBindable;
+                eui.registerBindable = function (instance, property) {
+                    var result = oriRegisterBindable.call(this, instance, property);
+                    // 改变可遍历性
+                    var desc = Object.getOwnPropertyDescriptor(instance, "__bindables__");
+                    if (desc && desc.enumerable) {
+                        desc.enumerable = false;
+                        Object.defineProperty(instance, "__bindables__", desc);
+                    }
+                    // 返回结果
+                    return result;
+                };
+                // 篡改Watcher.checkBindable方法，把__listeners__赋值变为不可遍历
+                var oriCheckBindable = eui.Watcher["checkBindable"];
+                eui.Watcher["checkBindable"] = function (host, property) {
+                    var result = oriCheckBindable.call(this, host, property);
+                    // 改变可遍历性
+                    var desc = Object.getOwnPropertyDescriptor(host, "__listeners__");
+                    if (desc && desc.enumerable) {
+                        desc.enumerable = false;
+                        Object.defineProperty(host, "__listeners__", desc);
+                    }
+                };
             }
             // 启动Egret引擎
             egret.runEgret({
