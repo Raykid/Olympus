@@ -84,7 +84,7 @@ var BindManager = /** @class */ (function () {
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
-     * @param {string} name 绑定的属性名
+     * @param {string} name 绑定的属性名，如果是空字符串或null则不进行赋值
      * @param {(EvalExp)} exp 绑定的表达式或方法
      * @memberof BindManager
      */
@@ -97,7 +97,8 @@ var BindManager = /** @class */ (function () {
                 watcher.dispose();
             // 绑定新的订阅者
             watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (value) {
-                    currentTarget[name] = value;
+                    if (name)
+                        currentTarget[name] = value;
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
             var _a;
         });

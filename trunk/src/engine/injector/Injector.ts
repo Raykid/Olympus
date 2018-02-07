@@ -421,6 +421,14 @@ export function BindValue(uiDict:{[path:string]:any}):PropertyDecorator;
  */
 export function BindValue(path:string, exp:EvalExp):PropertyDecorator;
 /**
+ * 只执行表达式，不赋值
+ * 
+ * @export
+ * @param {EvalExp} exp 表达式或方法
+ * @returns {PropertyDecorator} 
+ */
+export function BindValue(exp:EvalExp):PropertyDecorator;
+/**
  * @private
  */
 export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):PropertyDecorator
@@ -433,7 +441,8 @@ export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):Proper
             if(typeof arg1 == "string")
             {
                 uiDict = {};
-                uiDict[arg1] = arg2;
+                if(arg2) uiDict[arg1] = arg2;
+                else uiDict[""] = arg1;
             }
             else
             {
