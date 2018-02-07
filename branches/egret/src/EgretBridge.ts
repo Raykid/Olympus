@@ -296,16 +296,44 @@ export default class EgretBridge implements IBridge
                 var oriCommitProperties:Function = eui.DataGroup.prototype["commitProperties"];
                 eui.DataGroup.prototype["commitProperties"] = function():any
                 {
-                        this.__egret_datagroup_state__ = 1;
+                    this.__egret_datagroup_state__ = 1;
                     var result:any = oriCommitProperties.apply(this, arguments);
                     return result;
                 };
                 var oriGetVirtualElementAt:Function = eui.DataGroup.prototype["getVirtualElementAt"];
                 eui.DataGroup.prototype["getVirtualElementAt"] = function():any
                 {
-                        this.__egret_datagroup_state__ = 2;
+                    this.__egret_datagroup_state__ = 2;
                     var result:any = oriGetVirtualElementAt.apply(this, arguments);
                     return result;
+                };
+                // 篡改eui.registerBindable方法，把__bindables__赋值变为不可遍历的属性
+                var oriRegisterBindable:Function = eui.registerBindable;
+                eui.registerBindable = function(instance:any, property:string):any
+                {
+                    var result:any = oriRegisterBindable.call(this, instance, property);
+                    // 改变可遍历性
+                    var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(instance, "__bindables__");
+                    if(desc && desc.enumerable)
+                    {
+                        desc.enumerable = false;
+                        Object.defineProperty(instance, "__bindables__", desc);
+                    }
+                    // 返回结果
+                    return result;
+                };
+                // 篡改Watcher.checkBindable方法，把__listeners__赋值变为不可遍历
+                var oriCheckBindable:Function = eui.Watcher["checkBindable"];
+                eui.Watcher["checkBindable"] = function(host:any, property:string):any
+                {
+                    var result:any = oriCheckBindable.call(this, host, property);
+                    // 改变可遍历性
+                    var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(host, "__listeners__");
+                    if(desc && desc.enumerable)
+                    {
+                        desc.enumerable = false;
+                        Object.defineProperty(host, "__listeners__", desc);
+                    }
                 }
             }
             // 启动Egret引擎
