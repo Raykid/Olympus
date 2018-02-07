@@ -159,6 +159,14 @@ export function compileValue(mediator:IMediator, currentTarget:ICompileTarget, t
 }
 
 /**
+ * 编译bindExp命令，不会中止编译
+ */
+export function compileExp(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], exp:string):void
+{
+    bindManager.bindExp(mediator, currentTarget, target, envModels, exp);
+}
+
+/**
  * 编译bindFunc命令，不会中止编译
  */
 export function compileFunc(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], name:string, ...argExps:string[]):void

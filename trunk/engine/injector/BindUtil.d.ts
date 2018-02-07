@@ -102,6 +102,10 @@ export declare function compile(mediator: IMediator, currentTarget: ICompileTarg
  */
 export declare function compileValue(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], name: string, exp: string): void;
 /**
+ * 编译bindExp命令，不会中止编译
+ */
+export declare function compileExp(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], exp: string): void;
+/**
  * 编译bindFunc命令，不会中止编译
  */
 export declare function compileFunc(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], name: string, ...argExps: string[]): void;

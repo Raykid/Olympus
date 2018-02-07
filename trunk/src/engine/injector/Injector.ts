@@ -421,14 +421,6 @@ export function BindValue(uiDict:{[path:string]:any}):PropertyDecorator;
  */
 export function BindValue(path:string, exp:EvalExp):PropertyDecorator;
 /**
- * 只执行表达式，不赋值
- * 
- * @export
- * @param {EvalExp} exp 表达式或方法
- * @returns {PropertyDecorator} 
- */
-export function BindValue(exp:EvalExp):PropertyDecorator;
-/**
  * @private
  */
 export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):PropertyDecorator
@@ -441,8 +433,7 @@ export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):Proper
             if(typeof arg1 == "string")
             {
                 uiDict = {};
-                if(arg2) uiDict[arg1] = arg2;
-                else uiDict[""] = arg1;
+                uiDict[arg1] = arg2;
             }
             else
             {
@@ -450,9 +441,56 @@ export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):Proper
             }
             // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
             var target:any = mediator[propertyKey];
-            searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:string)=>{
+            searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:EvalExp)=>{
                 // 添加编译指令
                 BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileValue, name, exp);
+            });
+        });
+    };
+}
+
+/**
+ * 只执行表达式，不赋值
+ * 
+ * @export
+ * @param {EvalExp} exp 表达式或方法
+ * @returns {PropertyDecorator} 
+ */
+export function BindExp(exp:EvalExp):PropertyDecorator;
+/**
+ * 只执行表达式，不赋值
+ * 
+ * @export
+ * @param {EvalExp[]} exps 表达式或方法数组
+ * @returns {PropertyDecorator} 
+ */
+export function BindExp(exps:EvalExp[]):PropertyDecorator;
+/**
+ * @private
+ */
+export function BindExp(exp:EvalExp|EvalExp[]):PropertyDecorator
+{
+    return function(prototype:any, propertyKey:string):void
+    {
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+            // 组织参数字典
+            var uiDict:{[name:string]:any} = {};
+            if(exp instanceof Array)
+            {
+                for(var key in exp)
+                {
+                    uiDict[key] = exp[key];
+                }
+            }
+            else
+            {
+                uiDict[""] = exp;
+            }
+            // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+            var target:any = mediator[propertyKey];
+            searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, name:string, exp:EvalExp)=>{
+                // 添加编译指令
+                BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileExp, exp);
             });
         });
     };

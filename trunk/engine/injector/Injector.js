@@ -346,10 +346,7 @@ export function BindValue(arg1, arg2) {
             var uiDict;
             if (typeof arg1 == "string") {
                 uiDict = {};
-                if (arg2)
-                    uiDict[arg1] = arg2;
-                else
-                    uiDict[""] = arg1;
+                uiDict[arg1] = arg2;
             }
             else {
                 uiDict = arg1;
@@ -359,6 +356,31 @@ export function BindValue(arg1, arg2) {
             searchUIDepth(uiDict, mediator, target, function (currentTarget, target, name, exp) {
                 // 添加编译指令
                 BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileValue, name, exp);
+            });
+        });
+    };
+}
+/**
+ * @private
+ */
+export function BindExp(exp) {
+    return function (prototype, propertyKey) {
+        listenOnOpen(prototype, propertyKey, function (mediator) {
+            // 组织参数字典
+            var uiDict = {};
+            if (exp instanceof Array) {
+                for (var key in exp) {
+                    uiDict[key] = exp[key];
+                }
+            }
+            else {
+                uiDict[""] = exp;
+            }
+            // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+            var target = mediator[propertyKey];
+            searchUIDepth(uiDict, mediator, target, function (currentTarget, target, name, exp) {
+                // 添加编译指令
+                BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileExp, exp);
             });
         });
     };

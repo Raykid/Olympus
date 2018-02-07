@@ -74,6 +74,12 @@ export function compileValue(mediator, currentTarget, target, envModels, name, e
     bindManager.bindValue(mediator, currentTarget, target, envModels, name, exp);
 }
 /**
+ * 编译bindExp命令，不会中止编译
+ */
+export function compileExp(mediator, currentTarget, target, envModels, exp) {
+    bindManager.bindExp(mediator, currentTarget, target, envModels, exp);
+}
+/**
  * 编译bindFunc命令，不会中止编译
  */
 export function compileFunc(mediator, currentTarget, target, envModels, name) {

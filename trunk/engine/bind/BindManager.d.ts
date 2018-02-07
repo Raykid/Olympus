@@ -37,11 +37,22 @@ export default class BindManager {
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
-     * @param {string} name 绑定的属性名，如果是空字符串或null则不进行赋值
+     * @param {string} name 绑定的属性名
      * @param {(EvalExp)} exp 绑定的表达式或方法
      * @memberof BindManager
      */
     bindValue(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, exp: EvalExp): void;
+    /**
+     * 绑定一个表达式，与bindValue类似，但不会给属性赋值
+     *
+     * @param {IMediator} mediator 中介者
+     * @param {*} currentTarget 绑定到的target实体对象
+     * @param {*} target 绑定命令本来所在的对象
+     * @param {any[]} envModels 环境变量数组
+     * @param {(EvalExp)} exp 绑定的表达式或方法
+     * @memberof BindManager
+     */
+    bindExp(mediator: IMediator, currentTarget: any, target: any, envModels: any[], exp: EvalExp): void;
     /**
      * 绑定方法执行
      *
