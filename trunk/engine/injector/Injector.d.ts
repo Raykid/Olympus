@@ -53,7 +53,15 @@ export declare function BindValue(path: string, exp: EvalExp): PropertyDecorator
  * @param {EvalExp} exp 表达式或方法
  * @returns {PropertyDecorator}
  */
-export declare function BindValue(exp: EvalExp): PropertyDecorator;
+export declare function BindExp(exp: EvalExp): PropertyDecorator;
+/**
+ * 只执行表达式，不赋值
+ *
+ * @export
+ * @param {EvalExp[]} exps 表达式或方法数组
+ * @returns {PropertyDecorator}
+ */
+export declare function BindExp(exps: EvalExp[]): PropertyDecorator;
 export interface BindFuncDict {
     [path: string]: (EvalExp) | (EvalExp)[] | undefined | BindFuncDict;
 }
