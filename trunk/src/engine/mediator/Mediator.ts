@@ -28,6 +28,18 @@ export default class Mediator implements IMediator
      * @memberof Mediator
      */
     public bridge:IBridge;
+
+    /**
+     * 获取中介者名称
+     * 
+     * @readonly
+     * @type {string}
+     * @memberof Mediator
+     */
+    public get name():string
+    {
+        return this.constructor["name"];
+    }
     
     private _viewModel:any;
     /**

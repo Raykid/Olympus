@@ -22,6 +22,14 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     bridge: IBridge;
+    /**
+     * 获取中介者名称
+     *
+     * @readonly
+     * @type {string}
+     * @memberof Mediator
+     */
+    readonly name: string;
     private _viewModel;
     /**
      * 获取或设置ViewModel

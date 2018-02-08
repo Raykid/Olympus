@@ -11,6 +11,20 @@ import IDisposable from "../../core/interfaces/IDisposable";
 */
 export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDisposable {
     /**
+     * 获取中介者名称
+     *
+     * @type {string}
+     * @memberof IMediatorBasicPart
+     */
+    readonly name: string;
+    /**
+     * 打开时传递的data
+     *
+     * @type {*}
+     * @memberof IMediatorBasicPart
+     */
+    data: any;
+    /**
      * 皮肤
      *
      * @readonly

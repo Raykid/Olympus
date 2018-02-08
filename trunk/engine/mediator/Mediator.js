@@ -38,6 +38,20 @@ var Mediator = /** @class */ (function () {
         // 初始化绑定
         bindManager.bind(this);
     }
+    Object.defineProperty(Mediator.prototype, "name", {
+        /**
+         * 获取中介者名称
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Mediator
+         */
+        get: function () {
+            return this.constructor["name"];
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Mediator.prototype, "viewModel", {
         /**
          * 获取或设置ViewModel
