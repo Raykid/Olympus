@@ -34,8 +34,7 @@ export default class BridgeManager
         var curModule:IMediator = moduleManager.currentModuleInstance;
         if(curModule)
         {
-            var bridge:IBridge;
-            var mediators:IMediator[] = curModule.children;
+            var mediators:IMediator[] = [curModule].concat(curModule.children);
             for(var mediator of mediators)
             {
                 if(mediator.bridge) return mediator.bridge;

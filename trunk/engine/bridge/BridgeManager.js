@@ -35,8 +35,7 @@ var BridgeManager = /** @class */ (function () {
             // 先用当前模块的首个拥有bridge的Mediator的bridge
             var curModule = moduleManager.currentModuleInstance;
             if (curModule) {
-                var bridge;
-                var mediators = curModule.children;
+                var mediators = [curModule].concat(curModule.children);
                 for (var _i = 0, mediators_1 = mediators; _i < mediators_1.length; _i++) {
                     var mediator = mediators_1[_i];
                     if (mediator.bridge)
