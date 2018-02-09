@@ -276,6 +276,8 @@ export default class ModuleManager
                             }
                             else
                             {
+                                // 这里要优先关闭标识符，否则在开启的模块的onOpen方法里如果有操作Mask的动作就会被这个标识阻塞住
+                                this._opening = null;
                                 // 赋值responses
                                 target.responses = responses;
                                 // 调用open接口
