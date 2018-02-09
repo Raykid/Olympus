@@ -177,7 +177,8 @@ var ModuleManager = /** @class */ (function () {
             // 数据先行
             var from = this.getCurrent();
             var fromModule = from && from[1];
-            this._moduleStack.unshift([cls, target]);
+            var moduleData = [cls, target, null];
+            this._moduleStack.unshift(moduleData);
             // 记一个是否需要遮罩的flag
             var maskFlag = true;
             // 加载所有已托管中介者的资源
@@ -240,6 +241,11 @@ var ModuleManager = /** @class */ (function () {
                             else {
                                 // 赋值responses
                                 target.responses = responses;
+                                // 篡改target的close方法，使其改为触发ModuleManager的close
+                                moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
+                                target.close = function (data) {
+                                    moduleManager.close(target, data);
+                                };
                                 // 调用open接口
                                 target.open(data);
                                 // 调用onDeactivate接口
@@ -309,7 +315,14 @@ var ModuleManager = /** @class */ (function () {
         if (index < 0)
             return;
         // 取到目标模块
-        var target = this._moduleStack[index][1];
+        var moduleData = this._moduleStack[index];
+        var target = moduleData[1];
+        // 恢复原始close方法
+        var oriClose = moduleData[2];
+        if (oriClose)
+            target.close = oriClose;
+        else
+            delete target.close;
         // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
         if (index == 0) {
             // 数据先行

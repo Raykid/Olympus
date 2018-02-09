@@ -26,7 +26,7 @@ import IMediatorConstructor from "../mediator/IMediatorConstructor";
 export default class ModuleManager
 {
     private _moduleDict:{[name:string]:IMediatorConstructor} = {};
-    private _moduleStack:[IMediatorConstructor, IMediator][] = [];
+    private _moduleStack:ModuleData[] = [];
 
     private _openCache:[ModuleType, any, boolean][] = [];
     private _opening:ModuleType = null;
@@ -40,7 +40,7 @@ export default class ModuleManager
      */ 
     public get currentModule():IMediatorConstructor|undefined
     {
-        var curData:[IMediatorConstructor, IMediator] = this.getCurrent();
+        var curData:ModuleData = this.getCurrent();
         return (curData && curData[0]);
     }
 
@@ -53,7 +53,7 @@ export default class ModuleManager
      */
     public get currentModuleInstance():IMediator|undefined
     {
-        var curData:[IMediatorConstructor, IMediator] = this.getCurrent();
+        var curData:ModuleData = this.getCurrent();
         return (curData && curData[1]);
     }
 
@@ -94,13 +94,13 @@ export default class ModuleManager
      */
     public getModule(index:number):IMediatorConstructor
     {
-        var data:[IMediatorConstructor, IMediator] = this._moduleStack[index];
+        var data:ModuleData = this._moduleStack[index];
         return data && data[0];
     }
 
-    private getAfter(cls:IMediatorConstructor):[IMediatorConstructor, IMediator][]|null
+    private getAfter(cls:IMediatorConstructor):ModuleData[]|null
     {
-        var result:[IMediatorConstructor, IMediator][] = [];
+        var result:ModuleData[] = [];
         for(var module of this._moduleStack)
         {
             if(module[0] == cls) return result;
@@ -109,10 +109,10 @@ export default class ModuleManager
         return null;
     }
     
-    private getCurrent():[IMediatorConstructor, IMediator]|undefined
+    private getCurrent():ModuleData|undefined
     {
         // 按顺序遍历模块，取出最新的没有在开启中的模块
-        var target:[IMediatorConstructor, IMediator];
+        var target:ModuleData;
         for(var temp of this._moduleStack)
         {
             if(temp[0] !== this._opening)
@@ -182,7 +182,7 @@ export default class ModuleManager
         this._opening = type;
         // 取到类型
         var cls:IMediatorConstructor = getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
-        var after:[IMediatorConstructor, IMediator][] = this.getAfter(cls);
+        var after:ModuleData[] = this.getAfter(cls);
         if(!after)
         {
             // 尚未打开过，正常开启模块
@@ -190,9 +190,10 @@ export default class ModuleManager
             // 赋值打开参数
             target.data = data;
             // 数据先行
-            var from:[IMediatorConstructor, IMediator] = this.getCurrent();
+            var from:ModuleData = this.getCurrent();
             var fromModule:IMediator = from && from[1];
-            this._moduleStack.unshift([cls, target]);
+            var moduleData:ModuleData = [cls, target, null];
+            this._moduleStack.unshift(moduleData);
             // 记一个是否需要遮罩的flag
             var maskFlag:boolean = true;
             // 加载所有已托管中介者的资源
@@ -261,6 +262,12 @@ export default class ModuleManager
                             {
                                 // 赋值responses
                                 target.responses = responses;
+                                // 篡改target的close方法，使其改为触发ModuleManager的close
+                                moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
+                                target.close = function(data?:any):void
+                                {
+                                    moduleManager.close(target, data);
+                                };
                                 // 调用open接口
                                 target.open(data);
                                 // 调用onDeactivate接口
@@ -334,14 +341,19 @@ export default class ModuleManager
         var index:number = this.getIndex(cls);
         if(index < 0) return;
         // 取到目标模块
-        var target:IMediator = this._moduleStack[index][1];
+        var moduleData:ModuleData = this._moduleStack[index];
+        var target:IMediator = moduleData[1];
+        // 恢复原始close方法
+        var oriClose:(data?:any)=>void = moduleData[2];
+        if(oriClose) target.close = oriClose;
+        else delete target.close;
         // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
         if(index == 0)
         {
             // 数据先行
             this._moduleStack.shift();
             // 获取前一个模块
-            var to:[IMediatorConstructor, IMediator] = this._moduleStack[0];
+            var to:ModuleData = this._moduleStack[0];
             var toModule:IMediator = to && to[1];
             // 调用onDeactivate接口
             this.deactivateModule(target, toModule, data);
@@ -366,6 +378,8 @@ export default class ModuleManager
 
 /** 规定ModuleManager支持的模块参数类型 */
 export type ModuleType = IMediatorConstructor | IMediator;
+
+type ModuleData = [IMediatorConstructor, IMediator, (data?:any)=>void];
 
 /** 再额外导出一个单例 */
 export const moduleManager:ModuleManager = core.getInject(ModuleManager);
