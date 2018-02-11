@@ -14,7 +14,7 @@ function handleObj(obj:any):any
     else if(obj instanceof Array) return packArray(obj);
     else if(obj.pack instanceof Function) return obj.pack();
     else if(typeof obj == "object") return packMap(obj);
-    else obj;
+    else return obj;
 }
 
 export function packArray(arr:any[]):any[]

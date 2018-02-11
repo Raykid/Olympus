@@ -16,7 +16,7 @@ function handleObj(obj) {
     else if (typeof obj == "object")
         return packMap(obj);
     else
-        obj;
+        return obj;
 }
 export function packArray(arr) {
     if (arr == null)
