@@ -7,7 +7,9 @@
  * 网络工具集，框架内部使用
 */
 function handleObj(obj) {
-    if (obj instanceof Array)
+    if (!obj)
+        return obj;
+    else if (obj instanceof Array)
         return packArray(obj);
     else if (obj.pack instanceof Function)
         return obj.pack();

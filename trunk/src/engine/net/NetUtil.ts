@@ -10,7 +10,8 @@ import DataType from "./DataType";
 */
 function handleObj(obj:any):any
 {
-    if(obj instanceof Array) return packArray(obj);
+    if(!obj) return obj;
+    else if(obj instanceof Array) return packArray(obj);
     else if(obj.pack instanceof Function) return obj.pack();
     else if(typeof obj == "object") return packMap(obj);
     else obj;
