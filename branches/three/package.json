@@ -1,14 +1,13 @@
 {
-  "name": "olympus-r-egret",
-  "version": "0.4.24",
-  "description": "Olympus的Egret表现层库",
+  "name": "olympus-r-three",
+  "version": "0.4.0",
+  "description": "Olympus的Three.js表现层库",
   "files": [
-    "egret/",
     "index.d.ts",
-    "EgretBridge.d.ts",
-    "EgretBridge.js"
+    "ThreeBridge.d.ts",
+    "ThreeBridge.js"
   ],
-  "main": "EgretBridge.js",
+  "main": "ThreeBridge.js",
   "types": "index.d.ts",
   "scripts": {
     "typedoc": "node_modules/.bin/typedoc --readme none --mode modules --theme minimal --out docs src/"
@@ -19,7 +18,7 @@
   },
   "keywords": [
     "Olympus",
-    "Egret"
+    "Three.js"
   ],
   "author": "raykid",
   "contributors": [
@@ -30,7 +29,10 @@
     "url": "https://github.com/Raykid/Olympus/issues"
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@types/three": "^0.89.8",
+    "three": "^0.89.0"
+  },
   "devDependencies": {
     "olympus-r": "^0.4.64",
     "typedoc": "^0.9.0"
