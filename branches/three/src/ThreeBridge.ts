@@ -1,7 +1,7 @@
 /// <amd-module name="ThreeBridge"/>
 /// <reference types="olympus-r"/>
 
-import { WebGLRendererParameters, Camera, Scene, WebGLRenderer, OrthographicCamera, Object3D, Event, Group, PerspectiveCamera } from "three";
+import { WebGLRendererParameters, Camera, Scene, WebGLRenderer, OrthographicCamera, Object3D, Event, Group, PerspectiveCamera, FileLoader, ObjectLoader } from "three";
 import IBridge from "olympus-r/engine/bridge/IBridge";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import IMediator from "olympus-r/engine/mediator/IMediator";
@@ -14,6 +14,10 @@ import { sceneManager } from "olympus-r/engine/scene/SceneManager";
 import { system, ICancelable } from "olympus-r/engine/system/System";
 import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import IThreeScene from "./three/scene/IThreeScene";
+import MaskEntityImpl from "./three/mask/MaskEntity";
+import { core } from "olympus-r/core/Core";
+import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
+import AssetsLoader from "./three/AssetsLoader";
 
 /**
  * @author Raykid
@@ -183,7 +187,7 @@ export default class ThreeBridge implements IBridge
      */
     public get maskEntity():IMaskEntity
     {
-        return null;
+        return new MaskEntityImpl();
     }
 
     /**
@@ -515,8 +519,18 @@ export default class ThreeBridge implements IBridge
      */
     public loadAssets(assets:string[], mediator:IMediator, handler:(err?:Error)=>void):void
     {
-        // 先用FileLoader加载文件
-        
+        new AssetsLoader({
+            oneError: (error:Error)=>{
+                // 调用回调
+                handler(error);
+                // 派发加载错误事件
+                core.dispatch(ModuleMessage.MODULE_LOAD_ASSETS_ERROR, error);
+            },
+            complete: ()=>{
+                // 调用回调
+                handler();
+            }
+        }).load(assets);
     }
     
     private _listenerDict:{[key:string]:(evt:Event)=>void} = {};

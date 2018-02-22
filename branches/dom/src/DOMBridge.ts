@@ -1,7 +1,9 @@
 /// <amd-module name="DOMBridge"/>
 /// <reference types="gsap"/>
 
+import { core } from "olympus-r/core/Core";
 import IBridge from "olympus-r/engine/bridge/IBridge";
+import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
 import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
 import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
@@ -443,9 +445,15 @@ export default class DOMBridge implements IBridge
                     skin,
                     result=>{
                         if(result instanceof Error)
+                        {
                             handler(result);
+                            // 派发加载错误事件
+                            core.dispatch(ModuleMessage.MODULE_LOAD_ASSETS_ERROR, result);
+                        }
                         else
+                        {
                             loadNext();
+                        }
                     }
                 );
             }
