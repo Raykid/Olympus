@@ -1,5 +1,6 @@
 import SecondModule from "./SecondModule";
 import ThirdModule from "./ThirdModule";
+import TestThreeModule from "./TestThreeModule";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
@@ -67,7 +68,8 @@ class FirstMediator extends SceneMediator
                 this.moduleManager.open(SecondModule, null, true);
             },
             onClickText: ()=>{
-                this.moduleManager.open(TestPanel);
+                // this.moduleManager.open(TestPanel);
+                this.moduleManager.open(TestThreeModule);
             },
             onClickFuck: ()=>{
                 this.moduleManager.open(ThirdModule);

@@ -114,7 +114,7 @@ var AssetsLoader = /** @class */ (function () {
                 this._retryDict[groupName] = ++retryTimes;
                 // 打印日志
                 console.warn("加载失败，重试第" + retryTimes + "次: " + groupName);
-                // 没到最大重试次数，将为url添加一个随机时间戳重新加回加载队列
+                // 没到最大重试次数，重试
                 RES.loadGroup(evt.groupName);
             }
             else {

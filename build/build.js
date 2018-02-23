@@ -23,6 +23,10 @@ async function start(dict)
     // await run(wrapPath("../node_modules/typescript/bin/tsc"), "-p", wrapPath("../branches/egret/tsconfig_deploy.json"));
     // console.log("开始丑化 Egret.js ==> Egret.min.js");
     // await run(wrapPath("../node_modules/uglify-js/bin/uglifyjs"), wrapPath("../branches/egret/Egret.js"), "-o", wrapPath("../branches/egret/Egret.min.js"));
+    console.log("开始编译 Three.js");
+    await run(wrapPath("../node_modules/typescript/bin/tsc"), "-p", wrapPath("../branches/three/tsconfig.json"));
+    // console.log("开始丑化 Three.js ==> Three.min.js");
+    // await run(wrapPath("../node_modules/uglify-js/bin/uglifyjs"), wrapPath("../branches/three/Egret.js"), "-o", wrapPath("../branches/three/Egret.min.js"));
     console.log("完成");
 }
 

@@ -1,7 +1,7 @@
 /// <amd-module name="ThreeBridge"/>
 /// <reference types="olympus-r"/>
 
-import { WebGLRendererParameters, Camera, Scene, WebGLRenderer, OrthographicCamera, Object3D, Event, Group, PerspectiveCamera, FileLoader, ObjectLoader } from "three";
+import { WebGLRendererParameters, Camera, Object3D, Scene } from "three";
 import IBridge from "olympus-r/engine/bridge/IBridge";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import IMediator from "olympus-r/engine/mediator/IMediator";
@@ -13,11 +13,12 @@ import { NoneScenePolicy } from "olympus-r/engine/scene/NoneScenePolicy";
 import { sceneManager } from "olympus-r/engine/scene/SceneManager";
 import { system, ICancelable } from "olympus-r/engine/system/System";
 import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
-import IThreeScene from "./three/scene/IThreeScene";
 import MaskEntityImpl from "./three/mask/MaskEntity";
 import { core } from "olympus-r/core/Core";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import AssetsLoader from "./three/AssetsLoader";
+import AssetsLoader from "./three/assets/AssetsLoader";
+import IRenderHandler from "./three/render/IRenderHandler";
+import IThreeSkin from "./three/mediator/IThreeSkin";
 
 /**
  * @author Raykid
@@ -32,13 +33,23 @@ export default class ThreeBridge implements IBridge
     /** 提供静态类型常量 */
     public static TYPE:string = "Three.js";
 
+    private _visualContainer:Object3D;
+    private _renderList:IRenderHandler[] = [];
+    private _renderCancelable:ICancelable;
+
     private _initParams:IInitParams;
 
-    private _renderer:WebGLRenderer;
-    private _scene:Scene;
-    private _camera:Camera;
-    private _cameraInvalid:boolean = false;
-    private _renderCancelable:ICancelable;
+    /**
+     * 获取初始化参数
+     * 
+     * @readonly
+     * @type {IInitParams}
+     * @memberof ThreeBridge
+     */
+    public get initParams():IInitParams
+    {
+        return this._initParams;
+    }
 
     /**
      * 获取表现层类型名称
@@ -73,7 +84,7 @@ export default class ThreeBridge implements IBridge
      */
     public get root():Object3D
     {
-        return this._scene;
+        return this._visualContainer;
     }
 
     /**
@@ -85,10 +96,9 @@ export default class ThreeBridge implements IBridge
      */
     public get stage():Object3D
     {
-        return this._scene;
+        return this._visualContainer;
     }
 
-    private _bgLayer:Object3D;
     /**
      * 获取背景容器
      *
@@ -98,10 +108,9 @@ export default class ThreeBridge implements IBridge
      */
     public get bgLayer():Object3D
     {
-        return this._bgLayer;
+        return this._visualContainer;
     }
 
-    private _sceneLayer:Object3D;
     /**
      * 获取场景容器
      *
@@ -111,10 +120,9 @@ export default class ThreeBridge implements IBridge
      */
     public get sceneLayer():Object3D
     {
-        return this._sceneLayer;
+        return this._visualContainer;
     }
 
-    private _frameLayer:Object3D;
     /**
      * 获取框架容器
      *
@@ -124,10 +132,9 @@ export default class ThreeBridge implements IBridge
      */
     public get frameLayer():Object3D
     {
-        return this._frameLayer;
+        return this._visualContainer;
     }
     
-    private _panelLayer:Object3D;
     /**
      * 获取弹窗容器
      *
@@ -137,10 +144,9 @@ export default class ThreeBridge implements IBridge
      */
     public get panelLayer():Object3D
     {
-        return this._panelLayer;
+        return this._visualContainer;
     }
     
-    private _maskLayer:Object3D;
     /**
      * 获取遮罩容器
      *
@@ -150,10 +156,9 @@ export default class ThreeBridge implements IBridge
      */
     public get maskLayer():Object3D
     {
-        return this._maskLayer;
+        return this._visualContainer;
     }
     
-    private _topLayer:Object3D;
     /**
      * 获取顶级容器
      *
@@ -163,7 +168,7 @@ export default class ThreeBridge implements IBridge
      */
     public get topLayer():Object3D
     {
-        return this._topLayer;
+        return this._visualContainer;
     }
     
     /**
@@ -236,30 +241,6 @@ export default class ThreeBridge implements IBridge
         this._initParams.container.style.position = "fixed";
         this._initParams.container.style.top = "0%";
         this._initParams.container.style.left = "0%";
-        // 创建渲染器、场景、默认摄像机
-        this._renderer = new WebGLRenderer(this._initParams.rendererParams);
-        this._scene = new Scene();
-        let w:number = this._initParams.width * 0.5;
-        let h:number = this._initParams.height * 0.5;
-        this._camera = this._initParams.camera || new OrthographicCamera(-w, w, -h, h, this._initParams.near, this._initParams.far);
-        // 创建背景显示层
-        this._bgLayer = new Group();
-        this._scene.add(this._bgLayer);
-        // 创建场景显示层
-        this._sceneLayer = new Group();
-        this._scene.add(this._sceneLayer);
-        // 创建框架显示层
-        this._frameLayer = new Group();
-        this._scene.add(this._frameLayer);
-        // 创建弹出层
-        this._panelLayer = new Group();
-        this._scene.add(this._panelLayer);
-        // 创建遮罩层
-        this._maskLayer = new Group();
-        this._scene.add(this._maskLayer);
-        // 创建顶级显示层
-        this._topLayer = new Group();
-        this._scene.add(this._topLayer);
         // 根据帧频设置决定使用何种渲染驱动方式
         if(this._initParams.frameRate > 0)
         {
@@ -272,77 +253,68 @@ export default class ThreeBridge implements IBridge
             this._renderCancelable = system.enterFrame(this.onRender, this);
         }
         // 监听页面resize事件
-        window.addEventListener("resize", ()=>{
-            // 设置摄像机更新
-            this._cameraInvalid = true;
-        });
+        window.addEventListener("resize", ()=>this.onResize());
         // 调用回调
         complete(this);
     }
 
-    private _lastRenderCamera:Camera;
     private onRender():void
     {
-        // 取到当前场景
-        let curScene:IThreeScene = sceneManager.currentScene as IThreeScene;
-        // 取到需要渲染的摄像机，优先使用当前场景的摄像机
-        let camera:Camera = (curScene && curScene.camera) || this._camera;
-        if(camera !== this._lastRenderCamera)
-        {
-            this._cameraInvalid = true;
-            this._lastRenderCamera = camera;
-        }
-        // 更新摄像机参数
-        if(this._cameraInvalid)
-        {
-            if(camera instanceof OrthographicCamera)
-            {
-                let coe:number = window.innerWidth / window.innerHeight;
-                let coeDesign:number = this._initParams.width / this._initParams.height;
-                let w:number, h:number;
-                if(coe > coeDesign)
-                {
-                    // 比设计宽，保持高度，扩展宽度
-                    w = (this._initParams.height * coe) * 0.5;
-                    h = this._initParams.height * 0.5;
-                }
-                else
-                {
-                    // 比设计高，保持宽度，扩展高度
-                    w = this._initParams.width * 0.5;
-                    h = (this._initParams.width / coe) * 0.5;
-                }
-                // 更新摄像机
-                camera.left = -w;
-                camera.right = w;
-                camera.top = h;
-                camera.bottom = -h;
-                camera.updateProjectionMatrix();
-            }
-            else if(camera instanceof PerspectiveCamera)
-            {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-            }
-            // 设置渲染器
-            this._renderer.setSize(window.innerWidth, window.innerHeight);
-            // 重置标识符
-            this._cameraInvalid = false;
-        }
         // 进行渲染
-        this._renderer.render(this._scene, camera);
+        for(let handler of this._renderList)
+        {
+            handler.render();
+        }
+    }
+
+    private onResize(handler?:IRenderHandler):void
+    {
+        // 计算宽高
+        let coe:number = window.innerWidth / window.innerHeight;
+        let coeDesign:number = this._initParams.width / this._initParams.height;
+        let w:number, h:number;
+        if(coe > coeDesign)
+        {
+            // 比设计宽，保持高度，扩展宽度
+            w = this._initParams.height * coe;
+            h = this._initParams.height;
+        }
+        else
+        {
+            // 比设计高，保持宽度，扩展高度
+            w = this._initParams.width;
+            h = this._initParams.width / coe;
+        }
+        // 调用回调
+        if(handler)
+        {
+            handler.resize(w, h);
+        }
+        else
+        {
+            for(let handler of this._renderList)
+            {
+                handler.resize(w, h);
+            }
+        }
     }
 
     /**
      * 判断传入的skin是否是属于该表现层桥的
      *
-     * @param {*} skin 皮肤实例
+     * @param {IThreeSkin} skin 皮肤实例
      * @return {boolean} 是否数据该表现层桥
      * @memberof ThreeBridge
      */
-    public isMySkin(skin:any):boolean
+    public isMySkin(skin:IThreeSkin):boolean
     {
-        return (skin instanceof Object3D && skin.isObject3D);
+        return (
+            skin.renderer &&
+            skin.scene &&
+            skin.scene.isObject3D &&
+            skin.camera &&
+            skin.camera.isObject3D
+        );
     }
     /**
      * 创建一个空的显示对象
@@ -635,6 +607,35 @@ export default class ThreeBridge implements IBridge
             // 调用回调
             memento.handler(key, datas[key], newObject);
         }
+    }
+
+    /**
+     * 添加渲染回调
+     * 
+     * @param {IRenderHandler} handler 
+     * @memberof ThreeBridge
+     */
+    public addRenderHandler(handler:IRenderHandler):void
+    {
+        if(this._renderList.indexOf(handler) < 0)
+        {
+            this._renderList.push(handler);
+            // 添加成功后先触发一次resize
+            this.onResize(handler);
+        }
+    }
+
+    /**
+     * 移除渲染回调
+     * 
+     * @param {IRenderHandler} handler 
+     * @memberof ThreeBridge
+     */
+    public removeRenderHandler(handler:IRenderHandler):void
+    {
+        let index:number = this._renderList.indexOf(handler);
+        if(index >= 0)
+            this._renderList.splice(index, 1);
     }
 }
 

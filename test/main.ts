@@ -14,6 +14,7 @@ import { environment } from 'olympus-r/engine/env/Environment';
 import { InitStep } from 'olympus-r/engine/Engine';
 import DOMBridge from "olympus-r-dom/DOMBridge";
 import EgretBridge from "olympus-r-egret/EgretBridge";
+import ThreeBridge from "olympus-r-three/ThreeBridge";
 
 /**
  * @author Raykid
@@ -35,6 +36,15 @@ Olympus.startup({
             container: "#rootEgret",
             backgroundColor: 0,
             // scaleMode: egret.StageScaleMode.SHOW_ALL
+        }),
+        new ThreeBridge({
+            width: 720,
+            height: 1280,
+            container: "#rootThree",
+            rendererParams: {
+                antialias: true,
+                canvas: document.getElementById("canvasThree") as HTMLCanvasElement
+            }
         })
     ],
     firstModule: FirstModule,

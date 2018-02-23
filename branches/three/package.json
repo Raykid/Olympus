@@ -30,8 +30,8 @@
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
   "dependencies": {
-    "@types/three": "^0.89.8",
-    "three": "^0.89.0"
+    "@types/three": "^0.89.10",
+    "three": "^0.90.0"
   },
   "devDependencies": {
     "olympus-r": "^0.4.64",

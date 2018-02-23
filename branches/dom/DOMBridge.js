@@ -1,5 +1,7 @@
 /// <amd-module name="DOMBridge"/>
 /// <reference types="gsap"/>
+import { core } from "olympus-r/core/Core";
+import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
 import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity from "./dom/mask/MaskEntity";
@@ -404,10 +406,14 @@ var DOMBridge = /** @class */ (function () {
             else {
                 var skin = assets.shift();
                 assetsManager.loadAssets(skin, function (result) {
-                    if (result instanceof Error)
+                    if (result instanceof Error) {
                         handler(result);
-                    else
+                        // 派发加载错误事件
+                        core.dispatch(ModuleMessage.MODULE_LOAD_ASSETS_ERROR, result);
+                    }
+                    else {
                         loadNext();
+                    }
                 });
             }
         }
