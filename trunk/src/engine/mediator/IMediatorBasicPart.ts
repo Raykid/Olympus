@@ -1,6 +1,7 @@
 import IHasBridge from "../bridge/IHasBridge";
 import IOpenClose from "../../core/interfaces/IOpenClose";
 import IDisposable from "../../core/interfaces/IDisposable";
+import MediatorStatus from "./MediatorStatus";
 
 /**
  * @author Raykid
@@ -19,6 +20,14 @@ export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDis
      * @memberof IMediatorBasicPart
      */
     readonly name:string;
+
+    /**
+     * 获取中介者状态
+     * 
+     * @type {MediatorStatus}
+     * @memberof IMediatorBasicPart
+     */
+    readonly status:MediatorStatus;
 
     /**
      * 打开时传递的data

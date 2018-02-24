@@ -6,6 +6,7 @@ import Dictionary from "../../utils/Dictionary";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IMediator from "./IMediator";
+import MediatorStatus from "./MediatorStatus";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -15,6 +16,15 @@ import IMediator from "./IMediator";
  * 组件界面中介者基类
 */
 export default class Mediator implements IMediator {
+    private _status;
+    /**
+     * 获取中介者状态
+     *
+     * @readonly
+     * @type {MediatorStatus}
+     * @memberof Mediator
+     */
+    readonly status: MediatorStatus;
     /**
      * 表现层桥
      *
@@ -52,7 +62,6 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     skin: any;
-    private _disposed;
     /**
      * 获取中介者是否已被销毁
      *
@@ -105,7 +114,7 @@ export default class Mediator implements IMediator {
      * 打开，为了实现IOpenClose接口
      *
      * @param {*} [data]
-     * @returns {*}
+     * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     open(data?: any): any;
@@ -113,7 +122,7 @@ export default class Mediator implements IMediator {
      * 关闭，为了实现IOpenClose接口
      *
      * @param {*} [data]
-     * @returns {*}
+     * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     close(data?: any): any;

@@ -3,6 +3,7 @@ import { mutate } from "../bind/Mutator";
 import Dictionary from "../../utils/Dictionary";
 import { bindManager } from "../bind/BindManager";
 import Observable from "../../core/observable/Observable";
+import MediatorStatus from "./MediatorStatus";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -13,6 +14,7 @@ import Observable from "../../core/observable/Observable";
 */
 var Mediator = /** @class */ (function () {
     function Mediator(skin) {
+        this._status = MediatorStatus.UNOPEN;
         /**
          * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
          *
@@ -20,7 +22,6 @@ var Mediator = /** @class */ (function () {
          * @memberof Mediator
          */
         this.bindTargets = [];
-        this._disposed = false;
         this._listeners = [];
         this._disposeDict = new Dictionary();
         /**
@@ -38,6 +39,20 @@ var Mediator = /** @class */ (function () {
         // 初始化绑定
         bindManager.bind(this);
     }
+    Object.defineProperty(Mediator.prototype, "status", {
+        /**
+         * 获取中介者状态
+         *
+         * @readonly
+         * @type {MediatorStatus}
+         * @memberof Mediator
+         */
+        get: function () {
+            return this._status;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Mediator.prototype, "name", {
         /**
          * 获取中介者名称
@@ -80,7 +95,7 @@ var Mediator = /** @class */ (function () {
          * @memberof Mediator
          */
         get: function () {
-            return this._disposed;
+            return (this._status === MediatorStatus.DISPOSED);
         },
         enumerable: true,
         configurable: true
@@ -165,40 +180,56 @@ var Mediator = /** @class */ (function () {
      * 打开，为了实现IOpenClose接口
      *
      * @param {*} [data]
-     * @returns {*}
+     * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     Mediator.prototype.open = function (data) {
-        this.data = data;
-        // 调用自身onOpen方法
-        this.onOpen(data);
-        // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-        if (!this._viewModel)
-            this.viewModel = {};
-        // 调用所有已托管中介者的open方法
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var mediator = _a[_i];
-            mediator.open(data);
+        // 判断状态
+        if (this._status === MediatorStatus.UNOPEN) {
+            // 修改状态
+            this._status = MediatorStatus.OPENING;
+            // 赋值参数
+            this.data = data;
+            // 调用自身onOpen方法
+            this.onOpen(data);
+            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+            if (!this._viewModel)
+                this.viewModel = {};
+            // 调用所有已托管中介者的open方法
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var mediator = _a[_i];
+                mediator.open(data);
+            }
+            // 修改状态
+            this._status = MediatorStatus.OPENED;
         }
+        // 返回自身引用
         return this;
     };
     /**
      * 关闭，为了实现IOpenClose接口
      *
      * @param {*} [data]
-     * @returns {*}
+     * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     Mediator.prototype.close = function (data) {
-        // 调用所有已托管中介者的close方法
-        for (var _i = 0, _a = this._children.concat(); _i < _a.length; _i++) {
-            var mediator = _a[_i];
-            mediator.close(data);
+        if (this._status === MediatorStatus.OPENED) {
+            // 修改状态
+            this._status = MediatorStatus.CLOSING;
+            // 调用所有已托管中介者的close方法
+            for (var _i = 0, _a = this._children.concat(); _i < _a.length; _i++) {
+                var mediator = _a[_i];
+                mediator.close(data);
+            }
+            // 调用自身onClose方法
+            this.onClose(data);
+            // 修改状态
+            this._status = MediatorStatus.CLOSED;
+            // 销毁自身
+            this.dispose();
         }
-        // 调用自身onClose方法
-        this.onClose(data);
-        // 销毁自身
-        this.dispose();
+        // 返回自身引用
         return this;
     };
     /**
@@ -627,8 +658,11 @@ var Mediator = /** @class */ (function () {
      * @memberof Mediator
      */
     Mediator.prototype.dispose = function () {
-        if (this._disposed)
+        // 判断状态
+        if (this.status >= MediatorStatus.DISPOSING)
             return;
+        // 修改状态
+        this._status = MediatorStatus.DISPOSING;
         // 移除绑定
         bindManager.unbind(this);
         // 注销事件监听
@@ -658,8 +692,8 @@ var Mediator = /** @class */ (function () {
         // 移除observable
         this._observable.dispose();
         this._observable = null;
-        // 设置已被销毁
-        this._disposed = true;
+        // 修改状态
+        this._status = MediatorStatus.DISPOSED;
     };
     /**
      * 当销毁时调用

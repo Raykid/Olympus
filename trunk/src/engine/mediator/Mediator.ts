@@ -10,6 +10,7 @@ import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IMediator from "./IMediator";
 import Observable from "../../core/observable/Observable";
+import MediatorStatus from "./MediatorStatus";
 
 /**
  * @author Raykid
@@ -21,6 +22,19 @@ import Observable from "../../core/observable/Observable";
 */
 export default class Mediator implements IMediator
 {
+    private _status:MediatorStatus = MediatorStatus.UNOPEN;
+    /**
+     * 获取中介者状态
+     * 
+     * @readonly
+     * @type {MediatorStatus}
+     * @memberof Mediator
+     */
+    public get status():MediatorStatus
+    {
+        return this._status;
+    }
+
     /**
      * 表现层桥
      * 
@@ -76,7 +90,6 @@ export default class Mediator implements IMediator
      */
     public skin:any;
     
-    private _disposed:boolean = false;
     /**
      * 获取中介者是否已被销毁
      * 
@@ -86,7 +99,7 @@ export default class Mediator implements IMediator
      */
     public get disposed():boolean
     {
-        return this._disposed;
+        return (this._status === MediatorStatus.DISPOSED);
     }
     
     private _data:any;
@@ -182,21 +195,31 @@ export default class Mediator implements IMediator
      * 打开，为了实现IOpenClose接口
      * 
      * @param {*} [data] 
-     * @returns {*} 
+     * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     public open(data?:any):any
     {
-        this.data = data;
-        // 调用自身onOpen方法
-        this.onOpen(data);
-        // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-        if(!this._viewModel) this.viewModel = {};
-        // 调用所有已托管中介者的open方法
-        for(var mediator of this._children)
+        // 判断状态
+        if(this._status === MediatorStatus.UNOPEN)
         {
-            mediator.open(data);
+            // 修改状态
+            this._status = MediatorStatus.OPENING;
+            // 赋值参数
+            this.data = data;
+            // 调用自身onOpen方法
+            this.onOpen(data);
+            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+            if(!this._viewModel) this.viewModel = {};
+            // 调用所有已托管中介者的open方法
+            for(var mediator of this._children)
+            {
+                mediator.open(data);
+            }
+            // 修改状态
+            this._status = MediatorStatus.OPENED;
         }
+        // 返回自身引用
         return this;
     }
 
@@ -204,20 +227,28 @@ export default class Mediator implements IMediator
      * 关闭，为了实现IOpenClose接口
      * 
      * @param {*} [data] 
-     * @returns {*} 
+     * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     public close(data?:any):any
     {
-        // 调用所有已托管中介者的close方法
-        for(var mediator of this._children.concat())
+        if(this._status === MediatorStatus.OPENED)
         {
-            mediator.close(data);
+            // 修改状态
+            this._status = MediatorStatus.CLOSING;
+            // 调用所有已托管中介者的close方法
+            for(var mediator of this._children.concat())
+            {
+                mediator.close(data);
+            }
+            // 调用自身onClose方法
+            this.onClose(data);
+            // 修改状态
+            this._status = MediatorStatus.CLOSED;
+            // 销毁自身
+            this.dispose();
         }
-        // 调用自身onClose方法
-        this.onClose(data);
-        // 销毁自身
-        this.dispose();
+        // 返回自身引用
         return this;
     }
     
@@ -725,7 +756,10 @@ export default class Mediator implements IMediator
      */
     public dispose():void
     {
-        if(this._disposed) return;
+        // 判断状态
+        if(this.status >= MediatorStatus.DISPOSING) return;
+        // 修改状态
+        this._status = MediatorStatus.DISPOSING;
         // 移除绑定
         bindManager.unbind(this);
         // 注销事件监听
@@ -756,8 +790,8 @@ export default class Mediator implements IMediator
         // 移除observable
         this._observable.dispose();
         this._observable = null;
-        // 设置已被销毁
-        this._disposed = true;
+        // 修改状态
+        this._status = MediatorStatus.DISPOSED;
     }
 
     /**

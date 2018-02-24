@@ -12,6 +12,7 @@ import Dictionary from "../../utils/Dictionary";
 import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
 import "reflect-metadata";
+import MediatorStatus from "../mediator/MediatorStatus";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -203,6 +204,10 @@ export function SubMediator(prototype, propertyKey) {
                     // 托管新的中介者
                     if (mediator) {
                         this.delegateMediator(mediator);
+                        // 如果当前中介者已经为已打开状态，则额外调用open
+                        if (this.status === MediatorStatus.OPENED) {
+                            mediator.open(this.data);
+                        }
                     }
                 }
             });

@@ -17,6 +17,7 @@ import IBridge from "../bridge/IBridge";
 import "reflect-metadata";
 import { EvalExp } from "../bind/Utils";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import MediatorStatus from "../mediator/MediatorStatus";
 
 /**
  * @author Raykid
@@ -260,6 +261,11 @@ export function SubMediator(prototype:any, propertyKey:string):any
                     if(mediator)
                     {
                         this.delegateMediator(mediator);
+                        // 如果当前中介者已经为已打开状态，则额外调用open
+                        if(this.status === MediatorStatus.OPENED)
+                        {
+                            mediator.open(this.data);
+                        }
                     }
                 }
             });

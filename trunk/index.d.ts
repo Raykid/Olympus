@@ -64,6 +64,7 @@ import * as IMediatorModulePart from "./engine/mediator/IMediatorModulePart";
 import * as IMediatorTreePart from "./engine/mediator/IMediatorTreePart";
 import * as IMediatorConstructor from "./engine/mediator/IMediatorConstructor";
 import * as Mediator from "./engine/mediator/Mediator";
+import * as MediatorStatus from "./engine/mediator/MediatorStatus";
 
 import * as EngineMessage from "./engine/message/EngineMessage";
 
