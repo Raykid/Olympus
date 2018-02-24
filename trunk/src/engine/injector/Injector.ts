@@ -237,35 +237,35 @@ export function SubMediator(prototype:any, propertyKey:string):any
         // 监听实例化
         listenConstruct(prototype.constructor, function(instance:IMediator):void
         {
-            // 实例化
             var mediator:IMediator = instance[propertyKey];
+            // 篡改属性
+            Object.defineProperty(instance, propertyKey, {
+                configurable: true,
+                enumerable: true,
+                get: function():IMediator
+                {
+                    return mediator;
+                },
+                set: function(value:IMediator):void
+                {
+                    if(value == mediator) return;
+                    // 取消托管中介者
+                    if(mediator)
+                    {
+                        this.undelegateMediator(mediator);
+                    }
+                    // 设置中介者
+                    mediator = value;
+                    // 托管新的中介者
+                    if(mediator)
+                    {
+                        this.delegateMediator(mediator);
+                    }
+                }
+            });
+            // 实例化
             if(mediator === undefined)
             {
-                // 篡改属性
-                Object.defineProperty(instance, propertyKey, {
-                    configurable: true,
-                    enumerable: true,
-                    get: function():IMediator
-                    {
-                        return mediator;
-                    },
-                    set: function(value:IMediator):void
-                    {
-                        if(value == mediator) return;
-                        // 取消托管中介者
-                        if(mediator)
-                        {
-                            this.undelegateMediator(mediator);
-                        }
-                        // 设置中介者
-                        mediator = value;
-                        // 托管新的中介者
-                        if(mediator)
-                        {
-                            this.delegateMediator(mediator);
-                        }
-                    }
-                });
                 var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
                 instance[propertyKey] = new cls();
             }
