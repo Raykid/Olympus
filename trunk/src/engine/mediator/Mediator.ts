@@ -167,6 +167,18 @@ export default class Mediator implements IMediator
     }
 
     /**
+     * 当获取到所有初始化请求返回时调用，可以通过返回一个true来阻止模块的打开
+     * 
+     * @param {ResponseData[]} responses 返回结构数组
+     * @returns {boolean} 返回true则表示停止模块打开
+     * @memberof Mediator
+     */
+    public onGetResponses(responses:ResponseData[]):boolean
+    {
+        return false;
+    }
+
+    /**
      * 打开，为了实现IOpenClose接口
      * 
      * @param {*} [data] 

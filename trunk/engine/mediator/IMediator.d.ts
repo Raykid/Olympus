@@ -3,6 +3,7 @@ import IMediatorBindPart from "./IMediatorBindPart";
 import IMediatorTreePart from "./IMediatorTreePart";
 import IMediatorModulePart from "./IMediatorModulePart";
 import RequestData from "../net/RequestData";
+import ResponseData from "../net/ResponseData";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -33,6 +34,14 @@ export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart
      * @memberof IMediator
      */
     onLoadAssets(err?: Error): void;
+    /**
+     * 当获取到所有初始化请求返回时调用，可以通过返回一个true来阻止模块的打开
+     *
+     * @param {ResponseData[]} responses 返回结构数组
+     * @returns {boolean} 返回true则表示停止模块打开
+     * @memberof IMediator
+     */
+    onGetResponses(responses: ResponseData[]): boolean;
     /**
      * 其他模块被关闭回到当前模块时调用
      *

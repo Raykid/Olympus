@@ -243,22 +243,33 @@ var ModuleManager = /** @class */ (function () {
                                 this._opening = null;
                                 // 赋值responses
                                 target.responses = responses;
-                                // 篡改target的close方法，使其改为触发ModuleManager的close
-                                moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
-                                target.close = function (data) {
-                                    moduleManager.close(target, data);
-                                };
-                                // 调用open接口
-                                target.open(data);
-                                // 调用onDeactivate接口
-                                this.deactivateModule(fromModule, cls, data);
-                                // 调用onActivate接口
-                                this.activateModule(target, from && from[0], data);
-                                // 如果replace是true，则关掉上一个模块
-                                if (replace)
-                                    this.close(from && from[0], data);
-                                // 派发消息
-                                core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
+                                // 调用回调
+                                var stop = target.onGetResponses(responses);
+                                // 如果需要停止则停止后续操作，否则继续
+                                if (stop) {
+                                    // 移除先行数据
+                                    this._moduleStack.shift();
+                                    // 派发失败消息
+                                    core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], responses);
+                                }
+                                else {
+                                    // 篡改target的close方法，使其改为触发ModuleManager的close
+                                    moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
+                                    target.close = function (data) {
+                                        moduleManager.close(target, data);
+                                    };
+                                    // 调用open接口
+                                    target.open(data);
+                                    // 调用onDeactivate接口
+                                    this.deactivateModule(fromModule, cls, data);
+                                    // 调用onActivate接口
+                                    this.activateModule(target, from && from[0], data);
+                                    // 如果replace是true，则关掉上一个模块
+                                    if (replace)
+                                        this.close(from && from[0], data);
+                                    // 派发消息
+                                    core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
+                                }
                             }
                             // 结束一次模块开启
                             this.onFinishOpen();
