@@ -7,13 +7,6 @@ import IMediator from "./IMediator";
  *
  * 中介者的构造接口
 */
-export default interface IMediatorConstructor {
-    /**
-     * 获取中介者名称
-     *
-     * @type {string}
-     * @memberof IMediatorConstructor
-     */
-    readonly name: string;
+export default interface IMediatorConstructor extends Function {
     new (skin?: any): IMediator;
 }

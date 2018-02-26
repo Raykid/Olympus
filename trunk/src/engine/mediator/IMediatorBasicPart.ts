@@ -14,14 +14,6 @@ import MediatorStatus from "./MediatorStatus";
 export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDisposable
 {
     /**
-     * 获取中介者名称
-     * 
-     * @type {string}
-     * @memberof IMediatorBasicPart
-     */
-    readonly name:string;
-
-    /**
      * 获取中介者状态
      * 
      * @type {MediatorStatus}
