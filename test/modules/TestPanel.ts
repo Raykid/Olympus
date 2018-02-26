@@ -1,5 +1,4 @@
-import Module from "olympus-r/engine/module/Module";
-import { ModuleClass, DelegateMediator, BindOn } from "olympus-r/engine/injector/Injector";
+import { BindOn } from "olympus-r/engine/injector/Injector";
 import PanelMediator from "olympus-r/engine/panel/PanelMediator";
 import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
 import { moduleManager } from "olympus-r/engine/module/ModuleManager";
@@ -9,7 +8,7 @@ import { moduleManager } from "olympus-r/engine/module/ModuleManager";
         jlk124kl1j2
     </div>
 `)
-class TestPanelMediator extends PanelMediator
+export default class TestPanel extends PanelMediator
 {
     @BindOn("click", "onClick")
     public skin:HTMLElement;
@@ -18,15 +17,8 @@ class TestPanelMediator extends PanelMediator
     {
         this.viewModel = {
             onClick: ()=>{
-                moduleManager.close(this.dependModule);
+                moduleManager.close(TestPanel);
             }
         };
     }
-}
-
-@ModuleClass
-export default class TestPanel extends Module
-{
-    @DelegateMediator
-    private _mediator:TestPanelMediator;
 }

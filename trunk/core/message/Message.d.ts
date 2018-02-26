@@ -17,7 +17,7 @@ export default abstract class Message implements IMessage {
      * @type {string}
      * @memberof Message
      */
-    readonly type: string;
+    readonly __type: string;
     /**
      * 消息当前所属内核
      *

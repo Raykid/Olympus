@@ -206,7 +206,7 @@ export default class NetManager
                 for(var i:number = request.__observables.length - 1; i >= 0; i--)
                 {
                     var temp:IObservable = request.__observables[i];
-                    if(!temp || temp["disposed"]) break;
+                    if(!temp || temp.disposed) break;
                     else observable = temp;
                 }
             }

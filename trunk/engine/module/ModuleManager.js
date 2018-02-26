@@ -6,12 +6,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import { getConstructor } from "../../utils/ConstructUtil";
 import { netManager } from "../net/NetManager";
 import ModuleMessage from "./ModuleMessage";
 import { environment } from "../env/Environment";
 import { maskManager } from "../mask/MaskManager";
 import { assetsManager } from "../assets/AssetsManager";
-import { audioManager } from "../audio/AudioManager";
 import { version } from "../version/Version";
 /**
  * @author Raykid
@@ -33,7 +33,7 @@ var ModuleManager = /** @class */ (function () {
          * 获取当前模块
          *
          * @readonly
-         * @type {IModuleConstructor|undefined}
+         * @type {IMediatorConstructor|undefined}
          * @memberof ModuleManager
          */
         get: function () {
@@ -48,7 +48,7 @@ var ModuleManager = /** @class */ (function () {
          * 获取当前模块的实例
          *
          * @readonly
-         * @type {(IModule|undefined)}
+         * @type {(IMediator|undefined)}
          * @memberof ModuleManager
          */
         get: function () {
@@ -75,7 +75,7 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 获取模块在栈中的索引
      *
-     * @param {IModuleConstructor} cls 模块类型
+     * @param {IMediatorConstructor} cls 模块类型
      * @returns {number} 索引值
      * @memberof ModuleManager
      */
@@ -90,7 +90,7 @@ var ModuleManager = /** @class */ (function () {
      * 获取索引处模块类型
      *
      * @param {number} index 模块索引值
-     * @returns {IModuleConstructor} 模块类型
+     * @returns {IMediatorConstructor} 模块类型
      * @memberof ModuleManager
      */
     ModuleManager.prototype.getModule = function (index) {
@@ -125,7 +125,7 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 获取模块是否开启中
      *
-     * @param {IModuleConstructor} cls 要判断的模块类型
+     * @param {IMediatorConstructor} cls 要判断的模块类型
      * @returns {boolean} 是否开启
      * @memberof ModuleManager
      */
@@ -134,66 +134,60 @@ var ModuleManager = /** @class */ (function () {
     };
     ModuleManager.prototype.activateModule = function (module, from, data) {
         if (module) {
-            // 调用onActivate接口
-            module.onActivate(from, data);
-            // 播放背景音乐
-            var bgMusic = module.bgMusic;
-            if (bgMusic) {
-                // 使用Music音频播放
-                audioManager.playMusic({ url: bgMusic, loop: true, stopOthers: true });
-            }
+            // 调用activate接口
+            module.activate(from, data);
         }
     };
     ModuleManager.prototype.deactivateModule = function (module, to, data) {
         if (module) {
-            // 调用onDeactivate接口
-            module.onDeactivate(to, data);
+            // 调用deactivate接口
+            module.deactivate(to, data);
         }
     };
     /**
      * 打开模块
      *
-     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+     * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
      * @memberof ModuleManager
      */
-    ModuleManager.prototype.open = function (clsOrName, data, replace) {
+    ModuleManager.prototype.open = function (module, data, replace) {
         var _this = this;
         if (replace === void 0) { replace = false; }
         // 如果是字符串则获取引用
-        var cls = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName);
+        var type = (typeof module == "string" ? this._moduleDict[module] : module);
         // 非空判断
-        if (!cls)
+        if (!type)
             return;
         // 判断是否正在打开模块
         if (this._opening) {
-            this._openCache.push([cls, data, replace]);
+            this._openCache.push([type, data, replace]);
             return;
         }
-        this._opening = cls;
+        this._opening = type;
+        // 取到类型
+        var cls = getConstructor(type instanceof Function ? type : type.constructor);
         var after = this.getAfter(cls);
         if (!after) {
             // 尚未打开过，正常开启模块
-            var target = new cls();
+            var target = type instanceof Function ? new cls() : type;
             // 赋值打开参数
             target.data = data;
             // 数据先行
             var from = this.getCurrent();
             var fromModule = from && from[1];
-            this._moduleStack.unshift([cls, target]);
+            var moduleData = [cls, target, null];
+            this._moduleStack.unshift(moduleData);
             // 记一个是否需要遮罩的flag
             var maskFlag = true;
             // 加载所有已托管中介者的资源
-            var mediators = target.delegatedMediators.concat();
-            var loadMediatorAssets = function (err) {
+            target.loadAssets(function (err) {
                 if (err) {
                     // 隐藏Loading
                     if (!maskFlag)
                         maskManager.hideLoading("module");
                     maskFlag = false;
-                    // 停止加载，调用模块加载失败接口
-                    target.onLoadAssets(err);
                     // 移除先行数据
                     _this._moduleStack.shift();
                     // 派发失败消息
@@ -201,17 +195,11 @@ var ModuleManager = /** @class */ (function () {
                     // 结束一次模块开启
                     _this.onFinishOpen();
                 }
-                else if (mediators.length > 0) {
-                    var mediator = mediators.shift();
-                    mediator.loadAssets(loadMediatorAssets);
-                }
                 else {
                     // 隐藏Loading
                     if (!maskFlag)
                         maskManager.hideLoading("module");
                     maskFlag = false;
-                    // 调用onLoadAssets接口
-                    target.onLoadAssets();
                     // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
                     var cssFiles = target.listStyleFiles();
                     if (cssFiles) {
@@ -227,7 +215,6 @@ var ModuleManager = /** @class */ (function () {
                     // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
                     assetsManager.loadAssets(target.listJsFiles(), function (results) {
                         if (results instanceof Error) {
-                            target.onLoadAssets(results);
                             // 移除先行数据
                             _this._moduleStack.shift();
                             // 派发失败消息
@@ -256,25 +243,40 @@ var ModuleManager = /** @class */ (function () {
                                 this._opening = null;
                                 // 赋值responses
                                 target.responses = responses;
-                                // 调用open接口
-                                target.open(data);
-                                // 调用onDeactivate接口
-                                this.deactivateModule(fromModule, cls, data);
-                                // 调用onActivate接口
-                                this.activateModule(target, from && from[0], data);
-                                // 如果replace是true，则关掉上一个模块
-                                if (replace)
-                                    this.close(from && from[0], data);
-                                // 派发消息
-                                core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
+                                // 调用回调
+                                var stop = target.onGetResponses(responses);
+                                // 如果需要停止则停止后续操作，否则继续
+                                if (stop) {
+                                    // 移除先行数据
+                                    this._moduleStack.shift();
+                                    // 派发失败消息
+                                    core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], responses);
+                                }
+                                else {
+                                    // 篡改target的close方法，使其改为触发ModuleManager的close
+                                    moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
+                                    target.close = function (data) {
+                                        moduleManager.close(target, data);
+                                    };
+                                    // 调用open接口
+                                    target.open(data);
+                                    // 调用onDeactivate接口
+                                    this.deactivateModule(fromModule, cls, data);
+                                    // 调用onActivate接口
+                                    this.activateModule(target, from && from[0], data);
+                                    // 如果replace是true，则关掉上一个模块
+                                    if (replace)
+                                        this.close(from && from[0], data);
+                                    // 派发消息
+                                    core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
+                                }
                             }
                             // 结束一次模块开启
                             this.onFinishOpen();
                         }, _this, target.observable);
                     });
                 }
-            };
-            loadMediatorAssets();
+            });
             // 显示Loading
             if (maskFlag) {
                 maskManager.showLoading(null, "module");
@@ -306,25 +308,34 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
-     * @param {IModuleConstructor|string} clsOrName 模块类型或名称
+     * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @memberof ModuleManager
      */
-    ModuleManager.prototype.close = function (clsOrName, data) {
+    ModuleManager.prototype.close = function (module, data) {
         // 如果是字符串则获取引用
-        var cls = (typeof clsOrName == "string" ? this._moduleDict[clsOrName] : clsOrName);
+        var type = (typeof module == "string" ? this._moduleDict[module] : module);
         // 非空判断
-        if (!cls)
+        if (!type)
             return;
         // 数量判断，不足一个模块时不关闭
         if (this.activeCount <= 1)
             return;
+        // 取到类型
+        var cls = getConstructor(type instanceof Function ? type : type.constructor);
         // 存在性判断
         var index = this.getIndex(cls);
         if (index < 0)
             return;
         // 取到目标模块
-        var target = this._moduleStack[index][1];
+        var moduleData = this._moduleStack[index];
+        var target = moduleData[1];
+        // 恢复原始close方法
+        var oriClose = moduleData[2];
+        if (oriClose)
+            target.close = oriClose;
+        else
+            delete target.close;
         // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
         if (index == 0) {
             // 数据先行
@@ -333,13 +344,13 @@ var ModuleManager = /** @class */ (function () {
             var to = this._moduleStack[0];
             var toModule = to && to[1];
             // 调用onDeactivate接口
-            this.deactivateModule(target, to && to[0], data);
+            this.deactivateModule(target, toModule, data);
             // 调用close接口
             target.close(data);
             // 调用onActivate接口
-            this.activateModule(toModule, cls, data);
+            this.activateModule(toModule, target, data);
             // 调用onWakeUp接口
-            toModule.onWakeUp(cls, data);
+            toModule.wakeUp(target, data);
             // 派发消息
             core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
         }

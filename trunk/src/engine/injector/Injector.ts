@@ -5,12 +5,9 @@ import IObservable from "../../core/observable/IObservable";
 import { wrapConstruct, listenConstruct, listenDispose, getConstructor } from "../../utils/ConstructUtil";
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
-import IModule from "../module/IModule";
-import IModuleConstructor from "../module/IModuleConstructor";
 import { bridgeManager } from "../bridge/BridgeManager";
 import Mediator from "../mediator/Mediator";
 import { moduleManager } from "../module/ModuleManager";
-import IModuleMediator from "../mediator/IModuleMediator";
 import { decorateThis } from "../../core/global/Patch";
 import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
@@ -19,6 +16,8 @@ import { searchUI } from "./BindUtil";
 import IBridge from "../bridge/IBridge";
 import "reflect-metadata";
 import { EvalExp } from "../bind/Utils";
+import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import MediatorStatus from "../mediator/MediatorStatus";
 
 /**
  * @author Raykid
@@ -78,18 +77,9 @@ export function MediatorClass(cls:IConstructor):IConstructor
             }
         });
     });
-    return wrapConstruct(cls);
-}
-
-/** 定义模块，支持实例注入 */
-export function ModuleClass(cls:IModuleConstructor):IConstructor
-{
-    // 判断一下Module是否有dispose方法，没有的话弹一个警告
-    if(!cls.prototype.dispose)
-        console.warn("Module[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Module实现IDisposable接口");
     // 包装类
-    var wrapperCls:IModuleConstructor = wrapConstruct(cls);
-    // 注册模块
+    var wrapperCls:IMediatorConstructor = wrapConstruct(cls);
+    // 注册模块，每一个Mediator都有成为独立Module的能力
     moduleManager.registerModule(wrapperCls);
     // 返回包装类
     return wrapperCls;
@@ -143,10 +133,10 @@ function doMessageHandler(cls:IConstructor, key:string, type:IConstructor, inMod
     // 监听实例化
     listenConstruct(cls, function(instance:IObservable):void
     {
-        if(instance instanceof Mediator)
+        if(instance instanceof Mediator && instance.parent)
         {
-            // 如果是Mediator，则需要等到被托管后再执行注册
-            addDelegateHandler(instance, ()=>{
+            // 如果是被托管的Mediator，则需要等到被托管后再执行注册
+            addSubHandler(instance, ()=>{
                 var observable:IObservable = inModule ? instance.observable || core.observable : core.observable;
                 observable.listen(type, instance[key], instance);
             });
@@ -212,10 +202,10 @@ function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConst
     // 监听实例化
     listenConstruct(cls, function(instance:IObservable):void
     {
-        if(instance instanceof Mediator)
+        if(instance instanceof Mediator && instance.parent)
         {
-            // 如果是Mediator，则需要等到被托管后再执行注册
-            addDelegateHandler(instance, ()=>{
+            // 如果是被托管的Mediator，则需要等到被托管后再执行注册
+            addSubHandler(instance, ()=>{
                 netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
             });
         }
@@ -231,60 +221,62 @@ function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConst
     });
 }
 
-var delegateHandlerDict:Dictionary<IModuleMediator, ((instance:IModuleMediator)=>void)[]> = new Dictionary();
-function addDelegateHandler(instance:IModuleMediator, handler:(instance?:IModuleMediator)=>void):void
+var subHandlerDict:Dictionary<IMediator, ((instance:IMediator)=>void)[]> = new Dictionary();
+function addSubHandler(instance:IMediator, handler:(instance?:IMediator)=>void):void
 {
     if(!instance) return;
-    var handlers:((instance:IModuleMediator)=>void)[] = delegateHandlerDict.get(instance);
-    if(!handlers) delegateHandlerDict.set(instance, handlers = []);
+    var handlers:((instance:IMediator)=>void)[] = subHandlerDict.get(instance);
+    if(!handlers) subHandlerDict.set(instance, handlers = []);
     if(handlers.indexOf(handler) < 0) handlers.push(handler);
 }
 
-/** 在Module内托管Mediator */
-export function DelegateMediator(prototype:any, propertyKey:string):any
+/** 添加子Mediator */
+export function SubMediator(prototype:any, propertyKey:string):any
 {
     if(prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function)
     {
         // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:IModule):void
+        listenConstruct(prototype.constructor, function(instance:IMediator):void
         {
-            // 实例化
-            var mediator:IModuleMediator = instance[propertyKey];
-            if(mediator === undefined)
-            {
-                // 篡改属性
-                Object.defineProperty(instance, propertyKey, {
-                    configurable: true,
-                    enumerable: true,
-                    get: function():IModuleMediator
+            var mediator:IMediator = instance[propertyKey];
+            // 篡改属性
+            Object.defineProperty(instance, propertyKey, {
+                configurable: true,
+                enumerable: true,
+                get: function():IMediator
+                {
+                    return mediator;
+                },
+                set: function(value:IMediator):void
+                {
+                    if(value == mediator) return;
+                    // 取消托管中介者
+                    if(mediator)
                     {
-                        return mediator;
-                    },
-                    set: function(value:IModuleMediator):void
+                        this.undelegateMediator(mediator);
+                    }
+                    // 设置中介者
+                    mediator = value;
+                    // 托管新的中介者
+                    if(mediator)
                     {
-                        if(value == mediator) return;
-                        // 取消托管中介者
-                        if(mediator)
+                        this.delegateMediator(mediator);
+                        // 如果当前中介者已经为已打开状态，则额外调用open
+                        if(this.status === MediatorStatus.OPENED)
                         {
-                            this.undelegateMediator(mediator);
-                        }
-                        // 设置中介者
-                        mediator = value;
-                        // 托管新的中介者
-                        if(mediator)
-                        {
-                            this.delegateMediator(mediator);
+                            mediator.open(this.data);
                         }
                     }
-                });
+                }
+            });
+            // 实例化
+            if(mediator === undefined)
+            {
                 var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
                 instance[propertyKey] = new cls();
             }
-            // 赋值所属模块
-            mediator["_dependModuleInstance"] = instance;
-            mediator["_dependModule"] = getConstructor(prototype.constructor);
             // 执行回调
-            var handlers:((instance:IModuleMediator)=>void)[] = delegateHandlerDict.get(mediator);
+            var handlers:((instance:IMediator)=>void)[] = subHandlerDict.get(mediator);
             if(handlers)
             {
                 for(var handler of handlers)
@@ -292,18 +284,15 @@ export function DelegateMediator(prototype:any, propertyKey:string):any
                     handler(mediator);
                 }
                 // 移除记录
-                delegateHandlerDict.delete(mediator);
+                subHandlerDict.delete(mediator);
             }
         });
         // 监听销毁
-        listenDispose(prototype.constructor, function(instance:IModule):void
+        listenDispose(prototype.constructor, function(instance:IMediator):void
         {
-            var mediator:IModuleMediator = instance[propertyKey];
+            var mediator:IMediator = instance[propertyKey];
             if(mediator)
             {
-                // 移除所属模块
-                mediator["_dependModuleInstance"] = undefined;
-                mediator["_dependModule"] = undefined;
                 // 移除实例
                 instance[propertyKey] = undefined;
             }
@@ -935,7 +924,7 @@ export function BindGlobalResponse(arg1:{[type:string]:{[name:string]:any}}|IRes
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IModuleMediator)=>{
+        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
             var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {

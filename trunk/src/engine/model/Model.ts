@@ -15,6 +15,18 @@ import EngineMessage from "../message/EngineMessage";
 export default abstract class Model implements IObservable
 {
     /**
+     * Model的disposed属性没有任何作用，仅为了实现接口，始终返回false
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberof Model
+     */
+    public get disposed():boolean
+    {
+        return false;
+    }
+
+    /**
      * 转发core.observable
      * 
      * @readonly
@@ -123,5 +135,14 @@ export default abstract class Model implements IObservable
     public unmapCommand(type:string, cmd:ICommandConstructor):void
     {
         core.unmapCommand(type, cmd);
+    }
+
+    /**
+     * Model的dispose方法没有任何作用，仅为了实现接口
+     * 
+     * @memberof Model
+     */
+    public dispose():void
+    {
     }
 }

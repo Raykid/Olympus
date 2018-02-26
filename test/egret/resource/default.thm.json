@@ -32,6 +32,7 @@
     "resource/skins/Fuck2Skin.exml",
     "resource/skins/FuckSkin.exml",
     "resource/skins/ListRenderer.exml",
-    "resource/skins/ListRenderer2.exml"
+    "resource/skins/ListRenderer2.exml",
+    "resource/skins/TestCompSkin.exml"
   ]
 }

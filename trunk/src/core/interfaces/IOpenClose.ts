@@ -8,6 +8,14 @@
 */
 export default interface IOpenClose
 {
+    /**
+     * 打开时传递的data对象
+     * 
+     * @type {*}
+     * @memberof IOpenClose
+     */
+    data:any;
+
     /** 开 */
     open(data?:any, ...args:any[]):any;
     /** 关 */

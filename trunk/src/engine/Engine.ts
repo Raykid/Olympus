@@ -12,8 +12,6 @@ import PanelMediator from "./panel/PanelMediator";
 import SceneManager from "./scene/SceneManager";
 import SceneMediator from "./scene/SceneMediator";
 import ModuleManager, {moduleManager} from "./module/ModuleManager";
-import IModuleConstructor from "./module/IModuleConstructor";
-import Module from "./module/Module";
 import AssetsManager, { assetsManager } from "./assets/AssetsManager";
 import AudioManager from "./audio/AudioManager";
 import Environment, { environment } from "./env/Environment";
@@ -33,6 +31,7 @@ import IBridge from "./bridge/IBridge";
 import IPlugin from "./plugin/IPlugin";
 import * as Injector from "./injector/Injector";
 import EngineMessage from "./message/EngineMessage";
+import IMediatorConstructor from "./mediator/IMediatorConstructor";
 
 /**
  * @author Raykid
@@ -162,7 +161,7 @@ export default class Engine
         }
     }
 
-    private onModuleChange(from:IModuleConstructor):void
+    private onModuleChange(from:IMediatorConstructor):void
     {
         // 调用进度回调，全部过程完毕，100%
         this._initParams.onInitProgress && this._initParams.onInitProgress(1, InitStep.Inited);
@@ -209,10 +208,10 @@ export interface IInitParams
     /**
      * 首模块类型，框架初始化完毕后进入的模块
      * 
-     * @type {IModuleConstructor}
+     * @type {IMediatorConstructor}
      * @memberof OlympusInitParams
      */
-    firstModule:IModuleConstructor;
+    firstModule:IMediatorConstructor;
     /**
      * 会在首个模块被显示出来后从页面中移除
      * 

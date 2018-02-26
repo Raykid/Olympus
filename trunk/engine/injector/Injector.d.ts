@@ -1,5 +1,4 @@
 import { IResponseDataConstructor } from "../net/ResponseData";
-import IModuleConstructor from "../module/IModuleConstructor";
 import "reflect-metadata";
 import { EvalExp } from "../bind/Utils";
 /**
@@ -14,8 +13,6 @@ import { EvalExp } from "../bind/Utils";
 export declare function ModelClass(...args: any[]): any;
 /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
 export declare function MediatorClass(cls: IConstructor): IConstructor;
-/** 定义模块，支持实例注入 */
-export declare function ModuleClass(cls: IModuleConstructor): IConstructor;
 /** 处理消息 */
 export declare function MessageHandler(prototype: any, propertyKey: string): void;
 export declare function MessageHandler(type: string): MethodDecorator;
@@ -28,8 +25,8 @@ export declare function ResponseHandler(cls: IResponseDataConstructor): MethodDe
 /** 处理全局通讯消息返回 */
 export declare function GlobalResponseHandler(prototype: any, propertyKey: string): void;
 export declare function GlobalResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
-/** 在Module内托管Mediator */
-export declare function DelegateMediator(prototype: any, propertyKey: string): any;
+/** 添加子Mediator */
+export declare function SubMediator(prototype: any, propertyKey: string): any;
 /**
  * 一次绑定多个属性
  *

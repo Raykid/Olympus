@@ -5,7 +5,6 @@ import BridgeMessage from "./BridgeMessage";
 import { panelManager } from "../panel/PanelManager";
 import { moduleManager } from "../module/ModuleManager";
 import IMediator from "../mediator/IMediator";
-import IModule from "../module/IModule";
 import { maskManager } from "../mask/MaskManager";
 
 /**
@@ -32,11 +31,10 @@ export default class BridgeManager
     public get currentBridge():IBridge
     {
         // 先用当前模块的首个拥有bridge的Mediator的bridge
-        var curModule:IModule = moduleManager.currentModuleInstance;
+        var curModule:IMediator = moduleManager.currentModuleInstance;
         if(curModule)
         {
-            var bridge:IBridge;
-            var mediators:IMediator[] = curModule.delegatedMediators;
+            var mediators:IMediator[] = [curModule].concat(curModule.children);
             for(var mediator of mediators)
             {
                 if(mediator.bridge) return mediator.bridge;

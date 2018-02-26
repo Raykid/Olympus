@@ -1,7 +1,8 @@
 import SceneMediator from "olympus-r/engine/scene/SceneMediator";
-import Module from "olympus-r/engine/module/Module";
-import { ModuleClass, DelegateMediator, BindFunc, BindFor, BindValue, MessageHandler, GlobalMessageHandler, BindMessage, BindIf } from "olympus-r/engine/injector/Injector";
+import { BindFunc, BindFor, BindValue, MessageHandler, GlobalMessageHandler, BindMessage, BindIf, SubMediator } from "olympus-r/engine/injector/Injector";
 import { EgretMediatorClass } from "olympus-r-egret/egret/injector/Injector";
+import TestComp from "./TestComp";
+import { moduleManager } from "olympus-r/engine/module/ModuleManager";
 
 /**
  * @author Raykid
@@ -13,8 +14,11 @@ import { EgretMediatorClass } from "olympus-r-egret/egret/injector/Injector";
 */
 
 @EgretMediatorClass("Fuck2Skin")
-class SecondMediator extends SceneMediator
+export default class Second extends SceneMediator
 {
+    @SubMediator
+    private _testComp:TestComp;
+
     @BindMessage("FuckMsg", {label: "onMsg($arguments[0])"})
     @BindFunc("getCurrentState", ["fuck", "onMsg", undefined])
     public btn:eui.Button;
@@ -30,7 +34,7 @@ class SecondMediator extends SceneMediator
     })
     public lst:eui.DataGroup;
 
-    public listAssets():string[]
+    public onListAssets():string[]
     {
         return ["preload"];
     }
@@ -38,7 +42,7 @@ class SecondMediator extends SceneMediator
     public onOpen():void
     {
         this.mapListener(this.btn, egret.TouchEvent.TOUCH_TAP, ()=>{
-            // moduleManager.close(SecondModule);
+            // moduleManager.close(Second);
 
             this.dispatch("FuckMsg", "Shit!!!");
         });
@@ -46,6 +50,7 @@ class SecondMediator extends SceneMediator
             onMsg: msg=>{
                 // 表达式里使用函数可以在函数里执行复杂逻辑，并且具有代码提示
                 console.log(msg);
+                moduleManager.close(this);
                 return msg + " - 1";
             },
             fuck: "you",
@@ -54,18 +59,23 @@ class SecondMediator extends SceneMediator
         // 测试消息
         this.dispatch("fuck", 123);
     }
-}
 
-@ModuleClass
-export default class SecondModule extends Module
-{
-    @DelegateMediator
-    private _mediator:SecondMediator;
-    
     @MessageHandler("fuck")
     @GlobalMessageHandler("fuck")
     private onFuck(a):void
     {
-        console.log("message at SecondModule: " + a);
+        console.log("message at Second: " + a);
+    }
+
+    @MessageHandler("TestCompMsg")
+    private onTestCompMsg():void
+    {
+        console.log("TestCompMsg Received");
+    }
+
+    @GlobalMessageHandler("TestCompMsg")
+    private onTestCompMsgGlobal():void
+    {
+        console.log("TestCompMsg Received Global");
     }
 }

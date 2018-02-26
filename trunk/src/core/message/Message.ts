@@ -19,7 +19,7 @@ export default abstract class Message implements IMessage
      * @type {string}
      * @memberof Message
      */
-    public get type():string
+    public get __type():string
     {
         return this._type;
     }

@@ -38,6 +38,20 @@ var Core = /** @class */ (function () {
         // 注入自身
         this.mapInjectValue(this);
     }
+    Object.defineProperty(Core.prototype, "disposed", {
+        /**
+         * Core的disposed属性没有任何作用，仅为了实现接口，始终会返回false
+         *
+         * @readonly
+         * @type {boolean}
+         * @memberof Core
+         */
+        get: function () {
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Core.prototype, "observable", {
         /**
          * 将IObservable暴露出来
@@ -178,6 +192,13 @@ var Core = /** @class */ (function () {
             type = type["__ori_constructor__"] || type;
             return Reflect.getMetadata("design:type", type);
         }
+    };
+    /**
+     * Core的dispose方法没有任何作用，仅为了实现接口
+     *
+     * @memberof Core
+     */
+    Core.prototype.dispose = function () {
     };
     return Core;
 }());

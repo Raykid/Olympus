@@ -58,3 +58,5 @@ declare class ListRenderer extends eui.Skin{
 }
 declare class ListRenderer2 extends eui.Skin{
 }
+declare class TestCompSkin extends eui.Skin{
+}

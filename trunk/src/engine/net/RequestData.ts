@@ -118,7 +118,7 @@ export default abstract class RequestData implements IMessage
      * @type {string}
      * @memberof RequestData
      */
-    public get type():string
+    public get __type():string
     {
         return this.__params.type;
     }

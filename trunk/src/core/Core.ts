@@ -33,6 +33,18 @@ export default class Core implements IObservable
 {
     private static _instance:Core;
 
+    /**
+     * Core的disposed属性没有任何作用，仅为了实现接口，始终会返回false
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberof Core
+     */
+    public get disposed():boolean
+    {
+        return false;
+    }
+
     public constructor()
     {
         // 进行单例判断
@@ -230,6 +242,15 @@ export default class Core implements IObservable
             type = type["__ori_constructor__"] || type;
             return Reflect.getMetadata("design:type", type);
         }
+    }
+
+    /**
+     * Core的dispose方法没有任何作用，仅为了实现接口
+     * 
+     * @memberof Core
+     */
+    public dispose():void
+    {
     }
 }
 /** 再额外导出一个单例 */

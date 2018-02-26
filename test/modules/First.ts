@@ -1,5 +1,5 @@
-import SecondModule from "./SecondModule";
-import ThirdModule from "./ThirdModule";
+import Second from "./Second";
+import Third from "./Third";
 import TestResponse from "../net/response/TestResponse";
 import TestRequest from "../net/request/TestRequest";
 import FuckModel, { IFuckModel } from "../models/FuckModel";
@@ -7,8 +7,7 @@ import SceneMediator from 'olympus-r/engine/scene/SceneMediator';
 import { Inject } from "olympus-r/core/injector/Injector";
 import ModuleManager from "olympus-r/engine/module/ModuleManager";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import Module from "olympus-r/engine/module/Module";
-import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandler, ResponseHandler, ModuleClass, DelegateMediator } from "olympus-r/engine/injector/Injector";
+import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandler, ResponseHandler } from "olympus-r/engine/injector/Injector";
 import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
 import { audioManager } from "olympus-r/engine/audio/AudioManager";
 import TestPanel from "./TestPanel";
@@ -23,7 +22,7 @@ import TestPanel from "./TestPanel";
 */
 
 @DOMMediatorClass("./modules/test.html")
-class FirstMediator extends SceneMediator
+export default class First extends SceneMediator
 {
     @Inject
     private moduleManager:ModuleManager;
@@ -45,9 +44,14 @@ class FirstMediator extends SceneMediator
     @BindValue("textContent", "fuckModel.fuck")
     public fuck:HTMLElement;
 
-    public listAssets():string[]
+    public onListAssets():string[]
     {
         return ["./modules/test.html"];
+    }
+
+    public onListJsFiles():string[]
+    {
+        return ["test1.js", "./test2.js"];
     }
 
     public onOpen():void
@@ -55,7 +59,7 @@ class FirstMediator extends SceneMediator
         // this.mapListener(this.btn, "click", function():void
         // {
         //     this.txt.textContent = "Fuck you!!!";
-        //     this.moduleManager.open(SecondModule);
+        //     this.moduleManager.open(Second);
         // }, this);
         console.log(this.fuckModel1.fuck, this.fuckModel1 === this.fuckModel2, this.fuckModel1 === this.fuckModel3);
 
@@ -64,13 +68,13 @@ class FirstMediator extends SceneMediator
             fuckText: "fuck you",
             onClickBtn: ()=>{
                 this.viewModel.fuckText = "clicked";
-                this.moduleManager.open(SecondModule, null, true);
+                this.moduleManager.open(Second);
             },
             onClickText: ()=>{
                 this.moduleManager.open(TestPanel);
             },
             onClickFuck: ()=>{
-                this.moduleManager.open(ThirdModule);
+                this.moduleManager.open(Third);
             },
             fuckModel: this.fuckModel1
         };
@@ -91,26 +95,14 @@ class FirstMediator extends SceneMediator
     @MessageHandler(ModuleMessage.MODULE_CHANGE)
     private onModuleChange(to:any, from:any):void
     {
-        if(to == FirstModule) console.log("change to first module!");
-        else if(to == SecondModule) console.log("change to second module!");
+        if(to == First) console.log("change to first module!");
+        else if(to == Second) console.log("change to second module!");
     }
 
     @ResponseHandler
     private onResponse(res:TestResponse, req:TestRequest):void
     {
         alert("123");
-    }
-}
-
-@ModuleClass
-export default class FirstModule extends Module
-{
-    @DelegateMediator
-    private _mediator:FirstMediator;
-
-    public listJsFiles():string[]
-    {
-        return ["test1.js", "./test2.js"];
     }
     
     @MessageHandler("fuck")

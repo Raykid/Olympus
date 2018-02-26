@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="TestCompSkin" width="400" height="300" xmlns:e="http://ns.egret.com/eui">
+	<e:Rect left="0" right="0" top="0" bottom="0" fillColor="0x51b5b5"/>
+	<e:Button label="Button" x="133" y="201" anchorOffsetX="0" width="134" anchorOffsetY="0" height="81"/>
+	<e:Label text="这是TestComp" y="37" textAlign="center" anchorOffsetY="0" left="0" right="0" height="74" verticalAlign="middle"/>
+</e:Skin>

@@ -170,7 +170,7 @@ var NetManager = /** @class */ (function () {
                 // 由上至下找到最远的一个有效内核
                 for (var i = request.__observables.length - 1; i >= 0; i--) {
                     var temp = request.__observables[i];
-                    if (!temp || temp["disposed"])
+                    if (!temp || temp.disposed)
                         break;
                     else
                         observable = temp;
