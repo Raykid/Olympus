@@ -12,13 +12,14 @@ import DOMBridge from "../../DOMBridge";
  * 
  * 负责注入的模块
 */
-export function DOMMediatorClass(moduleName:string, ...skins:string[]):ClassDecorator
+export function DOMMediatorClass(moduleName:string, skin:string, ...skins:string[]):ClassDecorator
 {
     return function(cls:IConstructor):any
     {
         // 调用MediatorClass方法
         cls = <IConstructor>MediatorClass(moduleName)(cls);
         // 监听类型实例化，转换皮肤格式
+        skins.unshift(skin);
         listenConstruct(cls, mediator=>wrapSkin(mediator, skins));
         // 返回结果类型
         return cls;
