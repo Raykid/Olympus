@@ -22,29 +22,15 @@ export function EgretSkin(skin:any):ClassDecorator
     } as ClassDecorator;
 }
 
-export function EgretMediatorClass(cls:IConstructor):any
-export function EgretMediatorClass(skin:string):ClassDecorator
-export function EgretMediatorClass(target:IConstructor|string):any
+export function EgretMediatorClass(moduleName:string, skin:string):ClassDecorator
 {
-    if(target instanceof Function)
+    return function(cls:IConstructor):any
     {
         // 调用MediatorClass方法
-        var cls = MediatorClass(target);
-        // 监听类型实例化，赋值表现层桥
-        listenConstruct(cls, mediator=>mediator.bridge = bridgeManager.getBridge(EgretBridge.TYPE));
+        cls = <IConstructor>MediatorClass(moduleName)(cls);
+        // 监听类型实例化，转换皮肤格式
+        listenConstruct(cls, mediator=>wrapSkin(mediator, skin));
         // 返回结果类型
         return cls;
-    }
-    else
-    {
-        return function(cls:IConstructor):any
-        {
-            // 调用MediatorClass方法
-            cls = MediatorClass(cls);
-            // 监听类型实例化，转换皮肤格式
-            listenConstruct(cls, mediator=>wrapSkin(mediator, target));
-            // 返回结果类型
-            return cls;
-        } as ClassDecorator;
-    }
+    } as ClassDecorator;
 }

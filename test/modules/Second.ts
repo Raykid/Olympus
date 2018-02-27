@@ -13,9 +13,11 @@ import { moduleManager } from "olympus-r/engine/module/ModuleManager";
  * 测试第二个模块
 */
 
-@EgretMediatorClass("Fuck2Skin")
+@EgretMediatorClass("Second", "Fuck2Skin")
 export default class Second extends SceneMediator
 {
+    public static moduleName:string = "Second";
+
     @SubMediator
     private _testComp:TestComp;
 

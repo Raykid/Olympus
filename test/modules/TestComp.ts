@@ -1,7 +1,7 @@
 import Mediator from "olympus-r/engine/mediator/Mediator";
 import { EgretMediatorClass } from "olympus-r-egret/egret/injector/Injector";
 
-@EgretMediatorClass("TestCompSkin")
+@EgretMediatorClass("TestComp", "TestCompSkin")
 export default class TestComp extends Mediator
 {
     public onOpen():void

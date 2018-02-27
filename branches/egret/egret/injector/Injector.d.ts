@@ -7,5 +7,4 @@
  * 负责注入的模块
 */
 export declare function EgretSkin(skin: any): ClassDecorator;
-export declare function EgretMediatorClass(cls: IConstructor): any;
-export declare function EgretMediatorClass(skin: string): ClassDecorator;
+export declare function EgretMediatorClass(moduleName: string, skin: string): ClassDecorator;

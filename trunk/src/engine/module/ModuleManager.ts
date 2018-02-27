@@ -116,9 +116,15 @@ export default class ModuleManager
         return target;
     }
 
+    /**
+     * 注册模块
+     * 
+     * @param {IMediatorConstructor} cls 模块类型
+     * @memberof ModuleManager
+     */
     public registerModule(cls:IMediatorConstructor):void
     {
-        this._moduleDict[cls["name"]] = cls;
+        this._moduleDict[cls["moduleName"] || cls["name"]] = cls;
     }
 
     /**
@@ -173,7 +179,7 @@ export default class ModuleManager
         }
         this._opening = type;
         // 取到类型
-        var cls:IMediatorConstructor = getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
+        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         var after:ModuleData[] = this.getAfter(cls);
         if(!after)
         {
@@ -217,6 +223,8 @@ export default class ModuleManager
                         if(replace) this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
+                        // 结束一次模块开启
+                        this.onFinishOpen();
                         break;
                 }
             };
@@ -267,7 +275,7 @@ export default class ModuleManager
         // 数量判断，不足一个模块时不关闭
         if(this.activeCount <= 1) return;
         // 取到类型
-        var cls:IMediatorConstructor = getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
+        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         // 存在性判断
         var index:number = this.getIndex(cls);
         if(index < 0) return;

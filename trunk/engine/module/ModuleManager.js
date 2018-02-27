@@ -115,8 +115,14 @@ var ModuleManager = /** @class */ (function () {
         }
         return target;
     };
+    /**
+     * 注册模块
+     *
+     * @param {IMediatorConstructor} cls 模块类型
+     * @memberof ModuleManager
+     */
     ModuleManager.prototype.registerModule = function (cls) {
-        this._moduleDict[cls["name"]] = cls;
+        this._moduleDict[cls["moduleName"] || cls["name"]] = cls;
     };
     /**
      * 获取模块是否开启中
@@ -205,6 +211,8 @@ var ModuleManager = /** @class */ (function () {
                             _this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
+                        // 结束一次模块开启
+                        _this.onFinishOpen();
                         break;
                 }
             };
