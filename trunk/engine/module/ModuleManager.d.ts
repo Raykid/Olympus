@@ -55,6 +55,12 @@ export default class ModuleManager {
     getModule(index: number): IMediatorConstructor;
     private getAfter(cls);
     private getCurrent();
+    /**
+     * 注册模块
+     *
+     * @param {IMediatorConstructor} cls 模块类型
+     * @memberof ModuleManager
+     */
     registerModule(cls: IMediatorConstructor): void;
     /**
      * 获取模块是否开启中

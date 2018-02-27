@@ -1,9 +1,15 @@
 import { core } from "../../core/Core";
-import { mutate } from "../bind/Mutator";
-import Dictionary from "../../utils/Dictionary";
-import { bindManager } from "../bind/BindManager";
 import Observable from "../../core/observable/Observable";
+import Dictionary from "../../utils/Dictionary";
+import { mutate } from "../bind/Mutator";
+import { bindManager } from "../bind/BindManager";
+import { maskManager } from "../mask/MaskManager";
+import { environment } from "../env/Environment";
+import { version } from "../version/Version";
+import { assetsManager } from "../assets/AssetsManager";
+import { netManager } from "../net/NetManager";
 import MediatorStatus from "./MediatorStatus";
+import { ModuleOpenStatus } from "./IMediatorModulePart";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -137,12 +143,132 @@ var Mediator = /** @class */ (function () {
      */
     Mediator.prototype.loadAssets = function (handler) {
         var _this = this;
-        this.bridge.loadAssets(this.listAssets(), this, function (err) {
-            // 调用onLoadAssets接口
-            _this.onLoadAssets(err);
-            // 调用回调
-            handler(err);
-        });
+        var mediators = this._children.concat();
+        var temp = function (err) {
+            if (err || mediators.length <= 0) {
+                // 调用onLoadAssets接口
+                _this.onLoadAssets(err);
+                // 调用回调
+                handler(err);
+            }
+            else {
+                // 加载一个子中介者的资源
+                var mediator = mediators.shift();
+                mediator.loadAssets(temp);
+            }
+        };
+        // 加载自身资源
+        this.bridge.loadAssets(this.listAssets(), this, temp);
+    };
+    /**
+     * 加载从listStyleFiles中获取到的所有资源
+     *
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+     * @memberof IMediator
+     */
+    Mediator.prototype.loadStyleFiles = function (handler) {
+        var _this = this;
+        var mediators = this._children.concat();
+        var temp = function (err) {
+            if (err || mediators.length <= 0) {
+                // 调用onLoadStyleFiles接口
+                _this.onLoadStyleFiles(err);
+                // 调用回调
+                handler(err);
+            }
+            else {
+                // 加载一个子中介者的资源
+                var mediator = mediators.shift();
+                mediator.loadStyleFiles(temp);
+            }
+        };
+        // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
+        var cssFiles = this.listStyleFiles();
+        if (cssFiles) {
+            for (var _i = 0, cssFiles_1 = cssFiles; _i < cssFiles_1.length; _i++) {
+                var cssFile = cssFiles_1[_i];
+                var cssNode = document.createElement("link");
+                cssNode.rel = "stylesheet";
+                cssNode.type = "text/css";
+                cssNode.href = environment.toCDNHostURL(version.wrapHashUrl(cssFile));
+                document.body.appendChild(cssNode);
+            }
+        }
+        temp();
+    };
+    /**
+     * 加载从listJsFiles中获取到的所有资源
+     *
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+     * @memberof IMediator
+     */
+    Mediator.prototype.loadJsFiles = function (handler) {
+        var _this = this;
+        var mediators = this._children.concat();
+        var temp = function (results) {
+            if (results instanceof Error || mediators.length <= 0) {
+                var err = results instanceof Error ? results : undefined;
+                // 调用onLoadJsFiles接口
+                _this.onLoadJsFiles(err);
+                // 调用回调
+                handler(err);
+            }
+            else {
+                if (results) {
+                    // 使用script标签将js文件加入html中
+                    var jsNode = document.createElement("script");
+                    jsNode.innerHTML = results.join("\n");
+                    document.body.appendChild(jsNode);
+                }
+                // 加载一个子中介者的js
+                var mediator = mediators.shift();
+                mediator.loadJsFiles(temp);
+            }
+        };
+        // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
+        assetsManager.loadAssets(this.listJsFiles(), temp);
+    };
+    /**
+     * 发送从listInitRequests中获取到的所有资源
+     *
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+     * @memberof IMediator
+     */
+    Mediator.prototype.sendInitRequests = function (handler) {
+        var _this = this;
+        var mediators = this._children.concat();
+        var temp = function (responses) {
+            if (responses instanceof Error || mediators.length <= 0) {
+                var err = responses instanceof Error ? responses : undefined;
+                // 调用onSendInitRequests接口
+                _this.onSendInitRequests(err);
+                // 调用回调
+                handler(err);
+            }
+            else {
+                if (isMine) {
+                    isMine = false;
+                    // 赋值返回值
+                    _this.responses = responses;
+                    // 调用回调
+                    var stop = _this.onGetResponses(responses);
+                    if (stop) {
+                        var err = new Error("用户中止打开模块操作");
+                        // 调用onSendInitRequests接口
+                        _this.onSendInitRequests(err);
+                        // 调用回调
+                        handler(err);
+                        return;
+                    }
+                }
+                // 发送一个子中介者的初始化消息
+                var mediator = mediators.shift();
+                mediator.sendInitRequests(temp);
+            }
+        };
+        // 发送所有模块消息，模块消息默认发送全局内核
+        var isMine = true;
+        netManager.sendMultiRequests(this.listInitRequests(), temp, this, this.observable);
     };
     /**
      * 当所需资源加载完毕后调用
@@ -151,6 +277,30 @@ var Mediator = /** @class */ (function () {
      * @memberof Mediator
      */
     Mediator.prototype.onLoadAssets = function (err) {
+    };
+    /**
+     * 当所需CSS加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof Mediator
+     */
+    Mediator.prototype.onLoadStyleFiles = function (err) {
+    };
+    /**
+     * 当所需js加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof Mediator
+     */
+    Mediator.prototype.onLoadJsFiles = function (err) {
+    };
+    /**
+     * 当所需资源加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof Mediator
+     */
+    Mediator.prototype.onSendInitRequests = function (err) {
     };
     /**
      * 当获取到所有初始化请求返回时调用，可以通过返回一个true来阻止模块的打开
@@ -170,24 +320,76 @@ var Mediator = /** @class */ (function () {
      * @memberof Mediator
      */
     Mediator.prototype.open = function (data) {
+        var _this = this;
         // 判断状态
         if (this._status === MediatorStatus.UNOPEN) {
             // 修改状态
             this._status = MediatorStatus.OPENING;
             // 赋值参数
             this.data = data;
-            // 调用自身onOpen方法
-            this.onOpen(data);
-            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-            if (!this._viewModel)
-                this.viewModel = {};
-            // 调用所有已托管中介者的open方法
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                var mediator = _a[_i];
-                mediator.open(data);
+            // 记一个是否需要遮罩的flag
+            var maskFlag = true;
+            // 加载所有已托管中介者的资源
+            this.loadAssets(function (err) {
+                // 隐藏Loading
+                if (!maskFlag)
+                    maskManager.hideLoading("mediatorOpen");
+                maskFlag = false;
+                if (err) {
+                    // 调用回调
+                    _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                }
+                else {
+                    // 加载css文件
+                    _this.loadStyleFiles(function (err) {
+                        if (err) {
+                            // 调用回调
+                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                        }
+                        else {
+                            // 加载js文件
+                            _this.loadJsFiles(function (err) {
+                                if (err) {
+                                    // 调用回调
+                                    _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                                }
+                                else {
+                                    // 发送初始化消息
+                                    _this.sendInitRequests(function (err) {
+                                        if (err) {
+                                            // 调用回调
+                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                                        }
+                                        else {
+                                            // 调用回调
+                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                            // 调用自身onOpen方法
+                                            _this.onOpen(data);
+                                            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+                                            if (!_this._viewModel)
+                                                _this.viewModel = {};
+                                            // 调用所有已托管中介者的open方法
+                                            for (var _i = 0, _a = _this._children; _i < _a.length; _i++) {
+                                                var mediator = _a[_i];
+                                                mediator.open(data);
+                                            }
+                                            // 修改状态
+                                            _this._status = MediatorStatus.OPENED;
+                                            // 调用回调
+                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            // 显示Loading
+            if (maskFlag) {
+                maskManager.showLoading(null, "mediatorOpen");
+                maskFlag = false;
             }
-            // 修改状态
-            this._status = MediatorStatus.OPENED;
         }
         // 返回自身引用
         return this;
@@ -440,68 +642,40 @@ var Mediator = /** @class */ (function () {
         }
     };
     /**
-     * 列出中介者所需的资源数组，不要手动调用或重写
+     * 列出中介者所需的资源数组，可重写
      *
      * @returns {string[]}
      * @memberof Mediator
      */
     Mediator.prototype.listAssets = function () {
-        // 获取自身所需资源
-        var assets = this.onListAssets() || [];
-        // 获取所有子中介者所需资源
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var mediator = _a[_i];
-            assets.push.apply(assets, mediator.listAssets());
-        }
-        return assets;
+        return null;
     };
     /**
-     * 列出模块初始化请求，不要手动调用或重写
-     *
-     * @returns {RequestData[]}
-     * @memberof Mediator
-     */
-    Mediator.prototype.listInitRequests = function () {
-        // 获取自身初始化请求
-        var requests = this.onListInitRequests() || [];
-        // 获取所有子中介者所需资源
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var mediator = _a[_i];
-            requests.push.apply(requests, mediator.listInitRequests());
-        }
-        return requests;
-    };
-    /**
-     * 列出所需CSS资源URL，不要手动调用或重写
+     * 列出所需CSS资源URL，可重写
      *
      * @returns {string[]}
      * @memberof Mediator
      */
     Mediator.prototype.listStyleFiles = function () {
-        // 获取自身URL
-        var files = this.onListStyleFiles() || [];
-        // 获取所有子中介者所需资源
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var mediator = _a[_i];
-            files.push.apply(files, mediator.listStyleFiles());
-        }
-        return files;
+        return null;
     };
     /**
-     * 列出所需JS资源URL，不要手动调用或重写
+     * 列出所需JS资源URL，可重写
      *
      * @returns {string[]}
      * @memberof Mediator
      */
     Mediator.prototype.listJsFiles = function () {
-        // 获取自身URL
-        var files = this.onListJsFiles() || [];
-        // 获取所有子中介者所需资源
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var mediator = _a[_i];
-            files.push.apply(files, mediator.listJsFiles());
-        }
-        return files;
+        return null;
+    };
+    /**
+     * 列出模块初始化请求，可重写
+     *
+     * @returns {RequestData[]}
+     * @memberof Mediator
+     */
+    Mediator.prototype.listInitRequests = function () {
+        return null;
     };
     /**
      * 其他模块被关闭回到当前模块时调用
@@ -532,42 +706,6 @@ var Mediator = /** @class */ (function () {
      */
     Mediator.prototype.onDeactivate = function (to, data) {
         // 可重写
-    };
-    /**
-     * 列出中介者所需的资源数组，可重写
-     *
-     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-     * @memberof Mediator
-     */
-    Mediator.prototype.onListAssets = function () {
-        return null;
-    };
-    /**
-     * 列出模块初始化请求，可重写
-     *
-     * @returns {RequestData[]}
-     * @memberof Mediator
-     */
-    Mediator.prototype.onListInitRequests = function () {
-        return null;
-    };
-    /**
-     * 列出所需CSS资源URL，可重写
-     *
-     * @returns {string[]}
-     * @memberof Mediator
-     */
-    Mediator.prototype.onListStyleFiles = function () {
-        return null;
-    };
-    /**
-     * 列出所需JS资源URL，可重写
-     *
-     * @returns {string[]}
-     * @memberof Mediator
-     */
-    Mediator.prototype.onListJsFiles = function () {
-        return null;
     };
     Object.defineProperty(Mediator.prototype, "observable", {
         /**

@@ -2,7 +2,6 @@ import IMediatorBasicPart from "./IMediatorBasicPart";
 import IMediatorBindPart from "./IMediatorBindPart";
 import IMediatorTreePart from "./IMediatorTreePart";
 import IMediatorModulePart from "./IMediatorModulePart";
-import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 /**
  * @author Raykid
@@ -35,6 +34,27 @@ export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart
      */
     onLoadAssets(err?: Error): void;
     /**
+     * 当所需CSS加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof IMediator
+     */
+    onLoadStyleFiles(err?: Error): void;
+    /**
+     * 当所需js加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof IMediator
+     */
+    onLoadJsFiles(err?: Error): void;
+    /**
+     * 当所需资源加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof IMediator
+     */
+    onSendInitRequests(err?: Error): void;
+    /**
      * 当获取到所有初始化请求返回时调用，可以通过返回一个true来阻止模块的打开
      *
      * @param {ResponseData[]} responses 返回结构数组
@@ -66,32 +86,4 @@ export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart
      * @memberof IMediator
      */
     onDeactivate(to: IMediator | undefined, data?: any): void;
-    /**
-     * 列出模块初始化请求
-     *
-     * @returns {RequestData[]}
-     * @memberof IMediator
-     */
-    onListInitRequests(): RequestData[];
-    /**
-     * 列出所需CSS资源URL
-     *
-     * @returns {string[]}
-     * @memberof IMediator
-     */
-    onListStyleFiles(): string[];
-    /**
-     * 列出所需JS资源URL
-     *
-     * @returns {string[]}
-     * @memberof IMediator
-     */
-    onListJsFiles(): string[];
-    /**
-     * 列出中介者所需的资源数组，可重写
-     *
-     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-     * @memberof IMediator
-     */
-    onListAssets(): string[];
 }

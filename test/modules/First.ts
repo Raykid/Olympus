@@ -21,9 +21,11 @@ import TestPanel from "./TestPanel";
  * 测试首个模块
 */
 
-@DOMMediatorClass("./modules/test.html")
+@DOMMediatorClass("First", "./modules/test.html")
 export default class First extends SceneMediator
 {
+    public static moduleName:string = "First";
+
     @Inject
     private moduleManager:ModuleManager;
     @Inject
@@ -44,12 +46,12 @@ export default class First extends SceneMediator
     @BindValue("textContent", "fuckModel.fuck")
     public fuck:HTMLElement;
 
-    public onListAssets():string[]
+    public listAssets():string[]
     {
         return ["./modules/test.html"];
     }
 
-    public onListJsFiles():string[]
+    public listJsFiles():string[]
     {
         return ["test1.js", "./test2.js"];
     }
@@ -68,7 +70,8 @@ export default class First extends SceneMediator
             fuckText: "fuck you",
             onClickBtn: ()=>{
                 this.viewModel.fuckText = "clicked";
-                this.moduleManager.open(Second);
+                // this.moduleManager.open(Second);
+                new Second().open();
             },
             onClickText: ()=>{
                 this.moduleManager.open(TestPanel);

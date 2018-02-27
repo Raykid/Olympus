@@ -10,15 +10,22 @@ import IMediator from "./IMediator";
  * 
  * 该接口规定了中介者具有的模块部分功能
 */
+
+export enum ModuleOpenStatus
+{
+    Stop,
+    BeforeOpen,
+    AfterOpen
+}
+
 export default interface IMediatorModulePart
 {
     /**
-     * 模块初始消息的返回数据
+     * 模块打开结果回调函数，由moduleManager调用，不要手动调用
      * 
-     * @type {ResponseData[]}
      * @memberof IMediatorModulePart
      */
-    responses:ResponseData[];
+    moduleOpenHandler:(status:ModuleOpenStatus, err?:Error)=>void;
     
     /**
      * 其他模块被关闭回到当前模块时调用
@@ -46,36 +53,4 @@ export default interface IMediatorModulePart
      * @memberof IMediatorModulePart
      */
     deactivate(to:IMediator|undefined, data?:any):void;
-    
-    /**
-     * 列出模块初始化请求
-     * 
-     * @returns {RequestData[]} 
-     * @memberof IMediatorModulePart
-     */
-    listInitRequests():RequestData[];
-
-    /**
-     * 列出所需CSS资源URL
-     * 
-     * @returns {string[]} 
-     * @memberof IMediatorModulePart
-     */
-    listStyleFiles():string[];
-
-    /**
-     * 列出所需JS资源URL
-     * 
-     * @returns {string[]} 
-     * @memberof IMediatorModulePart
-     */
-    listJsFiles():string[];
-    
-    /**
-     * 列出中介者所需的资源数组，可重写
-     * 
-     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-     * @memberof IMediatorModulePart
-     */
-    listAssets():string[];
 }

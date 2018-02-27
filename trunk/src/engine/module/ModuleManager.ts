@@ -1,18 +1,10 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector"
-import { wrapConstruct, getConstructor } from "../../utils/ConstructUtil";
-import RequestData from "../net/RequestData";
-import ResponseData from "../net/ResponseData";
-import { netManager } from "../net/NetManager";
+import { getConstructor } from "../../utils/ConstructUtil";
 import ModuleMessage from "./ModuleMessage";
-import { environment } from "../env/Environment";
-import { maskManager } from "../mask/MaskManager";
-import { assetsManager } from "../assets/AssetsManager";
-import { audioManager } from "../audio/AudioManager";
-import { version } from "../version/Version";
-import IObservable from "../../core/observable/IObservable";
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
 
 /**
  * @author Raykid
@@ -124,9 +116,15 @@ export default class ModuleManager
         return target;
     }
 
+    /**
+     * 注册模块
+     * 
+     * @param {IMediatorConstructor} cls 模块类型
+     * @memberof ModuleManager
+     */
     public registerModule(cls:IMediatorConstructor):void
     {
-        this._moduleDict[cls["name"]] = cls;
+        this._moduleDict[cls["moduleName"] || cls["name"]] = cls;
     }
 
     /**
@@ -181,7 +179,7 @@ export default class ModuleManager
         }
         this._opening = type;
         // 取到类型
-        var cls:IMediatorConstructor = getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
+        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         var after:ModuleData[] = this.getAfter(cls);
         if(!after)
         {
@@ -194,118 +192,44 @@ export default class ModuleManager
             var fromModule:IMediator = from && from[1];
             var moduleData:ModuleData = [cls, target, null];
             this._moduleStack.unshift(moduleData);
-            // 记一个是否需要遮罩的flag
-            var maskFlag:boolean = true;
-            // 加载所有已托管中介者的资源
-            target.loadAssets((err?:Error)=>{
-                if(err)
+            // 设置回调
+            target.moduleOpenHandler = (status:ModuleOpenStatus, err?:Error)=>{
+                switch(status)
                 {
-                    // 隐藏Loading
-                    if(!maskFlag) maskManager.hideLoading("module");
-                    maskFlag = false;
-                    // 移除先行数据
-                    this._moduleStack.shift();
-                    // 派发失败消息
-                    core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
-                    // 结束一次模块开启
-                    this.onFinishOpen();
+                    case ModuleOpenStatus.Stop:
+                        // 移除先行数据
+                        this._moduleStack.shift();
+                        // 派发失败消息
+                        core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
+                        // 结束一次模块开启
+                        this.onFinishOpen();
+                        break;
+                    case ModuleOpenStatus.BeforeOpen:
+                        // 这里要优先关闭标识符，否则在开启的模块的onOpen方法里如果有操作Mask的动作就会被这个标识阻塞住
+                        this._opening = null;
+                        // 篡改target的close方法，使其改为触发ModuleManager的close
+                        moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
+                        target.close = function(data?:any):void
+                        {
+                            moduleManager.close(target, data);
+                        };
+                        break;
+                    case ModuleOpenStatus.AfterOpen:
+                        // 调用onDeactivate接口
+                        this.deactivateModule(fromModule, target, data);
+                        // 调用onActivate接口
+                        this.activateModule(target, fromModule, data);
+                        // 如果replace是true，则关掉上一个模块
+                        if(replace) this.close(from && from[0], data);
+                        // 派发消息
+                        core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
+                        // 结束一次模块开启
+                        this.onFinishOpen();
+                        break;
                 }
-                else
-                {
-                    // 隐藏Loading
-                    if(!maskFlag) maskManager.hideLoading("module");
-                    maskFlag = false;
-                    // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
-                    var cssFiles:string[] = target.listStyleFiles();
-                    if(cssFiles)
-                    {
-                        for(var cssFile of cssFiles)
-                        {
-                            var cssNode:HTMLLinkElement= document.createElement("link");
-                            cssNode.rel = "stylesheet";
-                            cssNode.type = "text/css";
-                            cssNode.href = environment.toCDNHostURL(version.wrapHashUrl(cssFile));
-                            document.body.appendChild(cssNode);
-                        }
-                    }
-                    // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
-                    assetsManager.loadAssets(target.listJsFiles(), (results:string[]|Error)=>{
-                        if(results instanceof Error)
-                        {
-                            // 移除先行数据
-                            this._moduleStack.shift();
-                            // 派发失败消息
-                            core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], results);
-                            // 结束一次模块开启
-                            this.onFinishOpen();
-                            return;
-                        }
-                        if(results)
-                        {
-                            // 使用script标签将js文件加入html中
-                            var jsNode:HTMLScriptElement = document.createElement("script");
-                            jsNode.innerHTML = results.join("\n");
-                            document.body.appendChild(jsNode);
-                        }
-                        // 发送所有模块消息，模块消息默认发送全局内核
-                        var requests:RequestData[] = target.listInitRequests();
-                        netManager.sendMultiRequests(requests, function(responses:ResponseData[]|Error):void
-                        {
-                            if(responses instanceof Error)
-                            {
-                                // 消息发送失败，移除先行数据
-                                this._moduleStack.shift();
-                                // 派发失败消息
-                                core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], responses);
-                            }
-                            else
-                            {
-                                // 这里要优先关闭标识符，否则在开启的模块的onOpen方法里如果有操作Mask的动作就会被这个标识阻塞住
-                                this._opening = null;
-                                // 赋值responses
-                                target.responses = responses;
-                                // 调用回调
-                                var stop:boolean = target.onGetResponses(responses);
-                                // 如果需要停止则停止后续操作，否则继续
-                                if(stop)
-                                {
-                                    // 移除先行数据
-                                    this._moduleStack.shift();
-                                    // 派发失败消息
-                                    core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], responses);
-                                }
-                                else
-                                {
-                                    // 篡改target的close方法，使其改为触发ModuleManager的close
-                                    moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
-                                    target.close = function(data?:any):void
-                                    {
-                                        moduleManager.close(target, data);
-                                    };
-                                    // 调用open接口
-                                    target.open(data);
-                                    // 调用onDeactivate接口
-                                    this.deactivateModule(fromModule, cls, data);
-                                    // 调用onActivate接口
-                                    this.activateModule(target, from && from[0], data);
-                                    // 如果replace是true，则关掉上一个模块
-                                    if(replace) this.close(from && from[0], data);
-                                    // 派发消息
-                                    core.dispatch(ModuleMessage.MODULE_CHANGE, cls, from && from[0]);
-                                }
-                            }
-                            // 结束一次模块开启
-                            this.onFinishOpen();
-                        }, this, target.observable);
-                    });
-                }
-            });
-            // 显示Loading
-            if(maskFlag)
-            {
-                maskManager.showLoading(null, "module");
-                maskFlag = false;
-            }
+            };
+            // 调用open接口
+            target.open(data);
         }
         else if(after.length > 0)
         {
@@ -351,7 +275,7 @@ export default class ModuleManager
         // 数量判断，不足一个模块时不关闭
         if(this.activeCount <= 1) return;
         // 取到类型
-        var cls:IMediatorConstructor = getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
+        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         // 存在性判断
         var index:number = this.getIndex(cls);
         if(index < 0) return;

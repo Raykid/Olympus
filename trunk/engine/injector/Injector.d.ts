@@ -12,7 +12,7 @@ import { EvalExp } from "../bind/Utils";
 /** 定义数据模型，支持实例注入，并且自身也会被注入 */
 export declare function ModelClass(...args: any[]): any;
 /** 定义界面中介者，支持实例注入，并可根据所赋显示对象自动调整所使用的表现层桥 */
-export declare function MediatorClass(cls: IConstructor): IConstructor;
+export declare function MediatorClass(moduleName: string): ClassDecorator;
 /** 处理消息 */
 export declare function MessageHandler(prototype: any, propertyKey: string): void;
 export declare function MessageHandler(type: string): MethodDecorator;

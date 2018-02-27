@@ -14,7 +14,7 @@ export default interface IMediatorBindPart {
      * @type {*}
      * @memberof IMediator
      */
-    readonly viewModel: any;
+    viewModel: any;
     /**
      * 绑定目标数组，key是当前编译目标对象，即currentTarget；value是命令本来所在的对象，即target
      *

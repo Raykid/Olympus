@@ -1,12 +1,13 @@
-import IMessage from "../../core/message/IMessage";
-import IBridge from "../bridge/IBridge";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
+import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
 import Dictionary from "../../utils/Dictionary";
+import IBridge from "../bridge/IBridge";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IMediator from "./IMediator";
 import MediatorStatus from "./MediatorStatus";
+import { ModuleOpenStatus } from "./IMediatorModulePart";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -78,6 +79,12 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     responses: ResponseData[];
+    /**
+     * 模块打开结果回调函数，由moduleManager调用，不要手动调用
+     *
+     * @memberof Mediator
+     */
+    moduleOpenHandler: (status: ModuleOpenStatus, err?: Error) => void;
     constructor(skin?: any);
     /**
      * 加载从listAssets中获取到的所有资源
@@ -88,12 +95,54 @@ export default class Mediator implements IMediator {
      */
     loadAssets(handler: (err?: Error) => void): void;
     /**
+     * 加载从listStyleFiles中获取到的所有资源
+     *
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+     * @memberof IMediator
+     */
+    loadStyleFiles(handler: (err?: Error) => void): void;
+    /**
+     * 加载从listJsFiles中获取到的所有资源
+     *
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+     * @memberof IMediator
+     */
+    loadJsFiles(handler: (err?: Error) => void): void;
+    /**
+     * 发送从listInitRequests中获取到的所有资源
+     *
+     * @param {(err?:Error)=>void} handler 加载完毕后的回调，如果出错则会给出err参数
+     * @memberof IMediator
+     */
+    sendInitRequests(handler: (err?: Error) => void): void;
+    /**
      * 当所需资源加载完毕后调用
      *
      * @param {Error} [err] 加载出错会给出错误对象，没错则不给
      * @memberof Mediator
      */
     onLoadAssets(err?: Error): void;
+    /**
+     * 当所需CSS加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof Mediator
+     */
+    onLoadStyleFiles(err?: Error): void;
+    /**
+     * 当所需js加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof Mediator
+     */
+    onLoadJsFiles(err?: Error): void;
+    /**
+     * 当所需资源加载完毕后调用
+     *
+     * @param {Error} [err] 加载出错会给出错误对象，没错则不给
+     * @memberof Mediator
+     */
+    onSendInitRequests(err?: Error): void;
     /**
      * 当获取到所有初始化请求返回时调用，可以通过返回一个true来阻止模块的打开
      *
@@ -230,33 +279,33 @@ export default class Mediator implements IMediator {
      */
     deactivate(to: IMediator | undefined, data?: any): void;
     /**
-     * 列出中介者所需的资源数组，不要手动调用或重写
+     * 列出中介者所需的资源数组，可重写
      *
      * @returns {string[]}
      * @memberof Mediator
      */
     listAssets(): string[];
     /**
-     * 列出模块初始化请求，不要手动调用或重写
-     *
-     * @returns {RequestData[]}
-     * @memberof Mediator
-     */
-    listInitRequests(): RequestData[];
-    /**
-     * 列出所需CSS资源URL，不要手动调用或重写
+     * 列出所需CSS资源URL，可重写
      *
      * @returns {string[]}
      * @memberof Mediator
      */
     listStyleFiles(): string[];
     /**
-     * 列出所需JS资源URL，不要手动调用或重写
+     * 列出所需JS资源URL，可重写
      *
      * @returns {string[]}
      * @memberof Mediator
      */
     listJsFiles(): string[];
+    /**
+     * 列出模块初始化请求，可重写
+     *
+     * @returns {RequestData[]}
+     * @memberof Mediator
+     */
+    listInitRequests(): RequestData[];
     /**
      * 其他模块被关闭回到当前模块时调用
      *
@@ -281,34 +330,6 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     onDeactivate(to: IMediator | undefined, data?: any): void;
-    /**
-     * 列出中介者所需的资源数组，可重写
-     *
-     * @returns {string[]} 资源数组，请根据该Mediator所操作的渲染模组的需求给出资源地址或组名
-     * @memberof Mediator
-     */
-    onListAssets(): string[];
-    /**
-     * 列出模块初始化请求，可重写
-     *
-     * @returns {RequestData[]}
-     * @memberof Mediator
-     */
-    onListInitRequests(): RequestData[];
-    /**
-     * 列出所需CSS资源URL，可重写
-     *
-     * @returns {string[]}
-     * @memberof Mediator
-     */
-    onListStyleFiles(): string[];
-    /**
-     * 列出所需JS资源URL，可重写
-     *
-     * @returns {string[]}
-     * @memberof Mediator
-     */
-    onListJsFiles(): string[];
     /*********************** 下面是模块消息系统 ***********************/
     private _observable;
     /**

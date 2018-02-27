@@ -20,9 +20,11 @@ import TestPanel from "./TestPanel";
  * 测试首个模块
 */
 
-@DOMMediatorClass("./modules/test.html")
+@DOMMediatorClass("Third", "./modules/test.html")
 export default class Third extends SceneMediator
 {
+    public static moduleName:string = "Third";
+
     @Inject
     private moduleManager:ModuleManager;
     @Inject
@@ -43,7 +45,7 @@ export default class Third extends SceneMediator
     @BindValue("textContent", "fuckModel.fuck")
     public fuck:HTMLElement;
 
-    public onListAssets():string[]
+    public listAssets():string[]
     {
         return ["./modules/test.html"];
     }
