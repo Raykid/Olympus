@@ -34,7 +34,7 @@ export default class Second extends SceneMediator
     })
     public lst:eui.DataGroup;
 
-    public onListAssets():string[]
+    public listAssets():string[]
     {
         return ["preload"];
     }

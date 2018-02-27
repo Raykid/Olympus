@@ -44,12 +44,12 @@ export default class First extends SceneMediator
     @BindValue("textContent", "fuckModel.fuck")
     public fuck:HTMLElement;
 
-    public onListAssets():string[]
+    public listAssets():string[]
     {
         return ["./modules/test.html"];
     }
 
-    public onListJsFiles():string[]
+    public listJsFiles():string[]
     {
         return ["test1.js", "./test2.js"];
     }
