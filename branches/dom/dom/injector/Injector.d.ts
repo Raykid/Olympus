@@ -6,4 +6,4 @@
  *
  * 负责注入的模块
 */
-export declare function DOMMediatorClass(moduleName: string, ...skins: string[]): ClassDecorator;
+export declare function DOMMediatorClass(moduleName: string, skin: string, ...skins: string[]): ClassDecorator;
