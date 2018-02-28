@@ -177,12 +177,13 @@ export default class ModuleManager
             this._openCache.push([type, data, replace]);
             return;
         }
-        this._opening = type;
         // 取到类型
         var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         var after:ModuleData[] = this.getAfter(cls);
         if(!after)
         {
+            // 记录正在打开的模块类型
+            this._opening = type;
             // 尚未打开过，正常开启模块
             var target:IMediator = type instanceof Function ? new cls() : type;
             // 赋值打开参数
