@@ -45,6 +45,32 @@ export default class AssetsManager {
      * @memberof AssetsManager
      */
     loadAssets(keyOrPath: string | string[], complete: (assets?: any | any[]) => void, responseType?: XMLHttpRequestResponseType, oneComplete?: (keyOrPath?: string, assets?: any) => void): void;
+    /**
+     * 加载CSS样式文件
+     *
+     * @param {string[]} cssFiles 样式文件URL列表
+     * @param {(err?:Error)=>void} handler 完成回调
+     * @memberof AssetsManager
+     */
+    loadStyleFiles(cssFiles: string[], handler: (err?: Error) => void): void;
+    /**
+     * 加载JS文件
+     *
+     * @param {JSFile[]} jsFiles
+     * @param {(err?:Error)=>void} handler
+     * @memberof AssetsManager
+     */
+    loadJsFiles(jsFiles: JSFile[], handler: (err?: Error) => void): void;
 }
+export declare enum JSLoadMode {
+    AUTO = 0,
+    JSONP = 1,
+    TAG = 2,
+}
+export interface JSFileData {
+    url: string;
+    mode?: JSLoadMode;
+}
+export declare type JSFile = string | JSFileData;
 /** 再额外导出一个单例 */
 export declare const assetsManager: AssetsManager;

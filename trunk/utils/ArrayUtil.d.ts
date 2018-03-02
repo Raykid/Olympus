@@ -29,7 +29,7 @@ export declare function randomize<T extends any[]>(arr: T, count?: number, begin
  */
 export declare function randomizeWeight<T extends any>(arr: T[], weight: number[]): T;
 /**
- * 数组去重
+ * 数组去重，不会修改原数组
  *
  * @export
  * @param {any[]} list

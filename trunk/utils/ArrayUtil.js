@@ -1,3 +1,4 @@
+import Dictionary from "./Dictionary";
 /**
  * 简单数组乱序
  *
@@ -88,18 +89,25 @@ export function randomizeWeight(arr, weight) {
     return arr[index];
 }
 /**
- * 数组去重
+ * 数组去重，不会修改原数组
  *
  * @export
  * @param {any[]} list
  * @returns {any[]}
  */
 export function unique(list) {
-    var hash = {}, result = []; //n为hash表，r为临时数组
-    for (var i = 0; i < list.length; i++) {
-        if (!hash[list[i]]) {
-            hash[list[i]] = true; //存入hash表
-            result.push(list[i]); //把当前数组的当前项push到临时数组里面
+    if (!list)
+        return list;
+    // 初始化
+    var hash = new Dictionary(), result = [];
+    // 遍历当前数组
+    for (var i = 0, len = list.length; i < len; i++) {
+        // 如果hash表中没有当前项
+        if (!hash.get(list[i])) {
+            // 存入hash表
+            hash.set(list[i], true);
+            // 把当前数组的当前项push到临时数组里面
+            result.push(list[i]);
         }
     }
     return result;

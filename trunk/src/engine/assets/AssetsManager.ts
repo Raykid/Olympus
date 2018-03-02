@@ -3,6 +3,7 @@ import { core } from "../../core/Core";
 import { load } from "../../utils/HTTPUtil";
 import { trimURL } from "../../utils/URLUtil";
 import { version } from "../version/Version";
+import { environment } from "../env/Environment";
 
 /**
  * @author Raykid
@@ -164,6 +165,72 @@ export default class AssetsManager
             }
         }
     }
+
+    /**
+     * 加载CSS样式文件
+     * 
+     * @param {string[]} cssFiles 样式文件URL列表
+     * @param {(err?:Error)=>void} handler 完成回调
+     * @memberof AssetsManager
+     */
+    public loadStyleFiles(cssFiles:string[], handler:(err?:Error)=>void):void
+    {
+        var count:number = cssFiles.length;
+        var stop:boolean = false;
+        for(var cssFile of cssFiles)
+        {
+            var cssNode:HTMLLinkElement= document.createElement("link");
+            cssNode.rel = "stylesheet";
+            cssNode.type = "text/css";
+            cssNode.href = environment.toCDNHostURL(version.wrapHashUrl(cssFile));
+            cssNode.onload = onLoadOne;
+            cssNode.onerror = onErrorOne;
+            document.body.appendChild(cssNode);
+        }
+
+        function onLoadOne():void
+        {
+            // 如果全部加载完毕则调用回调
+            if(!stop && --count === 0) handler();
+        }
+
+        function onErrorOne(evt:Event):void
+        {
+            if(!stop)
+            {
+                stop = true;
+                handler(new Error("CSS加载失败"));
+            }
+        }
+    }
+
+    /**
+     * 加载JS文件
+     * 
+     * @param {JSFile[]} jsFiles 
+     * @param {(err?:Error)=>void} handler 
+     * @memberof AssetsManager
+     */
+    public loadJsFiles(jsFiles:JSFile[], handler:(err?:Error)=>void):void
+    {
+        
+    }
 }
+
+export enum JSLoadMode
+{
+    AUTO,
+    JSONP,
+    TAG
+}
+
+export interface JSFileData
+{
+    url:string;
+    mode?:JSLoadMode;
+}
+
+export type JSFile = string | JSFileData;
+
 /** 再额外导出一个单例 */
 export const assetsManager:AssetsManager = core.getInject(AssetsManager);

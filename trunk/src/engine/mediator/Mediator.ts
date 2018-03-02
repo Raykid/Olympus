@@ -17,6 +17,7 @@ import { netManager } from "../net/NetManager";
 import IMediator from "./IMediator";
 import MediatorStatus from "./MediatorStatus";
 import { ModuleOpenStatus } from "./IMediatorModulePart";
+import { unique } from "../../utils/ArrayUtil";
 
 /**
  * @author Raykid
@@ -179,6 +180,10 @@ export default class Mediator implements IMediator
             }
         };
         // 加载自身资源
+        let assets:string[] = this.listAssets();
+        // 去重
+        assets = unique(assets);
+        // 开始加载
         this.bridge.loadAssets(this.listAssets(), this, temp);
     }
     

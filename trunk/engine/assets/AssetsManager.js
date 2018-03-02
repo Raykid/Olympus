@@ -8,6 +8,7 @@ import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
 import { load } from "../../utils/HTTPUtil";
 import { version } from "../version/Version";
+import { environment } from "../env/Environment";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -138,11 +139,58 @@ var AssetsManager = /** @class */ (function () {
             }
         }
     };
+    /**
+     * 加载CSS样式文件
+     *
+     * @param {string[]} cssFiles 样式文件URL列表
+     * @param {(err?:Error)=>void} handler 完成回调
+     * @memberof AssetsManager
+     */
+    AssetsManager.prototype.loadStyleFiles = function (cssFiles, handler) {
+        var count = cssFiles.length;
+        var stop = false;
+        for (var _i = 0, cssFiles_1 = cssFiles; _i < cssFiles_1.length; _i++) {
+            var cssFile = cssFiles_1[_i];
+            var cssNode = document.createElement("link");
+            cssNode.rel = "stylesheet";
+            cssNode.type = "text/css";
+            cssNode.href = environment.toCDNHostURL(version.wrapHashUrl(cssFile));
+            cssNode.onload = onLoadOne;
+            cssNode.onerror = onErrorOne;
+            document.body.appendChild(cssNode);
+        }
+        function onLoadOne() {
+            // 如果全部加载完毕则调用回调
+            if (!stop && --count === 0)
+                handler();
+        }
+        function onErrorOne(evt) {
+            if (!stop) {
+                stop = true;
+                handler(new Error("CSS加载失败"));
+            }
+        }
+    };
+    /**
+     * 加载JS文件
+     *
+     * @param {JSFile[]} jsFiles
+     * @param {(err?:Error)=>void} handler
+     * @memberof AssetsManager
+     */
+    AssetsManager.prototype.loadJsFiles = function (jsFiles, handler) {
+    };
     AssetsManager = __decorate([
         Injectable
     ], AssetsManager);
     return AssetsManager;
 }());
 export default AssetsManager;
+export var JSLoadMode;
+(function (JSLoadMode) {
+    JSLoadMode[JSLoadMode["AUTO"] = 0] = "AUTO";
+    JSLoadMode[JSLoadMode["JSONP"] = 1] = "JSONP";
+    JSLoadMode[JSLoadMode["TAG"] = 2] = "TAG";
+})(JSLoadMode || (JSLoadMode = {}));
 /** 再额外导出一个单例 */
 export var assetsManager = core.getInject(AssetsManager);
