@@ -211,20 +211,12 @@ export default class Mediator implements IMediator
                 mediator.loadStyleFiles(temp);
             }
         };
-        // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
+        // 开始加载css文件
         var cssFiles:string[] = this.listStyleFiles();
-        if(cssFiles)
-        {
-            for(var cssFile of cssFiles)
-            {
-                var cssNode:HTMLLinkElement= document.createElement("link");
-                cssNode.rel = "stylesheet";
-                cssNode.type = "text/css";
-                cssNode.href = environment.toCDNHostURL(version.wrapHashUrl(cssFile));
-                document.body.appendChild(cssNode);
-            }
-        }
-        temp();
+        // 去重
+        cssFiles = unique(cssFiles);
+        // 加载
+        assetsManager.loadStyleFiles(cssFiles, temp);
     }
     
     /**
@@ -236,10 +228,9 @@ export default class Mediator implements IMediator
     public loadJsFiles(handler:(err?:Error)=>void):void
     {
         var mediators:IMediator[] = this._children.concat();
-        var temp:(results:string[]|Error)=>void = (results:string[]|Error)=>{
-            if(results instanceof Error || mediators.length <= 0)
+        var temp:(results:string[]|Error)=>void = (err?:Error)=>{
+            if(err || mediators.length <= 0)
             {
-                var err:Error = results instanceof Error ? results : undefined;
                 // 调用onLoadJsFiles接口
                 this.onLoadJsFiles(err);
                 // 调用回调
@@ -247,20 +238,17 @@ export default class Mediator implements IMediator
             }
             else
             {
-                if(results)
-                {
-                    // 使用script标签将js文件加入html中
-                    var jsNode:HTMLScriptElement = document.createElement("script");
-                    jsNode.innerHTML = results.join("\n");
-                    document.body.appendChild(jsNode);
-                }
                 // 加载一个子中介者的js
                 var mediator:IMediator = mediators.shift();
                 mediator.loadJsFiles(temp);
             }
         };
-        // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
-        assetsManager.loadAssets(this.listJsFiles(), temp);
+        // 开始加载js文件
+        var jsFiles:string[] = this.listJsFiles();
+        // 去重
+        jsFiles = unique(jsFiles);
+        // 加载
+        assetsManager.loadJsFiles(jsFiles, temp);
     }
     
     /**

@@ -1,7 +1,7 @@
 import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
 import { load } from "../../utils/HTTPUtil";
-import { trimURL } from "../../utils/URLUtil";
+import { trimURL, isAbsolutePath } from "../../utils/URLUtil";
 import { version } from "../version/Version";
 import { environment } from "../env/Environment";
 import { unique } from "../../utils/ArrayUtil";
@@ -182,6 +182,11 @@ export default class AssetsManager
      */
     public loadStyleFiles(cssFiles:string[], handler:(err?:Error)=>void):void
     {
+        if(!cssFiles)
+        {
+            handler();
+            return;
+        }
         var count:number = cssFiles.length;
         var stop:boolean = false;
         for(var cssFile of cssFiles)
@@ -220,7 +225,75 @@ export default class AssetsManager
      */
     public loadJsFiles(jsFiles:JSFile[], handler:(err?:Error)=>void):void
     {
-        
+        if(!jsFiles)
+        {
+            handler();
+            return;
+        }
+        var count:number = jsFiles.length;
+        var stop:boolean = false;
+        // 遍历加载js
+        for(var jsFile of jsFiles)
+        {
+            // 统一类型
+            if(typeof jsFile === "string")
+            {
+                // 是简单路径，变成JSFileData
+                jsFile = {
+                    url: jsFile,
+                    mode: JSLoadMode.AUTO
+                };
+            }
+            // 开始加载
+            if(jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url)))
+            {
+                // 使用JSONP方式加载
+                assetsManager.loadAssets(jsFile.url, onCompleteOne);
+            }
+            else
+            {
+                // 使用script标签方式加载
+                var jsNode:HTMLScriptElement = document.createElement("script");
+                jsNode.type = "text/javascript";
+                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
+                jsNode.onload = onLoadOne;
+                jsNode.onerror = onErrorOne;
+                document.body.appendChild(jsNode);
+            }
+        }
+
+        function onCompleteOne(result:string|Error):void
+        {
+            if(result instanceof Error)
+            {
+                // 调用失败
+                onErrorOne();
+            }
+            else
+            {
+                // 使用script标签将js文件加入html中
+                var jsNode:HTMLScriptElement = document.createElement("script");
+                jsNode.innerHTML = result;
+                document.body.appendChild(jsNode);
+                // 调用成功
+                onLoadOne();
+            }
+        }
+
+        function onLoadOne():void
+        {
+            // 如果全部加载完毕则调用回调
+            if(!stop && --count === 0) handler();
+        }
+
+        function onErrorOne():void
+        {
+            if(!stop)
+            {
+                stop = true;
+                handler(new Error("JS加载失败"));
+            }
+        }
     }
 }
 

@@ -4,8 +4,6 @@ import Dictionary from "../../utils/Dictionary";
 import { mutate } from "../bind/Mutator";
 import { bindManager } from "../bind/BindManager";
 import { maskManager } from "../mask/MaskManager";
-import { environment } from "../env/Environment";
-import { version } from "../version/Version";
 import { assetsManager } from "../assets/AssetsManager";
 import { netManager } from "../net/NetManager";
 import MediatorStatus from "./MediatorStatus";
@@ -187,19 +185,12 @@ var Mediator = /** @class */ (function () {
                 mediator.loadStyleFiles(temp);
             }
         };
-        // 开始加载css文件，css文件必须用link标签从CDN加载，因为图片需要从CDN加载
+        // 开始加载css文件
         var cssFiles = this.listStyleFiles();
-        if (cssFiles) {
-            for (var _i = 0, cssFiles_1 = cssFiles; _i < cssFiles_1.length; _i++) {
-                var cssFile = cssFiles_1[_i];
-                var cssNode = document.createElement("link");
-                cssNode.rel = "stylesheet";
-                cssNode.type = "text/css";
-                cssNode.href = environment.toCDNHostURL(version.wrapHashUrl(cssFile));
-                document.body.appendChild(cssNode);
-            }
-        }
-        temp();
+        // 去重
+        cssFiles = unique(cssFiles);
+        // 加载
+        assetsManager.loadStyleFiles(cssFiles, temp);
     };
     /**
      * 加载从listJsFiles中获取到的所有资源
@@ -210,28 +201,25 @@ var Mediator = /** @class */ (function () {
     Mediator.prototype.loadJsFiles = function (handler) {
         var _this = this;
         var mediators = this._children.concat();
-        var temp = function (results) {
-            if (results instanceof Error || mediators.length <= 0) {
-                var err = results instanceof Error ? results : undefined;
+        var temp = function (err) {
+            if (err || mediators.length <= 0) {
                 // 调用onLoadJsFiles接口
                 _this.onLoadJsFiles(err);
                 // 调用回调
                 handler(err);
             }
             else {
-                if (results) {
-                    // 使用script标签将js文件加入html中
-                    var jsNode = document.createElement("script");
-                    jsNode.innerHTML = results.join("\n");
-                    document.body.appendChild(jsNode);
-                }
                 // 加载一个子中介者的js
                 var mediator = mediators.shift();
                 mediator.loadJsFiles(temp);
             }
         };
-        // 开始加载js文件，这里js文件使用嵌入html的方式，以为这样js不会跨域，报错信息可以收集到
-        assetsManager.loadAssets(this.listJsFiles(), temp);
+        // 开始加载js文件
+        var jsFiles = this.listJsFiles();
+        // 去重
+        jsFiles = unique(jsFiles);
+        // 加载
+        assetsManager.loadJsFiles(jsFiles, temp);
     };
     /**
      * 发送从listInitRequests中获取到的所有资源

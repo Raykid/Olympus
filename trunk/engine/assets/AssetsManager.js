@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
 import { load } from "../../utils/HTTPUtil";
+import { isAbsolutePath } from "../../utils/URLUtil";
 import { version } from "../version/Version";
 import { environment } from "../env/Environment";
 import { unique } from "../../utils/ArrayUtil";
@@ -154,6 +155,10 @@ var AssetsManager = /** @class */ (function () {
      * @memberof AssetsManager
      */
     AssetsManager.prototype.loadStyleFiles = function (cssFiles, handler) {
+        if (!cssFiles) {
+            handler();
+            return;
+        }
         var count = cssFiles.length;
         var stop = false;
         for (var _i = 0, cssFiles_1 = cssFiles; _i < cssFiles_1.length; _i++) {
@@ -186,6 +191,63 @@ var AssetsManager = /** @class */ (function () {
      * @memberof AssetsManager
      */
     AssetsManager.prototype.loadJsFiles = function (jsFiles, handler) {
+        if (!jsFiles) {
+            handler();
+            return;
+        }
+        var count = jsFiles.length;
+        var stop = false;
+        // 遍历加载js
+        for (var _i = 0, jsFiles_1 = jsFiles; _i < jsFiles_1.length; _i++) {
+            var jsFile = jsFiles_1[_i];
+            // 统一类型
+            if (typeof jsFile === "string") {
+                // 是简单路径，变成JSFileData
+                jsFile = {
+                    url: jsFile,
+                    mode: JSLoadMode.AUTO
+                };
+            }
+            // 开始加载
+            if (jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url))) {
+                // 使用JSONP方式加载
+                assetsManager.loadAssets(jsFile.url, onCompleteOne);
+            }
+            else {
+                // 使用script标签方式加载
+                var jsNode = document.createElement("script");
+                jsNode.type = "text/javascript";
+                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
+                jsNode.onload = onLoadOne;
+                jsNode.onerror = onErrorOne;
+                document.body.appendChild(jsNode);
+            }
+        }
+        function onCompleteOne(result) {
+            if (result instanceof Error) {
+                // 调用失败
+                onErrorOne();
+            }
+            else {
+                // 使用script标签将js文件加入html中
+                var jsNode = document.createElement("script");
+                jsNode.innerHTML = result;
+                document.body.appendChild(jsNode);
+                // 调用成功
+                onLoadOne();
+            }
+        }
+        function onLoadOne() {
+            // 如果全部加载完毕则调用回调
+            if (!stop && --count === 0)
+                handler();
+        }
+        function onErrorOne() {
+            if (!stop) {
+                stop = true;
+                handler(new Error("JS加载失败"));
+            }
+        }
     };
     AssetsManager = __decorate([
         Injectable
