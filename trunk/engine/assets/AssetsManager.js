@@ -9,6 +9,7 @@ import { core } from "../../core/Core";
 import { load } from "../../utils/HTTPUtil";
 import { version } from "../version/Version";
 import { environment } from "../env/Environment";
+import { unique } from "../../utils/ArrayUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -65,34 +66,39 @@ var AssetsManager = /** @class */ (function () {
         var _this = this;
         // 非空判断
         if (!keyOrPath) {
-            complete();
+            complete && complete(value);
             return;
         }
         // 获取路径
         if (keyOrPath instanceof Array) {
-            // 使用副本，防止修改原始数组
-            var temp = keyOrPath.concat();
+            // 数组去重
+            keyOrPath = unique(keyOrPath);
             // 是个数组，转换成单一名称或对象
+            var count = keyOrPath.length;
             var results = [];
-            var curKey;
-            var onGetOne = function (result) {
-                // 记录结果
-                results.push(result);
-                // 调用回调
-                oneComplete && oneComplete(curKey, result);
-                // 获取下一个
-                getOne();
-            };
-            var getOne = function () {
-                if (temp.length <= 0) {
-                    complete(results);
+            // 判断数量
+            if (count > 0) {
+                // 声明回调
+                var handler = function (path, assets) {
+                    // 调用回调
+                    oneComplete && oneComplete(path, assets);
+                    // 填充数组
+                    var index = keyOrPath.indexOf(path);
+                    results[index] = assets;
+                    // 判断完成
+                    if (--count === 0)
+                        complete && complete(results);
+                };
+                // 并行加载资源
+                for (var i = 0, len = count; i < len; i++) {
+                    var path = keyOrPath[i];
+                    this.loadAssets(path, null, null, handler);
                 }
-                else {
-                    curKey = temp.shift();
-                    _this.loadAssets(curKey, onGetOne);
-                }
-            };
-            getOne();
+            }
+            else {
+                // 直接完成
+                complete && complete(results);
+            }
         }
         else {
             // 是单一名称或对象
@@ -105,7 +111,8 @@ var AssetsManager = /** @class */ (function () {
             }
             else if (value) {
                 // 已经加载过了，直接返回
-                complete(value);
+                oneComplete && oneComplete(keyOrPath, value);
+                complete && complete(value);
             }
             else {
                 // 没有就去加载

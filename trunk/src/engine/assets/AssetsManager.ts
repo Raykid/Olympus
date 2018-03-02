@@ -4,6 +4,7 @@ import { load } from "../../utils/HTTPUtil";
 import { trimURL } from "../../utils/URLUtil";
 import { version } from "../version/Version";
 import { environment } from "../env/Environment";
+import { unique } from "../../utils/ArrayUtil";
 
 /**
  * @author Raykid
@@ -83,38 +84,43 @@ export default class AssetsManager
         // 非空判断
         if(!keyOrPath)
         {
-            complete();
+            complete && complete(value);
             return;
         }
         // 获取路径
         if(keyOrPath instanceof Array)
         {
-            // 使用副本，防止修改原始数组
-            var temp:string[] = keyOrPath.concat();
+            // 数组去重
+            keyOrPath = unique(keyOrPath);
             // 是个数组，转换成单一名称或对象
+            var count:number = keyOrPath.length;
             var results:any[] = [];
-            var curKey:string;
-            var onGetOne:(result:any)=>void = (result:any)=>
+            // 判断数量
+            if(count > 0)
             {
-                // 记录结果
-                results.push(result);
-                // 调用回调
-                oneComplete && oneComplete(curKey, result);
-                // 获取下一个
-                getOne();
-            };
-            var getOne:()=>void = ()=>{
-                if(temp.length <= 0)
+                // 声明回调
+                var handler:(keyOrPath?:string, assets?:any)=>void = (path:string, assets:any)=>{
+                    // 调用回调
+                    oneComplete && oneComplete(path, assets);
+                    // 填充数组
+                    var index:number = keyOrPath.indexOf(path);
+                    results[index] = assets;
+                    // 判断完成
+                    if(-- count === 0)
+                        complete && complete(results);
+                };
+                // 并行加载资源
+                for(var i:number = 0, len:number = count; i < len; i++)
                 {
-                    complete(results);
+                    var path:string = keyOrPath[i];
+                    this.loadAssets(path, null, null, handler);
                 }
-                else
-                {
-                    curKey = temp.shift();
-                    this.loadAssets(curKey, onGetOne);
-                }
-            };
-            getOne();
+            }
+            else
+            {
+                // 直接完成
+                complete && complete(results);
+            }
         }
         else
         {
@@ -130,13 +136,14 @@ export default class AssetsManager
             else if(value)
             {
                 // 已经加载过了，直接返回
-                complete(value);
+                oneComplete && oneComplete(keyOrPath, value);
+                complete && complete(value);
             }
             else
             {
                 // 没有就去加载
                 this._assetsDict[path] = value = [(result:any)=>{
-                    oneComplete && oneComplete(keyOrPath, result);
+                    oneComplete && oneComplete(<string>keyOrPath, result);
                     complete && complete(result);
                 }];
                 load({
