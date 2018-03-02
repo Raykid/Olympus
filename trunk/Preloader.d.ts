@@ -15,5 +15,15 @@ declare namespace olympus {
      * @param {string} [host] CDN域名，不传则使用当前域名
      * @param {()=>void} [callback] 全部加载完成后的回调
      */
-    function preload(jsFiles: string[], host?: string, callback?: () => void): void;
+    function preload(jsFiles: JSFile[], host?: string, callback?: () => void): void;
+    enum JSLoadMode {
+        AUTO = 0,
+        JSONP = 1,
+        TAG = 2,
+    }
+    interface JSFileData {
+        url: string;
+        mode?: JSLoadMode;
+    }
+    type JSFile = string | JSFileData;
 }

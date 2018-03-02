@@ -186,8 +186,8 @@ var AssetsManager = /** @class */ (function () {
     /**
      * 加载JS文件
      *
-     * @param {JSFile[]} jsFiles
-     * @param {(err?:Error)=>void} handler
+     * @param {JSFile[]} jsFiles js文件列表
+     * @param {(err?:Error)=>void} handler 完成回调
      * @memberof AssetsManager
      */
     AssetsManager.prototype.loadJsFiles = function (jsFiles, handler) {
@@ -195,44 +195,57 @@ var AssetsManager = /** @class */ (function () {
             handler();
             return;
         }
+        jsFiles = jsFiles.concat();
         var count = jsFiles.length;
         var stop = false;
+        var nodes = [];
         // 遍历加载js
-        for (var _i = 0, jsFiles_1 = jsFiles; _i < jsFiles_1.length; _i++) {
-            var jsFile = jsFiles_1[_i];
+        for (var i in jsFiles) {
+            var jsFile = jsFiles[i];
             // 统一类型
             if (typeof jsFile === "string") {
                 // 是简单路径，变成JSFileData
-                jsFile = {
+                jsFiles[i] = jsFile = {
                     url: jsFile,
                     mode: JSLoadMode.AUTO
                 };
             }
+            // 创建一个空的script标签
+            var jsNode = document.createElement("script");
+            jsNode.type = "text/javascript";
+            nodes.push(jsNode);
             // 开始加载
             if (jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url))) {
                 // 使用JSONP方式加载
-                assetsManager.loadAssets(jsFile.url, onCompleteOne);
+                assetsManager.loadAssets(jsFile.url, null, null, onCompleteOne);
             }
             else {
-                // 使用script标签方式加载
-                var jsNode = document.createElement("script");
-                jsNode.type = "text/javascript";
-                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
+                // 使用script标签方式加载，不用在意顺序
                 jsNode.onload = onLoadOne;
                 jsNode.onerror = onErrorOne;
-                document.body.appendChild(jsNode);
+                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
             }
         }
-        function onCompleteOne(result) {
+        function onCompleteOne(url, result) {
             if (result instanceof Error) {
                 // 调用失败
                 onErrorOne();
             }
             else {
-                // 使用script标签将js文件加入html中
-                var jsNode = document.createElement("script");
-                jsNode.innerHTML = result;
-                document.body.appendChild(jsNode);
+                // 取到索引
+                var index = -1;
+                for (var i = 0, len = jsFiles.length; i < len; i++) {
+                    var jsFile = jsFiles[i];
+                    if (jsFile.url === url) {
+                        index = i;
+                        break;
+                    }
+                }
+                // 填充script标签内容
+                if (index >= 0) {
+                    var jsNode = nodes[index];
+                    jsNode.innerHTML = result;
+                }
                 // 调用成功
                 onLoadOne();
             }
@@ -240,13 +253,22 @@ var AssetsManager = /** @class */ (function () {
         function onLoadOne() {
             // 如果全部加载完毕则调用回调
             if (!stop && --count === 0)
-                handler();
+                onAllDone();
         }
         function onErrorOne() {
             if (!stop) {
                 stop = true;
                 handler(new Error("JS加载失败"));
             }
+        }
+        function onAllDone() {
+            // 这里统一将所有script标签添加到DOM中，以此保持顺序
+            for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
+                var node = nodes_1[_i];
+                document.body.appendChild(node);
+            }
+            // 回调
+            handler();
         }
     };
     AssetsManager = __decorate([

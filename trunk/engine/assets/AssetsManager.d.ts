@@ -56,8 +56,8 @@ export default class AssetsManager {
     /**
      * 加载JS文件
      *
-     * @param {JSFile[]} jsFiles
-     * @param {(err?:Error)=>void} handler
+     * @param {JSFile[]} jsFiles js文件列表
+     * @param {(err?:Error)=>void} handler 完成回调
      * @memberof AssetsManager
      */
     loadJsFiles(jsFiles: JSFile[], handler: (err?: Error) => void): void;

@@ -219,8 +219,8 @@ export default class AssetsManager
     /**
      * 加载JS文件
      * 
-     * @param {JSFile[]} jsFiles 
-     * @param {(err?:Error)=>void} handler 
+     * @param {JSFile[]} jsFiles js文件列表
+     * @param {(err?:Error)=>void} handler 完成回调
      * @memberof AssetsManager
      */
     public loadJsFiles(jsFiles:JSFile[], handler:(err?:Error)=>void):void
@@ -230,39 +230,43 @@ export default class AssetsManager
             handler();
             return;
         }
+        jsFiles = jsFiles.concat();
         var count:number = jsFiles.length;
         var stop:boolean = false;
+        var nodes:HTMLScriptElement[] = [];
         // 遍历加载js
-        for(var jsFile of jsFiles)
+        for(var i in jsFiles)
         {
+            var jsFile:JSFile = jsFiles[i];
             // 统一类型
             if(typeof jsFile === "string")
             {
                 // 是简单路径，变成JSFileData
-                jsFile = {
+                jsFiles[i] = jsFile = {
                     url: jsFile,
                     mode: JSLoadMode.AUTO
                 };
             }
+            // 创建一个空的script标签
+            var jsNode:HTMLScriptElement = document.createElement("script");
+            jsNode.type = "text/javascript";
+            nodes.push(jsNode);
             // 开始加载
             if(jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url)))
             {
                 // 使用JSONP方式加载
-                assetsManager.loadAssets(jsFile.url, onCompleteOne);
+                assetsManager.loadAssets(jsFile.url, null, null, onCompleteOne);
             }
             else
             {
-                // 使用script标签方式加载
-                var jsNode:HTMLScriptElement = document.createElement("script");
-                jsNode.type = "text/javascript";
-                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
+                // 使用script标签方式加载，不用在意顺序
                 jsNode.onload = onLoadOne;
                 jsNode.onerror = onErrorOne;
-                document.body.appendChild(jsNode);
+                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
             }
         }
 
-        function onCompleteOne(result:string|Error):void
+        function onCompleteOne(url:string, result:string|Error):void
         {
             if(result instanceof Error)
             {
@@ -271,10 +275,23 @@ export default class AssetsManager
             }
             else
             {
-                // 使用script标签将js文件加入html中
-                var jsNode:HTMLScriptElement = document.createElement("script");
-                jsNode.innerHTML = result;
-                document.body.appendChild(jsNode);
+                // 取到索引
+                var index:number = -1;
+                for(var i:number = 0, len:number = jsFiles.length; i < len; i++)
+                {
+                    var jsFile:JSFileData = <JSFileData>jsFiles[i];
+                    if(jsFile.url === url)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                // 填充script标签内容
+                if(index >= 0)
+                {
+                    var jsNode = nodes[index];
+                    jsNode.innerHTML = result;
+                }
                 // 调用成功
                 onLoadOne();
             }
@@ -283,7 +300,7 @@ export default class AssetsManager
         function onLoadOne():void
         {
             // 如果全部加载完毕则调用回调
-            if(!stop && --count === 0) handler();
+            if(!stop && --count === 0) onAllDone();
         }
 
         function onErrorOne():void
@@ -293,6 +310,17 @@ export default class AssetsManager
                 stop = true;
                 handler(new Error("JS加载失败"));
             }
+        }
+
+        function onAllDone():void
+        {
+            // 这里统一将所有script标签添加到DOM中，以此保持顺序
+            for(var node of nodes)
+            {
+                document.body.appendChild(node);
+            }
+            // 回调
+            handler();
         }
     }
 }

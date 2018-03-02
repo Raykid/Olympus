@@ -277,40 +277,115 @@ var olympus;
      * @param {()=>void} [callback] 全部加载完成后的回调
      */
     function preload(jsFiles, host, callback) {
-        // 使用host默认值
-        if (!host)
-            host = getCurOrigin();
         // 首先初始化version
-        version.initialize(preloadOne);
-        function preloadOne() {
-            if (jsFiles.length <= 0) {
-                callback && callback();
+        version.initialize(function () {
+            loadJsFiles(jsFiles, host || getCurOrigin(), function (err) {
+                if (err)
+                    throw err;
+                else
+                    callback && callback();
+            });
+        });
+    }
+    olympus.preload = preload;
+    function loadJsFiles(jsFiles, host, callback) {
+        if (!jsFiles) {
+            callback();
+            return;
+        }
+        jsFiles = jsFiles.concat();
+        var count = jsFiles.length;
+        var stop = false;
+        var nodes = [];
+        // 遍历加载js
+        for (var i in jsFiles) {
+            var jsFile = jsFiles[i];
+            // 统一类型
+            if (typeof jsFile === "string") {
+                // 是简单路径，变成JSFileData
+                jsFiles[i] = jsFile = {
+                    url: jsFile,
+                    mode: JSLoadMode.AUTO
+                };
             }
-            else {
-                var url = jsFiles.shift();
-                // 如果是相对路径，则变为绝对路径
-                if (!isAbsolutePath(url))
-                    url = wrapAbsolutePath(url, host);
-                // 添加Version
-                url = version.wrapHashUrl(url);
-                // 请求文件
+            // 如果是相对路径，则变为绝对路径
+            var url = jsFile.url;
+            if (!isAbsolutePath(url))
+                url = wrapAbsolutePath(url, host);
+            // 添加Version
+            url = version.wrapHashUrl(url);
+            // 创建一个空的script标签
+            var jsNode = document.createElement("script");
+            jsNode.type = "text/javascript";
+            nodes.push(jsNode);
+            // 开始加载
+            if (jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url))) {
+                // 使用JSONP方式加载
                 var xhr = (window["XDomainRequest"] && navigator.userAgent.indexOf("MSIE 10.") < 0 ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
                 xhr.open("GET", url, true);
                 // responseType设置要在open之后，否则IE10和IE11会报错
                 xhr.responseType = "text";
-                xhr.onload = onLoad;
+                xhr.onload = onJSONPLoadOne;
+                xhr.onerror = onJSONPLoadOne;
                 xhr.send(null);
             }
+            else {
+                // 使用script标签方式加载，不用在意顺序
+                jsNode.onload = onLoadOne;
+                jsNode.onerror = onErrorOne;
+                jsNode.src = url;
+            }
         }
-        function onLoad(evt) {
-            var xhr = evt.target;
-            // 将脚本内容以script标签形式添加到DOM中，这样运行的脚本不会跨域
-            var script = document.createElement("script");
-            script.innerHTML = xhr.responseText;
-            document.body.appendChild(script);
-            // 加载下一个
-            preloadOne();
+        function onJSONPLoadOne(evt) {
+            if (evt instanceof ErrorEvent) {
+                // 调用失败
+                onErrorOne();
+            }
+            else {
+                var xhr = evt.target;
+                // 取到索引
+                var index = -1;
+                for (var i = 0, len = jsFiles.length; i < len; i++) {
+                    var jsFile = jsFiles[i];
+                    if (jsFile.url === url) {
+                        index = i;
+                        break;
+                    }
+                }
+                // 填充script标签内容
+                if (index >= 0) {
+                    var jsNode = nodes[index];
+                    jsNode.innerHTML = xhr.responseText;
+                }
+                // 调用成功
+                onLoadOne();
+            }
+        }
+        function onLoadOne() {
+            // 如果全部加载完毕则调用回调
+            if (!stop && --count === 0)
+                onAllDone();
+        }
+        function onErrorOne() {
+            if (!stop) {
+                stop = true;
+                callback(new Error("JS加载失败"));
+            }
+        }
+        function onAllDone() {
+            // 这里统一将所有script标签添加到DOM中，以此保持顺序
+            for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
+                var node = nodes_1[_i];
+                document.body.appendChild(node);
+            }
+            // 回调
+            callback();
         }
     }
-    olympus.preload = preload;
+    var JSLoadMode;
+    (function (JSLoadMode) {
+        JSLoadMode[JSLoadMode["AUTO"] = 0] = "AUTO";
+        JSLoadMode[JSLoadMode["JSONP"] = 1] = "JSONP";
+        JSLoadMode[JSLoadMode["TAG"] = 2] = "TAG";
+    })(JSLoadMode = olympus.JSLoadMode || (olympus.JSLoadMode = {}));
 })(olympus || (olympus = {}));
