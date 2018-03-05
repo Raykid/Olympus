@@ -97,9 +97,8 @@ export default class SceneManager
                 this._sceneStack[0] = scene;
                 // 派发消息
                 core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-                // 调用接口
-                lastScene && lastScene.__close(data);
-                scene.__open(data);
+                // 销毁
+                lastScene && lastScene.dispose();
             }
         );
         return scene;
@@ -132,8 +131,6 @@ export default class SceneManager
                 this._sceneStack.unshift(scene);
                 // 派发消息
                 core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-                // 调用接口
-                scene.__open(data);
             }
         );
         return scene;
@@ -194,8 +191,8 @@ export default class SceneManager
                 core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
             },
             ()=>{
-                // 调用接口
-                scene.__close(data);
+                // 销毁
+                scene.dispose();
             }
         );
     }

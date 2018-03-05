@@ -308,12 +308,17 @@ var Mediator = /** @class */ (function () {
     /**
      * 打开，为了实现IOpenClose接口
      *
-     * @param {*} [data]
+     * @param {*} [data] 开启数据
+     * @param {...any[]} args 其他数据
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     Mediator.prototype.open = function (data) {
         var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         // 判断状态
         if (this._status === MediatorStatus.UNOPEN) {
             // 修改状态
@@ -356,8 +361,12 @@ var Mediator = /** @class */ (function () {
                                         else {
                                             // 调用回调
                                             _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                            // 调用模板方法
+                                            _this.__beforeOnOpen.apply(_this, [data].concat(args));
                                             // 调用自身onOpen方法
-                                            _this.onOpen(data);
+                                            _this.onOpen.apply(_this, [data].concat(args));
+                                            // 调用模板方法
+                                            _this.__afterOnOpen.apply(_this, [data].concat(args));
                                             // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
                                             if (!_this._viewModel)
                                                 _this.viewModel = {};
@@ -387,48 +396,94 @@ var Mediator = /** @class */ (function () {
         // 返回自身引用
         return this;
     };
+    Mediator.prototype.__beforeOnOpen = function (data) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        // 给子类用的模板方法
+    };
+    Mediator.prototype.__afterOnOpen = function (data) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        // 给子类用的模板方法
+    };
     /**
      * 关闭，为了实现IOpenClose接口
      *
-     * @param {*} [data]
+     * @param {*} [data] 关闭数据
+     * @param {...any[]} args 其他参数
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
     Mediator.prototype.close = function (data) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         if (this._status === MediatorStatus.OPENED) {
             // 修改状态
             this._status = MediatorStatus.CLOSING;
             // 调用所有已托管中介者的close方法
-            for (var _i = 0, _a = this._children.concat(); _i < _a.length; _i++) {
-                var mediator = _a[_i];
+            for (var _a = 0, _b = this._children.concat(); _a < _b.length; _a++) {
+                var mediator = _b[_a];
                 mediator.close(data);
             }
+            // 调用模板方法
+            this.__beforeOnClose.apply(this, [data].concat(args));
             // 调用自身onClose方法
-            this.onClose(data);
+            this.onClose.apply(this, [data].concat(args));
             // 修改状态
             this._status = MediatorStatus.CLOSED;
-            // 销毁自身
-            this.dispose();
+            // 调用模板方法
+            this.__afterOnClose.apply(this, [data].concat(args));
         }
         // 返回自身引用
         return this;
+    };
+    Mediator.prototype.__beforeOnClose = function (data) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        // 给子类用的模板方法
+    };
+    Mediator.prototype.__afterOnClose = function (data) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        // 给子类用的模板方法
+        this.dispose();
     };
     /**
      * 当打开时调用
      *
      * @param {*} [data] 可能的打开参数
+     * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
     Mediator.prototype.onOpen = function (data) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         // 可重写
     };
     /**
      * 当关闭时调用
      *
      * @param {*} [data] 可能的关闭参数
+     * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
     Mediator.prototype.onClose = function (data) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
         // 可重写
     };
     /**

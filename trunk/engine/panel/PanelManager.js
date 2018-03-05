@@ -86,8 +86,6 @@ var PanelManager = /** @class */ (function () {
             this._panels.push(panel);
             // 弹窗所在的表现层必须要显示
             panel.bridge.htmlWrapper.style.display = "";
-            // 调用接口
-            panel.__open(data, isModal, from);
             // 获取策略
             var policy = panel.policy || panel.bridge.defaultPanelPolicy || none;
             // 调用回调
@@ -156,7 +154,7 @@ var PanelManager = /** @class */ (function () {
                 if (parent)
                     bridge.removeChild(parent, panel.skin);
                 // 调用接口
-                panel.__close(data, to);
+                panel.dispose();
             }, to);
             // 移除优先级数据
             this._priorities.delete(panel);

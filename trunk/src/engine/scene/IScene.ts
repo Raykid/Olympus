@@ -19,12 +19,8 @@ export default interface IScene extends IHasBridge, IOpenClose, IDisposable
     policy:IScenePolicy;
     /** 打开当前场景（相当于调用SceneManager.push方法） */
     open(data?:any):IScene;
-    /** 打开当前场景（只能由SceneManager调用） */
-    __open(data?:any):void;
     /** 关闭当前场景（相当于调用SceneManager.pop方法） */
     close(data?:any):IScene;
-    /** 关闭当前场景（只能由SceneManager调用） */
-    __close(data?:any):void;
     /**
      * 切入场景开始前调用
      * @param fromScene 从哪个场景切入

@@ -25,43 +25,11 @@ var SceneMediator = /** @class */ (function (_super) {
         _this.policy = policy;
         return _this;
     }
-    /**
-     * 打开当前场景（相当于调用SceneManager.push方法）
-     *
-     * @param {*} [data] 数据
-     * @returns {IScene} 场景本体
-     * @memberof SceneMediator
-     */
-    SceneMediator.prototype.open = function (data) {
-        return sceneManager.push(this, data);
+    SceneMediator.prototype.__beforeOnOpen = function (data) {
+        sceneManager.push(this, data);
     };
-    /**
-     * 打开当前场景（只能由SceneManager调用）
-     *
-     * @param {*} [data] 数据
-     * @memberof SceneMediator
-     */
-    SceneMediator.prototype.__open = function (data) {
-        _super.prototype.open.call(this, data);
-    };
-    /**
-     * 关闭当前场景（相当于调用SceneManager.pop方法）
-     *
-     * @param {*} [data] 数据
-     * @returns {IScene} 场景本体
-     * @memberof SceneMediator
-     */
-    SceneMediator.prototype.close = function (data) {
-        return sceneManager.pop(this, data);
-    };
-    /**
-     * 关闭当前场景（只能由SceneManager调用）
-     *
-     * @param {*} [data] 数据
-     * @memberof SceneMediator
-     */
-    SceneMediator.prototype.__close = function (data) {
-        _super.prototype.close.call(this, data);
+    SceneMediator.prototype.__afterOnClose = function (data) {
+        sceneManager.pop(this, data);
     };
     /**
      * 切入场景开始前调用

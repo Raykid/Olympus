@@ -89,9 +89,8 @@ var SceneManager = /** @class */ (function () {
             _this._sceneStack[0] = scene;
             // 派发消息
             core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-            // 调用接口
-            lastScene && lastScene.__close(data);
-            scene.__open(data);
+            // 销毁
+            lastScene && lastScene.dispose();
         });
         return scene;
     };
@@ -114,8 +113,6 @@ var SceneManager = /** @class */ (function () {
             _this._sceneStack.unshift(scene);
             // 派发消息
             core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-            // 调用接口
-            scene.__open(data);
         });
         return scene;
     };
@@ -158,8 +155,8 @@ var SceneManager = /** @class */ (function () {
             // 派发消息
             core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
         }, function () {
-            // 调用接口
-            scene.__close(data);
+            // 销毁
+            scene.dispose();
         });
     };
     SceneManager.prototype.doChange = function (from, to, data, policy, type, begin, complete) {

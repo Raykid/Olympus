@@ -16,16 +16,18 @@ export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart
      * 当打开时调用
      *
      * @param {*} [data] 可能的打开参数
+     * @param {...any[]} args 其他参数
      * @memberof IMediator
      */
-    onOpen(data?: any): void;
+    onOpen(data?: any, ...args: any[]): void;
     /**
      * 当关闭时调用
      *
      * @param {*} [data] 可能的关闭参数
+     * @param {...any[]} args 其他参数
      * @memberof IMediator
      */
-    onClose(data?: any): void;
+    onClose(data?: any, ...args: any[]): void;
     /**
      * 当所需资源加载完毕后调用
      *

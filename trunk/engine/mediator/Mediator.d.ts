@@ -154,33 +154,41 @@ export default class Mediator implements IMediator {
     /**
      * 打开，为了实现IOpenClose接口
      *
-     * @param {*} [data]
+     * @param {*} [data] 开启数据
+     * @param {...any[]} args 其他数据
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
-    open(data?: any): any;
+    open(data?: any, ...args: any[]): any;
+    protected __beforeOnOpen(data?: any, ...args: any[]): void;
+    protected __afterOnOpen(data?: any, ...args: any[]): void;
     /**
      * 关闭，为了实现IOpenClose接口
      *
-     * @param {*} [data]
+     * @param {*} [data] 关闭数据
+     * @param {...any[]} args 其他参数
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
-    close(data?: any): any;
+    close(data?: any, ...args: any[]): any;
+    protected __beforeOnClose(data?: any, ...args: any[]): void;
+    protected __afterOnClose(data?: any, ...args: any[]): void;
     /**
      * 当打开时调用
      *
      * @param {*} [data] 可能的打开参数
+     * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
-    onOpen(data?: any): void;
+    onOpen(data?: any, ...args: any[]): void;
     /**
      * 当关闭时调用
      *
      * @param {*} [data] 可能的关闭参数
+     * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
-    onClose(data?: any): void;
+    onClose(data?: any, ...args: any[]): void;
     private _listeners;
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

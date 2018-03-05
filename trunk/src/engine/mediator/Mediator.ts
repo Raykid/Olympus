@@ -353,11 +353,12 @@ export default class Mediator implements IMediator
     /**
      * 打开，为了实现IOpenClose接口
      * 
-     * @param {*} [data] 
+     * @param {*} [data] 开启数据
+     * @param {...any[]} args 其他数据
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
-    public open(data?:any):any
+    public open(data?:any, ...args:any[]):any
     {
         // 判断状态
         if(this._status === MediatorStatus.UNOPEN)
@@ -409,8 +410,12 @@ export default class Mediator implements IMediator
                                         {
                                             // 调用回调
                                             this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                            // 调用模板方法
+                                            this.__beforeOnOpen(data, ...args);
                                             // 调用自身onOpen方法
-                                            this.onOpen(data);
+                                            this.onOpen(data, ...args);
+                                            // 调用模板方法
+                                            this.__afterOnOpen(data, ...args);
                                             // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
                                             if(!this._viewModel) this.viewModel = {};
                                             // 调用所有已托管中介者的open方法
@@ -441,14 +446,25 @@ export default class Mediator implements IMediator
         return this;
     }
 
+    protected __beforeOnOpen(data?:any, ...args:any[]):void
+    {
+        // 给子类用的模板方法
+    }
+
+    protected __afterOnOpen(data?:any, ...args:any[]):void
+    {
+        // 给子类用的模板方法
+    }
+
     /**
      * 关闭，为了实现IOpenClose接口
      * 
-     * @param {*} [data] 
+     * @param {*} [data] 关闭数据
+     * @param {...any[]} args 其他参数
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
-    public close(data?:any):any
+    public close(data?:any, ...args:any[]):any
     {
         if(this._status === MediatorStatus.OPENED)
         {
@@ -459,24 +475,38 @@ export default class Mediator implements IMediator
             {
                 mediator.close(data);
             }
+            // 调用模板方法
+            this.__beforeOnClose(data, ...args);
             // 调用自身onClose方法
-            this.onClose(data);
+            this.onClose(data, ...args);
             // 修改状态
             this._status = MediatorStatus.CLOSED;
-            // 销毁自身
-            this.dispose();
+            // 调用模板方法
+            this.__afterOnClose(data, ...args);
         }
         // 返回自身引用
         return this;
+    }
+
+    protected __beforeOnClose(data?:any, ...args:any[]):void
+    {
+        // 给子类用的模板方法
+    }
+
+    protected __afterOnClose(data?:any, ...args:any[]):void
+    {
+        // 给子类用的模板方法
+        this.dispose();
     }
     
     /**
      * 当打开时调用
      * 
      * @param {*} [data] 可能的打开参数
+     * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
-    public onOpen(data?:any):void
+    public onOpen(data?:any, ...args:any[]):void
     {
         // 可重写
     }
@@ -485,9 +515,10 @@ export default class Mediator implements IMediator
      * 当关闭时调用
      * 
      * @param {*} [data] 可能的关闭参数
+     * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
-    public onClose(data?:any):void
+    public onClose(data?:any, ...args:any[]):void
     {
         // 可重写
     }

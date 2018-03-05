@@ -20,21 +20,11 @@ export default interface IPanel extends IHasBridge, IOpenClose, IDisposable {
         x: number;
         y: number;
     }): IPanel;
-    /** 弹出当前弹窗（只能由PanelManager调用） */
-    __open(data?: any, isModel?: boolean, from?: {
-        x: number;
-        y: number;
-    }): void;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
     close(data?: any, to?: {
         x: number;
         y: number;
     }): IPanel;
-    /** 关闭当前弹窗（只能由PanelManager调用） */
-    __close(data?: any, to?: {
-        x: number;
-        y: number;
-    }): void;
     /** 在弹出前调用的方法 */
     onBeforePop(data?: any, isModel?: boolean, from?: {
         x: number;

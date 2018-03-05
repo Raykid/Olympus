@@ -18,51 +18,11 @@ export default class PanelMediator extends Mediator implements IPanel {
      */
     policy: IPanelPolicy;
     constructor(skin?: any, policy?: IPanelPolicy);
-    /**
-     * 弹出当前弹窗（等同于调用PanelManager.pop方法）
-     *
-     * @param {*} [data] 数据
-     * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
-     * @param {{x:number, y:number}} [from] 弹出点坐标
-     * @returns {IPanel} 弹窗本体
-     * @memberof PanelMediator
-     */
-    open(data?: any, isModel?: boolean, from?: {
-        x: number;
-        y: number;
-    }): IPanel;
-    /**
-     * 弹出当前弹窗（只能由PanelManager调用）
-     *
-     * @param {*} [data] 数据
-     * @param {boolean} [isModel] 是否模态弹出（后方UI无法交互）
-     * @param {{x:number, y:number}} [from] 弹出点坐标
-     * @memberof PanelMediator
-     */
-    __open(data?: any, isModel?: boolean, from?: {
+    __beforeOnOpen(data?: any, isModel?: boolean, from?: {
         x: number;
         y: number;
     }): void;
-    /**
-     * 关闭当前弹窗（等同于调用PanelManager.drop方法）
-     *
-     * @param {*} [data] 数据
-     * @param {{x:number, y:number}} [to] 关闭点坐标
-     * @returns {IPanel} 弹窗本体
-     * @memberof PanelMediator
-     */
-    close(data?: any, to?: {
-        x: number;
-        y: number;
-    }): IPanel;
-    /**
-     * 关闭当前弹窗（只能由PanelManager调用）
-     *
-     * @param {*} [data] 数据
-     * @param {{x:number, y:number}} [to] 关闭点坐标
-     * @memberof PanelMediator
-     */
-    __close(data?: any, to?: {
+    __afterOnClose(data?: any, to?: {
         x: number;
         y: number;
     }): void;
