@@ -225,7 +225,7 @@ var PanelManager = /** @class */ (function () {
         // 设置优先级
         this._priorities.set(prompt, PanelManager_1.PRIORITY_PROMPT);
         // 显示弹窗
-        this.pop(prompt);
+        prompt.open(params);
         // 更新弹窗
         prompt.update(params);
         // 返回弹窗
