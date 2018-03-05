@@ -264,8 +264,8 @@ export function SubMediator(prototype:any, propertyKey:string):any
                     if(mediator)
                     {
                         this.delegateMediator(mediator);
-                        // 如果当前中介者已经为已打开状态，则额外调用open
-                        if(this.status === MediatorStatus.OPENED)
+                        // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
+                        if(this.status === MediatorStatus.OPENING || this.status === MediatorStatus.OPENED)
                         {
                             mediator.open(this.data);
                         }

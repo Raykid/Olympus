@@ -2,6 +2,7 @@ import Mediator from "../mediator/Mediator";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 import { panelManager } from "./PanelManager";
+import MediatorMessage from "../mediator/MediatorMessage";
 
 /**
  * @author Raykid
@@ -34,6 +35,13 @@ export default class PanelMediator extends Mediator implements IPanel
 
     public __afterOnClose(data?:any, to?:{x:number, y:number}):void
     {
+        // 篡改onAfterDrop，等待关闭动画结束后再执行
+        var oriOnAfterDrop:(data?:any, to?:{x:number, y:number})=>void = this.onAfterDrop;
+        this.onAfterDrop = (data?:any, to?:{x:number, y:number})=>{
+            oriOnAfterDrop.call(this, data, to);
+            // 派发关闭事件
+            this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+        };
         panelManager.drop(this, data, to);
     }
     

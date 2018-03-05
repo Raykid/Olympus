@@ -203,13 +203,13 @@ var SceneManager = /** @class */ (function () {
         doFunc.call(policy, from, to, function () {
             // 移除显示
             to && from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
-            // 调用回调
-            complete && complete();
             // 后置处理
             to && from && from.onAfterOut(to, data);
             to && to.onAfterIn(from, data);
             // 派发事件
             to && core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, to, from);
+            // 调用回调
+            complete && complete();
             // 完成步骤
             notify(SYNC_NAME);
         });

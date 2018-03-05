@@ -10,6 +10,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 import Mediator from "../mediator/Mediator";
 import { panelManager } from "./PanelManager";
+import MediatorMessage from "../mediator/MediatorMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -29,6 +30,14 @@ var PanelMediator = /** @class */ (function (_super) {
         panelManager.pop(this, data, isModel, from);
     };
     PanelMediator.prototype.__afterOnClose = function (data, to) {
+        var _this = this;
+        // 篡改onAfterDrop，等待关闭动画结束后再执行
+        var oriOnAfterDrop = this.onAfterDrop;
+        this.onAfterDrop = function (data, to) {
+            oriOnAfterDrop.call(_this, data, to);
+            // 派发关闭事件
+            _this.dispatch(MediatorMessage.MEDIATOR_CLOSED, _this);
+        };
         panelManager.drop(this, data, to);
     };
     /** 在弹出前调用的方法 */

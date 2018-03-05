@@ -10,6 +10,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 import Mediator from "../mediator/Mediator";
 import { sceneManager } from "./SceneManager";
+import MediatorMessage from "../mediator/MediatorMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -29,6 +30,14 @@ var SceneMediator = /** @class */ (function (_super) {
         sceneManager.push(this, data);
     };
     SceneMediator.prototype.__afterOnClose = function (data) {
+        var _this = this;
+        // 篡改onAfterOut，等待关闭动画结束后再执行
+        var oriOnAfterOut = this.onAfterOut;
+        this.onAfterOut = function (toScene, data) {
+            oriOnAfterOut.call(_this, toScene, data);
+            // 派发关闭事件
+            _this.dispatch(MediatorMessage.MEDIATOR_CLOSED, _this);
+        };
         sceneManager.pop(this, data);
     };
     /**

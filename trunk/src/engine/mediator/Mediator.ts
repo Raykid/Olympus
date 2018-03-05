@@ -18,6 +18,7 @@ import IMediator from "./IMediator";
 import MediatorStatus from "./MediatorStatus";
 import { ModuleOpenStatus } from "./IMediatorModulePart";
 import { unique } from "../../utils/ArrayUtil";
+import MediatorMessage from "./MediatorMessage";
 
 /**
  * @author Raykid
@@ -408,25 +409,49 @@ export default class Mediator implements IMediator
                                         }
                                         else
                                         {
-                                            // 调用回调
-                                            this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
-                                            // 调用模板方法
-                                            this.__beforeOnOpen(data, ...args);
-                                            // 调用自身onOpen方法
-                                            this.onOpen(data, ...args);
-                                            // 调用模板方法
-                                            this.__afterOnOpen(data, ...args);
-                                            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-                                            if(!this._viewModel) this.viewModel = {};
-                                            // 调用所有已托管中介者的open方法
-                                            for(var mediator of this._children)
+                                            var doOpen:()=>void = ()=>{
+                                                // 调用回调
+                                                this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                                // 调用模板方法
+                                                this.__beforeOnOpen(data, ...args);
+                                                // 调用自身onOpen方法
+                                                this.onOpen(data, ...args);
+                                                // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+                                                if(!this._viewModel) this.viewModel = {};
+                                                // 修改状态
+                                                this._status = MediatorStatus.OPENED;
+                                                // 调用模板方法
+                                                this.__afterOnOpen(data, ...args);
+                                                // 调用回调
+                                                this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
+                                                // 派发事件
+                                                this.dispatch(MediatorMessage.MEDIATOR_OPENED, this);
+                                            };
+                                            // 记录子中介者数量，并监听其开启完毕事件
+                                            var subCount:number = this._children.length;
+                                            if(subCount > 0)
                                             {
-                                                mediator.open(data);
+                                                var handler:(mediator:IMediator)=>void = (mediator:IMediator)=>{
+                                                    if(this._children.indexOf(mediator) >= 0 && --subCount === 0)
+                                                    {
+                                                        // 取消监听
+                                                        this.unlisten(MediatorMessage.MEDIATOR_OPENED, handler);
+                                                        // 执行开启
+                                                        doOpen();
+                                                    }
+                                                };
+                                                this.listen(MediatorMessage.MEDIATOR_OPENED, handler);
+                                                // 调用所有已托管中介者的open方法
+                                                for(var mediator of this._children)
+                                                {
+                                                    mediator.open(data);
+                                                }
                                             }
-                                            // 修改状态
-                                            this._status = MediatorStatus.OPENED;
-                                            // 调用回调
-                                            this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
+                                            else
+                                            {
+                                                // 没有子中介者，直接执行
+                                                doOpen();
+                                            }
                                         }
                                     });
                                 }
@@ -468,21 +493,42 @@ export default class Mediator implements IMediator
     {
         if(this._status === MediatorStatus.OPENED)
         {
-            // 修改状态
-            this._status = MediatorStatus.CLOSING;
-            // 调用所有已托管中介者的close方法
-            for(var mediator of this._children.concat())
+            var doClose:()=>void = ()=>{
+                // 调用模板方法
+                this.__beforeOnClose(data, ...args);
+                // 修改状态
+                this._status = MediatorStatus.CLOSING;
+                // 调用自身onClose方法
+                this.onClose(data, ...args);
+                // 修改状态
+                this._status = MediatorStatus.CLOSED;
+                // 调用模板方法
+                this.__afterOnClose(data, ...args);
+            };
+            var subCount:number = this._children.length;
+            if(subCount > 0)
             {
-                mediator.close(data);
+                var handler:(mediator:IMediator)=>void = (mediator:IMediator)=>{
+                    if(this._children.indexOf(mediator) >= 0 && --subCount === 0)
+                    {
+                        // 取消监听
+                        this.unlisten(MediatorMessage.MEDIATOR_CLOSED, handler);
+                        // 执行关闭
+                        doClose();
+                    }
+                };
+                this.listen(MediatorMessage.MEDIATOR_CLOSED, handler);
+                // 调用所有已托管中介者的close方法
+                for(var mediator of this._children.concat())
+                {
+                    mediator.close(data);
+                }
             }
-            // 调用模板方法
-            this.__beforeOnClose(data, ...args);
-            // 调用自身onClose方法
-            this.onClose(data, ...args);
-            // 修改状态
-            this._status = MediatorStatus.CLOSED;
-            // 调用模板方法
-            this.__afterOnClose(data, ...args);
+            else
+            {
+                // 没有子中介者，直接执行
+                doClose();
+            }
         }
         // 返回自身引用
         return this;
@@ -495,6 +541,8 @@ export default class Mediator implements IMediator
 
     protected __afterOnClose(data?:any, ...args:any[]):void
     {
+        // 派发关闭事件
+        this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
         // 给子类用的模板方法
         this.dispose();
     }

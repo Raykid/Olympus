@@ -2,6 +2,7 @@ import Mediator from "../mediator/Mediator";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import { sceneManager } from "./SceneManager";
+import MediatorMessage from "../mediator/MediatorMessage";
 
 /**
  * @author Raykid
@@ -34,6 +35,13 @@ export default class SceneMediator extends Mediator implements IScene
 
     protected __afterOnClose(data?:any):void
     {
+        // 篡改onAfterOut，等待关闭动画结束后再执行
+        var oriOnAfterOut:(toScene:IScene, data?:any)=>void = this.onAfterOut;
+        this.onAfterOut = (toScene:IScene, data?:any)=>{
+            oriOnAfterOut.call(this, toScene, data);
+            // 派发关闭事件
+            this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+        };
         sceneManager.pop(this, data);
     }
 
