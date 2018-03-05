@@ -18,7 +18,7 @@ export default class PanelMediator extends Mediator implements IPanel {
      */
     policy: IPanelPolicy;
     constructor(skin?: any, policy?: IPanelPolicy);
-    __beforeOnOpen(data?: any, isModel?: boolean, from?: {
+    __afterOnOpen(data?: any, isModel?: boolean, from?: {
         x: number;
         y: number;
     }): void;

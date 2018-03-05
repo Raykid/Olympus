@@ -26,7 +26,7 @@ var SceneMediator = /** @class */ (function (_super) {
         _this.policy = policy;
         return _this;
     }
-    SceneMediator.prototype.__beforeOnOpen = function (data) {
+    SceneMediator.prototype.__afterOnOpen = function (data) {
         sceneManager.push(this, data);
     };
     SceneMediator.prototype.__afterOnClose = function (data) {

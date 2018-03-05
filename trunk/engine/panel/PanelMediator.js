@@ -26,7 +26,7 @@ var PanelMediator = /** @class */ (function (_super) {
         _this.policy = policy;
         return _this;
     }
-    PanelMediator.prototype.__beforeOnOpen = function (data, isModel, from) {
+    PanelMediator.prototype.__afterOnOpen = function (data, isModel, from) {
         panelManager.pop(this, data, isModel, from);
     };
     PanelMediator.prototype.__afterOnClose = function (data, to) {

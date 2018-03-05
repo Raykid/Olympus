@@ -28,7 +28,7 @@ export default class PanelMediator extends Mediator implements IPanel
         this.policy = policy;
     }
 
-    public __beforeOnOpen(data?:any, isModel?:boolean, from?:{x:number, y:number}):void
+    public __afterOnOpen(data?:any, isModel?:boolean, from?:{x:number, y:number}):void
     {
         panelManager.pop(this, data, isModel, from)
     }

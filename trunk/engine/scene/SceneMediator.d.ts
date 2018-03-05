@@ -18,7 +18,7 @@ export default class SceneMediator extends Mediator implements IScene {
      */
     policy: IScenePolicy;
     constructor(skin?: any, policy?: IScenePolicy);
-    protected __beforeOnOpen(data?: any): void;
+    protected __afterOnOpen(data?: any): void;
     protected __afterOnClose(data?: any): void;
     /**
      * 切入场景开始前调用

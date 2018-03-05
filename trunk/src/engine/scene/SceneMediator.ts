@@ -28,7 +28,7 @@ export default class SceneMediator extends Mediator implements IScene
         this.policy = policy;
     }
 
-    protected __beforeOnOpen(data?:any):void
+    protected __afterOnOpen(data?:any):void
     {
         sceneManager.push(this, data);
     }
