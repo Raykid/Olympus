@@ -138,12 +138,6 @@ export default abstract class RequestData implements IMessage
                 enumerable: false,
                 writable: true,
                 value: this.__observables
-            },
-            __policy: {
-                configurable: true,
-                enumerable: false,
-                writable: true,
-                value: this.__policy
             }
         });
     }

@@ -27,12 +27,6 @@ var RequestData = /** @class */ (function () {
                 enumerable: false,
                 writable: true,
                 value: this.__observables
-            },
-            __policy: {
-                configurable: true,
-                enumerable: false,
-                writable: true,
-                value: this.__policy
             }
         });
     }
