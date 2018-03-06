@@ -337,6 +337,7 @@ namespace olympus
         }
         jsFiles = jsFiles.concat();
         var count:number = jsFiles.length;
+        var jsonpCount:number = 0;
         var stop:boolean = false;
         var nodes:HTMLScriptElement[] = [];
         // 遍历加载js
@@ -375,6 +376,8 @@ namespace olympus
                 xhr.onload = onJSONPLoadOne;
                 xhr.onerror = onJSONPLoadOne;
                 xhr.send(null);
+                // 递增数量
+                jsonpCount ++;
             }
             else
             {
@@ -382,6 +385,20 @@ namespace olympus
                 jsNode.onload = onLoadOne;
                 jsNode.onerror = onErrorOne;
                 jsNode.src = url;
+            }
+        }
+        // 判断一次
+        judgeAppend();
+
+        function judgeAppend():void
+        {
+            if(jsonpCount === 0)
+            {
+                // 这里统一将所有script标签添加到DOM中，以此保持顺序
+                for(var node of nodes)
+                {
+                    document.body.appendChild(node);
+                }
             }
         }
 
@@ -400,6 +417,10 @@ namespace olympus
                 // 填充script标签内容
                 var jsNode = nodes[index];
                 jsNode.innerHTML = xhr.responseText;
+                // 递减jsonp数量
+                jsonpCount --;
+                // 判断一次
+                judgeAppend();
                 // 调用成功
                 onLoadOne();
             }
@@ -408,7 +429,7 @@ namespace olympus
         function onLoadOne():void
         {
             // 如果全部加载完毕则调用回调
-            if(!stop && --count === 0) onAllDone();
+            if(!stop && --count === 0) callback();
         }
 
         function onErrorOne():void
@@ -418,17 +439,6 @@ namespace olympus
                 stop = true;
                 callback(new Error("JS加载失败"));
             }
-        }
-
-        function onAllDone():void
-        {
-            // 这里统一将所有script标签添加到DOM中，以此保持顺序
-            for(var node of nodes)
-            {
-                document.body.appendChild(node);
-            }
-            // 回调
-            callback();
         }
     }
 

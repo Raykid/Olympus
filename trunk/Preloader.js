@@ -295,6 +295,7 @@ var olympus;
         }
         jsFiles = jsFiles.concat();
         var count = jsFiles.length;
+        var jsonpCount = 0;
         var stop = false;
         var nodes = [];
         // 遍历加载js
@@ -330,12 +331,25 @@ var olympus;
                 xhr.onload = onJSONPLoadOne;
                 xhr.onerror = onJSONPLoadOne;
                 xhr.send(null);
+                // 递增数量
+                jsonpCount++;
             }
             else {
                 // 使用script标签方式加载，不用在意顺序
                 jsNode.onload = onLoadOne;
                 jsNode.onerror = onErrorOne;
                 jsNode.src = url;
+            }
+        }
+        // 判断一次
+        judgeAppend();
+        function judgeAppend() {
+            if (jsonpCount === 0) {
+                // 这里统一将所有script标签添加到DOM中，以此保持顺序
+                for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
+                    var node = nodes_1[_i];
+                    document.body.appendChild(node);
+                }
             }
         }
         function onJSONPLoadOne(evt) {
@@ -350,6 +364,10 @@ var olympus;
                 // 填充script标签内容
                 var jsNode = nodes[index];
                 jsNode.innerHTML = xhr.responseText;
+                // 递减jsonp数量
+                jsonpCount--;
+                // 判断一次
+                judgeAppend();
                 // 调用成功
                 onLoadOne();
             }
@@ -357,22 +375,13 @@ var olympus;
         function onLoadOne() {
             // 如果全部加载完毕则调用回调
             if (!stop && --count === 0)
-                onAllDone();
+                callback();
         }
         function onErrorOne() {
             if (!stop) {
                 stop = true;
                 callback(new Error("JS加载失败"));
             }
-        }
-        function onAllDone() {
-            // 这里统一将所有script标签添加到DOM中，以此保持顺序
-            for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
-                var node = nodes_1[_i];
-                document.body.appendChild(node);
-            }
-            // 回调
-            callback();
         }
     }
     var JSLoadMode;
