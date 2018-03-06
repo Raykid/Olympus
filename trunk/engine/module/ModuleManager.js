@@ -217,6 +217,8 @@ var ModuleManager = /** @class */ (function () {
                         target.close = function (data) {
                             moduleManager.close(target, data);
                         };
+                        // 结束一次模块开启
+                        _this.onFinishOpen();
                         break;
                     case ModuleOpenStatus.AfterOpen:
                         // 调用onDeactivate接口
@@ -228,8 +230,6 @@ var ModuleManager = /** @class */ (function () {
                             _this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
-                        // 结束一次模块开启
-                        _this.onFinishOpen();
                         break;
                 }
             };

@@ -232,6 +232,8 @@ export default class ModuleManager
                         {
                             moduleManager.close(target, data);
                         };
+                        // 结束一次模块开启
+                        this.onFinishOpen();
                         break;
                     case ModuleOpenStatus.AfterOpen:
                         // 调用onDeactivate接口
@@ -242,8 +244,6 @@ export default class ModuleManager
                         if(replace) this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
-                        // 结束一次模块开启
-                        this.onFinishOpen();
                         break;
                 }
             };
