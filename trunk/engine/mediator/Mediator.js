@@ -344,11 +344,9 @@ var Mediator = /** @class */ (function () {
             var maskFlag = true;
             // 加载所有已托管中介者的资源
             this.loadAssets(function (err) {
-                // 隐藏Loading
-                if (!maskFlag)
-                    maskManager.hideLoading("mediatorOpen");
-                maskFlag = false;
                 if (err) {
+                    // 移除遮罩
+                    hideMask();
                     // 调用回调
                     _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                 }
@@ -356,6 +354,8 @@ var Mediator = /** @class */ (function () {
                     // 加载css文件
                     _this.loadStyleFiles(function (err) {
                         if (err) {
+                            // 移除遮罩
+                            hideMask();
                             // 调用回调
                             _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                         }
@@ -363,12 +363,17 @@ var Mediator = /** @class */ (function () {
                             // 加载js文件
                             _this.loadJsFiles(function (err) {
                                 if (err) {
+                                    // 移除遮罩
+                                    hideMask();
                                     // 调用回调
                                     _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                 }
                                 else {
                                     // 发送初始化消息
                                     _this.sendInitRequests(function (err) {
+                                        // 移除遮罩
+                                        hideMask();
+                                        // 判断错误
                                         if (err) {
                                             // 调用回调
                                             _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
@@ -431,6 +436,12 @@ var Mediator = /** @class */ (function () {
         }
         // 返回自身引用
         return this;
+        function hideMask() {
+            // 隐藏Loading
+            if (!maskFlag)
+                maskManager.hideLoading("mediatorOpen");
+            maskFlag = false;
+        }
     };
     Mediator.prototype.__beforeOnOpen = function (data) {
         var args = [];

@@ -385,11 +385,10 @@ export default class Mediator implements IMediator
             var maskFlag:boolean = true;
             // 加载所有已托管中介者的资源
             this.loadAssets((err?:Error)=>{
-                // 隐藏Loading
-                if(!maskFlag) maskManager.hideLoading("mediatorOpen");
-                maskFlag = false;
                 if(err)
                 {
+                    // 移除遮罩
+                    hideMask();
                     // 调用回调
                     this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                 }
@@ -399,6 +398,8 @@ export default class Mediator implements IMediator
                     this.loadStyleFiles((err?:Error)=>{
                         if(err)
                         {
+                            // 移除遮罩
+                            hideMask();
                             // 调用回调
                             this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                         }
@@ -408,6 +409,8 @@ export default class Mediator implements IMediator
                             this.loadJsFiles((err?:Error)=>{
                                 if(err)
                                 {
+                                    // 移除遮罩
+                                    hideMask();
                                     // 调用回调
                                     this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                 }
@@ -415,6 +418,9 @@ export default class Mediator implements IMediator
                                 {
                                     // 发送初始化消息
                                     this.sendInitRequests((err?:Error)=>{
+                                        // 移除遮罩
+                                        hideMask();
+                                        // 判断错误
                                         if(err)
                                         {
                                             // 调用回调
@@ -482,6 +488,13 @@ export default class Mediator implements IMediator
         }
         // 返回自身引用
         return this;
+
+        function hideMask():void
+        {
+            // 隐藏Loading
+            if(!maskFlag) maskManager.hideLoading("mediatorOpen");
+            maskFlag = false;
+        }
     }
 
     protected __beforeOnOpen(data?:any, ...args:any[]):void
