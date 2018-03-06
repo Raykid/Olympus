@@ -82,7 +82,7 @@ export function MediatorClass(moduleName:string):ClassDecorator
         // 包装类
         var wrapperCls:IMediatorConstructor = <IMediatorConstructor>wrapConstruct(cls);
         // 注册模块，每一个Mediator都有成为独立Module的能力
-        moduleManager.registerModule(wrapperCls);
+        moduleManager.registerModule(moduleName, wrapperCls);
         // 返回包装类
         return wrapperCls;
     } as ClassDecorator;

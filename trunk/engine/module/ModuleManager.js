@@ -118,11 +118,12 @@ var ModuleManager = /** @class */ (function () {
     /**
      * 注册模块
      *
+     * @param {string} moduleName 模块名
      * @param {IMediatorConstructor} cls 模块类型
      * @memberof ModuleManager
      */
-    ModuleManager.prototype.registerModule = function (cls) {
-        this._moduleDict[cls["moduleName"] || cls["name"]] = cls;
+    ModuleManager.prototype.registerModule = function (moduleName, cls) {
+        this._moduleDict[moduleName] = cls;
     };
     /**
      * 获取模块是否开启中

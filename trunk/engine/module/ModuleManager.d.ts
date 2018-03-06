@@ -58,10 +58,11 @@ export default class ModuleManager {
     /**
      * 注册模块
      *
+     * @param {string} moduleName 模块名
      * @param {IMediatorConstructor} cls 模块类型
      * @memberof ModuleManager
      */
-    registerModule(cls: IMediatorConstructor): void;
+    registerModule(moduleName: string, cls: IMediatorConstructor): void;
     /**
      * 获取模块是否开启中
      *

@@ -119,12 +119,13 @@ export default class ModuleManager
     /**
      * 注册模块
      * 
+     * @param {string} moduleName 模块名
      * @param {IMediatorConstructor} cls 模块类型
      * @memberof ModuleManager
      */
-    public registerModule(cls:IMediatorConstructor):void
+    public registerModule(moduleName:string, cls:IMediatorConstructor):void
     {
-        this._moduleDict[cls["moduleName"] || cls["name"]] = cls;
+        this._moduleDict[moduleName] = cls;
     }
 
     /**
