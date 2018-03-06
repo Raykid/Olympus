@@ -10,6 +10,7 @@ import IMediatorConstructor from "../mediator/IMediatorConstructor";
 */
 export default class ModuleManager {
     private _moduleDict;
+    private _moduleNameDict;
     private _moduleStack;
     private _openCache;
     private _opening;
@@ -63,6 +64,14 @@ export default class ModuleManager {
      * @memberof ModuleManager
      */
     registerModule(moduleName: string, cls: IMediatorConstructor): void;
+    /**
+     * 获取模块名
+     *
+     * @param {ModuleType} type 模块实例或模块类型
+     * @returns {string} 模块名
+     * @memberof ModuleManager
+     */
+    getModuleName(type: ModuleType): string;
     /**
      * 获取模块是否开启中
      *

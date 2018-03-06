@@ -79,6 +79,15 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     responses: ResponseData[];
+    private _moduleName;
+    /**
+     * 获取模块名
+     *
+     * @readonly
+     * @type {string}
+     * @memberof Mediator
+     */
+    readonly moduleName: string;
     /**
      * 模块打开结果回调函数，由moduleManager调用，不要手动调用
      *

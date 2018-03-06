@@ -5,6 +5,7 @@ import ModuleMessage from "./ModuleMessage";
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
+import Dictionary from "../../utils/Dictionary";
 
 /**
  * @author Raykid
@@ -18,6 +19,7 @@ import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
 export default class ModuleManager
 {
     private _moduleDict:{[name:string]:IMediatorConstructor} = {};
+    private _moduleNameDict:Dictionary<IMediatorConstructor, string> = new Dictionary();
     private _moduleStack:ModuleData[] = [];
 
     private _openCache:[ModuleType, any, boolean][] = [];
@@ -126,6 +128,20 @@ export default class ModuleManager
     public registerModule(moduleName:string, cls:IMediatorConstructor):void
     {
         this._moduleDict[moduleName] = cls;
+        this._moduleNameDict.set(cls, moduleName);
+    }
+
+    /**
+     * 获取模块名
+     * 
+     * @param {ModuleType} type 模块实例或模块类型
+     * @returns {string} 模块名
+     * @memberof ModuleManager
+     */
+    public getModuleName(type:ModuleType):string
+    {
+        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
+        return this._moduleNameDict.get(cls);
     }
 
     /**
@@ -187,6 +203,7 @@ export default class ModuleManager
             this._opening = type;
             // 尚未打开过，正常开启模块
             var target:IMediator = type instanceof Function ? new cls() : type;
+            target["_moduleName"] = this._moduleNameDict.get(cls);
             // 赋值打开参数
             target.data = data;
             // 数据先行

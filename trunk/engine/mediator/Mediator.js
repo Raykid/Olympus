@@ -134,6 +134,20 @@ var Mediator = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Mediator.prototype, "moduleName", {
+        /**
+         * 获取模块名
+         *
+         * @readonly
+         * @type {string}
+         * @memberof Mediator
+         */
+        get: function () {
+            return this._moduleName;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 加载从listAssets中获取到的所有资源
      *

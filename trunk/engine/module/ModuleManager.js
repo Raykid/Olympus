@@ -9,6 +9,7 @@ import { Injectable } from "../../core/injector/Injector";
 import { getConstructor } from "../../utils/ConstructUtil";
 import ModuleMessage from "./ModuleMessage";
 import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
+import Dictionary from "../../utils/Dictionary";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -20,6 +21,7 @@ import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
 var ModuleManager = /** @class */ (function () {
     function ModuleManager() {
         this._moduleDict = {};
+        this._moduleNameDict = new Dictionary();
         this._moduleStack = [];
         this._openCache = [];
         this._opening = null;
@@ -124,6 +126,18 @@ var ModuleManager = /** @class */ (function () {
      */
     ModuleManager.prototype.registerModule = function (moduleName, cls) {
         this._moduleDict[moduleName] = cls;
+        this._moduleNameDict.set(cls, moduleName);
+    };
+    /**
+     * 获取模块名
+     *
+     * @param {ModuleType} type 模块实例或模块类型
+     * @returns {string} 模块名
+     * @memberof ModuleManager
+     */
+    ModuleManager.prototype.getModuleName = function (type) {
+        var cls = getConstructor(type instanceof Function ? type : type.constructor);
+        return this._moduleNameDict.get(cls);
     };
     /**
      * 获取模块是否开启中
@@ -176,6 +190,7 @@ var ModuleManager = /** @class */ (function () {
             this._opening = type;
             // 尚未打开过，正常开启模块
             var target = type instanceof Function ? new cls() : type;
+            target["_moduleName"] = this._moduleNameDict.get(cls);
             // 赋值打开参数
             target.data = data;
             // 数据先行

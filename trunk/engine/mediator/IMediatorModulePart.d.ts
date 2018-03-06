@@ -14,6 +14,13 @@ export declare enum ModuleOpenStatus {
 }
 export default interface IMediatorModulePart {
     /**
+     * 获取模块名
+     *
+     * @type {string}
+     * @memberof IMediatorModulePart
+     */
+    readonly moduleName: string;
+    /**
      * 模块打开结果回调函数，由moduleManager调用，不要手动调用
      *
      * @memberof IMediatorModulePart

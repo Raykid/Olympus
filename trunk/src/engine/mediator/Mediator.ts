@@ -141,6 +141,19 @@ export default class Mediator implements IMediator
         }
     }
 
+    private _moduleName:string;
+    /**
+     * 获取模块名
+     * 
+     * @readonly
+     * @type {string}
+     * @memberof Mediator
+     */
+    public get moduleName():string
+    {
+        return this._moduleName;
+    }
+
     /**
      * 模块打开结果回调函数，由moduleManager调用，不要手动调用
      * 
