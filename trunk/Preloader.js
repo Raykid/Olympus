@@ -322,6 +322,8 @@ var olympus;
             if (jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url))) {
                 // 使用JSONP方式加载
                 var xhr = (window["XDomainRequest"] && navigator.userAgent.indexOf("MSIE 10.") < 0 ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+                // 记录索引
+                xhr["index"] = i;
                 xhr.open("GET", url, true);
                 // responseType设置要在open之后，否则IE10和IE11会报错
                 xhr.responseType = "text";
@@ -344,19 +346,10 @@ var olympus;
             else {
                 var xhr = evt.target;
                 // 取到索引
-                var index = -1;
-                for (var i = 0, len = jsFiles.length; i < len; i++) {
-                    var jsFile = jsFiles[i];
-                    if (jsFile.url === url) {
-                        index = i;
-                        break;
-                    }
-                }
+                var index = xhr["index"];
                 // 填充script标签内容
-                if (index >= 0) {
-                    var jsNode = nodes[index];
-                    jsNode.innerHTML = xhr.responseText;
-                }
+                var jsNode = nodes[index];
+                jsNode.innerHTML = xhr.responseText;
                 // 调用成功
                 onLoadOne();
             }

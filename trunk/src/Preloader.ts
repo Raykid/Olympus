@@ -367,6 +367,8 @@ namespace olympus
             {
                 // 使用JSONP方式加载
                 var xhr:XMLHttpRequest = (window["XDomainRequest"] && navigator.userAgent.indexOf("MSIE 10.") < 0 ? new window["XDomainRequest"]() : window["XMLHttpRequest"] ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+                // 记录索引
+                xhr["index"] = i;
                 xhr.open("GET", url, true);
                 // responseType设置要在open之后，否则IE10和IE11会报错
                 xhr.responseType = "text";
@@ -394,22 +396,10 @@ namespace olympus
             {
                 var xhr:XMLHttpRequest = <XMLHttpRequest>evt.target;
                 // 取到索引
-                var index:number = -1;
-                for(var i:number = 0, len:number = jsFiles.length; i < len; i++)
-                {
-                    var jsFile:JSFileData = <JSFileData>jsFiles[i];
-                    if(jsFile.url === url)
-                    {
-                        index = i;
-                        break;
-                    }
-                }
+                var index:number = xhr["index"];
                 // 填充script标签内容
-                if(index >= 0)
-                {
-                    var jsNode = nodes[index];
-                    jsNode.innerHTML = xhr.responseText;
-                }
+                var jsNode = nodes[index];
+                jsNode.innerHTML = xhr.responseText;
                 // 调用成功
                 onLoadOne();
             }
