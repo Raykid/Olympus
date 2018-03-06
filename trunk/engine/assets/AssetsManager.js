@@ -197,6 +197,7 @@ var AssetsManager = /** @class */ (function () {
         }
         jsFiles = jsFiles.concat();
         var count = jsFiles.length;
+        var jsonpCount = 0;
         var stop = false;
         var nodes = [];
         // 遍历加载js
@@ -216,14 +217,26 @@ var AssetsManager = /** @class */ (function () {
             nodes.push(jsNode);
             // 开始加载
             if (jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url))) {
-                // 使用JSONP方式加载
-                assetsManager.loadAssets(jsFile.url, null, null, onCompleteOne);
+                this.loadAssets(jsFile.url, null, null, onCompleteOne);
+                // 递增数量
+                jsonpCount++;
             }
             else {
                 // 使用script标签方式加载，不用在意顺序
                 jsNode.onload = onLoadOne;
                 jsNode.onerror = onErrorOne;
-                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
+                jsNode.src = jsFile.url;
+            }
+        }
+        // 判断一次
+        judgeAppend();
+        function judgeAppend() {
+            if (jsonpCount === 0) {
+                // 这里统一将所有script标签添加到DOM中，以此保持顺序
+                for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
+                    var node = nodes_1[_i];
+                    document.body.appendChild(node);
+                }
             }
         }
         function onCompleteOne(url, result) {
@@ -246,6 +259,10 @@ var AssetsManager = /** @class */ (function () {
                     var jsNode = nodes[index];
                     jsNode.innerHTML = result;
                 }
+                // 递减jsonp数量
+                jsonpCount--;
+                // 判断一次
+                judgeAppend();
                 // 调用成功
                 onLoadOne();
             }
@@ -253,22 +270,13 @@ var AssetsManager = /** @class */ (function () {
         function onLoadOne() {
             // 如果全部加载完毕则调用回调
             if (!stop && --count === 0)
-                onAllDone();
+                handler();
         }
         function onErrorOne() {
             if (!stop) {
                 stop = true;
                 handler(new Error("JS加载失败"));
             }
-        }
-        function onAllDone() {
-            // 这里统一将所有script标签添加到DOM中，以此保持顺序
-            for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
-                var node = nodes_1[_i];
-                document.body.appendChild(node);
-            }
-            // 回调
-            handler();
         }
     };
     AssetsManager = __decorate([

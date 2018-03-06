@@ -232,6 +232,7 @@ export default class AssetsManager
         }
         jsFiles = jsFiles.concat();
         var count:number = jsFiles.length;
+        var jsonpCount:number = 0;
         var stop:boolean = false;
         var nodes:HTMLScriptElement[] = [];
         // 遍历加载js
@@ -254,15 +255,30 @@ export default class AssetsManager
             // 开始加载
             if(jsFile.mode === JSLoadMode.JSONP || (jsFile.mode === JSLoadMode.AUTO && !isAbsolutePath(jsFile.url)))
             {
-                // 使用JSONP方式加载
-                assetsManager.loadAssets(jsFile.url, null, null, onCompleteOne);
+                this.loadAssets(jsFile.url, null, null, onCompleteOne);
+                // 递增数量
+                jsonpCount ++;
             }
             else
             {
                 // 使用script标签方式加载，不用在意顺序
                 jsNode.onload = onLoadOne;
                 jsNode.onerror = onErrorOne;
-                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
+                jsNode.src = jsFile.url;
+            }
+        }
+        // 判断一次
+        judgeAppend();
+
+        function judgeAppend():void
+        {
+            if(jsonpCount === 0)
+            {
+                // 这里统一将所有script标签添加到DOM中，以此保持顺序
+                for(var node of nodes)
+                {
+                    document.body.appendChild(node);
+                }
             }
         }
 
@@ -292,6 +308,10 @@ export default class AssetsManager
                     var jsNode = nodes[index];
                     jsNode.innerHTML = result;
                 }
+                // 递减jsonp数量
+                jsonpCount --;
+                // 判断一次
+                judgeAppend();
                 // 调用成功
                 onLoadOne();
             }
@@ -300,7 +320,7 @@ export default class AssetsManager
         function onLoadOne():void
         {
             // 如果全部加载完毕则调用回调
-            if(!stop && --count === 0) onAllDone();
+            if(!stop && --count === 0) handler();
         }
 
         function onErrorOne():void
@@ -310,17 +330,6 @@ export default class AssetsManager
                 stop = true;
                 handler(new Error("JS加载失败"));
             }
-        }
-
-        function onAllDone():void
-        {
-            // 这里统一将所有script标签添加到DOM中，以此保持顺序
-            for(var node of nodes)
-            {
-                document.body.appendChild(node);
-            }
-            // 回调
-            handler();
         }
     }
 }
