@@ -221,9 +221,10 @@ export default class AssetsManager
      * 
      * @param {JSFile[]} jsFiles js文件列表
      * @param {(err?:Error)=>void} handler 完成回调
+     * @param {boolean} [ordered=false] 是否保证标签形式js的执行顺序，保证执行顺序会降低标签形式js的加载速度，因为必须串行加载。该参数不会影响JSONP形式的加载速度和执行顺序，JSONP形式脚本总是并行加载且顺序执行的。默认是false
      * @memberof AssetsManager
      */
-    public loadJsFiles(jsFiles:JSFile[], handler:(err?:Error)=>void):void
+    public loadJsFiles(jsFiles:JSFile[], handler:(err?:Error)=>void, ordered:boolean=false):void
     {
         if(!jsFiles)
         {
@@ -268,6 +269,7 @@ export default class AssetsManager
             }
         }
         // 判断一次
+        var appendIndex:number = 0;
         judgeAppend();
 
         function judgeAppend():void
@@ -275,9 +277,14 @@ export default class AssetsManager
             if(jsonpCount === 0)
             {
                 // 这里统一将所有script标签添加到DOM中，以此保持顺序
-                for(var node of nodes)
+                for(var i:number = appendIndex, len:number = nodes.length; i < len; )
                 {
+                    var node:HTMLScriptElement = nodes[i];
                     document.body.appendChild(node);
+                    // 记录添加索引
+                    appendIndex = ++ i;
+                    // 如果需要保持顺序且当前是标签形式js，则停止添加，等待加载完毕再继续
+                    if(ordered && node.src) break;
                 }
             }
         }
@@ -310,8 +317,6 @@ export default class AssetsManager
                 }
                 // 递减jsonp数量
                 jsonpCount --;
-                // 判断一次
-                judgeAppend();
                 // 调用成功
                 onLoadOne();
             }
@@ -319,6 +324,8 @@ export default class AssetsManager
 
         function onLoadOne():void
         {
+            // 添加标签
+            judgeAppend();
             // 如果全部加载完毕则调用回调
             if(!stop && --count === 0) handler();
         }

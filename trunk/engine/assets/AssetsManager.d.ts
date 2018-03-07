@@ -58,9 +58,10 @@ export default class AssetsManager {
      *
      * @param {JSFile[]} jsFiles js文件列表
      * @param {(err?:Error)=>void} handler 完成回调
+     * @param {boolean} [ordered=false] 是否保证标签形式js的执行顺序，保证执行顺序会降低标签形式js的加载速度，因为必须串行加载。该参数不会影响JSONP形式的加载速度和执行顺序，JSONP形式脚本总是并行加载且顺序执行的。默认是false
      * @memberof AssetsManager
      */
-    loadJsFiles(jsFiles: JSFile[], handler: (err?: Error) => void): void;
+    loadJsFiles(jsFiles: JSFile[], handler: (err?: Error) => void, ordered?: boolean): void;
 }
 export declare enum JSLoadMode {
     AUTO = 0,

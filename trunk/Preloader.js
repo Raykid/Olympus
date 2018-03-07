@@ -275,8 +275,10 @@ var olympus;
      * @param {string[]} jsFiles 要加载的js文件列表
      * @param {string} [host] CDN域名，不传则使用当前域名
      * @param {()=>void} [callback] 全部加载完成后的回调
+     * @param {boolean} [ordered=false] 是否保证标签形式js的执行顺序，保证执行顺序会降低标签形式js的加载速度，因为必须串行加载。该参数不会影响JSONP形式的加载速度和执行顺序，JSONP形式脚本总是并行加载且顺序执行的。默认是true
      */
-    function preload(jsFiles, host, callback) {
+    function preload(jsFiles, host, callback, ordered) {
+        if (ordered === void 0) { ordered = true; }
         // 首先初始化version
         version.initialize(function () {
             loadJsFiles(jsFiles, host || getCurOrigin(), function (err) {
@@ -284,11 +286,11 @@ var olympus;
                     throw err;
                 else
                     callback && callback();
-            });
+            }, ordered);
         });
     }
     olympus.preload = preload;
-    function loadJsFiles(jsFiles, host, callback) {
+    function loadJsFiles(jsFiles, host, callback, ordered) {
         if (!jsFiles) {
             callback();
             return;
@@ -342,13 +344,19 @@ var olympus;
             }
         }
         // 判断一次
+        var appendIndex = 0;
         judgeAppend();
         function judgeAppend() {
             if (jsonpCount === 0) {
                 // 这里统一将所有script标签添加到DOM中，以此保持顺序
-                for (var _i = 0, nodes_1 = nodes; _i < nodes_1.length; _i++) {
-                    var node = nodes_1[_i];
+                for (var i = appendIndex, len = nodes.length; i < len;) {
+                    var node = nodes[i];
                     document.body.appendChild(node);
+                    // 记录添加索引
+                    appendIndex = ++i;
+                    // 如果需要保持顺序且当前是标签形式js，则停止添加，等待加载完毕再继续
+                    if (ordered && node.src)
+                        break;
                 }
             }
         }
@@ -366,13 +374,13 @@ var olympus;
                 jsNode.innerHTML = xhr.responseText;
                 // 递减jsonp数量
                 jsonpCount--;
-                // 判断一次
-                judgeAppend();
                 // 调用成功
                 onLoadOne();
             }
         }
         function onLoadOne() {
+            // 添加标签
+            judgeAppend();
             // 如果全部加载完毕则调用回调
             if (!stop && --count === 0)
                 callback();
