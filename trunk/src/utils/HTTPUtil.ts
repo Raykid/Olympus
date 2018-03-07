@@ -212,11 +212,24 @@ export function load(params:IHTTPRequestParams):void
 
     function onLoad(evt:Event):void
     {
-        // 停止计时
-        timeoutId && clearTimeout(timeoutId);
-        timeoutId = 0;
-        // 成功回调
-        params.onResponse && params.onResponse(xhr.response);
+        // 即使是onLoad也要判断下状态码
+        var statusHead:number = Math.floor(xhr.status * 0.01);
+        switch(statusHead)
+        {
+            case 2:
+            case 3:
+                // 2xx和3xx的状态码认为是成功
+                timeoutId && clearTimeout(timeoutId);
+                timeoutId = 0;
+                // 成功回调
+                params.onResponse && params.onResponse(xhr.response);
+                break;
+            case 4:
+            case 5:
+                // 4xx和5xx的状态码认为是错误，转调错误回调
+                onError();
+                break;
+        }
     }
 
     function onError():void
