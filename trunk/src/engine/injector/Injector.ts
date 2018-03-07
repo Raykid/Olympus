@@ -240,7 +240,8 @@ export function SubMediator(prototype:any, propertyKey:string):any
         // 监听实例化
         listenConstruct(prototype.constructor, function(instance:IMediator):void
         {
-            var mediator:IMediator = instance[propertyKey];
+            var mediator:IMediator;
+            var temp:IMediator = instance[propertyKey];
             // 篡改属性
             Object.defineProperty(instance, propertyKey, {
                 configurable: true,
@@ -272,10 +273,14 @@ export function SubMediator(prototype:any, propertyKey:string):any
                 }
             });
             // 实例化
-            if(mediator === undefined)
+            if(temp === undefined)
             {
                 var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
                 instance[propertyKey] = new cls();
+            }
+            else if(temp)
+            {
+                instance[propertyKey] = temp;
             }
             // 执行回调
             var handlers:((instance:IMediator)=>void)[] = subHandlerDict.get(mediator);

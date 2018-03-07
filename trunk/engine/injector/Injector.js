@@ -185,7 +185,8 @@ export function SubMediator(prototype, propertyKey) {
     if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
         // 监听实例化
         listenConstruct(prototype.constructor, function (instance) {
-            var mediator = instance[propertyKey];
+            var mediator;
+            var temp = instance[propertyKey];
             // 篡改属性
             Object.defineProperty(instance, propertyKey, {
                 configurable: true,
@@ -213,9 +214,12 @@ export function SubMediator(prototype, propertyKey) {
                 }
             });
             // 实例化
-            if (mediator === undefined) {
+            if (temp === undefined) {
                 var cls = Reflect.getMetadata("design:type", prototype, propertyKey);
                 instance[propertyKey] = new cls();
+            }
+            else if (temp) {
+                instance[propertyKey] = temp;
             }
             // 执行回调
             var handlers = subHandlerDict.get(mediator);
