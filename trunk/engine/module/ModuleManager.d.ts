@@ -1,5 +1,6 @@
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import { ModuleType } from "../mediator/Mediator";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -9,8 +10,6 @@ import IMediatorConstructor from "../mediator/IMediatorConstructor";
  * 模块管理器，管理模块相关的所有操作。模块具有唯一性，同一时间不可以打开两个相同模块，如果打开则会退回到先前的模块处
 */
 export default class ModuleManager {
-    private _moduleDict;
-    private _moduleNameDict;
     private _moduleStack;
     private _openCache;
     private _opening;
@@ -57,22 +56,6 @@ export default class ModuleManager {
     private getAfter(cls);
     private getCurrent();
     /**
-     * 注册模块
-     *
-     * @param {string} moduleName 模块名
-     * @param {IMediatorConstructor} cls 模块类型
-     * @memberof ModuleManager
-     */
-    registerModule(moduleName: string, cls: IMediatorConstructor): void;
-    /**
-     * 获取模块名
-     *
-     * @param {ModuleType} type 模块实例或模块类型
-     * @returns {string} 模块名
-     * @memberof ModuleManager
-     */
-    getModuleName(type: ModuleType): string;
-    /**
      * 获取模块是否开启中
      *
      * @param {IMediatorConstructor} cls 要判断的模块类型
@@ -101,7 +84,5 @@ export default class ModuleManager {
      */
     close(module: ModuleType | string, data?: any): void;
 }
-/** 规定ModuleManager支持的模块参数类型 */
-export declare type ModuleType = IMediatorConstructor | IMediator;
 /** 再额外导出一个单例 */
 export declare const moduleManager: ModuleManager;

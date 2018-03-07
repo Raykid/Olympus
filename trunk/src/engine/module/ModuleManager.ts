@@ -5,7 +5,7 @@ import ModuleMessage from "./ModuleMessage";
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
-import Dictionary from "../../utils/Dictionary";
+import { ModuleType, registerModule, getModuleName, getModule } from "../mediator/Mediator";
 
 /**
  * @author Raykid
@@ -18,8 +18,6 @@ import Dictionary from "../../utils/Dictionary";
 @Injectable
 export default class ModuleManager
 {
-    private _moduleDict:{[name:string]:IMediatorConstructor} = {};
-    private _moduleNameDict:Dictionary<IMediatorConstructor, string> = new Dictionary();
     private _moduleStack:ModuleData[] = [];
 
     private _openCache:[ModuleType, any, boolean][] = [];
@@ -119,32 +117,6 @@ export default class ModuleManager
     }
 
     /**
-     * 注册模块
-     * 
-     * @param {string} moduleName 模块名
-     * @param {IMediatorConstructor} cls 模块类型
-     * @memberof ModuleManager
-     */
-    public registerModule(moduleName:string, cls:IMediatorConstructor):void
-    {
-        this._moduleDict[moduleName] = cls;
-        this._moduleNameDict.set(cls, moduleName);
-    }
-
-    /**
-     * 获取模块名
-     * 
-     * @param {ModuleType} type 模块实例或模块类型
-     * @returns {string} 模块名
-     * @memberof ModuleManager
-     */
-    public getModuleName(type:ModuleType):string
-    {
-        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
-        return this._moduleNameDict.get(cls);
-    }
-
-    /**
      * 获取模块是否开启中
      * 
      * @param {IMediatorConstructor} cls 要判断的模块类型
@@ -185,7 +157,7 @@ export default class ModuleManager
     public open(module:ModuleType|string, data?:any, replace:boolean=false):void
     {
         // 如果是字符串则获取引用
-        var type:ModuleType = (typeof module == "string" ? this._moduleDict[module] : module) ;
+        var type:ModuleType = (typeof module == "string" ? getModule(module) : module) ;
         // 非空判断
         if(!type) return;
         // 判断是否正在打开模块
@@ -203,7 +175,6 @@ export default class ModuleManager
             this._opening = type;
             // 尚未打开过，正常开启模块
             var target:IMediator = type instanceof Function ? new cls() : type;
-            target["_moduleName"] = this._moduleNameDict.get(cls);
             // 赋值打开参数
             target.data = data;
             // 数据先行
@@ -288,7 +259,7 @@ export default class ModuleManager
     public close(module:ModuleType|string, data?:any):void
     {
         // 如果是字符串则获取引用
-        var type:ModuleType = (typeof module == "string" ? this._moduleDict[module] : module) ;
+        var type:ModuleType = (typeof module == "string" ? getModule(module) : module) ;
         // 非空判断
         if(!type) return;
         // 数量判断，不足一个模块时不关闭
@@ -333,9 +304,6 @@ export default class ModuleManager
         }
     }
 }
-
-/** 规定ModuleManager支持的模块参数类型 */
-export type ModuleType = IMediatorConstructor | IMediator;
 
 type ModuleData = [IMediatorConstructor, IMediator, (data?:any)=>void];
 

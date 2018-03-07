@@ -10,14 +10,41 @@ import MediatorStatus from "./MediatorStatus";
 import { ModuleOpenStatus } from "./IMediatorModulePart";
 import { unique } from "../../utils/ArrayUtil";
 import MediatorMessage from "./MediatorMessage";
+import { getConstructor } from "../../utils/ConstructUtil";
+var moduleDict = {};
+var moduleNameDict = new Dictionary();
 /**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-09-04
- * @modify date 2017-09-04
+ * 注册模块
  *
- * 组件界面中介者基类
-*/
+ * @export
+ * @param {string} moduleName 模块名
+ * @param {IMediatorConstructor} cls 模块类型
+ */
+export function registerModule(moduleName, cls) {
+    moduleDict[moduleName] = cls;
+    moduleNameDict.set(cls, moduleName);
+}
+/**
+ * 获取模块类型
+ *
+ * @export
+ * @param {string} moduleName 模块名
+ * @returns {IMediatorConstructor}
+ */
+export function getModule(moduleName) {
+    return moduleDict[moduleName];
+}
+/**
+ * 获取模块名
+ *
+ * @export
+ * @param {ModuleType} type 模块实例或模块类型
+ * @returns {string} 模块名
+ */
+export function getModuleName(type) {
+    var cls = getConstructor(type instanceof Function ? type : type.constructor);
+    return moduleNameDict.get(cls);
+}
 var Mediator = /** @class */ (function () {
     function Mediator(skin) {
         this._status = MediatorStatus.UNOPEN;
@@ -40,6 +67,9 @@ var Mediator = /** @class */ (function () {
         this._children = [];
         /*********************** 下面是模块消息系统 ***********************/
         this._observable = new Observable(core);
+        // 赋值模块名称
+        this._moduleName = getModuleName(this);
+        // 赋值皮肤
         if (skin)
             this.skin = skin;
         // 初始化绑定

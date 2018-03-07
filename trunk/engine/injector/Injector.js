@@ -5,8 +5,7 @@ import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/Const
 import ResponseData from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import { bridgeManager } from "../bridge/BridgeManager";
-import Mediator from "../mediator/Mediator";
-import { moduleManager } from "../module/ModuleManager";
+import Mediator, { registerModule } from "../mediator/Mediator";
 import { decorateThis } from "../../core/global/Patch";
 import Dictionary from "../../utils/Dictionary";
 import * as BindUtil from "./BindUtil";
@@ -69,7 +68,7 @@ export function MediatorClass(moduleName) {
         // 包装类
         var wrapperCls = wrapConstruct(cls);
         // 注册模块，每一个Mediator都有成为独立Module的能力
-        moduleManager.registerModule(moduleName, wrapperCls);
+        registerModule(moduleName, wrapperCls);
         // 返回包装类
         return wrapperCls;
     };

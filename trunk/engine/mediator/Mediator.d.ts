@@ -8,6 +8,7 @@ import ResponseData from "../net/ResponseData";
 import IMediator from "./IMediator";
 import MediatorStatus from "./MediatorStatus";
 import { ModuleOpenStatus } from "./IMediatorModulePart";
+import IMediatorConstructor from "./IMediatorConstructor";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -16,6 +17,32 @@ import { ModuleOpenStatus } from "./IMediatorModulePart";
  *
  * 组件界面中介者基类
 */
+/** 规定ModuleManager支持的模块参数类型 */
+export declare type ModuleType = IMediatorConstructor | IMediator;
+/**
+ * 注册模块
+ *
+ * @export
+ * @param {string} moduleName 模块名
+ * @param {IMediatorConstructor} cls 模块类型
+ */
+export declare function registerModule(moduleName: string, cls: IMediatorConstructor): void;
+/**
+ * 获取模块类型
+ *
+ * @export
+ * @param {string} moduleName 模块名
+ * @returns {IMediatorConstructor}
+ */
+export declare function getModule(moduleName: string): IMediatorConstructor;
+/**
+ * 获取模块名
+ *
+ * @export
+ * @param {ModuleType} type 模块实例或模块类型
+ * @returns {string} 模块名
+ */
+export declare function getModuleName(type: ModuleType): string;
 export default class Mediator implements IMediator {
     private _status;
     /**

@@ -19,6 +19,8 @@ import MediatorStatus from "./MediatorStatus";
 import { ModuleOpenStatus } from "./IMediatorModulePart";
 import { unique } from "../../utils/ArrayUtil";
 import MediatorMessage from "./MediatorMessage";
+import IMediatorConstructor from "./IMediatorConstructor";
+import { getConstructor } from "../../utils/ConstructUtil";
 
 /**
  * @author Raykid
@@ -28,6 +30,51 @@ import MediatorMessage from "./MediatorMessage";
  * 
  * 组件界面中介者基类
 */
+
+/** 规定ModuleManager支持的模块参数类型 */
+export type ModuleType = IMediatorConstructor | IMediator;
+
+var moduleDict:{[name:string]:IMediatorConstructor} = {};
+var moduleNameDict:Dictionary<IMediatorConstructor, string> = new Dictionary();
+
+/**
+ * 注册模块
+ * 
+ * @export
+ * @param {string} moduleName 模块名
+ * @param {IMediatorConstructor} cls 模块类型
+ */
+export function registerModule(moduleName:string, cls:IMediatorConstructor):void
+{
+    moduleDict[moduleName] = cls;
+    moduleNameDict.set(cls, moduleName);
+}
+
+/**
+ * 获取模块类型
+ * 
+ * @export
+ * @param {string} moduleName 模块名
+ * @returns {IMediatorConstructor} 
+ */
+export function getModule(moduleName:string):IMediatorConstructor
+{
+    return moduleDict[moduleName];
+}
+
+/**
+ * 获取模块名
+ * 
+ * @export
+ * @param {ModuleType} type 模块实例或模块类型
+ * @returns {string} 模块名
+ */
+export function getModuleName(type:ModuleType):string
+{
+    var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
+    return moduleNameDict.get(cls);
+}
+
 export default class Mediator implements IMediator
 {
     private _status:MediatorStatus = MediatorStatus.UNOPEN;
@@ -163,6 +210,9 @@ export default class Mediator implements IMediator
 
     public constructor(skin?:any)
     {
+        // 赋值模块名称
+        this._moduleName = getModuleName(this);
+        // 赋值皮肤
         if(skin) this.skin = skin;
         // 初始化绑定
         bindManager.bind(this);

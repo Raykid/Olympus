@@ -9,7 +9,7 @@ import { Injectable } from "../../core/injector/Injector";
 import { getConstructor } from "../../utils/ConstructUtil";
 import ModuleMessage from "./ModuleMessage";
 import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
-import Dictionary from "../../utils/Dictionary";
+import { getModule } from "../mediator/Mediator";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -20,8 +20,6 @@ import Dictionary from "../../utils/Dictionary";
 */
 var ModuleManager = /** @class */ (function () {
     function ModuleManager() {
-        this._moduleDict = {};
-        this._moduleNameDict = new Dictionary();
         this._moduleStack = [];
         this._openCache = [];
         this._opening = null;
@@ -118,28 +116,6 @@ var ModuleManager = /** @class */ (function () {
         return target;
     };
     /**
-     * 注册模块
-     *
-     * @param {string} moduleName 模块名
-     * @param {IMediatorConstructor} cls 模块类型
-     * @memberof ModuleManager
-     */
-    ModuleManager.prototype.registerModule = function (moduleName, cls) {
-        this._moduleDict[moduleName] = cls;
-        this._moduleNameDict.set(cls, moduleName);
-    };
-    /**
-     * 获取模块名
-     *
-     * @param {ModuleType} type 模块实例或模块类型
-     * @returns {string} 模块名
-     * @memberof ModuleManager
-     */
-    ModuleManager.prototype.getModuleName = function (type) {
-        var cls = getConstructor(type instanceof Function ? type : type.constructor);
-        return this._moduleNameDict.get(cls);
-    };
-    /**
      * 获取模块是否开启中
      *
      * @param {IMediatorConstructor} cls 要判断的模块类型
@@ -173,7 +149,7 @@ var ModuleManager = /** @class */ (function () {
         var _this = this;
         if (replace === void 0) { replace = false; }
         // 如果是字符串则获取引用
-        var type = (typeof module == "string" ? this._moduleDict[module] : module);
+        var type = (typeof module == "string" ? getModule(module) : module);
         // 非空判断
         if (!type)
             return;
@@ -190,7 +166,6 @@ var ModuleManager = /** @class */ (function () {
             this._opening = type;
             // 尚未打开过，正常开启模块
             var target = type instanceof Function ? new cls() : type;
-            target["_moduleName"] = this._moduleNameDict.get(cls);
             // 赋值打开参数
             target.data = data;
             // 数据先行
@@ -267,7 +242,7 @@ var ModuleManager = /** @class */ (function () {
      */
     ModuleManager.prototype.close = function (module, data) {
         // 如果是字符串则获取引用
-        var type = (typeof module == "string" ? this._moduleDict[module] : module);
+        var type = (typeof module == "string" ? getModule(module) : module);
         // 非空判断
         if (!type)
             return;

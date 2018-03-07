@@ -6,8 +6,7 @@ import { wrapConstruct, listenConstruct, listenDispose, getConstructor } from ".
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import { bridgeManager } from "../bridge/BridgeManager";
-import Mediator from "../mediator/Mediator";
-import { moduleManager } from "../module/ModuleManager";
+import Mediator, { registerModule } from "../mediator/Mediator";
 import { decorateThis } from "../../core/global/Patch";
 import Dictionary from "../../utils/Dictionary";
 import IMediator from "../mediator/IMediator";
@@ -82,7 +81,7 @@ export function MediatorClass(moduleName:string):ClassDecorator
         // 包装类
         var wrapperCls:IMediatorConstructor = <IMediatorConstructor>wrapConstruct(cls);
         // 注册模块，每一个Mediator都有成为独立Module的能力
-        moduleManager.registerModule(moduleName, wrapperCls);
+        registerModule(moduleName, wrapperCls);
         // 返回包装类
         return wrapperCls;
     } as ClassDecorator;
