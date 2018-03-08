@@ -295,8 +295,8 @@ export function SubMediator(arg1:any, arg2?:any):any
                             // 托管新的中介者
                             if(mediator)
                             {
-                                // 赋值皮肤
-                                mediator.skin = skin;
+                                // 如果有皮肤，赋值皮肤
+                                if(skin) mediator.skin = skin;
                                 // 托管中介者
                                 this.delegateMediator(mediator);
                                 // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
