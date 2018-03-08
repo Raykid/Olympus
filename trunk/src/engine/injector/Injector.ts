@@ -71,10 +71,12 @@ export function MediatorClass(moduleName:string):ClassDecorator
                 },
                 set: function(value:any):void
                 {
-                    // 记录值
-                    $skin = value;
+                    if(value === $skin) return;
                     // 根据skin类型选取表现层桥
                     this.bridge = bridgeManager.getBridgeBySkin(value);
+                    // 记录值
+                    if(this.bridge) $skin = this.bridge.wrapSkin(this, value);
+                    else $skin = value;
                 }
             });
         });
@@ -233,77 +235,131 @@ function addSubHandler(instance:IMediator, handler:(instance?:IMediator)=>void):
 }
 
 /** 添加子Mediator */
-export function SubMediator(prototype:any, propertyKey:string):any
+export function SubMediator(mediator:IMediatorConstructor):PropertyDecorator;
+export function SubMediator(skin:any, mediator?:IMediatorConstructor):PropertyDecorator;
+export function SubMediator(prototype:any, propertyKey:string):void;
+export function SubMediator(arg1:any, arg2?:any):any
 {
-    if(prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function)
+    var skin:any;
+    var mediatorCls:IMediatorConstructor;
+    // 判断是否是参数化装饰
+    if(this === decorateThis)
     {
-        // 监听实例化
-        listenConstruct(prototype.constructor, function(instance:IMediator):void
+        // 无参数
+        doSubMediator(arg1, arg2);
+    }
+    else
+    {
+        // 有参数，分配参数
+        if(arg1 instanceof Function)
         {
-            var mediator:IMediator;
-            var temp:IMediator = instance[propertyKey];
-            // 篡改属性
-            Object.defineProperty(instance, propertyKey, {
-                configurable: true,
-                enumerable: true,
-                get: function():IMediator
-                {
-                    return mediator;
-                },
-                set: function(value:IMediator):void
-                {
-                    if(value == mediator) return;
-                    // 取消托管中介者
-                    if(mediator)
+            mediatorCls = arg1;
+        }
+        else
+        {
+            skin = arg1;
+            mediatorCls = arg2;
+        }
+        // 返回装饰器方法
+        return doSubMediator;
+    }
+
+    function doSubMediator(prototype:any, propertyKey:string):void
+    {
+        if(prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function)
+        {
+            // 监听实例化
+            listenConstruct(prototype.constructor, function(instance:IMediator):void
+            {
+                var mediator:IMediator;
+                var temp:IMediator = instance[propertyKey];
+                // 篡改属性
+                Object.defineProperty(instance, propertyKey, {
+                    configurable: true,
+                    enumerable: true,
+                    get: function():IMediator
                     {
-                        this.undelegateMediator(mediator);
-                    }
-                    // 设置中介者
-                    mediator = value;
-                    // 托管新的中介者
-                    if(mediator)
+                        return mediator;
+                    },
+                    set: function(value:any):void
                     {
-                        this.delegateMediator(mediator);
-                        // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                        if(this.status === MediatorStatus.OPENING || this.status === MediatorStatus.OPENED)
+                        if(value instanceof Mediator)
                         {
-                            mediator.open(this.data);
+                            // 取消托管中介者
+                            if(mediator)
+                            {
+                                this.undelegateMediator(mediator);
+                            }
+                            // 设置中介者
+                            mediator = value;
+                            // 托管新的中介者
+                            if(mediator)
+                            {
+                                // 赋值皮肤
+                                mediator.skin = skin;
+                                // 托管中介者
+                                this.delegateMediator(mediator);
+                                // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
+                                if(this.status === MediatorStatus.OPENING || this.status === MediatorStatus.OPENED)
+                                {
+                                    mediator.open(this.data);
+                                }
+                            }
+                        }
+                        else if(value)
+                        {
+                            // 赋值皮肤
+                            skin = value;
+                            // 如果存在中介者，则额外赋值中介者皮肤
+                            if(mediator) mediator.skin = value;
+                        }
+                        else
+                        {
+                            // mediator和skin都赋值为空
+                            skin = value;
+                            if(mediator)
+                            {
+                                mediator.skin = value;
+                                this.undelegateMediator(mediator);
+                            }
+                            mediator = value;
                         }
                     }
+                });
+                // 实例化
+                if(temp)
+                {
+                    instance[propertyKey] = temp;
+                }
+                else if(temp === undefined)
+                {
+                    // 优先使用装饰器提供的中介者类型，如果没有则使用元数据
+                    var cls:IConstructor = mediatorCls || Reflect.getMetadata("design:type", prototype, propertyKey);
+                    instance[propertyKey] = new cls(skin);
+                }
+                // 执行回调
+                var handlers:((instance:IMediator)=>void)[] = subHandlerDict.get(mediator);
+                if(handlers)
+                {
+                    for(var handler of handlers)
+                    {
+                        handler(mediator);
+                    }
+                    // 移除记录
+                    subHandlerDict.delete(mediator);
                 }
             });
-            // 实例化
-            if(temp === undefined)
+            // 监听销毁
+            listenDispose(prototype.constructor, function(instance:IMediator):void
             {
-                var cls:IConstructor = Reflect.getMetadata("design:type", prototype, propertyKey);
-                instance[propertyKey] = new cls();
-            }
-            else if(temp)
-            {
-                instance[propertyKey] = temp;
-            }
-            // 执行回调
-            var handlers:((instance:IMediator)=>void)[] = subHandlerDict.get(mediator);
-            if(handlers)
-            {
-                for(var handler of handlers)
+                var mediator:IMediator = instance[propertyKey];
+                if(mediator)
                 {
-                    handler(mediator);
+                    // 移除实例
+                    instance[propertyKey] = undefined;
                 }
-                // 移除记录
-                subHandlerDict.delete(mediator);
-            }
-        });
-        // 监听销毁
-        listenDispose(prototype.constructor, function(instance:IMediator):void
-        {
-            var mediator:IMediator = instance[propertyKey];
-            if(mediator)
-            {
-                // 移除实例
-                instance[propertyKey] = undefined;
-            }
-        });
+            });
+        }
     }
 }
 

@@ -153,6 +153,15 @@ export default class EgretBridge implements IBridge {
      */
     isMySkin(skin: any): boolean;
     /**
+     * 包装HTMLElement节点
+     *
+     * @param {IMediator} mediator 中介者
+     * @param {*} skin 原始皮肤
+     * @returns {eui.Component} 包装后的皮肤
+     * @memberof EgretBridge
+     */
+    wrapSkin(mediator: IMediator, skin: any): eui.Component;
+    /**
      * 创建一个空的显示对象
      *
      * @returns {egret.Sprite}

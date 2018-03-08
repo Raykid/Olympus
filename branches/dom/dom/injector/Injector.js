@@ -1,6 +1,5 @@
 import { listenConstruct } from "olympus-r/utils/ConstructUtil";
 import { MediatorClass } from "olympus-r/engine/injector/Injector";
-import { wrapSkin } from "../utils/SkinUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -18,8 +17,15 @@ export function DOMMediatorClass(moduleName, skin) {
         // 调用MediatorClass方法
         cls = MediatorClass(moduleName)(cls);
         // 监听类型实例化，转换皮肤格式
-        skins.unshift(skin);
-        listenConstruct(cls, function (mediator) { return wrapSkin(mediator, skins); });
+        var finalSkin;
+        if (skins.length === 0) {
+            finalSkin = skin;
+        }
+        else {
+            skins.unshift(skin);
+            finalSkin = skins;
+        }
+        listenConstruct(cls, function (mediator) { return mediator.skin = finalSkin; });
         // 返回结果类型
         return cls;
     };

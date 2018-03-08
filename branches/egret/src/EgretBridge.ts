@@ -19,6 +19,7 @@ import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
 import * as Injector from './egret/injector/Injector';
 import { wrapEUIList } from "./egret/utils/UIUtil";
 import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
+import { wrapSkin } from "./egret/utils/SkinUtil";
 
 /**
  * @author Raykid
@@ -407,7 +408,25 @@ export default class EgretBridge implements IBridge
      */
     public isMySkin(skin:any):boolean
     {
-        return (skin instanceof egret.DisplayObject);
+        if(skin instanceof egret.DisplayObject)
+            return true;
+        if(skin instanceof Function)
+            return (skin.prototype instanceof egret.DisplayObject);
+        if(typeof skin === "string")
+            return (egret.getDefinitionByName(skin) != null);
+    }
+
+    /**
+     * 包装HTMLElement节点
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {*} skin 原始皮肤
+     * @returns {eui.Component} 包装后的皮肤
+     * @memberof EgretBridge
+     */
+    public wrapSkin(mediator:IMediator, skin:any):eui.Component
+    {
+        return wrapSkin(mediator, skin);
     }
     
     /**

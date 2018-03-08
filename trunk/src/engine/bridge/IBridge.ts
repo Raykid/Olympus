@@ -133,6 +133,15 @@ export default interface IBridge
      */
     isMySkin(skin:any):boolean;
     /**
+     * 包装皮肤
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {*} skin 原始皮肤
+     * @returns {*} 包装后的皮肤
+     * @memberof IBridge
+     */
+    wrapSkin(mediator:IMediator, skin:any):any;
+    /**
      * 创建一个空的显示对象
      * 
      * @returns {*} 

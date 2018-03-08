@@ -11,7 +11,7 @@ import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
-import { copyRef } from "./dom/utils/SkinUtil";
+import { copyRef, wrapSkin, isDOMStr } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
 
@@ -258,13 +258,44 @@ export default class DOMBridge implements IBridge
     /**
      * 判断皮肤是否是DOM显示节点
      * 
-     * @param {*} skin 皮肤对象
+     * @param {HTMLElement|string|string[]} skin 皮肤对象
      * @returns {boolean} 是否是DOM显示节点
      * @memberof DOMBridge
      */
-    public isMySkin(skin:any):boolean
+    public isMySkin(skin:HTMLElement|string|string[]):boolean
     {
-        return (skin instanceof HTMLElement);
+        if(skin instanceof HTMLElement)
+            return true;
+        if(typeof skin === "string" && isDOMStr(skin))
+            return true;
+        if(skin instanceof Array)
+        {
+            // 数组里每一个元素都必须是皮肤
+            var result:boolean = true;
+            for(var temp of skin)
+            {
+                if(!(typeof temp === "string" && isDOMStr(temp)))
+                {
+                    result = false;
+                    break;
+                }
+            }
+            return result;
+        }
+        return false;
+    }
+
+    /**
+     * 包装HTMLElement节点
+     * 
+     * @param {IMediator} mediator 中介者
+     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
+     * @returns {HTMLElement} 包装后的HTMLElement节点
+     * @memberof DOMBridge
+     */
+    public wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):HTMLElement
+    {
+        return wrapSkin(mediator, skin);
     }
 
     /**

@@ -19,8 +19,17 @@ export function DOMMediatorClass(moduleName:string, skin:string, ...skins:string
         // 调用MediatorClass方法
         cls = <IConstructor>MediatorClass(moduleName)(cls);
         // 监听类型实例化，转换皮肤格式
-        skins.unshift(skin);
-        listenConstruct(cls, mediator=>wrapSkin(mediator, skins));
+        var finalSkin:string|string[];
+        if(skins.length === 0)
+        {
+            finalSkin = skin;
+        }
+        else
+        {
+            skins.unshift(skin);
+            finalSkin = skins;
+        }
+        listenConstruct(cls, mediator=>mediator.skin = finalSkin);
         // 返回结果类型
         return cls;
     } as ClassDecorator;

@@ -20,7 +20,7 @@ export function EgretMediatorClass(moduleName, skin) {
         // 调用MediatorClass方法
         cls = MediatorClass(moduleName)(cls);
         // 监听类型实例化，转换皮肤格式
-        listenConstruct(cls, function (mediator) { return wrapSkin(mediator, skin); });
+        listenConstruct(cls, function (mediator) { return mediator.skin = skin; });
         // 返回结果类型
         return cls;
     };

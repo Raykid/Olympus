@@ -17,6 +17,14 @@ import IMediator from "olympus-r/engine/mediator/IMediator";
  */
 export declare function wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
 /**
+ * 判断是否是DOM字符串
+ *
+ * @export
+ * @param {string} str 字符串
+ * @returns {boolean}
+ */
+export declare function isDOMStr(str: string): boolean;
+/**
  * 将from中的所有拥有id属性的节点引用复制到to对象上
  *
  * @export

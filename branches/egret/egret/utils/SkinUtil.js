@@ -9,7 +9,6 @@ import SceneMediator from "olympus-r/engine/scene/SceneMediator";
 */
 export function wrapSkin(mediator, skin) {
     var comp = new eui.Component();
-    mediator.skin = comp;
     // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
     var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
     mediator.onOpen = function () {

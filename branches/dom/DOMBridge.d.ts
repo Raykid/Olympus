@@ -145,11 +145,20 @@ export default class DOMBridge implements IBridge {
     /**
      * 判断皮肤是否是DOM显示节点
      *
-     * @param {*} skin 皮肤对象
+     * @param {HTMLElement|string|string[]} skin 皮肤对象
      * @returns {boolean} 是否是DOM显示节点
      * @memberof DOMBridge
      */
-    isMySkin(skin: any): boolean;
+    isMySkin(skin: HTMLElement | string | string[]): boolean;
+    /**
+     * 包装HTMLElement节点
+     *
+     * @param {IMediator} mediator 中介者
+     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
+     * @returns {HTMLElement} 包装后的HTMLElement节点
+     * @memberof DOMBridge
+     */
+    wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
     /**
      * 创建一个空的显示对象
      *

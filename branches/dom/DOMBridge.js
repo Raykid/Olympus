@@ -3,7 +3,7 @@
 import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity from "./dom/mask/MaskEntity";
-import { copyRef } from "./dom/utils/SkinUtil";
+import { copyRef, wrapSkin, isDOMStr } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
 /**
@@ -251,12 +251,39 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 判断皮肤是否是DOM显示节点
      *
-     * @param {*} skin 皮肤对象
+     * @param {HTMLElement|string|string[]} skin 皮肤对象
      * @returns {boolean} 是否是DOM显示节点
      * @memberof DOMBridge
      */
     DOMBridge.prototype.isMySkin = function (skin) {
-        return (skin instanceof HTMLElement);
+        if (skin instanceof HTMLElement)
+            return true;
+        if (typeof skin === "string" && isDOMStr(skin))
+            return true;
+        if (skin instanceof Array) {
+            // 数组里每一个元素都必须是皮肤
+            var result = true;
+            for (var _i = 0, skin_1 = skin; _i < skin_1.length; _i++) {
+                var temp = skin_1[_i];
+                if (!(typeof temp === "string" && isDOMStr(temp))) {
+                    result = false;
+                    break;
+                }
+            }
+            return result;
+        }
+        return false;
+    };
+    /**
+     * 包装HTMLElement节点
+     *
+     * @param {IMediator} mediator 中介者
+     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
+     * @returns {HTMLElement} 包装后的HTMLElement节点
+     * @memberof DOMBridge
+     */
+    DOMBridge.prototype.wrapSkin = function (mediator, skin) {
+        return wrapSkin(mediator, skin);
     };
     /**
      * 创建一个空的显示对象

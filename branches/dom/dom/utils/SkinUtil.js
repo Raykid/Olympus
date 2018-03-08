@@ -47,10 +47,18 @@ export function wrapSkin(mediator, skin) {
             mediator.onOpen.apply(this, args);
         };
     }
-    // 赋值皮肤
-    mediator.skin = result;
     // 同步返回皮肤
     return result;
+}
+/**
+ * 判断是否是DOM字符串
+ *
+ * @export
+ * @param {string} str 字符串
+ * @returns {boolean}
+ */
+export function isDOMStr(str) {
+    return str && (str.indexOf("<") >= 0 && str.indexOf(">") >= 0);
 }
 /**
  * 将from中的所有拥有id属性的节点引用复制到to对象上
@@ -72,7 +80,7 @@ function doCopyRef(fromEle, fromStr, to) {
     }
 }
 function getContent(skin) {
-    if (skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0) {
+    if (isDOMStr(skin)) {
         // 是皮肤字符串，直接返回
         return skin;
     }

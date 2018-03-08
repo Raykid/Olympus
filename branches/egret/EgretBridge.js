@@ -9,6 +9,7 @@ import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
 import MaskEntity from "./egret/mask/MaskEntity";
 import { wrapEUIList } from "./egret/utils/UIUtil";
 import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
+import { wrapSkin } from "./egret/utils/SkinUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -369,7 +370,23 @@ var EgretBridge = /** @class */ (function () {
      * @memberof EgretBridge
      */
     EgretBridge.prototype.isMySkin = function (skin) {
-        return (skin instanceof egret.DisplayObject);
+        if (skin instanceof egret.DisplayObject)
+            return true;
+        if (skin instanceof Function)
+            return (skin.prototype instanceof egret.DisplayObject);
+        if (typeof skin === "string")
+            return (egret.getDefinitionByName(skin) != null);
+    };
+    /**
+     * 包装HTMLElement节点
+     *
+     * @param {IMediator} mediator 中介者
+     * @param {*} skin 原始皮肤
+     * @returns {eui.Component} 包装后的皮肤
+     * @memberof EgretBridge
+     */
+    EgretBridge.prototype.wrapSkin = function (mediator, skin) {
+        return wrapSkin(mediator, skin);
     };
     /**
      * 创建一个空的显示对象

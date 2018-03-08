@@ -48,10 +48,20 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
             mediator.onOpen.apply(this, args);
         };
     }
-    // 赋值皮肤
-    mediator.skin = result;
     // 同步返回皮肤
     return result;
+}
+
+/**
+ * 判断是否是DOM字符串
+ * 
+ * @export
+ * @param {string} str 字符串
+ * @returns {boolean} 
+ */
+export function isDOMStr(str:string):boolean
+{
+    return str && (str.indexOf("<") >= 0 && str.indexOf(">") >= 0);
 }
 
 /**
@@ -80,7 +90,7 @@ function doCopyRef(fromEle:HTMLElement, fromStr:string, to:any):void
 
 function getContent(skin:string):string
 {
-    if(skin.indexOf("<") >= 0 && skin.indexOf(">") >= 0)
+    if(isDOMStr(skin))
     {
         // 是皮肤字符串，直接返回
         return skin;

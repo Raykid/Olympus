@@ -1,6 +1,7 @@
 import { IResponseDataConstructor } from "../net/ResponseData";
 import "reflect-metadata";
 import { EvalExp } from "../bind/Utils";
+import IMediatorConstructor from "../mediator/IMediatorConstructor";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -26,7 +27,9 @@ export declare function ResponseHandler(cls: IResponseDataConstructor): MethodDe
 export declare function GlobalResponseHandler(prototype: any, propertyKey: string): void;
 export declare function GlobalResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
 /** 添加子Mediator */
-export declare function SubMediator(prototype: any, propertyKey: string): any;
+export declare function SubMediator(mediator: IMediatorConstructor): PropertyDecorator;
+export declare function SubMediator(skin: any, mediator?: IMediatorConstructor): PropertyDecorator;
+export declare function SubMediator(prototype: any, propertyKey: string): void;
 /**
  * 一次绑定多个属性
  *
