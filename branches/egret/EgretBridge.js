@@ -382,7 +382,7 @@ var EgretBridge = /** @class */ (function () {
      *
      * @param {IMediator} mediator 中介者
      * @param {*} skin 原始皮肤
-     * @returns {eui.Component} 包装后的皮肤
+     * @returns {egret.DisplayObject} 包装后的皮肤
      * @memberof EgretBridge
      */
     EgretBridge.prototype.wrapSkin = function (mediator, skin) {

@@ -297,13 +297,6 @@ export function SubMediator(arg1:any, arg2?:any):any
                             {
                                 // 如果有皮肤，赋值皮肤
                                 if(skin) mediator.skin = skin;
-                                // 托管中介者
-                                this.delegateMediator(mediator);
-                                // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                                if(this.status === MediatorStatus.OPENING || this.status === MediatorStatus.OPENED)
-                                {
-                                    mediator.open(this.data);
-                                }
                             }
                         }
                         else if(value)
@@ -323,6 +316,17 @@ export function SubMediator(arg1:any, arg2?:any):any
                                 this.undelegateMediator(mediator);
                             }
                             mediator = value;
+                        }
+                        // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
+                        if(mediator && mediator.skin)
+                        {
+                            // 托管中介者
+                            this.delegateMediator(mediator);
+                            // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
+                            if(this.status === MediatorStatus.OPENING || this.status === MediatorStatus.OPENED)
+                            {
+                                mediator.open(this.data);
+                            }
                         }
                     }
                 });

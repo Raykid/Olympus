@@ -421,10 +421,10 @@ export default class EgretBridge implements IBridge
      * 
      * @param {IMediator} mediator 中介者
      * @param {*} skin 原始皮肤
-     * @returns {eui.Component} 包装后的皮肤
+     * @returns {egret.DisplayObject} 包装后的皮肤
      * @memberof EgretBridge
      */
-    public wrapSkin(mediator:IMediator, skin:any):eui.Component
+    public wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
     {
         return wrapSkin(mediator, skin);
     }
