@@ -1,5 +1,6 @@
 import IMediator from "olympus-r/engine/mediator/IMediator";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
+import MediatorStatus from "olympus-r/engine/mediator/MediatorStatus";
 
 /**
  * @author Raykid
@@ -19,28 +20,15 @@ import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
  */
 export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):HTMLElement
 {
-    var result:HTMLElement;
-    if(skin instanceof HTMLElement)
+    var result:HTMLElement = (skin instanceof HTMLElement ? skin : document.createElement("div"));
+    // 判断中介者当前状态
+    if(mediator.status < MediatorStatus.OPENED)
     {
-        result = skin;
-    }
-    else
-    {
-        // 生成一个临时的div
-        result = document.createElement("div");
         // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
         var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
         mediator.onOpen = function(...args:any[]):void
         {
-            if(skin instanceof Array)
-            {
-                // 是数组，将所有内容连接起来再一起赋值
-                skin = skin.map(getContent).join("");
-            }
-            // 赋值皮肤内容
-            result.innerHTML = <string>skin;
-            // 拷贝引用
-            doCopyRef(result, <string>skin, mediator);
+            doWrapSkin();
             // 恢复原始方法
             if(oriFunc) mediator.onOpen = oriFunc;
             else delete mediator.onOpen;
@@ -48,8 +36,26 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
             mediator.onOpen.apply(this, args);
         };
     }
+    else
+    {
+        // 直接执行要执行的
+        doWrapSkin();
+    }
     // 同步返回皮肤
     return result;
+
+    function doWrapSkin():void
+    {
+        if(skin instanceof Array)
+        {
+            // 是数组，将所有内容连接起来再一起赋值
+            skin = skin.map(getContent).join("");
+        }
+        // 赋值皮肤内容
+        result.innerHTML = <string>skin;
+        // 拷贝引用
+        doCopyRef(result, <string>skin, mediator);
+    }
 }
 
 /**

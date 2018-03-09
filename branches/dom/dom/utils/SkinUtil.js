@@ -1,4 +1,5 @@
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
+import MediatorStatus from "olympus-r/engine/mediator/MediatorStatus";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -16,13 +17,9 @@ import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
  * @returns {HTMLElement} 皮肤的HTMLElement形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
  */
 export function wrapSkin(mediator, skin) {
-    var result;
-    if (skin instanceof HTMLElement) {
-        result = skin;
-    }
-    else {
-        // 生成一个临时的div
-        result = document.createElement("div");
+    var result = (skin instanceof HTMLElement ? skin : document.createElement("div"));
+    // 判断中介者当前状态
+    if (mediator.status < MediatorStatus.OPENED) {
         // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
         var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
         mediator.onOpen = function () {
@@ -30,14 +27,7 @@ export function wrapSkin(mediator, skin) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            if (skin instanceof Array) {
-                // 是数组，将所有内容连接起来再一起赋值
-                skin = skin.map(getContent).join("");
-            }
-            // 赋值皮肤内容
-            result.innerHTML = skin;
-            // 拷贝引用
-            doCopyRef(result, skin, mediator);
+            doWrapSkin();
             // 恢复原始方法
             if (oriFunc)
                 mediator.onOpen = oriFunc;
@@ -47,8 +37,22 @@ export function wrapSkin(mediator, skin) {
             mediator.onOpen.apply(this, args);
         };
     }
+    else {
+        // 直接执行要执行的
+        doWrapSkin();
+    }
     // 同步返回皮肤
     return result;
+    function doWrapSkin() {
+        if (skin instanceof Array) {
+            // 是数组，将所有内容连接起来再一起赋值
+            skin = skin.map(getContent).join("");
+        }
+        // 赋值皮肤内容
+        result.innerHTML = skin;
+        // 拷贝引用
+        doCopyRef(result, skin, mediator);
+    }
 }
 /**
  * 判断是否是DOM字符串

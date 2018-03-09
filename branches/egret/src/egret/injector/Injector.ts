@@ -1,7 +1,6 @@
 import { listenConstruct } from "olympus-r/utils/ConstructUtil";
 import { MediatorClass } from "olympus-r/engine/injector/Injector";
 import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
-import { wrapSkin } from "../utils/SkinUtil";
 import EgretBridge from "../../EgretBridge";
 
 /**
@@ -18,7 +17,7 @@ export function EgretSkin(skin:any):ClassDecorator
     return function(cls:IConstructor):void
     {
         // 监听类型实例化，转换皮肤格式
-        listenConstruct(cls, mediator=>wrapSkin(mediator, skin));
+        listenConstruct(cls, mediator=>mediator.skin = skin);
     } as ClassDecorator;
 }
 

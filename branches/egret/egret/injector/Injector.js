@@ -1,6 +1,5 @@
 import { listenConstruct } from "olympus-r/utils/ConstructUtil";
 import { MediatorClass } from "olympus-r/engine/injector/Injector";
-import { wrapSkin } from "../utils/SkinUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -12,7 +11,7 @@ import { wrapSkin } from "../utils/SkinUtil";
 export function EgretSkin(skin) {
     return function (cls) {
         // 监听类型实例化，转换皮肤格式
-        listenConstruct(cls, function (mediator) { return wrapSkin(mediator, skin); });
+        listenConstruct(cls, function (mediator) { return mediator.skin = skin; });
     };
 }
 export function EgretMediatorClass(moduleName, skin) {
