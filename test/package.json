@@ -10,8 +10,8 @@
   "license": "ISC",
   "devDependencies": {},
   "dependencies": {
-    "olympus-r": "^0.6.3",
-    "olympus-r-dom": "^0.6.1",
-    "olympus-r-egret": "^0.6.0"
+    "olympus-r": "^0.6.23",
+    "olympus-r-dom": "^0.6.5",
+    "olympus-r-egret": "^0.6.4"
   }
 }

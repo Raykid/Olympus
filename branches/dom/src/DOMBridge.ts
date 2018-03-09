@@ -11,7 +11,7 @@ import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
-import { copyRef, wrapSkin, isDOMStr } from "./dom/utils/SkinUtil";
+import { copyRef, wrapSkin, isDOMStr, isDOMPath } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
 
@@ -266,7 +266,7 @@ export default class DOMBridge implements IBridge
     {
         if(skin instanceof HTMLElement)
             return true;
-        if(typeof skin === "string" && isDOMStr(skin))
+        if(typeof skin === "string" && (isDOMPath(skin) || isDOMStr(skin)))
             return true;
         if(skin instanceof Array)
         {
@@ -274,7 +274,7 @@ export default class DOMBridge implements IBridge
             var result:boolean = true;
             for(var temp of skin)
             {
-                if(!(typeof temp === "string" && isDOMStr(temp)))
+                if(!(typeof temp === "string" && (isDOMPath(temp) || isDOMStr(temp))))
                 {
                     result = false;
                     break;

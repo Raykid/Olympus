@@ -44,12 +44,12 @@ export function wrapSkin(mediator, skin) {
     // 同步返回皮肤
     return result;
     function doWrapSkin() {
-        if (skin instanceof Array) {
-            // 是数组，将所有内容连接起来再一起赋值
-            skin = skin.map(getContent).join("");
+        if (!(skin instanceof HTMLElement)) {
+            // 转换皮肤
+            skin = getContent(skin);
+            // 赋值皮肤内容
+            result.innerHTML = skin;
         }
-        // 赋值皮肤内容
-        result.innerHTML = skin;
         // 拷贝引用
         doCopyRef(result, skin, mediator);
     }
@@ -63,6 +63,17 @@ export function wrapSkin(mediator, skin) {
  */
 export function isDOMStr(str) {
     return str && (str.indexOf("<") >= 0 && str.indexOf(">") >= 0);
+}
+var reg = /(\.htm|\.html|\.tpl)$/;
+/**
+ * 判断是否是DOM模板路径
+ *
+ * @export
+ * @param {string} path 路径字符串
+ * @returns {boolean}
+ */
+export function isDOMPath(path) {
+    return path && reg.test(path);
 }
 /**
  * 将from中的所有拥有id属性的节点引用复制到to对象上
@@ -84,7 +95,11 @@ function doCopyRef(fromEle, fromStr, to) {
     }
 }
 function getContent(skin) {
-    if (isDOMStr(skin)) {
+    if (skin instanceof Array) {
+        // 是字符串数组，拆分后皮肤化再连接起来
+        return skin.map(getContent).join("");
+    }
+    else if (isDOMStr(skin)) {
         // 是皮肤字符串，直接返回
         return skin;
     }
