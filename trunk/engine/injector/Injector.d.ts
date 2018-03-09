@@ -157,17 +157,19 @@ export declare function BindFor(uiDict: {
  * @export
  * @param {string} name ui属性名称
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
+ * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
  * @returns {PropertyDecorator}
  */
-export declare function BindFor(name: string, exp: string): PropertyDecorator;
+export declare function BindFor(name: string, exp: string, mediatorCls?: IMediatorConstructor): PropertyDecorator;
 /**
  * 绑定数据集合到当前显示对象
  *
  * @export
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
+ * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
  * @returns {PropertyDecorator}
  */
-export declare function BindFor(exp: string): PropertyDecorator;
+export declare function BindFor(exp: string, mediatorCls?: IMediatorConstructor): PropertyDecorator;
 /**
  * 一次绑定多个消息
  *

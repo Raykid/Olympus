@@ -313,14 +313,16 @@ var BindManager = /** @class */ (function () {
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
+     * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
      * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    BindManager.prototype.bindFor = function (mediator, currentTarget, target, envModels, exp, callback) {
+    BindManager.prototype.bindFor = function (mediator, currentTarget, target, envModels, exp, mediatorCls, callback) {
         var _this = this;
         var watcher;
         var bindData = this._bindDict.get(mediator);
         var replacer = mediator.bridge.createEmptyDisplay();
+        var subMediatorCache = [];
         this.addBindHandler(mediator, function () {
             // 解析表达式
             var res = _this._regExp.exec(exp);
@@ -349,6 +351,16 @@ var BindManager = /** @class */ (function () {
                 // 为renderer设置子对象事件列表
                 if (!events)
                     renderer.__bind_sub_events__ = [];
+                // 为renderer套一个Mediator外壳
+                if (mediatorCls) {
+                    var subMediator = new mediatorCls(renderer);
+                    // 托管子中介者
+                    mediator.delegateMediator(subMediator);
+                    // 使用value开启该中介者
+                    subMediator.open(value);
+                    // 缓存子中介者
+                    subMediatorCache.push(subMediator);
+                }
                 // 触发回调，进行内部编译
                 callback && callback(value, renderer, subEnvModels);
             });
@@ -364,6 +376,12 @@ var BindManager = /** @class */ (function () {
                             tempArr.push(i);
                         }
                         datas = tempArr;
+                    }
+                    // 清空已有的子中介者
+                    for (var i = 0, len = subMediatorCache.length; i < len; i++) {
+                        var subMediator = subMediatorCache.shift();
+                        mediator.undelegateMediator(subMediator);
+                        subMediator.dispose();
                     }
                     // 赋值
                     mediator.bridge.valuateBindFor(currentTarget, datas, memento);

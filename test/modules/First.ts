@@ -11,6 +11,7 @@ import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandle
 import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
 import { audioManager } from "olympus-r/engine/audio/AudioManager";
 import TestPanel from "./TestPanel";
+import TestForMediator from "./TestForMediator";
 
 /**
  * @author Raykid
@@ -38,9 +39,7 @@ export default class First extends SceneMediator
     @BindOn({click: "onClickBtn"})
     @BindIf("fuckText == '1234'")
     public btn:HTMLElement
-    @BindFor("fuck in fuckList")
-    @BindValue({textContent: "fuck + ' - ' + fuckText + ' - 1'"})
-    @BindOn("click", "onClickText")
+    @BindFor("fuck in fuckList", TestForMediator)
     public txt:HTMLElement;
     @BindOn("click", "onClickFuck")
     @BindValue("textContent", "fuckModel.fuck")
@@ -72,9 +71,6 @@ export default class First extends SceneMediator
                 this.viewModel.fuckText = "clicked";
                 // this.moduleManager.open(Second);
                 new Second().open();
-            },
-            onClickText: ()=>{
-                this.moduleManager.open(TestPanel);
             },
             onClickFuck: ()=>{
                 this.moduleManager.open(Third);

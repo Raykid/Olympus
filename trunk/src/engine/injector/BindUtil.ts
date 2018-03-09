@@ -3,6 +3,7 @@ import { IResponseDataConstructor } from "../net/ResponseData";
 import { bindManager } from "../bind/BindManager";
 import IMediator from "../mediator/IMediator";
 import Dictionary from "../../utils/Dictionary";
+import IMediatorConstructor from "../mediator/IMediatorConstructor";
 
 /**
  * @author Raykid
@@ -241,12 +242,12 @@ export function compileIf(mediator:IMediator, currentTarget:ICompileTarget, targ
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export function compileFor(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], exp:string):void
+export function compileFor(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], exp:string, mediatorCls?:IMediatorConstructor):void
 {
     // 将后面的编译命令缓存起来
     var leftHandlers:IStopLeftHandler[] = currentTarget.__stop_left_handlers__;
     // 绑定for命令
-    bindManager.bindFor(mediator, currentTarget, target, envModels, exp, (data:any, renderer:ICompileTarget, subEnvModels:any[])=>{
+    bindManager.bindFor(mediator, currentTarget, target, envModels, exp, mediatorCls, (data:any, renderer:ICompileTarget, subEnvModels:any[])=>{
         var subLeftHandlers:IStopLeftHandler[] = leftHandlers.concat();
         var bindTargets:Dictionary<any, any>[] = [];
         // 针对每一个renderer赋值后续编译指令
