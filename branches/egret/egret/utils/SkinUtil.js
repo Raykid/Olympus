@@ -1,4 +1,5 @@
 import SceneMediator from "olympus-r/engine/scene/SceneMediator";
+import MediatorStatus from "olympus-r/engine/mediator/MediatorStatus";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -10,7 +11,7 @@ import SceneMediator from "olympus-r/engine/scene/SceneMediator";
 export function wrapSkin(mediator, skin) {
     var result;
     var comp = getComponent(skin);
-    if (!comp) {
+    if (!comp && !(skin instanceof egret.DisplayObject)) {
         comp = new eui.Component();
         comp.skinName = skin;
         result = comp;
@@ -18,35 +19,47 @@ export function wrapSkin(mediator, skin) {
     else {
         result = skin;
     }
-    // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
-    var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-    mediator.onOpen = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
+    // 判断中介者当前状态
+    if (mediator.status < MediatorStatus.OPENED) {
+        // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
+        var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
+        mediator.onOpen = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            doWrapSkin();
+            // 恢复原始方法
+            if (oriFunc)
+                mediator.onOpen = oriFunc;
+            else
+                delete mediator.onOpen;
+            // 调用原始方法
+            mediator.onOpen.apply(this, args);
+        };
+    }
+    else {
+        // 直接执行要执行的
+        doWrapSkin();
+    }
+    return result;
+    function doWrapSkin() {
         // 场景需要拉伸到与stage同宽高
         if (mediator instanceof SceneMediator) {
             comp.percentWidth = 100;
             comp.percentHeight = 100;
         }
-        // 转发ui引用，如果传入的是显示对象，则需要判断目标是否属于该对象的后裔
-        var needJudgeDescendant = (skin instanceof egret.DisplayObjectContainer);
-        for (var _a = 0, _b = comp.skin.skinParts; _a < _b.length; _a++) {
-            var name = _b[_a];
-            var target = comp[name];
-            if (!needJudgeDescendant || isDescendant(target, skin))
-                mediator[name] = target;
+        if (result instanceof egret.DisplayObjectContainer) {
+            // 转发ui引用，如果传入的是显示对象，则需要判断目标是否属于该对象的后裔
+            var needJudgeDescendant = (skin instanceof egret.DisplayObjectContainer);
+            for (var _i = 0, _a = comp.skin.skinParts; _i < _a.length; _i++) {
+                var name = _a[_i];
+                var target = comp[name];
+                if (!needJudgeDescendant || isDescendant(target, skin))
+                    mediator[name] = target;
+            }
         }
-        // 恢复原始方法
-        if (oriFunc)
-            mediator.onOpen = oriFunc;
-        else
-            delete mediator.onOpen;
-        // 调用原始方法
-        mediator.onOpen.apply(this, args);
-    };
-    return result;
+    }
 }
 function getComponent(skin) {
     if (!(skin instanceof egret.DisplayObject))

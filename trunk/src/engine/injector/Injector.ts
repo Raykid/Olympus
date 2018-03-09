@@ -58,10 +58,11 @@ export function MediatorClass(moduleName:string):ClassDecorator
         if(!cls.prototype.dispose)
             console.warn("Mediator[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
         // 监听实例化
-        listenConstruct(cls, function(instance:any):void
+        listenConstruct(cls, function(instance:IMediator):void
         {
-            // 替换setSkin方法
+            // 替换skin属性
             var $skin:any;
+            var oriSkin = instance.skin;
             Object.defineProperty(instance, "skin", {
                 configurable: true,
                 enumerable: true,
@@ -72,13 +73,53 @@ export function MediatorClass(moduleName:string):ClassDecorator
                 set: function(value:any):void
                 {
                     if(value === $skin) return;
+                    var lastBridge:IBridge = this.bridge;
                     // 根据skin类型选取表现层桥
                     this.bridge = bridgeManager.getBridgeBySkin(value);
                     // 记录值
-                    if(this.bridge) $skin = this.bridge.wrapSkin(this, value);
-                    else $skin = value;
+                    if(this.bridge)
+                    {
+                        var tempSkin:any = this.bridge.wrapSkin(this, value);
+                        if(oriSkin && $skin === oriSkin)
+                        {
+                            if($skin && lastBridge === this.bridge)
+                            {
+                                // 如果当前皮肤是原始皮肤，说明目标中介者希望自己定制皮肤，将原始皮肤放到新的parent里
+                                var parent:any = this.bridge.getParent(tempSkin);
+                                if(parent)
+                                {
+                                    var index:number = this.bridge.getChildIndex(parent, tempSkin);
+                                    this.bridge.addChildAt(parent, $skin, index);
+                                    this.bridge.removeChild(parent, tempSkin);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            
+                            if($skin && lastBridge === this.bridge)
+                            {
+                                // 没有原始皮肤，说明目标中介者希望外部提供皮肤，则替换之
+                                var parent:any = this.bridge.getParent($skin);
+                                if(parent)
+                                {
+                                    var index:number = this.bridge.getChildIndex(parent, $skin);
+                                    this.bridge.addChildAt(parent, tempSkin, index);
+                                    this.bridge.removeChild(parent, $skin);
+                                }
+                            }
+                            $skin = tempSkin;
+                        }
+                    }
+                    else
+                    {
+                        $skin = value;
+                    }
                 }
             });
+            // 如果本来就有皮肤，则赋值皮肤
+            if(oriSkin)
+                instance.skin = oriSkin;
         });
         // 包装类
         var wrapperCls:IMediatorConstructor = <IMediatorConstructor>wrapConstruct(cls);
@@ -295,8 +336,8 @@ export function SubMediator(arg1:any, arg2?:any):any
                             // 托管新的中介者
                             if(mediator)
                             {
-                                // 如果有皮肤，赋值皮肤
-                                if(skin) mediator.skin = skin;
+                                // 如果当前中介者没有皮肤就用装饰器皮肤
+                                if(skin && !mediator.skin) mediator.skin = skin;
                             }
                         }
                         else if(value)
