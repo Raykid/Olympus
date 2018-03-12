@@ -12,8 +12,7 @@ Olympus大量使用了TypeScript装饰器。原则上所有装饰器都可以使
         - [@DOMMediatorClass](#dommediatorclass)
         - [@EgretSkin](#egretskin)
         - [@EgretMediatorClass](#egretmediatorclass)
-    - [@ModuleClass](#moduleclass)
-    - [@DelegateMediator](#delegatemediator)
+    - [@SubMediator](#submediator)
 - [Olympus本地消息装饰器](#olympus本地消息装饰器)
     - [@MessageHandler](#messagehandler)
     - [@GlobalMessageHandler](#globalmessagehandler)
@@ -123,48 +122,26 @@ Olympus大量使用了TypeScript装饰器。原则上所有装饰器都可以使
         private someId:eui.Button;
     }
 
-## ModuleClass
+## SubMediator
 
-类级装饰器，标识一个类是一个业务模块（Module）。除了具有@MediatorClass的功能外，还具有组合任意多个Mediator的能力
+变量级装饰器，托管一个子Mediator到当前Mediator内部，托管后的Mediator所有操作完全与父级同步，即Mediator的onOpen方法和onDispose方法都会与父级Mediator的同名方法同时执行
 
-    @ModuleClass
-    class SomeModule extends Module
+该装饰器为“组合模式”的一个实现，使得开发者可以通过组装多个不同组件级Mediator而生成一个更大的组件级Mediator或模块级Mediator
+
+对应底层操作：[Mediator.delegateMediator](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html#delegatemediator)
+
+    class ParentMediator extends Mediator
     {
-        // 在Module内部可以使用变量级装饰器
-        @Inject
-        private _someModel:SomeModel;
-
-        // 在Module内部可以使用方法级装饰器
-        @MessageHandler("MsgDispatched")
-        private onMsgDispatched():void
-        {
-        }
-
-        // 在Module内部可以通过@DelegateMediator装饰器托管任意多个Mediator
-        @DelegateMediator
-        private _someMediator:SomeMediator;
-        @DelegateMediator
-        private _otherMediator:OtherMediator;
-    }
-
-## DelegateMediator
-
-变量级装饰器，只能用在Module内部，将Mediator托管给Module，托管后的Mediator所有操作完全与Module同步，即Mediator的onOpen方法和onDispose方法都会与Module的同名方法同时执行
-
-对应底层操作：[Module.delegateMediator](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html#delegatemediator)
-
-    class SomeModule extends Module
-    {
-        // 在Module内部可以通过@DelegateMediator装饰器托管任意多个Mediator
-        @DelegateMediator
-        private _someMediator:SomeMediator;
-        @DelegateMediator
-        private _otherMediator:OtherMediator;
+        // 在Mediator内部可以通过@SubMediator装饰器托管任意多个Mediator
+        @SubMediator
+        private _sub1:SomeMediator;
+        @SubMediator
+        private _sub2:OtherMediator;
     }
 
 # Olympus本地消息装饰器
 
-Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级消息内核。在二级消息内核上派发的消息会被冒泡到顶级内核，但顶级内核中的消息不会反向流转
+Olympus顶级消息内核是core对象，此外每个Mediator拥有一个私有的消息内核，消息派发在内核树状结构中遵循“冒泡”方式
 
 更多信息请参考[多核本地消息](./message.md)章节
 
@@ -172,7 +149,7 @@ Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级
 
 方法级装饰器，将某个方法绑定到某个本地消息上，当该类型的本地消息派发时会执行该方法
 
-对应的底层操作：[Module.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html#listen)、[Mediator.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_mediator_mediator_.mediator.html#listen)、[core.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_core_core_.core.html#listen)
+对应的底层操作：[Mediator.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html#listen)、[Mediator.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_mediator_mediator_.mediator.html#listen)、[core.listen](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_core_core_.core.html#listen)
 
     class SomeMediator
     {
@@ -195,7 +172,7 @@ Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级
 
 # Olympus远程通讯装饰器
 
-Olympus顶级消息内核是core对象，此外每个Module都拥有一个二级消息内核。在二级消息内核上派发的消息会被冒泡到顶级内核，但顶级内核中的消息不会反向流转
+方法级装饰器，将某个方法绑定到某个本地消息上，当该类型的本地消息派发时会执行该方法
 
 更多信息请参考[远程通讯](./remote.md)章节
 

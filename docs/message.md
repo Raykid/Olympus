@@ -24,10 +24,10 @@ Olympus的事件并不是直接使用js的事件体系，而是自己实现的�
 
 ## Olympus本地消息派发方式
 
-在core对象、Model实例、Mediator实例、Module实例、Command实例上都有dispatch方法，调用之即可将本地消息派发到指定的内核里。其中：
+在core对象、Model实例、Mediator实例、Command实例上都有dispatch方法，调用之即可将本地消息派发到指定的内核里。其中：
 
 - 在core、Model、Command上派发的消息总是属于全局消息
-- 在Mediator和Module上派发的消息属于模块私有核消息，但最终会冒泡到全局核上
+- 在Mediator上派发的消息属于模块私有核消息，但最终会冒泡到全局核上
 
 ## Olympus本地消息监听方式
 
@@ -46,7 +46,7 @@ Olympus并非直接使用事件派发器，而是在上面包装了一层逻辑�
 #### Olympus核的类型
 
 - 全局唯一的核：[core](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_core_core_.core.html)
-- 每个模块都有一个私有核：[Module](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_module_module_.module.html)
+- 每个模块都有一个私有核：[Mediator](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Raykid/Olympus/master/trunk/docs/classes/_engine_mediator_mediator_.mediator.html)
 
 #### Olympus多核结构与消息流转规则
 

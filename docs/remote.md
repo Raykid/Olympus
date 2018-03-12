@@ -35,7 +35,7 @@ Olympus远程通讯的发送方法如下
     request.someParam = "xxx";
     core.dispatch(request);
 
-上例是全局派发方式，如果你的代码写在Mediator、Module、Model、Command中任何一个结构内，则你可以这样发送
+上例是全局派发方式，如果你的代码写在Mediator、Model、Command中任何一个结构内，则你可以这样发送
 
     class SomeMediator extends Mediator
     {
@@ -44,7 +44,7 @@ Olympus远程通讯的发送方法如下
         this.dispatch(request);
     }
 
-在Model和Command内部使用this.dispatch会直接将消息发送到全局核中。在Mediator和Module中使用this.dispatch会将消息发送到模块私有核中，但根据[本地消息流转规则](./message.md#olympus多核结构与消息流转规则)，消息最终还是会转发到全局核中，被netManager处理
+在Model和Command内部使用this.dispatch会直接将消息发送到全局核中。在Mediator中使用this.dispatch会将消息发送到模块私有核中，但根据[本地消息流转规则](./message.md#olympus多核结构与消息流转规则)，消息最终还是会转发到全局核中，被netManager处理
 
 #### 远程通讯的接收
 

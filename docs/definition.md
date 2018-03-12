@@ -40,37 +40,13 @@ Model
 
 ## 模块
 
-#### 类名
-Module
-
 #### 管理器
 ModuleManager
 
 #### 描述
-- 整个应用程序完全是由启动配置和[1, +∞)个模块组合而成的
-- 每个模块都拥有自己独立的资源加载、初始化消息派发与接收、界面组织与展现、销毁与资源回收等功能
+- 模块现在退化成为Mediator的一个子功能，不再存在具体的基类
+- 整个应用程序完全是由启动配置和[1, +∞)个模块组合而成的，同一时间同一模块仅可以存在一个实例
 - 一个模块通常由一个人完成，是应用程序划分的最小单位，因此模块的粒度需要根据需要进行把控，过大则不够灵活，过小则开销太大。通常采取一个[界面](#界面)对应一个模块
-- 模块之间不可相互引用，必须通过[本地消息系统](./message.md)相互通信，从而消除模块间相互依赖的可能性
-- 模块内部由[0, +∞)个[界面](#界面)组成
-  - 逻辑模块：界面数是0。即没有界面逻辑，全部为业务逻辑的模块。可用于制作条件跳转模块（根据条件判断要跳转到哪个模块，类似HTTP的302状态码的功能）
-  - 界面模块：界面数大于0。绝大多数模块都是这种类型
-
-#### 示例
-
-开发一个模块需要声明一个class，继承自Module，并且使用@ModuleClass装饰器进行修饰。如下代码示范了一个最简单的模块的写法：
-
-    import Module from 'olympus-r/engine/module/Module';
-    import { ModuleClass, DelegateMediator } from 'olympus-r/engine/injector/Injector';
-    
-    @ModuleClass
-    class SomeModule extends Module
-    {
-        @DelegateMediator // 使用DelegateMediator装饰器声明托管给模块的界面
-        private _mediator1:SomeMediator1;
-        
-        @DelegateMediator // 可以托管任意多个界面到一个模块上
-        private _mediator2:SomeMediator2;
-    }
 
 ## 界面
 
@@ -84,6 +60,8 @@ ModuleManager
 - [数据绑定](./bindings.md)：采用MVVM架构、基于TypeScript装饰器和元数据反射功能实现的数据绑定，让界面开发更简洁
 - [本地消息通信](./message.md)：可以便捷地发送和接收本地事件，与模块外进行沟通
 - [远程消息通信](./remote.md)：可以便捷地发送和接收由服务器配置的、强类型的远程通讯消息
+- 每个Mediator都拥有自己独立的资源加载、初始化消息派发与接收、界面组织与展现、销毁与资源回收等功能
+- Mediator可通过@SubMediator装饰器包含另外的Mediator，从而生成一个树状结构。最顶级的Mediator可被当做模块使用
 
 #### Mediator分类
 - 组件（Component）：可复用于另外一个任意类型界面中的最灵活的界面类型，需要自行添加和移除显示。父类为Mediator

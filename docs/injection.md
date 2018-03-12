@@ -13,7 +13,7 @@ Olympus的依赖注入有下面两种用法
 
 # 常规用法
 
-由于依赖注入装饰器仅用于特定情况（@Injectable仅用于类型定义处，@Inject仅用于Mediator、Module、Model类定义内部的变量上），而某些特殊情况又希望使用依赖注入功能，因此Olympus提供了依赖注入功能的常规用法
+由于依赖注入装饰器仅用于特定情况（@Injectable仅用于类型定义处，@Inject仅用于Mediator、Model类定义内部的变量上），而某些特殊情况又希望使用依赖注入功能，因此Olympus提供了依赖注入功能的常规用法
 
 ## 注入定义（对应@Injectable装饰器）
 
