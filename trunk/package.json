@@ -38,6 +38,6 @@
     "reflect-metadata": "^0.1.12"
   },
   "devDependencies": {
-    "typedoc": "^0.9.0"
+    "typedoc": "^0.11.1"
   }
 }

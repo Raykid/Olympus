@@ -36,6 +36,6 @@
   },
   "devDependencies": {
     "olympus-r": "^0.6.23",
-    "typedoc": "^0.9.0"
+    "typedoc": "^0.11.1"
   }
 }
