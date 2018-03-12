@@ -248,7 +248,7 @@ export default class Mediator implements IMediator
         // 去重
         assets = unique(assets);
         // 开始加载
-        this.bridge.loadAssets(this.listAssets(), this, temp);
+        this.bridge.loadAssets(assets, this, temp);
     }
     
     /**

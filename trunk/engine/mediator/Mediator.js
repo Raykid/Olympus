@@ -206,7 +206,7 @@ var Mediator = /** @class */ (function () {
         // 去重
         assets = unique(assets);
         // 开始加载
-        this.bridge.loadAssets(this.listAssets(), this, temp);
+        this.bridge.loadAssets(assets, this, temp);
     };
     /**
      * 加载从listStyleFiles中获取到的所有资源
