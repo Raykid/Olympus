@@ -14,7 +14,7 @@ namespace olympus
      * 
      * @returns {string} 
      */
-    function getCurOrigin():string
+    export function getCurOrigin():string
     {
         if(window.location.origin) return window.location.origin;
         return (window.location.protocol + "//" + window.location.host);
@@ -24,7 +24,7 @@ namespace olympus
      * 规整url
      * @param url
      */
-    function trimURL(url:string):string
+    export function trimURL(url:string):string
     {
         // 去除多余的"/"
         url = url.replace(/([^:/])(\/)+/g, "$1/");
@@ -48,7 +48,7 @@ namespace olympus
      * 获取URL的host+pathname部分，即问号(?)以前的部分
      *
      */
-    function getHostAndPathname(url: string): string
+    export function getHostAndPathname(url: string): string
     {
         if (url == null) throw new Error("url不能为空");
         // 去掉get参数和hash
@@ -62,7 +62,7 @@ namespace olympus
      * 获取URL路径（文件名前的部分）
      * @param url 要分析的URL
      */
-    function getPath(url:string):string
+    export function getPath(url:string):string
     {
         // 首先去掉多余的/
         url = getHostAndPathname(url);
@@ -77,7 +77,7 @@ namespace olympus
      * @param url 要判断的URL
      * @returns {any} 是否是绝对路径
      */
-    function isAbsolutePath(url:string):boolean
+    export function isAbsolutePath(url:string):boolean
     {
         if(url == null) return false;
         return (url.indexOf("://") >= 0);
@@ -87,7 +87,7 @@ namespace olympus
      * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
      * @param url 要统一protocol的url
      */
-    function validateProtocol(url:string):string
+    export function validateProtocol(url:string):string
     {
         if(url == null) return null;
         var index:number = url.indexOf("://");
@@ -115,7 +115,7 @@ namespace olympus
      * @param host      要替换的host
      * @param forced    是否强制替换（默认false）
      */
-    function wrapHost(url:string, host:string, forced:boolean = false):string
+    export function wrapHost(url:string, host:string, forced:boolean = false):string
     {
         host = host || getCurOrigin();
         var re: RegExp = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
@@ -144,7 +144,7 @@ namespace olympus
      * @param relativePath 相对于当前页面的相对路径
      * @param host 传递该参数会用该host替换当前host
      */
-    function wrapAbsolutePath(relativePath:string, host?:string): string
+    export function wrapAbsolutePath(relativePath:string, host?:string): string
     {
         // 获取当前页面的url
         var curPath:string = getPath(window.location.href);

@@ -18,6 +18,7 @@ var olympus;
             return window.location.origin;
         return (window.location.protocol + "//" + window.location.host);
     }
+    olympus.getCurOrigin = getCurOrigin;
     /**
      * 规整url
      * @param url
@@ -39,6 +40,7 @@ var olympus;
         }
         return url;
     }
+    olympus.trimURL = trimURL;
     /**
      * 获取URL的host+pathname部分，即问号(?)以前的部分
      *
@@ -52,6 +54,7 @@ var olympus;
         url = trimURL(url);
         return url;
     }
+    olympus.getHostAndPathname = getHostAndPathname;
     /**
      * 获取URL路径（文件名前的部分）
      * @param url 要分析的URL
@@ -64,6 +67,7 @@ var olympus;
         urlArr.pop();
         return urlArr.join("/") + "/";
     }
+    olympus.getPath = getPath;
     /**
      * 检查URL是否是绝对路径（具有协议头）
      * @param url 要判断的URL
@@ -74,6 +78,7 @@ var olympus;
             return false;
         return (url.indexOf("://") >= 0);
     }
+    olympus.isAbsolutePath = isAbsolutePath;
     /**
      * 如果url有protocol，使其与当前域名的protocol统一，否则会跨域
      * @param url 要统一protocol的url
@@ -100,6 +105,7 @@ var olympus;
         // 不需要调整
         return url;
     }
+    olympus.validateProtocol = validateProtocol;
     /**
      * 替换url中的host
      * @param url       url
@@ -126,6 +132,7 @@ var olympus;
         url = trimURL(url);
         return url;
     }
+    olympus.wrapHost = wrapHost;
     /**
      * 将相对于当前页面的相对路径包装成绝对路径
      * @param relativePath 相对于当前页面的相对路径
@@ -140,6 +147,7 @@ var olympus;
         }
         return url;
     }
+    olympus.wrapAbsolutePath = wrapAbsolutePath;
     var Version = /** @class */ (function () {
         function Version() {
             this._hashDict = {};
