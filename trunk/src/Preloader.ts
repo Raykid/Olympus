@@ -330,7 +330,7 @@ namespace olympus
                 else
                     callback && callback();
             }, ordered);
-        }, version);
+        }, host, version);
     }
 
     function loadJsFiles(jsFiles:JSFile[], host:string, callback:(err?:Error)=>void, ordered:boolean):void

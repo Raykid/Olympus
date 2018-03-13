@@ -291,7 +291,7 @@ var olympus;
                 else
                     callback && callback();
             }, ordered);
-        }, version);
+        }, host, version);
     }
     olympus.preload = preload;
     function loadJsFiles(jsFiles, host, callback, ordered) {
