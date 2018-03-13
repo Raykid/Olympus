@@ -79,6 +79,13 @@ export interface IInitParams {
      */
     env?: string;
     /**
+     * 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
+     *
+     * @type {string}
+     * @memberof IInitParams
+     */
+    version?: string;
+    /**
      * 消息域名字典数组，首个字典会被当做默认字典，没传递则会用当前域名代替
      *
      * @type {{[env:string]:string[]}}

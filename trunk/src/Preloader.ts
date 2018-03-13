@@ -164,9 +164,10 @@ namespace olympus
          * 初始化哈希版本工具
          * 
          * @param {()=>void} handler 回调
+         * @param {string} [version] 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
          * @memberof Version
          */
-        public initialize(handler:()=>void):void
+        public initialize(handler:()=>void, version?:string):void
         {
             var self:Version = this;
             if(window["__Olympus_Version_hashDict__"])
@@ -202,7 +203,7 @@ namespace olympus
                 };
                 request.onerror = handler;
                 // 设置连接信息
-                request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
+                request.open("GET", "version.cfg?v=" + (version || Date.now()), true);
                 // 发送数据，开始和服务器进行交互
                 request.send();
             }
@@ -305,7 +306,7 @@ namespace olympus
         }
     }
 
-    var version:Version = new Version();
+    var _version:Version = new Version();
 
     /**
      * 预加载方法
@@ -315,18 +316,19 @@ namespace olympus
      * @param {string} [host] CDN域名，不传则使用当前域名
      * @param {()=>void} [callback] 全部加载完成后的回调
      * @param {boolean} [ordered=false] 是否保证标签形式js的执行顺序，保证执行顺序会降低标签形式js的加载速度，因为必须串行加载。该参数不会影响JSONP形式的加载速度和执行顺序，JSONP形式脚本总是并行加载且顺序执行的。默认是true
+     * @param {string} [version] 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
      */
-    export function preload(jsFiles:JSFile[], host?:string, callback?:()=>void, ordered:boolean=true):void
+    export function preload(jsFiles:JSFile[], host?:string, callback?:()=>void, ordered:boolean=true, version?:string):void
     {
         // 首先初始化version
-        version.initialize(()=>{
+        _version.initialize(()=>{
             loadJsFiles(jsFiles, host || getCurOrigin(), (err?:Error)=>{
                 if(err)
                     throw err;
                 else
                     callback && callback();
             }, ordered);
-        });
+        }, version);
     }
 
     function loadJsFiles(jsFiles:JSFile[], host:string, callback:(err?:Error)=>void, ordered:boolean):void
@@ -359,7 +361,7 @@ namespace olympus
             if(!isAbsolutePath(url))
                 url = wrapAbsolutePath(url, host);
             // 添加Version
-            url = version.wrapHashUrl(url);
+            url = _version.wrapHashUrl(url);
             // 创建一个空的script标签
             var jsNode:HTMLScriptElement = document.createElement("script");
             jsNode.type = "text/javascript";

@@ -85,7 +85,7 @@ export default class Engine
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
                 bridgeManager.registerBridge(...params.bridges);
-            });
+            }, params.version);
         }
     }
 
@@ -226,6 +226,13 @@ export interface IInitParams
      * @memberof IInitParams
      */
     env?:string;
+    /**
+     * 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
+     * 
+     * @type {string}
+     * @memberof IInitParams
+     */
+    version?:string;
     /**
      * 消息域名字典数组，首个字典会被当做默认字典，没传递则会用当前域名代替
      * 

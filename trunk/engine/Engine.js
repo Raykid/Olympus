@@ -65,7 +65,7 @@ var Engine = /** @class */ (function () {
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
                 bridgeManager.registerBridge.apply(bridgeManager, params.bridges);
-            });
+            }, params.version);
         }
     };
     /**

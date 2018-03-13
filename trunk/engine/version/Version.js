@@ -23,9 +23,10 @@ var Version = /** @class */ (function () {
      * 初始化哈希版本工具
      *
      * @param {()=>void} handler 回调
+     * @param {string} [version] 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
      * @memberof Version
      */
-    Version.prototype.initialize = function (handler) {
+    Version.prototype.initialize = function (handler, version) {
         var self = this;
         if (window["__Olympus_Version_hashDict__"]) {
             // 之前在哪加载过，无需再次加载，直接使用
@@ -54,7 +55,7 @@ var Version = /** @class */ (function () {
             };
             request.onerror = handler;
             // 设置连接信息
-            request.open("GET", "version.cfg?v=" + new Date().getTime(), true);
+            request.open("GET", "version.cfg?v=" + (version || Date.now()), true);
             // 发送数据，开始和服务器进行交互
             request.send();
         }
