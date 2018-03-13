@@ -164,10 +164,11 @@ namespace olympus
          * 初始化哈希版本工具
          * 
          * @param {()=>void} handler 回调
+         * @param {string} [host] version.cfg文件加载域名，不传则使用当前域名
          * @param {string} [version] 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
          * @memberof Version
          */
-        public initialize(handler:()=>void, version?:string):void
+        public initialize(handler:()=>void, host?:string, version?:string):void
         {
             var self:Version = this;
             if(window["__Olympus_Version_hashDict__"])
@@ -203,7 +204,8 @@ namespace olympus
                 };
                 request.onerror = handler;
                 // 设置连接信息
-                request.open("GET", "version.cfg?v=" + (version || Date.now()), true);
+                var url:string = wrapAbsolutePath("version.cfg?v=" + (version || Date.now()), host);
+                request.open("GET", url, true);
                 // 发送数据，开始和服务器进行交互
                 request.send();
             }

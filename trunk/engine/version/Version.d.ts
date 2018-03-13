@@ -12,10 +12,11 @@ export default class Version {
      * 初始化哈希版本工具
      *
      * @param {()=>void} handler 回调
+     * @param {string} [host] version.cfg文件加载域名，不传则使用当前域名
      * @param {string} [version] 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
      * @memberof Version
      */
-    initialize(handler: () => void, version?: string): void;
+    initialize(handler: () => void, host?: string, version?: string): void;
     /**
      * 获取文件哈希值，如果没有文件哈希值则返回null
      *
