@@ -328,7 +328,7 @@ export interface IInitParams {
     showLog?: boolean;
     /** 背景颜色，默认黑色 */
     backgroundColor?: number;
-    /** 渲染模式，在harpy.RenderMode中查找枚举值，默认为AUTO **/
+    /** 渲染模式，在RenderMode中查找枚举值，默认为AUTO **/
     renderMode?: RenderMode;
     /** 通用提示框类型 */
     promptClass?: IPromptPanelConstructor;
