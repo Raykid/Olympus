@@ -325,7 +325,7 @@ export default class Mediator implements IMediator
     {
         var mediators:IMediator[] = this._children.concat();
         var temp:(responses:ResponseData[]|Error)=>void = (responses:ResponseData[]|Error)=>{
-            if(responses instanceof Error || mediators.length <= 0)
+            if(responses instanceof Error)
             {
                 var err:Error = responses instanceof Error ? responses : undefined;
                 // 调用onSendInitRequests接口
@@ -352,9 +352,19 @@ export default class Mediator implements IMediator
                         return;
                     }
                 }
-                // 发送一个子中介者的初始化消息
-                var mediator:IMediator = mediators.shift();
-                mediator.sendInitRequests(temp);
+                if(mediators.length <= 0)
+                {
+                    // 调用onSendInitRequests接口
+                    this.onSendInitRequests();
+                    // 调用回调
+                    handler();
+                }
+                else
+                {
+                    // 发送一个子中介者的初始化消息
+                    var mediator:IMediator = mediators.shift();
+                    mediator.sendInitRequests(temp);
+                }
             }
         };
         // 发送所有模块消息，模块消息默认发送全局内核

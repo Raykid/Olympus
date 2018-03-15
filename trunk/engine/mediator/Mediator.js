@@ -276,7 +276,7 @@ var Mediator = /** @class */ (function () {
         var _this = this;
         var mediators = this._children.concat();
         var temp = function (responses) {
-            if (responses instanceof Error || mediators.length <= 0) {
+            if (responses instanceof Error) {
                 var err = responses instanceof Error ? responses : undefined;
                 // 调用onSendInitRequests接口
                 _this.onSendInitRequests(err);
@@ -299,9 +299,17 @@ var Mediator = /** @class */ (function () {
                         return;
                     }
                 }
-                // 发送一个子中介者的初始化消息
-                var mediator = mediators.shift();
-                mediator.sendInitRequests(temp);
+                if (mediators.length <= 0) {
+                    // 调用onSendInitRequests接口
+                    _this.onSendInitRequests();
+                    // 调用回调
+                    handler();
+                }
+                else {
+                    // 发送一个子中介者的初始化消息
+                    var mediator = mediators.shift();
+                    mediator.sendInitRequests(temp);
+                }
             }
         };
         // 发送所有模块消息，模块消息默认发送全局内核
