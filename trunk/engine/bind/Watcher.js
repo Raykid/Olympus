@@ -67,12 +67,7 @@ var Watcher = /** @class */ (function () {
         }
         catch (err) {
             // 输出错误日志
-            try {
-                console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp + "，scopes：" + JSON.stringify(this._scopes));
-            }
-            catch (error) {
-                console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp);
-            }
+            console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp);
         }
         // 移除自身记录
         Watcher.updating = null;
