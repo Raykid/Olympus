@@ -35,7 +35,7 @@ var BridgeManager = /** @class */ (function () {
             // 先用当前模块的首个拥有bridge的Mediator的bridge
             var curModule = moduleManager.currentModuleInstance;
             if (curModule) {
-                var mediators = [curModule].concat(curModule.children);
+                var mediators = this.getAllMediators(curModule);
                 for (var _i = 0, mediators_1 = mediators; _i < mediators_1.length; _i++) {
                     var mediator = mediators_1[_i];
                     if (mediator.bridge)
@@ -48,6 +48,14 @@ var BridgeManager = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    BridgeManager.prototype.getAllMediators = function (mediator) {
+        var result = [mediator];
+        for (var _i = 0, _a = mediator.children; _i < _a.length; _i++) {
+            var temp = _a[_i];
+            result = result.concat(this.getAllMediators(temp));
+        }
+        return result;
+    };
     /**
      * 获取表现层桥实例
      *

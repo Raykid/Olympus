@@ -34,7 +34,7 @@ export default class BridgeManager
         var curModule:IMediator = moduleManager.currentModuleInstance;
         if(curModule)
         {
-            var mediators:IMediator[] = [curModule].concat(curModule.children);
+            var mediators:IMediator[] = this.getAllMediators(curModule);
             for(var mediator of mediators)
             {
                 if(mediator.bridge) return mediator.bridge;
@@ -42,6 +42,16 @@ export default class BridgeManager
         }
         // 没找到，再用第一个桥代替
         return (this._bridgeList[0] && this._bridgeList[0][0]);
+    }
+
+    private getAllMediators(mediator:IMediator):IMediator[]
+    {
+        var result:IMediator[] = [mediator];
+        for(var temp of mediator.children)
+        {
+            result = result.concat(this.getAllMediators(temp));
+        }
+        return result;
     }
 
     /**

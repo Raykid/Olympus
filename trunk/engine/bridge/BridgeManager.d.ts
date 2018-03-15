@@ -18,6 +18,7 @@ export default class BridgeManager {
      * @memberof BridgeManager
      */
     readonly currentBridge: IBridge;
+    private getAllMediators(mediator);
     /**
      * 获取表现层桥实例
      *
