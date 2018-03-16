@@ -353,19 +353,10 @@ var BindManager = /** @class */ (function () {
                     renderer.__bind_sub_events__ = [];
                 // 为renderer套一个Mediator外壳
                 if (mediatorCls) {
-                    var subMediator = new mediatorCls();
-                    if (subMediator.skin && subMediator.bridge === mediator.bridge) {
-                        // 子中介者自己有皮肤，用自己的皮肤替代当前渲染器
-                        var parent = subMediator.bridge.getParent(renderer);
-                        var index = subMediator.bridge.getChildIndex(parent, renderer);
-                        subMediator.bridge.addChildAt(parent, subMediator.skin, index);
-                        subMediator.bridge.removeChild(parent, renderer);
+                    var subMediator = new mediatorCls(renderer);
+                    // 更新渲染器
+                    if (subMediator.skin && subMediator.bridge === mediator.bridge)
                         renderer = subMediator.skin;
-                    }
-                    else {
-                        // 无需替换皮肤
-                        subMediator.skin = renderer;
-                    }
                     // 托管子中介者
                     mediator.delegateMediator(subMediator);
                     // 使用value开启该中介者

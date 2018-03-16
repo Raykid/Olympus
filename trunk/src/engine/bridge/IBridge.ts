@@ -142,6 +142,15 @@ export default interface IBridge
      */
     wrapSkin(mediator:IMediator, skin:any):any;
     /**
+     * 替换皮肤，用于组件变身时不同表现层桥的处理
+     * 
+     * @param {*} current 当前皮肤
+     * @param {*} target 要替换的皮肤
+     * @returns {*} 替换完毕的皮肤
+     * @memberof IBridge
+     */
+    replaceSkin(current:any, target:any):any;
+    /**
      * 创建一个空的显示对象
      * 
      * @returns {*} 

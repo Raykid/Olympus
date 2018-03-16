@@ -389,6 +389,48 @@ var EgretBridge = /** @class */ (function () {
         return wrapSkin(mediator, skin);
     };
     /**
+     * 替换皮肤，用于组件变身时不同表现层桥的处理
+     *
+     * @param {*} current 当前皮肤
+     * @param {*} target 要替换的皮肤
+     * @returns {*} 替换完毕的皮肤
+     * @memberof EgretBridge
+     */
+    EgretBridge.prototype.replaceSkin = function (current, target) {
+        // Egret皮肤需要判断类型，进行不同处理
+        if (current instanceof eui.Component) {
+            if (target instanceof eui.Component) {
+                // 两边都是eui组件，直接将右手皮肤赋值给左手
+                current.skinName = target.skin;
+            }
+            else if (target instanceof egret.DisplayObject) {
+                // 右手是普通显示对象，移除左手皮肤，添加右手显示到其中
+                current.skinName = null;
+                current.addChild(target);
+            }
+            else {
+                // 其他情况都认为右手是皮肤数据
+                current.skinName = target;
+            }
+            // 返回左手
+            return current;
+        }
+        else {
+            if (!(target instanceof egret.DisplayObject)) {
+                // 右手不是显示对象，认为是皮肤数据，生成一个eui.Component包裹它
+                var temp = new eui.Component();
+                temp.skinName = target;
+                target = temp;
+            }
+            // 右手替换左手位置
+            var parent = current.parent;
+            parent.addChildAt(target, parent.getChildIndex(current));
+            parent.removeChild(current);
+            // 返回右手
+            return target;
+        }
+    };
+    /**
      * 创建一个空的显示对象
      *
      * @returns {egret.Sprite}

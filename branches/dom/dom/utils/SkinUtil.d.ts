@@ -40,3 +40,19 @@ export declare function isDOMPath(path: string): boolean;
  * @param {*} to 复制目标对象
  */
 export declare function copyRef(from: HTMLElement, to: any): void;
+/**
+ * 转换皮肤为HTMLElement
+ *
+ * @export
+ * @param {(HTMLElement|string|string[])} skin 皮肤
+ * @returns {HTMLElement}
+ */
+export declare function toHTMLElement(skin: HTMLElement | string | string[]): HTMLElement;
+/**
+ * 将皮肤字符串/字符串数组或皮肤路径转变为HTML内容字符串
+ *
+ * @export
+ * @param {(string|string[])} skin 可以是皮肤字符串、皮肤字符串数组或皮肤路径
+ * @returns {string}
+ */
+export declare function getHTMLContent(skin: string | string[]): string;

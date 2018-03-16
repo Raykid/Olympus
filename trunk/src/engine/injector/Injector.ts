@@ -79,40 +79,20 @@ export function MediatorClass(moduleName:string):ClassDecorator
                     // 记录值
                     if(this.bridge)
                     {
-                        var tempSkin:any = this.bridge.wrapSkin(this, value);
-                        if(oriSkin && $skin === oriSkin)
+                        if(this.bridge === lastBridge && $skin)
                         {
-                            if($skin && lastBridge === this.bridge)
-                            {
-                                // 如果当前皮肤是原始皮肤，说明目标中介者希望自己定制皮肤，将原始皮肤放到新的parent里
-                                var parent:any = this.bridge.getParent(tempSkin);
-                                if(parent)
-                                {
-                                    var index:number = this.bridge.getChildIndex(parent, tempSkin);
-                                    this.bridge.addChildAt(parent, $skin, index);
-                                    this.bridge.removeChild(parent, tempSkin);
-                                }
-                            }
+                            // 需要判断桥的类型是否相同，且之前有皮肤，则替换皮肤
+                            $skin = this.bridge.replaceSkin($skin, value);
                         }
                         else
                         {
-                            
-                            if($skin && lastBridge === this.bridge)
-                            {
-                                // 没有原始皮肤，说明目标中介者希望外部提供皮肤，则替换之
-                                var parent:any = this.bridge.getParent($skin);
-                                if(parent)
-                                {
-                                    var index:number = this.bridge.getChildIndex(parent, $skin);
-                                    this.bridge.addChildAt(parent, tempSkin, index);
-                                    this.bridge.removeChild(parent, $skin);
-                                }
-                            }
-                            $skin = tempSkin;
+                            // 否则直接包装一下皮肤
+                            $skin = this.bridge.wrapSkin(this, value);
                         }
                     }
-                    else
+                    else 
                     {
+                        // 不认识的皮肤类型，直接赋值
                         $skin = value;
                     }
                 }

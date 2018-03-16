@@ -11,7 +11,7 @@ import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
-import { copyRef, wrapSkin, isDOMStr, isDOMPath } from "./dom/utils/SkinUtil";
+import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
 
@@ -296,6 +296,26 @@ export default class DOMBridge implements IBridge
     public wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):HTMLElement
     {
         return wrapSkin(mediator, skin);
+    }
+    /**
+     * 替换皮肤，用于组件变身时不同表现层桥的处理
+     * 
+     * @param {*} current 当前皮肤
+     * @param {HTMLElement|string|string[]} target 要替换的皮肤
+     * @returns {*} 替换完毕的皮肤
+     * @memberof EgretBridge
+     */
+    public replaceSkin(current:HTMLElement, target:HTMLElement|string|string[]):any
+    {
+        target = toHTMLElement(target);
+        // 如果有父节点，则用目标节点替换当前节点位置
+        var parent:HTMLElement = current.parentElement;
+        if(parent)
+        {
+            parent.insertBefore(target, current);
+            parent.removeChild(current);
+        }
+        return target;
     }
 
     /**

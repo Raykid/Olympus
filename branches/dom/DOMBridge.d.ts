@@ -160,6 +160,15 @@ export default class DOMBridge implements IBridge {
      */
     wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
     /**
+     * 替换皮肤，用于组件变身时不同表现层桥的处理
+     *
+     * @param {*} current 当前皮肤
+     * @param {HTMLElement|string|string[]} target 要替换的皮肤
+     * @returns {*} 替换完毕的皮肤
+     * @memberof EgretBridge
+     */
+    replaceSkin(current: HTMLElement, target: HTMLElement | string | string[]): any;
+    /**
      * 创建一个空的显示对象
      *
      * @returns {HTMLElement}

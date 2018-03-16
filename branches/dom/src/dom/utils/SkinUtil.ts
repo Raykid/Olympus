@@ -46,15 +46,20 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
 
     function doWrapSkin():void
     {
-        if(!(skin instanceof HTMLElement))
+        if(skin instanceof HTMLElement)
+        {
+            // 拷贝引用
+            doCopyRef(result, skin.innerHTML, mediator);
+        }
+        else
         {
             // 转换皮肤
-            skin = getContent(skin);
+            skin = getHTMLContent(skin);
             // 赋值皮肤内容
-            result.innerHTML = <string>skin;
+            result.innerHTML = skin;
+            // 拷贝引用
+            doCopyRef(result, skin, mediator);
         }
-        // 拷贝引用
-        doCopyRef(result, <string>skin, mediator);
     }
 }
 
@@ -107,12 +112,34 @@ function doCopyRef(fromEle:HTMLElement, fromStr:string, to:any):void
     }
 }
 
-function getContent(skin:string|string[]):string
+/**
+ * 转换皮肤为HTMLElement
+ * 
+ * @export
+ * @param {(HTMLElement|string|string[])} skin 皮肤
+ * @returns {HTMLElement} 
+ */
+export function toHTMLElement(skin:HTMLElement|string|string[]):HTMLElement
+{
+    if(skin instanceof HTMLElement) return skin;
+    var result:HTMLElement = document.createElement("div");
+    result.innerHTML = getHTMLContent(skin);
+    return result;
+}
+
+/**
+ * 将皮肤字符串/字符串数组或皮肤路径转变为HTML内容字符串
+ * 
+ * @export
+ * @param {(string|string[])} skin 可以是皮肤字符串、皮肤字符串数组或皮肤路径
+ * @returns {string} 
+ */
+export function getHTMLContent(skin:string|string[]):string
 {
     if(skin instanceof Array)
     {
         // 是字符串数组，拆分后皮肤化再连接起来
-        return skin.map(getContent).join("");
+        return skin.map(getHTMLContent).join("");
     }
     else if(isDOMStr(skin))
     {

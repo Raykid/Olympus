@@ -66,32 +66,17 @@ export function MediatorClass(moduleName) {
                     this.bridge = bridgeManager.getBridgeBySkin(value);
                     // 记录值
                     if (this.bridge) {
-                        var tempSkin = this.bridge.wrapSkin(this, value);
-                        if (oriSkin && $skin === oriSkin) {
-                            if ($skin && lastBridge === this.bridge) {
-                                // 如果当前皮肤是原始皮肤，说明目标中介者希望自己定制皮肤，将原始皮肤放到新的parent里
-                                var parent = this.bridge.getParent(tempSkin);
-                                if (parent) {
-                                    var index = this.bridge.getChildIndex(parent, tempSkin);
-                                    this.bridge.addChildAt(parent, $skin, index);
-                                    this.bridge.removeChild(parent, tempSkin);
-                                }
-                            }
+                        if (this.bridge === lastBridge && $skin) {
+                            // 需要判断桥的类型是否相同，且之前有皮肤，则替换皮肤
+                            $skin = this.bridge.replaceSkin($skin, value);
                         }
                         else {
-                            if ($skin && lastBridge === this.bridge) {
-                                // 没有原始皮肤，说明目标中介者希望外部提供皮肤，则替换之
-                                var parent = this.bridge.getParent($skin);
-                                if (parent) {
-                                    var index = this.bridge.getChildIndex(parent, $skin);
-                                    this.bridge.addChildAt(parent, tempSkin, index);
-                                    this.bridge.removeChild(parent, $skin);
-                                }
-                            }
-                            $skin = tempSkin;
+                            // 否则直接包装一下皮肤
+                            $skin = this.bridge.wrapSkin(this, value);
                         }
                     }
                     else {
+                        // 不认识的皮肤类型，直接赋值
                         $skin = value;
                     }
                 }

@@ -16,7 +16,8 @@ export function wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
     var comp:eui.Component = getComponent(skin);
     if(!comp && !(skin instanceof egret.DisplayObject))
     {
-        comp = new eui.Component();
+        var compCls:IConstructor = <IConstructor>((mediator.skin instanceof eui.Component && mediator.skin.constructor) || eui.Component);
+        comp = new compCls();
         comp.skinName = skin;
         result = comp;
     }
@@ -54,7 +55,19 @@ export function wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
             comp.percentWidth = 100;
             comp.percentHeight = 100;
         }
-        if(result instanceof egret.DisplayObjectContainer)
+        // 移除已有的引用
+        var tempComp:eui.Component = getComponent(mediator.skin);
+        if(tempComp)
+        {
+            for(var name of tempComp.skin.skinParts)
+            {
+                var target:egret.DisplayObject = tempComp[name];
+                if(isDescendant(target, mediator.skin))
+                    delete mediator[name];
+            }
+        }
+        // 启动引用转发
+        if(result instanceof egret.DisplayObjectContainer && comp && comp.skin)
         {
             // 转发ui引用，如果传入的是显示对象，则需要判断目标是否属于该对象的后裔
             var needJudgeDescendant:boolean = (skin instanceof egret.DisplayObjectContainer);
@@ -71,7 +84,7 @@ export function wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
 function getComponent(skin:any):eui.Component
 {
     if(!(skin instanceof egret.DisplayObject)) return null;
-    if(skin instanceof eui.Component) return skin;
+    if(skin instanceof eui.Component && skin.skin) return skin;
     return getComponent(skin.parent);
 }
 
