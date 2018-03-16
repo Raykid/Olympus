@@ -9,7 +9,7 @@ import { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import IObservable from "../../core/observable/IObservable";
 import { IWatcher } from "./Watcher";
-import { getObjectHashs } from "../../utils/ObjectUtil";
+import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
 
 /**
@@ -369,8 +369,8 @@ export default class BindManager
                         renderer = subMediator.skin;
                     // 托管子中介者
                     mediator.delegateMediator(subMediator);
-                    // 使用value开启该中介者
-                    subMediator.open(value);
+                    // 使用当前所有的数据开启该中介者
+                    subMediator.open(extendObject({}, ...subEnvModels, value));
                     // 缓存子中介者
                     subMediatorCache.push(subMediator);
                 }

@@ -10,7 +10,7 @@ import Dictionary from "../../utils/Dictionary";
 import Bind from "./Bind";
 import { evalExp, createRunFunc } from "./Utils";
 import { netManager } from "../net/NetManager";
-import { getObjectHashs } from "../../utils/ObjectUtil";
+import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -359,8 +359,8 @@ var BindManager = /** @class */ (function () {
                         renderer = subMediator.skin;
                     // 托管子中介者
                     mediator.delegateMediator(subMediator);
-                    // 使用value开启该中介者
-                    subMediator.open(value);
+                    // 使用当前所有的数据开启该中介者
+                    subMediator.open(extendObject.apply(void 0, [{}].concat(subEnvModels, [value])));
                     // 缓存子中介者
                     subMediatorCache.push(subMediator);
                 }
