@@ -132,6 +132,8 @@ export default class Mediator implements IMediator
      * @memberof Mediator
      */
     public skin:any;
+
+    private oriSkin:any;
     
     /**
      * 获取中介者是否已被销毁
@@ -214,6 +216,7 @@ export default class Mediator implements IMediator
         this._moduleName = getModuleName(this);
         // 赋值皮肤
         if(skin) this.skin = skin;
+        this.oriSkin = skin;
         // 初始化绑定
         bindManager.bind(this);
     }
@@ -1077,11 +1080,14 @@ export default class Mediator implements IMediator
         this.unmapAllListeners();
         // 调用模板方法
         this.onDispose();
-        // 移除显示
-        if(this.skin && this.bridge)
+        // 移除显示，只移除没有原始皮肤的，因为如果有原始皮肤，其原始parent可能不希望子节点被移除
+        if(!this.oriSkin)
         {
-            var parent:any = this.bridge.getParent(this.skin);
-            if(parent) this.bridge.removeChild(parent, this.skin);
+            if(this.skin && this.bridge)
+            {
+                var parent:any = this.bridge.getParent(this.skin);
+                if(parent) this.bridge.removeChild(parent, this.skin);
+            }
         }
         // 移除表现层桥
         this.bridge = null;
@@ -1091,6 +1097,7 @@ export default class Mediator implements IMediator
         this.bindTargets = null;
         // 移除皮肤
         this.skin = null;
+        this.oriSkin = null;
         // 将所有子中介者销毁
         for(var i:number = 0, len:number = this._children.length; i < len; i++)
         {

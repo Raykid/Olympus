@@ -72,6 +72,7 @@ var Mediator = /** @class */ (function () {
         // 赋值皮肤
         if (skin)
             this.skin = skin;
+        this.oriSkin = skin;
         // 初始化绑定
         bindManager.bind(this);
     }
@@ -947,11 +948,13 @@ var Mediator = /** @class */ (function () {
         this.unmapAllListeners();
         // 调用模板方法
         this.onDispose();
-        // 移除显示
-        if (this.skin && this.bridge) {
-            var parent = this.bridge.getParent(this.skin);
-            if (parent)
-                this.bridge.removeChild(parent, this.skin);
+        // 移除显示，只移除没有原始皮肤的，因为如果有原始皮肤，其原始parent可能不希望子节点被移除
+        if (!this.oriSkin) {
+            if (this.skin && this.bridge) {
+                var parent = this.bridge.getParent(this.skin);
+                if (parent)
+                    this.bridge.removeChild(parent, this.skin);
+            }
         }
         // 移除表现层桥
         this.bridge = null;
@@ -961,6 +964,7 @@ var Mediator = /** @class */ (function () {
         this.bindTargets = null;
         // 移除皮肤
         this.skin = null;
+        this.oriSkin = null;
         // 将所有子中介者销毁
         for (var i = 0, len = this._children.length; i < len; i++) {
             var mediator = this._children.pop();

@@ -82,6 +82,7 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     skin: any;
+    private oriSkin;
     /**
      * 获取中介者是否已被销毁
      *
