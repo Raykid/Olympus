@@ -21,6 +21,7 @@ import { unique } from "../../utils/ArrayUtil";
 import MediatorMessage from "./MediatorMessage";
 import IMediatorConstructor from "./IMediatorConstructor";
 import { getConstructor } from "../../utils/ConstructUtil";
+import { system } from "../system/System";
 
 /**
  * @author Raykid
@@ -1105,11 +1106,14 @@ export default class Mediator implements IMediator
             this.undelegateMediator(mediator);
             mediator.dispose();
         }
-        // 移除observable
-        this._observable.dispose();
-        this._observable = null;
-        // 修改状态
-        this._status = MediatorStatus.DISPOSED;
+        // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息
+        system.nextFrame(()=>{
+            // 移除observable
+            this._observable.dispose();
+            this._observable = null;
+            // 修改状态
+            this._status = MediatorStatus.DISPOSED;
+        });
     }
 
     /**

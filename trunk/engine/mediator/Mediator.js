@@ -11,6 +11,7 @@ import { ModuleOpenStatus } from "./IMediatorModulePart";
 import { unique } from "../../utils/ArrayUtil";
 import MediatorMessage from "./MediatorMessage";
 import { getConstructor } from "../../utils/ConstructUtil";
+import { system } from "../system/System";
 var moduleDict = {};
 var moduleNameDict = new Dictionary();
 /**
@@ -937,6 +938,7 @@ var Mediator = /** @class */ (function () {
      * @memberof Mediator
      */
     Mediator.prototype.dispose = function () {
+        var _this = this;
         // 判断状态
         if (this.status >= MediatorStatus.DISPOSING)
             return;
@@ -971,11 +973,14 @@ var Mediator = /** @class */ (function () {
             this.undelegateMediator(mediator);
             mediator.dispose();
         }
-        // 移除observable
-        this._observable.dispose();
-        this._observable = null;
-        // 修改状态
-        this._status = MediatorStatus.DISPOSED;
+        // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息
+        system.nextFrame(function () {
+            // 移除observable
+            _this._observable.dispose();
+            _this._observable = null;
+            // 修改状态
+            _this._status = MediatorStatus.DISPOSED;
+        });
     };
     /**
      * 当销毁时调用
