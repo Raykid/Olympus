@@ -1,3 +1,13 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -6,6 +16,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
+import { assetsManager, JSLoadMode } from "../assets/AssetsManager";
+import AudioTagImpl from "../audio/AudioTagImpl";
+import { environment } from "./Environment";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -17,6 +30,19 @@ import { core } from "../../core/Core";
 var Shell = /** @class */ (function () {
     function Shell() {
     }
+    Object.defineProperty(Shell.prototype, "proxy", {
+        /**
+         * 设置外壳代理，如果条件命中了该代理类型，则生成该代理实例并替代外壳行为
+         *
+         * @memberof Shell
+         */
+        set: function (value) {
+            if (value.hit)
+                this._proxy = new value();
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Shell.prototype, "type", {
         /**
          * 获取当前外壳类型
@@ -26,7 +52,10 @@ var Shell = /** @class */ (function () {
          * @memberof Shell
          */
         get: function () {
-            return "web";
+            if (this._proxy)
+                return this._proxy.type;
+            else
+                return "web";
         },
         enumerable: true,
         configurable: true
@@ -43,14 +72,19 @@ var Shell = /** @class */ (function () {
      * @memberof Shell
      */
     Shell.prototype.reload = function (params) {
-        if (!params)
-            window.location.reload();
-        else if (!params.url)
-            window.location.reload(params.forcedReload);
-        else if (!params.replace)
-            window.location.href = params.url;
-        else
-            window.location.replace(params.url);
+        if (this._proxy) {
+            this._proxy.reload(params);
+        }
+        else {
+            if (!params)
+                window.location.reload();
+            else if (!params.url)
+                window.location.reload(params.forcedReload);
+            else if (!params.replace)
+                window.location.href = params.url;
+            else
+                window.location.replace(params.url);
+        }
     };
     /**
      * 打开一个新页面
@@ -64,18 +98,23 @@ var Shell = /** @class */ (function () {
      * @memberof Shell
      */
     Shell.prototype.open = function (params) {
-        if (!params) {
-            window.open();
+        if (this._proxy) {
+            this._proxy.open(params);
         }
         else {
-            var features = undefined;
-            if (params.features) {
-                features = [];
-                for (var key in params.features) {
-                    features.push(key + "=" + params.features[key]);
-                }
+            if (!params) {
+                window.open();
             }
-            window.open(params.url, params.name, features && features.join(","), params.replace);
+            else {
+                var features = undefined;
+                if (params.features) {
+                    features = [];
+                    for (var key in params.features) {
+                        features.push(key + "=" + params.features[key]);
+                    }
+                }
+                window.open(params.url, params.name, features && features.join(","), params.replace);
+            }
         }
     };
     /**
@@ -84,7 +123,10 @@ var Shell = /** @class */ (function () {
      * @memberof Shell
      */
     Shell.prototype.close = function () {
-        window.close();
+        if (this._proxy)
+            this._proxy.close();
+        else
+            window.close();
     };
     /*************************** 下面是本地存储接口 ***************************/
     /**
@@ -95,7 +137,10 @@ var Shell = /** @class */ (function () {
      * @memberof Shell
      */
     Shell.prototype.localStorageGet = function (key) {
-        return window.localStorage.getItem(key);
+        if (this._proxy)
+            return this._proxy.localStorageGet(key);
+        else
+            return window.localStorage.getItem(key);
     };
     /**
      * 设置本地存储
@@ -105,7 +150,10 @@ var Shell = /** @class */ (function () {
      * @memberof Shell
      */
     Shell.prototype.localStorageSet = function (key, value) {
-        window.localStorage.setItem(key, value);
+        if (this._proxy)
+            this._proxy.localStorageSet(key, value);
+        else
+            window.localStorage.setItem(key, value);
     };
     /**
      * 移除本地存储
@@ -114,7 +162,10 @@ var Shell = /** @class */ (function () {
      * @memberof Shell
      */
     Shell.prototype.localStorageRemove = function (key) {
-        window.localStorage.removeItem(key);
+        if (this._proxy)
+            this._proxy.localStorageRemove(key);
+        else
+            window.localStorage.removeItem(key);
     };
     /**
      * 清空本地存储
@@ -122,7 +173,10 @@ var Shell = /** @class */ (function () {
      * @memberof Shell
      */
     Shell.prototype.localStorageClear = function () {
-        window.localStorage.clear();
+        if (this._proxy)
+            this._proxy.localStorageClear();
+        else
+            window.localStorage.clear();
     };
     Shell = __decorate([
         Injectable
@@ -130,5 +184,86 @@ var Shell = /** @class */ (function () {
     return Shell;
 }());
 export default Shell;
+/**
+ * 这是Shell在微信浏览器下的一个变形代理
+ *
+ * @class ShellWX
+ * @extends {Shell}
+ */
+var ShellWX = /** @class */ (function (_super) {
+    __extends(ShellWX, _super);
+    function ShellWX() {
+        var _this = _super.call(this) || this;
+        // 用来记录加载微信js间隙的音频加载请求
+        var loadCache = [];
+        // 变异AudioTagImpl，在微信里的Audio标签需要从微信触发加载
+        var oriLoad = AudioTagImpl.prototype.load;
+        AudioTagImpl.prototype.load = function (url) {
+            var toUrl = environment.toCDNHostURL(url);
+            // 尝试获取缓存数据
+            var data = this._audioCache[toUrl];
+            // 如果没有缓存才去加载
+            if (!data) {
+                // 如果js还没加载好则等待加载
+                if (!window["wx"]) {
+                    loadCache.push([url, this]);
+                    return;
+                }
+                // js已经加载好了，先调用原始方法
+                oriLoad.call(this, url);
+                // 从微信里触发加载操作
+                window["wx"].checkJsApi({
+                    jsApiList: ["checkJsApi"],
+                    success: function () {
+                        var data = this._audioCache[toUrl];
+                        var node = data.node;
+                        node.load();
+                    }
+                });
+            }
+        };
+        // 去加载微信js
+        assetsManager.loadJsFiles([{
+                url: "http://res.wx.qq.com/open/js/jweixin-1.2.0.js",
+                mode: JSLoadMode.TAG
+            }], function (err) {
+            if (err) {
+                // 发生错误了，恢复原始的操作
+                AudioTagImpl.prototype.load = oriLoad;
+                // 移除闭包数据
+                oriLoad = null;
+            }
+            // 重新启动缓存的加载请求
+            for (var _i = 0, loadCache_1 = loadCache; _i < loadCache_1.length; _i++) {
+                var cache = loadCache_1[_i];
+                cache[1].load(cache[0]);
+            }
+            // 移除闭包数据
+            loadCache = null;
+        });
+        return _this;
+    }
+    Object.defineProperty(ShellWX, "hit", {
+        get: function () {
+            return (window.top === window &&
+                /MicroMessenger/i.test(navigator.userAgent));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(ShellWX.prototype, "type", {
+        get: function () {
+            return "weixin";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ShellWX.prototype.close = function () {
+        window["WeixinJSBridge"].invoke("closeWindow");
+    };
+    return ShellWX;
+}(Shell));
 /** 再额外导出一个单例 */
 export var shell = core.getInject(Shell);
+/** 尝试添加微信外壳代理 */
+shell.proxy = ShellWX;

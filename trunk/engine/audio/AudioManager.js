@@ -27,6 +27,8 @@ var AudioManager = /** @class */ (function () {
     function AudioManager() {
         var _this = this;
         this._soundImpl = new AudioTagImpl();
+        // 为WebAudio做兼容处理
+        window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"] || window["mozAudioContext"] || window["msAudioContext"];
         // 由于IE可能不支持AudioContext，因此如果是IE则要改用Audio标签实现
         this._musicImpl = (window["AudioContext"] ? new AudioContextImpl() : this._soundImpl);
         core.listen(EngineMessage.INITIALIZED, function () {

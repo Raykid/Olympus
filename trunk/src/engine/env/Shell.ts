@@ -1,5 +1,9 @@
 import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
+import IShell, { IShellProxyConstructor } from "./IShell";
+import { assetsManager, JSLoadMode } from "../assets/AssetsManager";
+import AudioTagImpl from "../audio/AudioTagImpl";
+import { environment } from "./Environment";
 
 /**
  * @author Raykid
@@ -10,8 +14,21 @@ import { core } from "../../core/Core";
  * 外壳接口，该类既作为外壳接口的注入基类，也作为标准浏览器的实现使用
 */
 @Injectable
-export default class Shell
+export default class Shell implements IShell
 {
+    // 这是代理对象，如果有代理对象，则Shell会仅执行代理对象的接口，即“变身”为代理对象
+    private _proxy:IShell;
+
+    /**
+     * 设置外壳代理，如果条件命中了该代理类型，则生成该代理实例并替代外壳行为
+     * 
+     * @memberof Shell
+     */
+    public set proxy(value:IShellProxyConstructor)
+    {
+        if(value.hit) this._proxy = new value();
+    }
+
     /**
      * 获取当前外壳类型
      * 
@@ -21,7 +38,8 @@ export default class Shell
      */
     public get type():string
     {
-        return "web";
+        if(this._proxy) return this._proxy.type;
+        else return "web";
     }
     
     /*************************** 下面是页面跳转接口 ***************************/
@@ -42,14 +60,21 @@ export default class Shell
         replace?:boolean
     }):void
     {
-        if(!params)
-            window.location.reload();
-        else if(!params.url)
-            window.location.reload(params.forcedReload);
-        else if(!params.replace)
-            window.location.href = params.url;
+        if(this._proxy)
+        {
+            this._proxy.reload(params);
+        }
         else
-            window.location.replace(params.url);
+        {
+            if(!params)
+                window.location.reload();
+            else if(!params.url)
+                window.location.reload(params.forcedReload);
+            else if(!params.replace)
+                window.location.href = params.url;
+            else
+                window.location.replace(params.url);
+        }
     }
 
     /**
@@ -70,22 +95,29 @@ export default class Shell
         features:{[key:string]:any}
     }):void
     {
-        if(!params) 
+        if(this._proxy)
         {
-            window.open();
+            this._proxy.open(params);
         }
         else
         {
-            var features:string[] = undefined;
-            if(params.features)
+            if(!params) 
             {
-                features = [];
-                for(var key in params.features)
-                {
-                    features.push(key + "=" + params.features[key]);
-                }
+                window.open();
             }
-            window.open(params.url, params.name, features && features.join(","), params.replace);
+            else
+            {
+                var features:string[] = undefined;
+                if(params.features)
+                {
+                    features = [];
+                    for(var key in params.features)
+                    {
+                        features.push(key + "=" + params.features[key]);
+                    }
+                }
+                window.open(params.url, params.name, features && features.join(","), params.replace);
+            }
         }
     }
 
@@ -96,7 +128,8 @@ export default class Shell
      */
     public close():void
     {
-        window.close();
+        if(this._proxy) this._proxy.close();
+        else window.close();
     }
 
     /*************************** 下面是本地存储接口 ***************************/
@@ -110,7 +143,8 @@ export default class Shell
      */
     public localStorageGet(key:string):string
     {
-        return window.localStorage.getItem(key);
+        if(this._proxy) return this._proxy.localStorageGet(key);
+        else return window.localStorage.getItem(key);
     }
 
     /**
@@ -122,7 +156,8 @@ export default class Shell
      */
     public localStorageSet(key:string, value:string):void
     {
-        window.localStorage.setItem(key, value);
+        if(this._proxy) this._proxy.localStorageSet(key, value);
+        else window.localStorage.setItem(key, value);
     }
 
     /**
@@ -133,7 +168,8 @@ export default class Shell
      */
     public localStorageRemove(key:string):void
     {
-        window.localStorage.removeItem(key);
+        if(this._proxy) this._proxy.localStorageRemove(key);
+        else window.localStorage.removeItem(key);
     }
 
     /**
@@ -143,12 +179,99 @@ export default class Shell
      */
     public localStorageClear():void
     {
-        window.localStorage.clear();
+        if(this._proxy) this._proxy.localStorageClear();
+        else window.localStorage.clear();
     }
 
     /** 此项代表外壳接口可根据实际情况扩展基类没有的方法或属性 */
     [name:string]:any;
 }
 
+/**
+ * 这是Shell在微信浏览器下的一个变形代理
+ * 
+ * @class ShellWX
+ * @extends {Shell}
+ */
+class ShellWX extends Shell
+{
+    public static get hit():boolean
+    {
+        return (
+            window.top === window &&
+            /MicroMessenger/i.test(navigator.userAgent)
+        );
+    }
+
+    public constructor()
+    {
+        super();
+        // 用来记录加载微信js间隙的音频加载请求
+        var loadCache:[string, AudioTagImpl][] = [];
+        // 变异AudioTagImpl，在微信里的Audio标签需要从微信触发加载
+        var oriLoad:(url:string)=>void = AudioTagImpl.prototype.load;
+        AudioTagImpl.prototype.load = function(url:string):void
+        {
+            var toUrl:string = environment.toCDNHostURL(url);
+            // 尝试获取缓存数据
+            var data:any = this._audioCache[toUrl];
+            // 如果没有缓存才去加载
+            if(!data)
+            {
+                // 如果js还没加载好则等待加载
+                if(!window["wx"])
+                {
+                    loadCache.push([url, this]);
+                    return;
+                }
+                // js已经加载好了，先调用原始方法
+                oriLoad.call(this, url);
+                // 从微信里触发加载操作
+                window["wx"].checkJsApi({
+                    jsApiList: ["checkJsApi"],
+                    success: function() {
+                        var data:any = this._audioCache[toUrl];
+                        var node:HTMLAudioElement = data.node;
+                        node.load();
+                    }
+                });
+            }
+        };
+        // 去加载微信js
+        assetsManager.loadJsFiles([{
+            url: "http://res.wx.qq.com/open/js/jweixin-1.2.0.js",
+            mode: JSLoadMode.TAG
+        }], (err:Error)=>{
+            if(err)
+            {
+                // 发生错误了，恢复原始的操作
+                AudioTagImpl.prototype.load = oriLoad;
+                // 移除闭包数据
+                oriLoad = null;
+            }
+            // 重新启动缓存的加载请求
+            for(var cache of loadCache)
+            {
+                cache[1].load(cache[0]);
+            }
+            // 移除闭包数据
+            loadCache = null;
+        });
+    }
+
+    public get type():string
+    {
+        return "weixin";
+    }
+
+    public close():void
+    {
+        window["WeixinJSBridge"].invoke("closeWindow");
+    }
+}
+
 /** 再额外导出一个单例 */
 export var shell:Shell = core.getInject(Shell);
+
+/** 尝试添加微信外壳代理 */
+shell.proxy = ShellWX;

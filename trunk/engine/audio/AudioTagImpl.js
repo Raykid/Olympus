@@ -50,7 +50,6 @@ var AudioTagImpl = /** @class */ (function () {
      * @memberof AudioTagImpl
      */
     AudioTagImpl.prototype.load = function (url) {
-        var _this = this;
         var toUrl = environment.toCDNHostURL(url);
         // 尝试获取缓存数据
         var data = this._audioCache[toUrl];
@@ -58,6 +57,8 @@ var AudioTagImpl = /** @class */ (function () {
         if (!data) {
             // 使用Audio标签加载
             var node = document.createElement("audio");
+            // 这里强制使用autoplay，因为在IOS的safari上如果没这个参数，则根本不会触发onloadeddata事件
+            node.autoplay = true;
             node.src = toUrl;
             // 保存数据
             this._audioCache[toUrl] = data = { node: node, status: AudioStatus.LOADING, playParams: null };
@@ -65,9 +66,9 @@ var AudioTagImpl = /** @class */ (function () {
             node.onloadeddata = function () {
                 // 记录加载完毕
                 data.status = AudioStatus.PAUSED;
-                // 如果自动播放则播放
-                if (data.playParams)
-                    _this.play(data.playParams);
+                // 如果不自动播放则暂停
+                if (!data.playParams)
+                    node.pause();
             };
             node.onended = function () {
                 // 派发播放完毕事件
@@ -122,8 +123,9 @@ var AudioTagImpl = /** @class */ (function () {
                             core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
                         }
                     };
-                    // 开始播放
-                    data.node.play();
+                    // 开始播放，safari不支持直接play(WTF?)所以要用autoplay加load进行播放
+                    data.node.autoplay = true;
+                    data.node.load();
                     // 设置状态
                     data.status = AudioStatus.PLAYING;
                     // 记录播放中
