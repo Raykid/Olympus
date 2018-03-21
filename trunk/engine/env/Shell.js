@@ -233,6 +233,8 @@ var ShellWX = /** @class */ (function (_super) {
                 // 先调用原始方法，否则行为就变了
                 if (!data)
                     oriLoad.call(this, url);
+                else
+                    delete data.__from_cache__;
                 // 如果js还没加载好则等待加载
                 if (!window["wx"]) {
                     loadCache.push([url, this]);
