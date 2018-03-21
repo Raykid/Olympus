@@ -499,7 +499,8 @@ export default class Mediator implements IMediator
                                             this.__beforeOnOpen(data, ...args);
                                             // 调用自身onOpen方法
                                             var result:any = this.onOpen(data, ...args);
-                                            if(result !== undefined) data = result;
+                                            if(result !== undefined)
+                                                this.data = data = result;
                                             // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
                                             if(!this._viewModel) this.viewModel = {};
                                             // 开始一个个开启子中介者

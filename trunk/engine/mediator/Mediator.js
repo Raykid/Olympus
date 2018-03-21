@@ -427,7 +427,7 @@ var Mediator = /** @class */ (function () {
                                             // 调用自身onOpen方法
                                             var result = _this.onOpen.apply(_this, [data].concat(args));
                                             if (result !== undefined)
-                                                data = result;
+                                                _this.data = data = result;
                                             // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
                                             if (!_this._viewModel)
                                                 _this.viewModel = {};
