@@ -19,16 +19,16 @@ export function getCurOrigin():string
 export function trimURL(url:string):string
 {
     // 去除多余的"/"
-    url = url.replace(/([^:/])(\/)+/g, "$1/");
+    url = url.replace(/([^:\/]|(:\/))\/+/g, "$1/");
     if(url.charAt(0) == "/") url = url.substr(1);
-    // 处理"/./"
-    var index:number;
-    while((index = url.indexOf("/./")) >= 0)
+    // 处理非紧贴域名的"/xx/../"
+    var reg:RegExp = /(?!:\/{2,}[^\/]+\/)([^\/\.]+)\/[^\/\.]+?\/\.\.\//;
+    while(reg.test(url))
     {
-        url = url.replace("/./", "/");
+        url = url.replace(reg, "/$1");
     }
-    // 处理"/xx/../"
-    var reg:RegExp = /\/[^\/\.]+?\/\.\.\//;
+    // 处理"/./"和剩余的"/../"，直接丢弃之
+    var reg:RegExp = /\/\.{1,2}\//;
     while(reg.test(url))
     {
         url = url.replace(reg, "/");
