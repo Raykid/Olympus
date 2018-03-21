@@ -243,16 +243,19 @@ class ShellWX extends Shell
             // 尝试获取缓存数据
             var data:any = this._audioCache[toUrl];
             // 如果没有缓存才去加载
-            if(!data)
+            if(!data || data.__from_cache__)
             {
+                // 先调用原始方法，否则行为就变了
+                if(!data) oriLoad.call(this, url);
                 // 如果js还没加载好则等待加载
                 if(!window["wx"])
                 {
                     loadCache.push([url, this]);
+                    // 这里记录一个从缓存来的标记
+                    data = this._audioCache[toUrl];
+                    data.__from_cache__ = true;
                     return;
                 }
-                // js已经加载好了，先调用原始方法
-                oriLoad.call(this, url);
                 // 从微信里触发加载操作
                 window["wx"].checkJsApi({
                     jsApiList: ["checkJsApi"],
