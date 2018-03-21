@@ -155,7 +155,7 @@ var AssetsManager = /** @class */ (function () {
      * @memberof AssetsManager
      */
     AssetsManager.prototype.loadStyleFiles = function (cssFiles, handler) {
-        if (!cssFiles) {
+        if (!cssFiles || cssFiles.length === 0) {
             handler();
             return;
         }
@@ -193,7 +193,7 @@ var AssetsManager = /** @class */ (function () {
      */
     AssetsManager.prototype.loadJsFiles = function (jsFiles, handler, ordered) {
         if (ordered === void 0) { ordered = true; }
-        if (!jsFiles) {
+        if (!jsFiles || jsFiles.length === 0) {
             handler();
             return;
         }

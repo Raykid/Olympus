@@ -182,7 +182,7 @@ export default class AssetsManager
      */
     public loadStyleFiles(cssFiles:string[], handler:(err?:Error)=>void):void
     {
-        if(!cssFiles)
+        if(!cssFiles || cssFiles.length === 0)
         {
             handler();
             return;
@@ -226,7 +226,7 @@ export default class AssetsManager
      */
     public loadJsFiles(jsFiles:JSFile[], handler:(err?:Error)=>void, ordered:boolean=true):void
     {
-        if(!jsFiles)
+        if(!jsFiles || jsFiles.length === 0)
         {
             handler();
             return;
