@@ -199,6 +199,7 @@ var ShellWX = /** @class */ (function (_super) {
         // 变异AudioTagImpl，在微信里的Audio标签需要从微信触发加载
         var oriLoad = AudioTagImpl.prototype.load;
         AudioTagImpl.prototype.load = function (url) {
+            var _this = this;
             var toUrl = environment.toCDNHostURL(url);
             // 尝试获取缓存数据
             var data = this._audioCache[toUrl];
@@ -215,7 +216,7 @@ var ShellWX = /** @class */ (function (_super) {
                 window["wx"].checkJsApi({
                     jsApiList: ["checkJsApi"],
                     success: function () {
-                        var data = this._audioCache[toUrl];
+                        var data = _this._audioCache[toUrl];
                         var node = data.node;
                         node.load();
                     }

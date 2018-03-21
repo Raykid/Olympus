@@ -265,7 +265,7 @@ export default class AssetsManager
                 // 使用script标签方式加载，不用在意顺序
                 jsNode.onload = onLoadOne;
                 jsNode.onerror = onErrorOne;
-                jsNode.src = jsFile.url;
+                jsNode.src = environment.toCDNHostURL(version.wrapHashUrl(jsFile.url));
             }
         }
         // 判断一次

@@ -229,7 +229,7 @@ class ShellWX extends Shell
                 // 从微信里触发加载操作
                 window["wx"].checkJsApi({
                     jsApiList: ["checkJsApi"],
-                    success: function() {
+                    success: ()=>{
                         var data:any = this._audioCache[toUrl];
                         var node:HTMLAudioElement = data.node;
                         node.load();
