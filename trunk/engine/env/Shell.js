@@ -196,10 +196,35 @@ var ShellWX = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         // 用来记录加载微信js间隙的音频加载请求
         var loadCache = [];
+        var loadFlag = false;
         // 变异AudioTagImpl，在微信里的Audio标签需要从微信触发加载
         var oriLoad = AudioTagImpl.prototype.load;
         AudioTagImpl.prototype.load = function (url) {
             var _this = this;
+            // 第一次进行了音频加载，如果还没加载过js，则去加载之
+            if (!loadFlag) {
+                loadFlag = true;
+                // 去加载微信js
+                assetsManager.loadJsFiles([{
+                        url: "http://res.wx.qq.com/open/js/jweixin-1.2.0.js",
+                        mode: JSLoadMode.TAG
+                    }], function (err) {
+                    if (err) {
+                        // 发生错误了，恢复原始的操作
+                        AudioTagImpl.prototype.load = oriLoad;
+                        // 移除闭包数据
+                        oriLoad = null;
+                    }
+                    // 重新启动缓存的加载请求
+                    for (var _i = 0, loadCache_1 = loadCache; _i < loadCache_1.length; _i++) {
+                        var cache = loadCache_1[_i];
+                        cache[1].load(cache[0]);
+                    }
+                    // 移除闭包数据
+                    loadCache = null;
+                });
+            }
+            // 处理url
             var toUrl = environment.toCDNHostURL(url);
             // 尝试获取缓存数据
             var data = this._audioCache[toUrl];
@@ -223,25 +248,6 @@ var ShellWX = /** @class */ (function (_super) {
                 });
             }
         };
-        // 去加载微信js
-        assetsManager.loadJsFiles([{
-                url: "http://res.wx.qq.com/open/js/jweixin-1.2.0.js",
-                mode: JSLoadMode.TAG
-            }], function (err) {
-            if (err) {
-                // 发生错误了，恢复原始的操作
-                AudioTagImpl.prototype.load = oriLoad;
-                // 移除闭包数据
-                oriLoad = null;
-            }
-            // 重新启动缓存的加载请求
-            for (var _i = 0, loadCache_1 = loadCache; _i < loadCache_1.length; _i++) {
-                var cache = loadCache_1[_i];
-                cache[1].load(cache[0]);
-            }
-            // 移除闭包数据
-            loadCache = null;
-        });
         return _this;
     }
     Object.defineProperty(ShellWX, "hit", {

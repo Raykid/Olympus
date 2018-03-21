@@ -208,10 +208,37 @@ class ShellWX extends Shell
         super();
         // 用来记录加载微信js间隙的音频加载请求
         var loadCache:[string, AudioTagImpl][] = [];
+        var loadFlag:boolean = false;
         // 变异AudioTagImpl，在微信里的Audio标签需要从微信触发加载
         var oriLoad:(url:string)=>void = AudioTagImpl.prototype.load;
         AudioTagImpl.prototype.load = function(url:string):void
         {
+            // 第一次进行了音频加载，如果还没加载过js，则去加载之
+            if(!loadFlag)
+            {
+                loadFlag = true;
+                // 去加载微信js
+                assetsManager.loadJsFiles([{
+                    url: "http://res.wx.qq.com/open/js/jweixin-1.2.0.js",
+                    mode: JSLoadMode.TAG
+                }], (err:Error)=>{
+                    if(err)
+                    {
+                        // 发生错误了，恢复原始的操作
+                        AudioTagImpl.prototype.load = oriLoad;
+                        // 移除闭包数据
+                        oriLoad = null;
+                    }
+                    // 重新启动缓存的加载请求
+                    for(var cache of loadCache)
+                    {
+                        cache[1].load(cache[0]);
+                    }
+                    // 移除闭包数据
+                    loadCache = null;
+                });
+            }
+            // 处理url
             var toUrl:string = environment.toCDNHostURL(url);
             // 尝试获取缓存数据
             var data:any = this._audioCache[toUrl];
@@ -237,26 +264,6 @@ class ShellWX extends Shell
                 });
             }
         };
-        // 去加载微信js
-        assetsManager.loadJsFiles([{
-            url: "http://res.wx.qq.com/open/js/jweixin-1.2.0.js",
-            mode: JSLoadMode.TAG
-        }], (err:Error)=>{
-            if(err)
-            {
-                // 发生错误了，恢复原始的操作
-                AudioTagImpl.prototype.load = oriLoad;
-                // 移除闭包数据
-                oriLoad = null;
-            }
-            // 重新启动缓存的加载请求
-            for(var cache of loadCache)
-            {
-                cache[1].load(cache[0]);
-            }
-            // 移除闭包数据
-            loadCache = null;
-        });
     }
 
     public get type():string
