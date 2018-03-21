@@ -269,7 +269,7 @@ export function SubMediator(arg1, arg2) {
                             // 托管中介者
                             this.delegateMediator(mediator);
                             // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                            if (this.status === MediatorStatus.OPENING || this.status === MediatorStatus.OPENED) {
+                            if (this.status === MediatorStatus.OPENED && mediator.status === MediatorStatus.UNOPEN) {
                                 mediator.open(this.data);
                             }
                         }
@@ -324,7 +324,7 @@ function listenOnOpen(prototype, propertyKey, before, after) {
             else
                 delete mediator.onOpen;
             // 调用原始方法
-            mediator.onOpen.apply(this, args);
+            var result = mediator.onOpen.apply(this, args);
             // 调用回调
             after && after(mediator);
             // 递减篡改次数
@@ -341,6 +341,7 @@ function listenOnOpen(prototype, propertyKey, before, after) {
                     dict.forEach(function (currentTarget) { return BindUtil.compile(mediator, currentTarget); });
                 }
             }
+            return result;
         };
         // 记录onOpen篡改次数
         var count = onOpenDict.get(mediator) || 0;

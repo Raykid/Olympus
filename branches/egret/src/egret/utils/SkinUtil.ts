@@ -30,14 +30,14 @@ export function wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
     {
         // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
         var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-        mediator.onOpen = function(...args:any[]):void
+        mediator.onOpen = function(...args:any[]):any
         {
             doWrapSkin();
             // 恢复原始方法
             if(oriFunc) mediator.onOpen = oriFunc;
             else delete mediator.onOpen;
             // 调用原始方法
-            mediator.onOpen.apply(this, args);
+            return mediator.onOpen.apply(this, args);
         };
     }
     else
@@ -54,17 +54,6 @@ export function wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
         {
             comp.percentWidth = 100;
             comp.percentHeight = 100;
-        }
-        // 移除已有的引用
-        var tempComp:eui.Component = getComponent(mediator.skin);
-        if(tempComp)
-        {
-            for(var name of tempComp.skin.skinParts)
-            {
-                var target:egret.DisplayObject = tempComp[name];
-                if(isDescendant(target, mediator.skin))
-                    delete mediator[name];
-            }
         }
         // 启动引用转发
         if(result instanceof egret.DisplayObjectContainer && comp && comp.skin)

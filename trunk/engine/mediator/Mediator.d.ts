@@ -215,9 +215,10 @@ export default class Mediator implements IMediator {
      *
      * @param {*} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
+     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
-    onOpen(data?: any, ...args: any[]): void;
+    onOpen(data?: any, ...args: any[]): any;
     /**
      * 当关闭时调用
      *

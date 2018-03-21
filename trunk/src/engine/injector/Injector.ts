@@ -344,7 +344,7 @@ export function SubMediator(arg1:any, arg2?:any):any
                             // 托管中介者
                             this.delegateMediator(mediator);
                             // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                            if(this.status === MediatorStatus.OPENING || this.status === MediatorStatus.OPENED)
+                            if(this.status === MediatorStatus.OPENED && mediator.status === MediatorStatus.UNOPEN)
                             {
                                 mediator.open(this.data);
                             }
@@ -395,7 +395,7 @@ function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMedi
     {
         // 篡改onOpen方法
         var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-        mediator.onOpen = function(...args:any[]):void
+        mediator.onOpen = function(...args:any[]):any
         {
             // 调用回调
             before && before(mediator);
@@ -403,7 +403,7 @@ function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMedi
             if(oriFunc) mediator.onOpen = oriFunc;
             else delete mediator.onOpen;
             // 调用原始方法
-            mediator.onOpen.apply(this, args);
+            var result:any = mediator.onOpen.apply(this, args);
             // 调用回调
             after && after(mediator);
             // 递减篡改次数
@@ -422,6 +422,7 @@ function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMedi
                     dict.forEach(currentTarget=>BindUtil.compile(mediator, currentTarget));
                 }
             }
+            return result;
         };
         // 记录onOpen篡改次数
         var count:number = onOpenDict.get(mediator) || 0;

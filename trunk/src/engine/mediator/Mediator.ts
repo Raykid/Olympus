@@ -492,15 +492,18 @@ export default class Mediator implements IMediator
                                         }
                                         else
                                         {
-                                            var doOpen:()=>void = ()=>{
-                                                // 调用回调
-                                                this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
-                                                // 调用模板方法
-                                                this.__beforeOnOpen(data, ...args);
-                                                // 调用自身onOpen方法
-                                                this.onOpen(data, ...args);
-                                                // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-                                                if(!this._viewModel) this.viewModel = {};
+                                            // 要先开启自身，再开启子中介者
+                                            // 调用回调
+                                            this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                            // 调用模板方法
+                                            this.__beforeOnOpen(data, ...args);
+                                            // 调用自身onOpen方法
+                                            var result:any = this.onOpen(data, ...args);
+                                            if(result !== undefined) data = result;
+                                            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+                                            if(!this._viewModel) this.viewModel = {};
+                                            // 开始一个个开启子中介者
+                                            var onSubMediatorOpened:()=>void = ()=>{
                                                 // 修改状态
                                                 this._status = MediatorStatus.OPENED;
                                                 // 调用模板方法
@@ -514,27 +517,14 @@ export default class Mediator implements IMediator
                                             var subCount:number = this._children.length;
                                             if(subCount > 0)
                                             {
-                                                var handler:(mediator:IMediator)=>void = (mediator:IMediator)=>{
-                                                    if(this._children.indexOf(mediator) >= 0 && --subCount === 0)
-                                                    {
-                                                        // 取消监听
-                                                        this.unlisten(MediatorMessage.MEDIATOR_OPENED, handler);
-                                                        // 执行开启
-                                                        doOpen();
-                                                    }
-                                                };
-                                                this.listen(MediatorMessage.MEDIATOR_OPENED, handler);
                                                 // 调用所有已托管中介者的open方法
                                                 for(var mediator of this._children)
                                                 {
                                                     mediator.open(data);
                                                 }
                                             }
-                                            else
-                                            {
-                                                // 没有子中介者，直接执行
-                                                doOpen();
-                                            }
+                                            // 执行开启
+                                            onSubMediatorOpened();
                                         }
                                     });
                                 }
@@ -642,9 +632,10 @@ export default class Mediator implements IMediator
      * 
      * @param {*} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
+     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
-    public onOpen(data?:any, ...args:any[]):void
+    public onOpen(data?:any, ...args:any[]):any
     {
         // 可重写
     }

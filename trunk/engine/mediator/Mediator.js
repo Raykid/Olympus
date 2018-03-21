@@ -419,16 +419,20 @@ var Mediator = /** @class */ (function () {
                                             _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                         }
                                         else {
-                                            var doOpen = function () {
-                                                // 调用回调
-                                                _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
-                                                // 调用模板方法
-                                                _this.__beforeOnOpen.apply(_this, [data].concat(args));
-                                                // 调用自身onOpen方法
-                                                _this.onOpen.apply(_this, [data].concat(args));
-                                                // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-                                                if (!_this._viewModel)
-                                                    _this.viewModel = {};
+                                            // 要先开启自身，再开启子中介者
+                                            // 调用回调
+                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                            // 调用模板方法
+                                            _this.__beforeOnOpen.apply(_this, [data].concat(args));
+                                            // 调用自身onOpen方法
+                                            var result = _this.onOpen.apply(_this, [data].concat(args));
+                                            if (result !== undefined)
+                                                data = result;
+                                            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+                                            if (!_this._viewModel)
+                                                _this.viewModel = {};
+                                            // 开始一个个开启子中介者
+                                            var onSubMediatorOpened = function () {
                                                 // 修改状态
                                                 _this._status = MediatorStatus.OPENED;
                                                 // 调用模板方法
@@ -441,25 +445,14 @@ var Mediator = /** @class */ (function () {
                                             // 记录子中介者数量，并监听其开启完毕事件
                                             var subCount = _this._children.length;
                                             if (subCount > 0) {
-                                                var handler = function (mediator) {
-                                                    if (_this._children.indexOf(mediator) >= 0 && --subCount === 0) {
-                                                        // 取消监听
-                                                        _this.unlisten(MediatorMessage.MEDIATOR_OPENED, handler);
-                                                        // 执行开启
-                                                        doOpen();
-                                                    }
-                                                };
-                                                _this.listen(MediatorMessage.MEDIATOR_OPENED, handler);
                                                 // 调用所有已托管中介者的open方法
                                                 for (var _i = 0, _a = _this._children; _i < _a.length; _i++) {
                                                     var mediator = _a[_i];
                                                     mediator.open(data);
                                                 }
                                             }
-                                            else {
-                                                // 没有子中介者，直接执行
-                                                doOpen();
-                                            }
+                                            // 执行开启
+                                            onSubMediatorOpened();
                                         }
                                     });
                                 }
@@ -571,6 +564,7 @@ var Mediator = /** @class */ (function () {
      *
      * @param {*} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
+     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
     Mediator.prototype.onOpen = function (data) {

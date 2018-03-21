@@ -34,7 +34,7 @@ export function wrapSkin(mediator, skin) {
             else
                 delete mediator.onOpen;
             // 调用原始方法
-            mediator.onOpen.apply(this, args);
+            return mediator.onOpen.apply(this, args);
         };
     }
     else {

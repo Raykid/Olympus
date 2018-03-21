@@ -36,7 +36,7 @@ export function wrapSkin(mediator, skin) {
             else
                 delete mediator.onOpen;
             // 调用原始方法
-            mediator.onOpen.apply(this, args);
+            return mediator.onOpen.apply(this, args);
         };
     }
     else {
@@ -50,22 +50,12 @@ export function wrapSkin(mediator, skin) {
             comp.percentWidth = 100;
             comp.percentHeight = 100;
         }
-        // 移除已有的引用
-        var tempComp = getComponent(mediator.skin);
-        if (tempComp) {
-            for (var _i = 0, _a = tempComp.skin.skinParts; _i < _a.length; _i++) {
-                var name = _a[_i];
-                var target = tempComp[name];
-                if (isDescendant(target, mediator.skin))
-                    delete mediator[name];
-            }
-        }
         // 启动引用转发
         if (result instanceof egret.DisplayObjectContainer && comp && comp.skin) {
             // 转发ui引用，如果传入的是显示对象，则需要判断目标是否属于该对象的后裔
             var needJudgeDescendant = (skin instanceof egret.DisplayObjectContainer);
-            for (var _b = 0, _c = comp.skin.skinParts; _b < _c.length; _b++) {
-                var name = _c[_b];
+            for (var _i = 0, _a = comp.skin.skinParts; _i < _a.length; _i++) {
+                var name = _a[_i];
                 var target = comp[name];
                 if (!needJudgeDescendant || isDescendant(target, skin))
                     mediator[name] = target;
