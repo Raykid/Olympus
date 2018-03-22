@@ -451,9 +451,11 @@ var EgretBridge = /** @class */ (function () {
         if (current.height > 0)
             props.push("height");
         // 下面是eui级别属性
-        props.concat([
-            "horizontalCenter", "verticalCenter", "left", "right", "top", "bottom"
-        ]);
+        if (current instanceof eui.Component && target instanceof eui.Component) {
+            props.push.apply(props, [
+                "horizontalCenter", "verticalCenter", "left", "right", "top", "bottom"
+            ]);
+        }
         // 全部赋值
         for (var _i = 0, props_1 = props; _i < props_1.length; _i++) {
             var prop = props_1[_i];

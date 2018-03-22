@@ -497,9 +497,12 @@ export default class EgretBridge implements IBridge
         if(current.width > 0) props.push("width");
         if(current.height > 0) props.push("height");
         // 下面是eui级别属性
-        props.concat([
-            "horizontalCenter", "verticalCenter", "left", "right", "top", "bottom"
-        ]);
+        if(current instanceof eui.Component && target instanceof eui.Component)
+        {
+            props.push.apply(props, [
+                "horizontalCenter", "verticalCenter", "left", "right", "top", "bottom"
+            ]);
+        }
         // 全部赋值
         for(var prop of props)
         {
