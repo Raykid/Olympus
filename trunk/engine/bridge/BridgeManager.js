@@ -6,8 +6,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import Mediator from "../mediator/Mediator";
 import BridgeMessage from "./BridgeMessage";
 import { panelManager } from "../panel/PanelManager";
+import { sceneManager } from "../scene/SceneManager";
 import { moduleManager } from "../module/ModuleManager";
 import { maskManager } from "../mask/MaskManager";
 /**
@@ -32,14 +34,15 @@ var BridgeManager = /** @class */ (function () {
          * @memberof BridgeManager
          */
         get: function () {
-            // 先用当前模块的首个拥有bridge的Mediator的bridge
-            var curModule = moduleManager.currentModuleInstance;
-            if (curModule) {
-                var mediators = this.getAllMediators(curModule);
-                for (var _i = 0, mediators_1 = mediators; _i < mediators_1.length; _i++) {
-                    var mediator = mediators_1[_i];
-                    if (mediator.bridge)
-                        return mediator.bridge;
+            // 找出当前的场景或模块
+            var curHasBridge = sceneManager.currentScene || moduleManager.currentModuleInstance;
+            // 先用当前首个IHasBridge的bridge
+            if (curHasBridge) {
+                var hasBridges = this.getAllHasBridges(curHasBridge);
+                for (var _i = 0, hasBridges_1 = hasBridges; _i < hasBridges_1.length; _i++) {
+                    var hasBridge = hasBridges_1[_i];
+                    if (hasBridge.bridge)
+                        return hasBridge.bridge;
                 }
             }
             // 没找到，再用第一个桥代替
@@ -48,11 +51,14 @@ var BridgeManager = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    BridgeManager.prototype.getAllMediators = function (mediator) {
-        var result = [mediator];
-        for (var _i = 0, _a = mediator.children; _i < _a.length; _i++) {
-            var temp = _a[_i];
-            result = result.concat(this.getAllMediators(temp));
+    BridgeManager.prototype.getAllHasBridges = function (hasBridge) {
+        var result = [hasBridge];
+        // 如果是中介者，则额外提供子中介者
+        if (hasBridge instanceof Mediator) {
+            for (var _i = 0, _a = hasBridge.children; _i < _a.length; _i++) {
+                var temp = _a[_i];
+                result = result.concat(this.getAllHasBridges(temp));
+            }
         }
         return result;
     };

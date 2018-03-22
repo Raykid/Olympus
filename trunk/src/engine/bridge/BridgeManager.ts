@@ -1,11 +1,14 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import IBridge from "./IBridge";
+import IMediator from "../mediator/IMediator";
+import Mediator from "../mediator/Mediator";
 import BridgeMessage from "./BridgeMessage";
 import { panelManager } from "../panel/PanelManager";
+import { sceneManager } from "../scene/SceneManager";
 import { moduleManager } from "../module/ModuleManager";
-import IMediator from "../mediator/IMediator";
 import { maskManager } from "../mask/MaskManager";
+import IHasBridge from "./IHasBridge";
 
 /**
  * @author Raykid
@@ -30,26 +33,31 @@ export default class BridgeManager
      */
     public get currentBridge():IBridge
     {
-        // 先用当前模块的首个拥有bridge的Mediator的bridge
-        var curModule:IMediator = moduleManager.currentModuleInstance;
-        if(curModule)
+        // 找出当前的场景或模块
+        var curHasBridge:IHasBridge = sceneManager.currentScene || moduleManager.currentModuleInstance;
+        // 先用当前首个IHasBridge的bridge
+        if(curHasBridge)
         {
-            var mediators:IMediator[] = this.getAllMediators(curModule);
-            for(var mediator of mediators)
+            var hasBridges:IHasBridge[] = this.getAllHasBridges(curHasBridge);
+            for(var hasBridge of hasBridges)
             {
-                if(mediator.bridge) return mediator.bridge;
+                if(hasBridge.bridge) return hasBridge.bridge;
             }
         }
         // 没找到，再用第一个桥代替
         return (this._bridgeList[0] && this._bridgeList[0][0]);
     }
 
-    private getAllMediators(mediator:IMediator):IMediator[]
+    private getAllHasBridges(hasBridge:IHasBridge):IHasBridge[]
     {
-        var result:IMediator[] = [mediator];
-        for(var temp of mediator.children)
+        var result:IHasBridge[] = [hasBridge];
+        // 如果是中介者，则额外提供子中介者
+        if(hasBridge instanceof Mediator)
         {
-            result = result.concat(this.getAllMediators(temp));
+            for(var temp of hasBridge.children)
+            {
+                result = result.concat(this.getAllHasBridges(temp));
+            }
         }
         return result;
     }
