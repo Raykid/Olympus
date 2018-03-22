@@ -78,7 +78,6 @@ export default class BindManager {
      * @memberof BindManager
      */
     bindOn(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: string, exp: EvalExp): void;
-    private replaceDisplay(bridge, ori, cur);
     /**
      * 绑定显示
      *

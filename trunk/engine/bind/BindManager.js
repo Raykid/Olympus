@@ -11,6 +11,7 @@ import Bind from "./Bind";
 import { evalExp, createRunFunc } from "./Utils";
 import { netManager } from "../net/NetManager";
 import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
+import { replaceSkin } from "../../utils/SkinUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -261,17 +262,6 @@ var BindManager = /** @class */ (function () {
             }
         });
     };
-    BindManager.prototype.replaceDisplay = function (bridge, ori, cur) {
-        var parent = bridge.getParent(ori);
-        if (parent) {
-            // ori有父级，记录其当前索引
-            var index = bridge.getChildIndex(parent, ori);
-            // 移除ori
-            bridge.removeChild(parent, ori);
-            // 显示cur
-            bridge.addChildAt(parent, cur, index);
-        }
-    };
     /**
      * 绑定显示
      *
@@ -284,7 +274,6 @@ var BindManager = /** @class */ (function () {
      * @memberof BindManager
      */
     BindManager.prototype.bindIf = function (mediator, currentTarget, target, envModels, exp, callback) {
-        var _this = this;
         var watcher;
         var bindData = this._bindDict.get(mediator);
         var replacer = mediator.bridge.createEmptyDisplay();
@@ -296,9 +285,9 @@ var BindManager = /** @class */ (function () {
             watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (value) {
                     // 如果表达式为true则显示ui，否则移除ui
                     if (value)
-                        _this.replaceDisplay(mediator.bridge, replacer, currentTarget);
+                        replaceSkin(mediator.bridge, currentTarget, replacer);
                     else
-                        _this.replaceDisplay(mediator.bridge, currentTarget, replacer);
+                        replaceSkin(mediator.bridge, replacer, currentTarget);
                     // 触发回调
                     callback && callback(value);
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));

@@ -11,6 +11,7 @@ import IObservable from "../../core/observable/IObservable";
 import { IWatcher } from "./Watcher";
 import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import { replaceSkin } from "../../utils/SkinUtil";
 
 /**
  * @author Raykid
@@ -269,20 +270,6 @@ export default class BindManager
             }
         });
     }
-
-    private replaceDisplay(bridge:IBridge, ori:any, cur:any):void
-    {
-        var parent:any = bridge.getParent(ori);
-        if(parent)
-        {
-            // ori有父级，记录其当前索引
-            var index:number = bridge.getChildIndex(parent, ori);
-            // 移除ori
-            bridge.removeChild(parent, ori);
-            // 显示cur
-            bridge.addChildAt(parent, cur, index);
-        }
-    }
     
     /**
      * 绑定显示
@@ -306,8 +293,8 @@ export default class BindManager
             // 绑定表达式
             watcher = bindData.bind.createWatcher(currentTarget, target, exp, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
-                if(value) this.replaceDisplay(mediator.bridge, replacer, currentTarget);
-                else this.replaceDisplay(mediator.bridge, currentTarget, replacer);
+                if(value) replaceSkin(mediator.bridge, currentTarget, replacer);
+                else replaceSkin(mediator.bridge, replacer, currentTarget);
                 // 触发回调
                 callback && callback(value);
             }, mediator.viewModel, ...envModels, mediator.viewModel);

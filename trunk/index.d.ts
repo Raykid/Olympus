@@ -115,5 +115,6 @@ import * as CookieUtil from "./utils/CookieUtil";
 import * as Dictionary from "./utils/Dictionary";
 import * as HTTPUtil from "./utils/HTTPUtil";
 import * as ObjectUtil from "./utils/ObjectUtil";
+import * as SKinUtil from "./utils/SkinUtil";
 import * as SyncUtil from "./utils/SyncUtil";
 import * as URLUtil from "./utils/URLUtil";

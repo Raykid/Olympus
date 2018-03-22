@@ -12,6 +12,7 @@ import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
 import "reflect-metadata";
 import MediatorStatus from "../mediator/MediatorStatus";
+import { replaceSkin } from "../../utils/SkinUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -252,8 +253,16 @@ export function SubMediator(arg1, arg2) {
                             // 赋值皮肤
                             skin = value;
                             // 如果存在中介者，则额外赋值中介者皮肤
-                            if (mediator)
-                                mediator.skin = value;
+                            if (mediator) {
+                                if (mediator.skin && mediator.status < MediatorStatus.OPENED) {
+                                    // 当前有皮肤且中介者尚未打开完毕，说明是现在是皮肤转发阶段，要用老皮肤替换新皮肤的位置
+                                    replaceSkin(mediator.bridge, mediator.skin, value);
+                                }
+                                else {
+                                    // 当前没皮肤，或者中介者已经打开完毕了，说明新皮肤就是要替换老皮肤
+                                    mediator.skin = value;
+                                }
+                            }
                         }
                         else {
                             // mediator和skin都赋值为空
