@@ -17,7 +17,7 @@ import "reflect-metadata";
 import { EvalExp } from "../bind/Utils";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import MediatorStatus from "../mediator/MediatorStatus";
-import { replaceSkin } from "../../utils/SkinUtil";
+import { replaceDisplay } from "../../utils/DisplayUtil";
 
 /**
  * @author Raykid
@@ -331,7 +331,7 @@ export function SubMediator(arg1:any, arg2?:any):any
                                 if(mediator.skin && mediator.status < MediatorStatus.OPENED)
                                 {
                                     // 当前有皮肤且中介者尚未打开完毕，说明是现在是皮肤转发阶段，要用老皮肤替换新皮肤的位置
-                                    replaceSkin(mediator.bridge, mediator.skin, value);
+                                    replaceDisplay(mediator.bridge, mediator.skin, value);
                                 }
                                 else
                                 {

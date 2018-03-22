@@ -11,7 +11,7 @@ import IObservable from "../../core/observable/IObservable";
 import { IWatcher } from "./Watcher";
 import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
-import { replaceSkin } from "../../utils/SkinUtil";
+import { replaceDisplay } from "../../utils/DisplayUtil";
 
 /**
  * @author Raykid
@@ -293,8 +293,8 @@ export default class BindManager
             // 绑定表达式
             watcher = bindData.bind.createWatcher(currentTarget, target, exp, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
-                if(value) replaceSkin(mediator.bridge, currentTarget, replacer);
-                else replaceSkin(mediator.bridge, replacer, currentTarget);
+                if(value) replaceDisplay(mediator.bridge, currentTarget, replacer);
+                else replaceDisplay(mediator.bridge, replacer, currentTarget);
                 // 触发回调
                 callback && callback(value);
             }, mediator.viewModel, ...envModels, mediator.viewModel);

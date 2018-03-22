@@ -11,7 +11,7 @@ import Bind from "./Bind";
 import { evalExp, createRunFunc } from "./Utils";
 import { netManager } from "../net/NetManager";
 import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
-import { replaceSkin } from "../../utils/SkinUtil";
+import { replaceDisplay } from "../../utils/DisplayUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -285,9 +285,9 @@ var BindManager = /** @class */ (function () {
             watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (value) {
                     // 如果表达式为true则显示ui，否则移除ui
                     if (value)
-                        replaceSkin(mediator.bridge, currentTarget, replacer);
+                        replaceDisplay(mediator.bridge, currentTarget, replacer);
                     else
-                        replaceSkin(mediator.bridge, replacer, currentTarget);
+                        replaceDisplay(mediator.bridge, replacer, currentTarget);
                     // 触发回调
                     callback && callback(value);
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
