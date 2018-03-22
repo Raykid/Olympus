@@ -13,20 +13,20 @@ import IBridge from "../engine/bridge/IBridge";
  * 
  * @export
  * @param {IBridge} bridge 要使用的桥
- * @param {*} newSkin 替换成为的显示
- * @param {*} oldSkin 被替换的显示
+ * @param {*} current 被替换的显示
+ * @param {*} target 替换成为的显示
  */
-export function replaceDisplay(bridge:IBridge, newDisplay:any, oldDisplay:any):void
+export function replaceDisplay(bridge:IBridge, current:any, target:any):void
 {
     // 两个皮肤必须都是隶属桥的皮肤
-    if(bridge.isMySkin(newDisplay) && bridge.isMySkin(oldDisplay))
+    if(bridge.isMySkin(target) && bridge.isMySkin(current))
     {
-        var parent:any = bridge.getParent(oldDisplay);
+        var parent:any = bridge.getParent(current);
         if(parent)
         {
-            var index:number = bridge.getChildIndex(parent, oldDisplay);
-            bridge.addChildAt(parent, newDisplay, index);
-            bridge.removeChild(parent, oldDisplay);
+            var index:number = bridge.getChildIndex(parent, current);
+            bridge.addChildAt(parent, target, index);
+            bridge.removeChild(parent, current);
         }
     }
 }

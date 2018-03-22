@@ -151,6 +151,14 @@ export default interface IBridge
      */
     replaceSkin(current:any, target:any):any;
     /**
+     * 同步皮肤，用于组件变身后的重新定位
+     * 
+     * @param {*} current 当前皮肤
+     * @param {*} target 替换的皮肤
+     * @memberof IBridge
+     */
+    syncSkin(current:any, target:any):void;
+    /**
      * 创建一个空的显示对象
      * 
      * @returns {*} 

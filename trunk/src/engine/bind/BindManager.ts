@@ -293,8 +293,8 @@ export default class BindManager
             // 绑定表达式
             watcher = bindData.bind.createWatcher(currentTarget, target, exp, (value:boolean)=>{
                 // 如果表达式为true则显示ui，否则移除ui
-                if(value) replaceDisplay(mediator.bridge, currentTarget, replacer);
-                else replaceDisplay(mediator.bridge, replacer, currentTarget);
+                if(value) replaceDisplay(mediator.bridge, replacer, currentTarget);
+                else replaceDisplay(mediator.bridge, currentTarget, replacer);
                 // 触发回调
                 callback && callback(value);
             }, mediator.viewModel, ...envModels, mediator.viewModel);

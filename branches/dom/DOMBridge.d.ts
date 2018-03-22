@@ -169,6 +169,14 @@ export default class DOMBridge implements IBridge {
      */
     replaceSkin(current: HTMLElement, target: HTMLElement | string | string[]): any;
     /**
+     * 同步皮肤，用于组件变身后的重新定位
+     *
+     * @param {HTMLElement} current 当前皮肤
+     * @param {HTMLElement} target 替换的皮肤
+     * @memberof DOMBridge
+     */
+    syncSkin(current: HTMLElement, target: HTMLElement): void;
+    /**
      * 创建一个空的显示对象
      *
      * @returns {HTMLElement}

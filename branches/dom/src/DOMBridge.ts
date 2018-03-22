@@ -2,7 +2,7 @@
 /// <reference types="gsap"/>
 
 import IBridge from "olympus-r/engine/bridge/IBridge";
-import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
+import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
 import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
 import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
@@ -316,6 +316,20 @@ export default class DOMBridge implements IBridge
             parent.removeChild(current);
         }
         return target;
+    }
+
+    /**
+     * 同步皮肤，用于组件变身后的重新定位
+     * 
+     * @param {HTMLElement} current 当前皮肤
+     * @param {HTMLElement} target 替换的皮肤
+     * @memberof DOMBridge
+     */
+    public syncSkin(current:HTMLElement, target:HTMLElement):void
+    {
+        if(!current || !target) return;
+        // DOM无需特意同步，因为其样式都可以以css样式方式在外部表示，而仅有当前节点的style属性是需要同步的
+        extendObject(target.style, current.style);
     }
 
     /**

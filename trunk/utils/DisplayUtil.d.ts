@@ -12,7 +12,7 @@ import IBridge from "../engine/bridge/IBridge";
  *
  * @export
  * @param {IBridge} bridge 要使用的桥
- * @param {*} newSkin 替换成为的显示
- * @param {*} oldSkin 被替换的显示
+ * @param {*} current 被替换的显示
+ * @param {*} target 替换成为的显示
  */
-export declare function replaceDisplay(bridge: IBridge, newDisplay: any, oldDisplay: any): void;
+export declare function replaceDisplay(bridge: IBridge, current: any, target: any): void;

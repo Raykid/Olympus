@@ -171,6 +171,14 @@ export default class EgretBridge implements IBridge {
      */
     replaceSkin(current: egret.DisplayObject, target: any): any;
     /**
+     * 同步皮肤，用于组件变身后的重新定位
+     *
+     * @param {egret.DisplayObject} current 当前皮肤
+     * @param {egret.DisplayObject} target 替换的皮肤
+     * @memberof EgretBridge
+     */
+    syncSkin(current: egret.DisplayObject, target: egret.DisplayObject): void;
+    /**
      * 创建一个空的显示对象
      *
      * @returns {egret.Sprite}

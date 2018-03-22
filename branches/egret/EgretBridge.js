@@ -431,6 +431,36 @@ var EgretBridge = /** @class */ (function () {
         }
     };
     /**
+     * 同步皮肤，用于组件变身后的重新定位
+     *
+     * @param {egret.DisplayObject} current 当前皮肤
+     * @param {egret.DisplayObject} target 替换的皮肤
+     * @memberof EgretBridge
+     */
+    EgretBridge.prototype.syncSkin = function (current, target) {
+        if (!current || !target)
+            return;
+        // 设置属性
+        // 下面是egret级别属性
+        var props = [
+            "matrix", "anchorOffsetX", "anchorOffsetY", "alpha", "visible"
+        ];
+        // 如果当前宽高不为0则同样设置宽高
+        if (current.width > 0)
+            props.push("width");
+        if (current.height > 0)
+            props.push("height");
+        // 下面是eui级别属性
+        props.concat([
+            "horizontalCenter", "verticalCenter", "left", "right", "top", "bottom"
+        ]);
+        // 全部赋值
+        for (var _i = 0, props_1 = props; _i < props_1.length; _i++) {
+            var prop = props_1[_i];
+            target[prop] = current[prop];
+        }
+    };
+    /**
      * 创建一个空的显示对象
      *
      * @returns {egret.Sprite}

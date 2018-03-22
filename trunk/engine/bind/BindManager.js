@@ -285,9 +285,9 @@ var BindManager = /** @class */ (function () {
             watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (value) {
                     // 如果表达式为true则显示ui，否则移除ui
                     if (value)
-                        replaceDisplay(mediator.bridge, currentTarget, replacer);
-                    else
                         replaceDisplay(mediator.bridge, replacer, currentTarget);
+                    else
+                        replaceDisplay(mediator.bridge, currentTarget, replacer);
                     // 触发回调
                     callback && callback(value);
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));

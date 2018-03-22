@@ -1,6 +1,6 @@
 /// <amd-module name="DOMBridge"/>
 /// <reference types="gsap"/>
-import { getObjectHashs } from "olympus-r/utils/ObjectUtil";
+import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MaskEntity from "./dom/mask/MaskEntity";
 import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
@@ -302,6 +302,19 @@ var DOMBridge = /** @class */ (function () {
             parent.removeChild(current);
         }
         return target;
+    };
+    /**
+     * 同步皮肤，用于组件变身后的重新定位
+     *
+     * @param {HTMLElement} current 当前皮肤
+     * @param {HTMLElement} target 替换的皮肤
+     * @memberof DOMBridge
+     */
+    DOMBridge.prototype.syncSkin = function (current, target) {
+        if (!current || !target)
+            return;
+        // DOM无需特意同步，因为其样式都可以以css样式方式在外部表示，而仅有当前节点的style属性是需要同步的
+        extendObject(target.style, current.style);
     };
     /**
      * 创建一个空的显示对象

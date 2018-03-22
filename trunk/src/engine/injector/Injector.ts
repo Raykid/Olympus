@@ -331,7 +331,9 @@ export function SubMediator(arg1:any, arg2?:any):any
                                 if(mediator.skin && mediator.status < MediatorStatus.OPENED)
                                 {
                                     // 当前有皮肤且中介者尚未打开完毕，说明是现在是皮肤转发阶段，要用老皮肤替换新皮肤的位置
-                                    replaceDisplay(mediator.bridge, mediator.skin, value);
+                                    replaceDisplay(mediator.bridge, value, mediator.skin);
+                                    // 同步位置
+                                    mediator.bridge.syncSkin(value, mediator.skin);
                                 }
                                 else
                                 {
