@@ -245,7 +245,7 @@ export function compileIf(mediator:IMediator, currentTarget:ICompileTarget, targ
 export function compileFor(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], exp:string, mediatorCls?:IMediatorConstructor):void
 {
     // 将后面的编译命令缓存起来
-    var leftHandlers:IStopLeftHandler[] = currentTarget.__stop_left_handlers__;
+    var leftHandlers:IStopLeftHandler[] = target.__stop_left_handlers__;
     // 绑定for命令
     bindManager.bindFor(mediator, currentTarget, target, envModels, exp, mediatorCls, (data:any, renderer:ICompileTarget, subEnvModels:any[])=>{
         var subLeftHandlers:IStopLeftHandler[] = leftHandlers.concat();

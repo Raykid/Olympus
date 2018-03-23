@@ -152,7 +152,7 @@ export function compileIf(mediator, currentTarget, target, envModels, exp) {
  */
 export function compileFor(mediator, currentTarget, target, envModels, exp, mediatorCls) {
     // 将后面的编译命令缓存起来
-    var leftHandlers = currentTarget.__stop_left_handlers__;
+    var leftHandlers = target.__stop_left_handlers__;
     // 绑定for命令
     bindManager.bindFor(mediator, currentTarget, target, envModels, exp, mediatorCls, function (data, renderer, subEnvModels) {
         var subLeftHandlers = leftHandlers.concat();
