@@ -1,4 +1,4 @@
-import { TweenLite, Linear } from "gsap";
+import { Tween, Easing } from "@tweenjs/tween.js";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -48,19 +48,28 @@ var FadeScenePolicy = /** @class */ (function () {
         var _this = this;
         if (from != null) {
             // 开始淡出
-            TweenLite.killTweensOf(this._stageClone, false, { opacity: true });
-            TweenLite.to(this._stageClone, 0.3, {
-                opacity: 0,
-                ease: Linear.easeNone,
-                onComplete: function () {
-                    // 移除截屏
-                    if (_this._stageClone.parentElement != null) {
-                        _this._stageClone.parentElement.removeChild(_this._stageClone);
-                    }
-                    // 调用回调
-                    callback();
+            var key = "__tween__step__";
+            this._stageClone[key] = 1;
+            var props = {};
+            props[key] = 0;
+            new Tween(this._stageClone)
+                .end()
+                .stop()
+                .to(props, 300)
+                .easing(Easing.Linear.None)
+                .onUpdate(function () {
+                _this._stageClone.style.opacity = _this._stageClone[key];
+            })
+                .onComplete(function () {
+                delete _this._stageClone[key];
+                // 移除截屏
+                if (_this._stageClone.parentElement != null) {
+                    _this._stageClone.parentElement.removeChild(_this._stageClone);
                 }
-            });
+                // 调用回调
+                callback();
+            })
+                .start();
         }
         else {
             // 移除克隆节点

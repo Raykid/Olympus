@@ -1,11 +1,13 @@
 /// <amd-module name="DOMBridge"/>
-/// <reference types="gsap"/>
+/// <reference types="tween.js"/>
 import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
+import { system } from "olympus-r/engine/system/System";
 import MaskEntity from "./dom/mask/MaskEntity";
 import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
+import * as TWEEN from "@tweenjs/tween.js";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -245,6 +247,11 @@ var DOMBridge = /** @class */ (function () {
         this._maskLayer = this.createLayer();
         // 创建顶级显示层
         this._topLayer = this.createLayer();
+        // 添加Tween.js驱动
+        system.enterFrame(function () {
+            // 每次使用最新的当前运行毫秒数更新Tween.js
+            TWEEN.update(system.getTimer());
+        });
         // 调用回调
         complete(this);
     };

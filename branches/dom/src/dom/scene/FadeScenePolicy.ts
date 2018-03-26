@@ -1,6 +1,6 @@
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import IScene from "olympus-r/engine/scene/IScene";
-import { TweenLite, Linear } from "gsap";
+import { Tween, Easing } from "@tweenjs/tween.js";
 
 /**
  * @author Raykid
@@ -58,11 +58,20 @@ export default class FadeScenePolicy implements IScenePolicy
         if(from != null)
         {
             // 开始淡出
-            TweenLite.killTweensOf(this._stageClone, false, {opacity: true});
-            TweenLite.to(this._stageClone, 0.3, {
-                opacity: 0,
-                ease: Linear.easeNone,
-                onComplete: ()=>{
+            var key:string = "__tween__step__";
+            this._stageClone[key] = 1;
+            var props:any = {};
+            props[key] = 0;
+            new Tween(this._stageClone)
+                .end()
+                .stop()
+                .to(props, 300)
+                .easing(Easing.Linear.None)
+                .onUpdate(()=>{
+                    this._stageClone.style.opacity = this._stageClone[key];
+                })
+                .onComplete(()=>{
+                    delete this._stageClone[key];
                     // 移除截屏
                     if(this._stageClone.parentElement != null)
                     {
@@ -70,8 +79,8 @@ export default class FadeScenePolicy implements IScenePolicy
                     }
                     // 调用回调
                     callback();
-                }
-            });
+                })
+                .start();
         }
         else
         {

@@ -1,6 +1,6 @@
 import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
 import IPanel from "olympus-r/engine/panel/IPanel";
-import { TweenLite, Back } from "gsap";
+import { Tween, Easing } from "@tweenjs/tween.js";
 
 /**
  * @author Raykid
@@ -24,16 +24,23 @@ export default class BackPanelPolicy implements IPanelPolicy
     {
         var entity:HTMLElement = panel.skin;
         var curStyle:CSSStyleDeclaration = getComputedStyle(entity);
-        TweenLite.killTweensOf(entity, false, {transform: true});
+        var tween:Tween = new Tween(entity).end().stop();
         entity.style.position = "fixed";
         entity.style.left = "calc(50% - " + curStyle.width + " * 0.5)";
         entity.style.top = "calc(50% - " + curStyle.height + " * 0.5)";
         entity.style.transform = "scale(0, 0)";
         // 开始缓动
-        TweenLite.to(entity, 0.3, {transform: "scale(1, 1)", ease: Back.easeOut, onComplete: ()=>{
+        var key:string = "__tween__step__";
+        entity[key] = 0;
+        var props:any = {};
+        props[key] = 1;
+        tween.to(props, 300).easing(Easing.Back.Out).onUpdate(()=>{
+            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+        }).onComplete(()=>{
+            delete entity[key];
             entity.style.transform = "";
             callback();
-        }});
+        }).start();
     }
 
     /**
@@ -45,12 +52,19 @@ export default class BackPanelPolicy implements IPanelPolicy
     public drop(panel:IPanel, callback:()=>void, to?:{x:number, y:number}):void
     {
         var entity:HTMLElement = panel.skin;
-        TweenLite.killTweensOf(entity, false, {transform: true});
+        var tween:Tween = new Tween(entity).end().stop();
         entity.style.transform = "scale(1, 1)";
         // 开始缓动
-        TweenLite.to(entity, 0.3, {transform: "scale(0, 0)", ease: Back.easeIn, onComplete: ()=>{
-            callback();
+        var key:string = "__tween__step__";
+        entity[key] = 1;
+        var props:any = {};
+        props[key] = 0;
+        tween.to(props, 300).easing(Easing.Back.In).onUpdate(()=>{
+            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+        }).onComplete(()=>{
+            delete entity[key];
             entity.style.transform = "";
-        }});
+            callback();
+        }).start();
     }
 }

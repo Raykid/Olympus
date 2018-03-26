@@ -1,4 +1,4 @@
-import { TweenLite, Back } from "gsap";
+import { Tween, Easing } from "@tweenjs/tween.js";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -20,16 +20,23 @@ var BackPanelPolicy = /** @class */ (function () {
     BackPanelPolicy.prototype.pop = function (panel, callback, from) {
         var entity = panel.skin;
         var curStyle = getComputedStyle(entity);
-        TweenLite.killTweensOf(entity, false, { transform: true });
+        var tween = new Tween(entity).end().stop();
         entity.style.position = "fixed";
         entity.style.left = "calc(50% - " + curStyle.width + " * 0.5)";
         entity.style.top = "calc(50% - " + curStyle.height + " * 0.5)";
         entity.style.transform = "scale(0, 0)";
         // 开始缓动
-        TweenLite.to(entity, 0.3, { transform: "scale(1, 1)", ease: Back.easeOut, onComplete: function () {
-                entity.style.transform = "";
-                callback();
-            } });
+        var key = "__tween__step__";
+        entity[key] = 0;
+        var props = {};
+        props[key] = 1;
+        tween.to(props, 300).easing(Easing.Back.Out).onUpdate(function () {
+            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+        }).onComplete(function () {
+            delete entity[key];
+            entity.style.transform = "";
+            callback();
+        }).start();
     };
     /**
      * 关闭时调用
@@ -39,13 +46,20 @@ var BackPanelPolicy = /** @class */ (function () {
      */
     BackPanelPolicy.prototype.drop = function (panel, callback, to) {
         var entity = panel.skin;
-        TweenLite.killTweensOf(entity, false, { transform: true });
+        var tween = new Tween(entity).end().stop();
         entity.style.transform = "scale(1, 1)";
         // 开始缓动
-        TweenLite.to(entity, 0.3, { transform: "scale(0, 0)", ease: Back.easeIn, onComplete: function () {
-                callback();
-                entity.style.transform = "";
-            } });
+        var key = "__tween__step__";
+        entity[key] = 1;
+        var props = {};
+        props[key] = 0;
+        tween.to(props, 300).easing(Easing.Back.In).onUpdate(function () {
+            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+        }).onComplete(function () {
+            delete entity[key];
+            entity.style.transform = "";
+            callback();
+        }).start();
     };
     return BackPanelPolicy;
 }());

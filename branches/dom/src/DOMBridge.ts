@@ -1,5 +1,5 @@
 /// <amd-module name="DOMBridge"/>
-/// <reference types="gsap"/>
+/// <reference types="tween.js"/>
 
 import IBridge from "olympus-r/engine/bridge/IBridge";
 import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
@@ -9,11 +9,13 @@ import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import IMediator from "olympus-r/engine/mediator/IMediator";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
+import { system } from "olympus-r/engine/system/System";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import * as Injector from "./dom/injector/Injector";
 import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
+import * as TWEEN from "@tweenjs/tween.js";
 
 /**
  * @author Raykid
@@ -251,6 +253,11 @@ export default class DOMBridge implements IBridge
         this._maskLayer = this.createLayer();
         // 创建顶级显示层
         this._topLayer = this.createLayer();
+        // 添加Tween.js驱动
+        system.enterFrame(()=>{
+            // 每次使用最新的当前运行毫秒数更新Tween.js
+            TWEEN.update(system.getTimer());
+        });
         // 调用回调
         complete(this);
     }
