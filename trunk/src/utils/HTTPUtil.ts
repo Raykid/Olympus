@@ -174,7 +174,7 @@ export function load(params:IHTTPRequestParams):void
         switch(method)
         {
             case "POST":
-                switch(params.headerDict["Content-Type"])
+                switch(params.headerDict && params.headerDict["Content-Type"])
                 {
                     case "application/x-www-form-urlencoded":
                         sendData = toFormParams(data);
