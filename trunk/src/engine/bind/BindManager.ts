@@ -86,6 +86,12 @@ export default class BindManager
         handler();
     }
 
+    private getNearestAncestor(bridge:IBridge, target:any, propName:string):any
+    {
+        if(!target || target[propName]) return target;
+        else return this.getNearestAncestor(bridge, bridge.getParent(target), propName);
+    }
+
     /**
      * 绑定属性值
      * 
@@ -257,8 +263,9 @@ export default class BindManager
             mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
             // 将事件回调记录到显示对象上
             currentTarget[onHash] = handler;
-            // 如果__bind_sub_events__列表存在，则将事件记录到target上，
-            var events:BindEventData[] = target.__bind_sub_events__;
+            // 如果__bind_sub_events__列表存在，则将事件记录到其上
+            var nearestAncestor:any = this.getNearestAncestor(mediator.bridge, target, "__bind_sub_events__");
+            var events:BindEventData[] = (nearestAncestor || target).__bind_sub_events__;
             if(events)
             {
                 events.push({

@@ -31,6 +31,7 @@ export default class BindManager {
      */
     unbind(mediator: IMediator): Bind;
     private addBindHandler(mediator, callback);
+    private getNearestAncestor(bridge, target, propName);
     /**
      * 绑定属性值
      *
