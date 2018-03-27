@@ -199,12 +199,46 @@ namespace olympus
                 // 注册回调函数
                 request.onload = function(evt:Event):void
                 {
-                    onLoad(evt);
-                    handler();
+                    // 即使是onLoad也要判断下状态码
+                    var statusHead:number = Math.floor(request.status * 0.01);
+                    switch(statusHead)
+                    {
+                        case 2:
+                        case 3:
+                            // 2xx和3xx的状态码认为是成功
+                            onLoad(evt);
+                            handler();
+                            break;
+                        case 4:
+                        case 5:
+                            // 4xx和5xx的状态码认为是错误，转调错误回调
+                            request.onerror(new ErrorEvent(request.status + "", {message: request.statusText}));
+                            break;
+                    }
                 };
-                request.onerror = handler;
-                // 设置连接信息
-                var url:string = wrapAbsolutePath("version.cfg?v=" + (version || Date.now()), host);
+                var url:string;
+                if(version)
+                {
+                    request.onerror = function():void
+                    {
+                        // 使用-r_方式加载失败了，再试一次用query参数加载版本号
+                        var url:string = wrapAbsolutePath("version.cfg?v=" + version, host);
+                        request.abort();
+                        request.onerror = handler;
+                        request.open("GET", url, true);
+                        request.send();
+                    };
+                    // 设置连接信息
+                    url = wrapAbsolutePath("version.cfg", host);
+                    // 添加-r_方式版本号
+                    url = this.joinVersion(url, version);
+                }
+                else
+                {
+                    // 没有版本号，直接使用当前时间戳加载
+                    request.onerror = handler;
+                    url = wrapAbsolutePath("version.cfg?v=" + Date.now(), host);
+                }
                 request.open("GET", url, true);
                 // 发送数据，开始和服务器进行交互
                 request.send();
