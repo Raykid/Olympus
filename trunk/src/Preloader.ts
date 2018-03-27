@@ -199,21 +199,39 @@ namespace olympus
                 // 注册回调函数
                 request.onload = function(evt:Event):void
                 {
-                    // 即使是onLoad也要判断下状态码
-                    var statusHead:number = Math.floor(request.status * 0.01);
-                    switch(statusHead)
+                    if(request.status === undefined)
                     {
-                        case 2:
-                        case 3:
-                            // 2xx和3xx的状态码认为是成功
+                        // 说明是不支持XMLHttpRequest的情况，查看其responseText是否为""
+                        if(request.responseText === "")
+                        {
+                            // 失败，使用Event代替ErrorEvent
+                            request.onerror(new Event("请求错误：" + url) as any);
+                        }
+                        else
+                        {
+                            // 成功
                             onLoad(evt);
                             handler();
-                            break;
-                        case 4:
-                        case 5:
-                            // 4xx和5xx的状态码认为是错误，转调错误回调
-                            request.onerror(new ErrorEvent(request.status + "", {message: request.statusText}));
-                            break;
+                        }
+                    }
+                    else
+                    {
+                        // 即使是onLoad也要判断下状态码
+                        var statusHead:number = Math.floor(request.status * 0.01);
+                        switch(statusHead)
+                        {
+                            case 2:
+                            case 3:
+                                // 2xx和3xx的状态码认为是成功
+                                onLoad(evt);
+                                handler();
+                                break;
+                            case 4:
+                            case 5:
+                                // 4xx和5xx的状态码认为是错误，转调错误回调
+                                request.onerror(new ErrorEvent(request.status + "", {message: request.statusText}));
+                                break;
+                        }
                     }
                 };
                 var url:string;
@@ -413,7 +431,7 @@ namespace olympus
                 // responseType设置要在open之后，否则IE10和IE11会报错
                 xhr.responseType = "text";
                 xhr.onload = onJSONPLoadOne;
-                xhr.onerror = onJSONPLoadOne;
+                xhr.onerror = onJSONPLoadError;
                 xhr.send(null);
                 // 递增数量
                 jsonpCount ++;
@@ -449,14 +467,9 @@ namespace olympus
 
         function onJSONPLoadOne(evt:Event):void
         {
-            if(evt instanceof ErrorEvent)
+            var xhr:XMLHttpRequest = <XMLHttpRequest>evt.target;
+            var success:(evt:Event)=>void = function(evt:Event):void
             {
-                // 调用失败
-                onErrorOne();
-            }
-            else
-            {
-                var xhr:XMLHttpRequest = <XMLHttpRequest>evt.target;
                 // 取到索引
                 var index:number = xhr["index"];
                 // 填充script标签内容
@@ -466,7 +479,45 @@ namespace olympus
                 jsonpCount --;
                 // 调用成功
                 onLoadOne();
+            };
+            if(xhr.status === undefined)
+            {
+                // 说明是不支持XMLHttpRequest的情况，查看其responseText是否为""
+                if(xhr.responseText === "")
+                {
+                    // 失败，使用Event代替ErrorEvent
+                    onJSONPLoadError();
+                }
+                else
+                {
+                    // 成功
+                    success(evt);
+                }
             }
+            else
+            {
+                // 即使是onLoad也要判断下状态码
+                var statusHead:number = Math.floor(xhr.status * 0.01);
+                switch(statusHead)
+                {
+                    case 2:
+                    case 3:
+                        // 2xx和3xx的状态码认为是成功
+                        success(evt);
+                        break;
+                    case 4:
+                    case 5:
+                        // 4xx和5xx的状态码认为是错误，转调错误回调
+                        onJSONPLoadError();
+                        break;
+                }
+            }
+        }
+
+        function onJSONPLoadError():void
+        {
+            // 调用失败
+            onErrorOne();
         }
 
         function onLoadOne():void

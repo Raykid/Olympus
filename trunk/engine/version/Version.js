@@ -51,20 +51,34 @@ var Version = /** @class */ (function () {
             }
             // 注册回调函数
             request.onload = function (evt) {
-                // 即使是onLoad也要判断下状态码
-                var statusHead = Math.floor(request.status * 0.01);
-                switch (statusHead) {
-                    case 2:
-                    case 3:
-                        // 2xx和3xx的状态码认为是成功
+                if (request.status === undefined) {
+                    // 说明是不支持XMLHttpRequest的情况，查看其responseText是否为""
+                    if (request.responseText === "") {
+                        // 失败，使用Event代替ErrorEvent
+                        request.onerror(new Event("请求错误：" + url));
+                    }
+                    else {
+                        // 成功
                         onLoad(evt);
                         handler();
-                        break;
-                    case 4:
-                    case 5:
-                        // 4xx和5xx的状态码认为是错误，转调错误回调
-                        request.onerror(new ErrorEvent(request.status + "", { message: request.statusText }));
-                        break;
+                    }
+                }
+                else {
+                    // 即使是onLoad也要判断下状态码
+                    var statusHead = Math.floor(request.status * 0.01);
+                    switch (statusHead) {
+                        case 2:
+                        case 3:
+                            // 2xx和3xx的状态码认为是成功
+                            onLoad(evt);
+                            handler();
+                            break;
+                        case 4:
+                        case 5:
+                            // 4xx和5xx的状态码认为是错误，转调错误回调
+                            request.onerror(new ErrorEvent(request.status + "", { message: request.statusText }));
+                            break;
+                    }
                 }
             };
             var url;
