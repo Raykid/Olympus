@@ -83,7 +83,7 @@ export function MediatorClass(moduleName:string):ClassDecorator
                         if(this.bridge === lastBridge && $skin)
                         {
                             // 需要判断桥的类型是否相同，且之前有皮肤，则替换皮肤
-                            $skin = this.bridge.replaceSkin($skin, value);
+                            $skin = this.bridge.replaceSkin(this, $skin, value);
                         }
                         else
                         {

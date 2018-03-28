@@ -307,12 +307,13 @@ export default class DOMBridge implements IBridge
     /**
      * 替换皮肤，用于组件变身时不同表现层桥的处理
      * 
+     * @param {IMediator} mediator 中介者
      * @param {*} current 当前皮肤
      * @param {HTMLElement|string|string[]} target 要替换的皮肤
      * @returns {*} 替换完毕的皮肤
      * @memberof DOMBridge
      */
-    public replaceSkin(current:HTMLElement, target:HTMLElement|string|string[]):any
+    public replaceSkin(mediator:IMediator, current:HTMLElement, target:HTMLElement|string|string[]):any
     {
         target = toHTMLElement(target);
         // 如果有父节点，则用目标节点替换当前节点位置
@@ -322,6 +323,9 @@ export default class DOMBridge implements IBridge
             parent.insertBefore(target, current);
             parent.removeChild(current);
         }
+        // 重新包装节点
+        this.wrapSkin(mediator, target);
+        // 返回皮肤
         return target;
     }
 
