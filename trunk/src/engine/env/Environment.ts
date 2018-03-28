@@ -13,7 +13,7 @@ import { wrapHost, getCurOrigin } from "../../utils/URLUtil";
 @Injectable
 export default class Environment
 {
-    protected _env:string;
+    protected _env:string = "dev";
     /**
      * 获取当前环境字符串
      * 
@@ -26,7 +26,7 @@ export default class Environment
         return this._env;
     }
 
-    private _hostsDict:{[env:string]:string[]};
+    private _hostsDict:{[env:string]:string[]} = {};
     /**
      * 获取域名字典
      * 
@@ -53,7 +53,7 @@ export default class Environment
         return (hosts[index] || getCurOrigin());
     }
 
-    private _cdnsDict:{[env:string]:string[]};
+    private _cdnsDict:{[env:string]:string[]} = {};
     /**
      * 获取CDN字典
      * 
@@ -65,7 +65,7 @@ export default class Environment
     {
         return this._cdnsDict;
     }
-    private _curCDNIndex:number;
+    private _curCDNIndex:number = 0;
     /**
      * 获取当前使用的CDN域名
      * 

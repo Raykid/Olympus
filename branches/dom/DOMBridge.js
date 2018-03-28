@@ -22,14 +22,14 @@ var DOMBridge = /** @class */ (function () {
          * 获取默认弹窗策略
          *
          * @type {IPanelPolicy}
-         * @memberof EgretBridge
+         * @memberof DOMBridge
          */
         this.defaultPanelPolicy = new BackPanelPolicy();
         /**
          * 获取默认场景切换策略
          *
          * @type {IScenePolicy}
-         * @memberof EgretBridge
+         * @memberof DOMBridge
          */
         this.defaultScenePolicy = new FadeScenePolicy();
         this._listenerDict = {};
@@ -298,7 +298,7 @@ var DOMBridge = /** @class */ (function () {
      * @param {*} current 当前皮肤
      * @param {HTMLElement|string|string[]} target 要替换的皮肤
      * @returns {*} 替换完毕的皮肤
-     * @memberof EgretBridge
+     * @memberof DOMBridge
      */
     DOMBridge.prototype.replaceSkin = function (current, target) {
         target = toHTMLElement(target);

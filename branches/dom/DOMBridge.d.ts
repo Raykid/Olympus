@@ -124,14 +124,14 @@ export default class DOMBridge implements IBridge {
      * 获取默认弹窗策略
      *
      * @type {IPanelPolicy}
-     * @memberof EgretBridge
+     * @memberof DOMBridge
      */
     defaultPanelPolicy: IPanelPolicy;
     /**
      * 获取默认场景切换策略
      *
      * @type {IScenePolicy}
-     * @memberof EgretBridge
+     * @memberof DOMBridge
      */
     defaultScenePolicy: IScenePolicy;
     constructor(params: IInitParams);
@@ -165,7 +165,7 @@ export default class DOMBridge implements IBridge {
      * @param {*} current 当前皮肤
      * @param {HTMLElement|string|string[]} target 要替换的皮肤
      * @returns {*} 替换完毕的皮肤
-     * @memberof EgretBridge
+     * @memberof DOMBridge
      */
     replaceSkin(current: HTMLElement, target: HTMLElement | string | string[]): any;
     /**

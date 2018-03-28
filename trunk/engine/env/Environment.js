@@ -17,6 +17,10 @@ import { wrapHost, getCurOrigin } from "../../utils/URLUtil";
 */
 var Environment = /** @class */ (function () {
     function Environment() {
+        this._env = "dev";
+        this._hostsDict = {};
+        this._cdnsDict = {};
+        this._curCDNIndex = 0;
     }
     Object.defineProperty(Environment.prototype, "env", {
         /**
