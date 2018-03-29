@@ -9,6 +9,8 @@ import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import SceneMessage from "olympus-r/engine/scene/SceneMessage";
 import IMediator from "olympus-r/engine/mediator/IMediator";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import { environment } from "olympus-r/engine/env/Environment";
+import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
 import RenderMode from "./egret/RenderMode";
 import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
@@ -378,14 +380,16 @@ export default class EgretBridge implements IBridge
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
             RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-            RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
+            var url:string = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.res.json", environment.curCDNHost);
+            RES.loadConfig(url, self._initParams.pathPrefix + "resource/");
         }
 
         function onConfigComplete(evt:RES.ResourceEvent):void
         {
             RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
             // 加载主题配置
-            var theme:eui.Theme = new eui.Theme(this._initParams.pathPrefix + "resource/default.thm.json", self._root.stage);
+            var url:string = wrapAbsolutePath(this._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
+            var theme:eui.Theme = new eui.Theme(url, self._root.stage);
             theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
         }
 
