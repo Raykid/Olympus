@@ -13,6 +13,7 @@ export default class ModuleManager {
     private _moduleStack;
     private _openCache;
     private _opening;
+    private _busy;
     /**
      * 获取当前模块
      *

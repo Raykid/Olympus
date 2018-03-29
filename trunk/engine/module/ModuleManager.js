@@ -23,6 +23,7 @@ var ModuleManager = /** @class */ (function () {
         this._moduleStack = [];
         this._openCache = [];
         this._opening = null;
+        this._busy = false;
     }
     Object.defineProperty(ModuleManager.prototype, "currentModule", {
         /**
@@ -154,10 +155,11 @@ var ModuleManager = /** @class */ (function () {
         if (!type)
             return;
         // 判断是否正在打开模块
-        if (this._opening) {
+        if (this._busy) {
             this._openCache.push([type, data, replace]);
             return;
         }
+        this._busy = true;
         // 取到类型
         var cls = getConstructor(type instanceof Function ? type : type.constructor);
         var after = this.getAfter(cls);
@@ -192,8 +194,6 @@ var ModuleManager = /** @class */ (function () {
                         target.close = function (data) {
                             moduleManager.close(target, data);
                         };
-                        // 结束一次模块开启
-                        _this.onFinishOpen();
                         break;
                     case ModuleOpenStatus.AfterOpen:
                         // 调用onDeactivate接口
@@ -205,6 +205,8 @@ var ModuleManager = /** @class */ (function () {
                             _this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
+                        // 结束一次模块开启
+                        _this.onFinishOpen();
                         break;
                 }
             };
@@ -229,6 +231,7 @@ var ModuleManager = /** @class */ (function () {
     ModuleManager.prototype.onFinishOpen = function () {
         // 关闭标识符
         this._opening = null;
+        this._busy = false;
         // 如果有缓存的模块需要打开则打开之
         if (this._openCache.length > 0)
             this.open.apply(this, this._openCache.shift());

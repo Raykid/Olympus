@@ -22,6 +22,7 @@ export default class ModuleManager
 
     private _openCache:[ModuleType, any, boolean][] = [];
     private _opening:ModuleType = null;
+    private _busy:boolean = false;
     
     /**
      * 获取当前模块
@@ -161,11 +162,12 @@ export default class ModuleManager
         // 非空判断
         if(!type) return;
         // 判断是否正在打开模块
-        if(this._opening)
+        if(this._busy)
         {
             this._openCache.push([type, data, replace]);
             return;
         }
+        this._busy = true;
         // 取到类型
         var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         var after:ModuleData[] = this.getAfter(cls);
@@ -203,8 +205,6 @@ export default class ModuleManager
                         {
                             moduleManager.close(target, data);
                         };
-                        // 结束一次模块开启
-                        this.onFinishOpen();
                         break;
                     case ModuleOpenStatus.AfterOpen:
                         // 调用onDeactivate接口
@@ -215,6 +215,8 @@ export default class ModuleManager
                         if(replace) this.close(from && from[0], data);
                         // 派发消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
+                        // 结束一次模块开启
+                        this.onFinishOpen();
                         break;
                 }
             };
@@ -244,6 +246,7 @@ export default class ModuleManager
     {
         // 关闭标识符
         this._opening = null;
+        this._busy = false;
         // 如果有缓存的模块需要打开则打开之
         if(this._openCache.length > 0)
             this.open.apply(this, this._openCache.shift());
