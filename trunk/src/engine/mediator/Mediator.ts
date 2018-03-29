@@ -447,8 +447,8 @@ export default class Mediator implements IMediator
             this.data = data;
             // 记一个是否需要遮罩的flag
             var maskFlag:boolean = true;
-            // 加载所有已托管中介者的资源
-            this.loadAssets((err?:Error)=>{
+            // 发送初始化消息
+            this.sendInitRequests((err?:Error)=>{
                 if(err)
                 {
                     // 移除遮罩
@@ -458,8 +458,8 @@ export default class Mediator implements IMediator
                 }
                 else
                 {
-                    // 加载css文件
-                    this.loadStyleFiles((err?:Error)=>{
+                    // 加载所有已托管中介者的资源
+                    this.loadAssets((err?:Error)=>{
                         if(err)
                         {
                             // 移除遮罩
@@ -469,8 +469,8 @@ export default class Mediator implements IMediator
                         }
                         else
                         {
-                            // 加载js文件
-                            this.loadJsFiles((err?:Error)=>{
+                            // 加载css文件
+                            this.loadStyleFiles((err?:Error)=>{
                                 if(err)
                                 {
                                     // 移除遮罩
@@ -480,8 +480,8 @@ export default class Mediator implements IMediator
                                 }
                                 else
                                 {
-                                    // 发送初始化消息
-                                    this.sendInitRequests((err?:Error)=>{
+                                    // 加载js文件
+                                    this.loadJsFiles((err?:Error)=>{
                                         // 移除遮罩
                                         hideMask();
                                         // 判断错误

@@ -382,8 +382,8 @@ var Mediator = /** @class */ (function () {
             this.data = data;
             // 记一个是否需要遮罩的flag
             var maskFlag = true;
-            // 加载所有已托管中介者的资源
-            this.loadAssets(function (err) {
+            // 发送初始化消息
+            this.sendInitRequests(function (err) {
                 if (err) {
                     // 移除遮罩
                     hideMask();
@@ -391,8 +391,8 @@ var Mediator = /** @class */ (function () {
                     _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                 }
                 else {
-                    // 加载css文件
-                    _this.loadStyleFiles(function (err) {
+                    // 加载所有已托管中介者的资源
+                    _this.loadAssets(function (err) {
                         if (err) {
                             // 移除遮罩
                             hideMask();
@@ -400,8 +400,8 @@ var Mediator = /** @class */ (function () {
                             _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                         }
                         else {
-                            // 加载js文件
-                            _this.loadJsFiles(function (err) {
+                            // 加载css文件
+                            _this.loadStyleFiles(function (err) {
                                 if (err) {
                                     // 移除遮罩
                                     hideMask();
@@ -409,8 +409,8 @@ var Mediator = /** @class */ (function () {
                                     _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                 }
                                 else {
-                                    // 发送初始化消息
-                                    _this.sendInitRequests(function (err) {
+                                    // 加载js文件
+                                    _this.loadJsFiles(function (err) {
                                         // 移除遮罩
                                         hideMask();
                                         // 判断错误
