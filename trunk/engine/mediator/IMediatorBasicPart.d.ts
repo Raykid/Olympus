@@ -28,6 +28,13 @@ export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDis
      */
     data: any;
     /**
+     * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
+     *
+     * @type {boolean}
+     * @memberof IMediatorBasicPart
+     */
+    openMask: boolean;
+    /**
      * 皮肤
      *
      * @readonly

@@ -56,6 +56,7 @@ var Mediator = /** @class */ (function () {
          * @memberof Mediator
          */
         this.bindTargets = [];
+        this._openMask = true;
         this._listeners = [];
         this._disposeDict = new Dictionary();
         /**
@@ -140,6 +141,27 @@ var Mediator = /** @class */ (function () {
             for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                 var mediator = _a[_i];
                 mediator.data = value;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Mediator.prototype, "openMask", {
+        /**
+         * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
+         *
+         * @type {boolean}
+         * @memberof Mediator
+         */
+        get: function () {
+            return this._openMask;
+        },
+        set: function (value) {
+            this._openMask = value;
+            // 递归设置所有子中介者的openMask
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                child.openMask = value;
             }
         },
         enumerable: true,
@@ -381,7 +403,7 @@ var Mediator = /** @class */ (function () {
             // 赋值参数
             this.data = data;
             // 记一个是否需要遮罩的flag
-            var maskFlag = true;
+            var maskFlag = this.openMask;
             // 发送初始化消息
             this.sendInitRequests(function (err) {
                 if (err) {

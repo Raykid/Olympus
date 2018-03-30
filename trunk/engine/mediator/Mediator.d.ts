@@ -99,6 +99,14 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     data: any;
+    private _openMask;
+    /**
+     * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
+     *
+     * @type {boolean}
+     * @memberof Mediator
+     */
+    openMask: boolean;
     private _responses;
     /**
      * 模块初始消息的返回数据

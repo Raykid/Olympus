@@ -170,6 +170,27 @@ export default class Mediator implements IMediator
         }
     }
 
+    private _openMask:boolean = true;
+    /**
+     * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
+     * 
+     * @type {boolean}
+     * @memberof Mediator
+     */
+    public get openMask():boolean
+    {
+        return this._openMask;
+    }
+    public set openMask(value:boolean)
+    {
+        this._openMask = value;
+        // 递归设置所有子中介者的openMask
+        for(var child of this._children)
+        {
+            child.openMask = value;
+        }
+    }
+
     private _responses:ResponseData[];
     /**
      * 模块初始消息的返回数据
@@ -446,7 +467,7 @@ export default class Mediator implements IMediator
             // 赋值参数
             this.data = data;
             // 记一个是否需要遮罩的flag
-            var maskFlag:boolean = true;
+            var maskFlag:boolean = this.openMask;
             // 发送初始化消息
             this.sendInitRequests((err?:Error)=>{
                 if(err)
