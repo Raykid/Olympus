@@ -25,7 +25,8 @@ var NetManager = /** @class */ (function () {
         // 如果消息是通讯消息则做处理
         if (msg instanceof RequestData) {
             // 添加遮罩
-            maskManager.showLoading(null, "net");
+            if (msg.__useMask)
+                maskManager.showLoading(null, "net");
             // 指定消息参数连接上公共参数作为参数
             extendObject(msg.__params.data, commonData);
             // 发送消息
@@ -156,7 +157,8 @@ var NetManager = /** @class */ (function () {
     /** 这里导出不希望用户使用的方法，供框架内使用 */
     NetManager.prototype.__onResponse = function (type, result, request) {
         // 移除遮罩
-        maskManager.hideLoading("net");
+        if (request && request.__useMask)
+            maskManager.hideLoading("net");
         // 解析结果
         var cls = this._responseDict[type];
         if (cls) {
@@ -187,7 +189,8 @@ var NetManager = /** @class */ (function () {
     };
     NetManager.prototype.__onError = function (type, err, request) {
         // 移除遮罩
-        maskManager.hideLoading("net");
+        if (request && request.__useMask)
+            maskManager.hideLoading("net");
         // 如果有配对请求，则将返回值发送到请求所在的原始内核里
         var observable = request && request.__oriObservable;
         // 派发事件

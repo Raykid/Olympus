@@ -8,6 +8,13 @@ var RequestData = /** @class */ (function () {
          */
         this.__userData = {};
         /**
+         * 是否在接到返回前使用loading类型遮罩覆盖全屏，防止用户操作，默认是true
+         *
+         * @type {boolean}
+         * @memberof RequestData
+         */
+        this.__useMask = true;
+        /**
          * 消息派发内核列表
          *
          * @type {IObservable}

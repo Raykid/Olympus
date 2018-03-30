@@ -63,6 +63,13 @@ export default abstract class RequestData implements IMessage {
      */
     __userData: any;
     /**
+     * 是否在接到返回前使用loading类型遮罩覆盖全屏，防止用户操作，默认是true
+     *
+     * @type {boolean}
+     * @memberof RequestData
+     */
+    __useMask: boolean;
+    /**
      * 消息派发内核列表
      *
      * @type {IObservable}

@@ -39,7 +39,7 @@ export default class NetManager
         if(msg instanceof RequestData)
         {
             // 添加遮罩
-            maskManager.showLoading(null, "net");
+            if(msg.__useMask) maskManager.showLoading(null, "net");
             // 指定消息参数连接上公共参数作为参数
             extendObject(msg.__params.data, commonData);
             // 发送消息
@@ -189,7 +189,7 @@ export default class NetManager
     public __onResponse(type:string, result:any, request?:RequestData):void|never
     {
         // 移除遮罩
-        maskManager.hideLoading("net");
+        if(request && request.__useMask) maskManager.hideLoading("net");
         // 解析结果
         var cls:IResponseDataConstructor = this._responseDict[type];
         if(cls)
@@ -224,7 +224,7 @@ export default class NetManager
     public __onError(type:string, err:Error, request?:RequestData):void
     {
         // 移除遮罩
-        maskManager.hideLoading("net");
+        if(request && request.__useMask) maskManager.hideLoading("net");
         // 如果有配对请求，则将返回值发送到请求所在的原始内核里
         var observable:IObservable = request && request.__oriObservable;
         // 派发事件
