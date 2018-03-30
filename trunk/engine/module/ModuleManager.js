@@ -180,7 +180,9 @@ var ModuleManager = /** @class */ (function () {
                 switch (status) {
                     case ModuleOpenStatus.Stop:
                         // 移除先行数据
-                        _this._moduleStack.shift();
+                        var tempData = _this._moduleStack.shift();
+                        // 销毁模块
+                        tempData[1].dispose();
                         // 派发失败消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
                         // 结束一次模块开启
