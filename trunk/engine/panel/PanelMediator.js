@@ -1,13 +1,4 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+import * as tslib_1 from "tslib";
 import Mediator from "../mediator/Mediator";
 import { panelManager } from "./PanelManager";
 import MediatorMessage from "../mediator/MediatorMessage";
@@ -20,7 +11,7 @@ import MediatorMessage from "../mediator/MediatorMessage";
  * 实现了IPanel接口的弹窗中介者基类
 */
 var PanelMediator = /** @class */ (function (_super) {
-    __extends(PanelMediator, _super);
+    tslib_1.__extends(PanelMediator, _super);
     function PanelMediator(skin, policy) {
         var _this = _super.call(this, skin) || this;
         _this.policy = policy;

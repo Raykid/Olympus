@@ -1,9 +1,4 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
+import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import { trimURL, wrapAbsolutePath } from "../../utils/URLUtil";
@@ -54,8 +49,8 @@ var Version = /** @class */ (function () {
                 if (request.status === undefined) {
                     // 说明是不支持XMLHttpRequest的情况，查看其responseText是否为""
                     if (request.responseText === "") {
-                        // 失败，使用Event代替ErrorEvent
-                        request.onerror(new Event("请求错误：" + url));
+                        // 失败
+                        request.onerror(new ErrorEvent("RequestError", { filename: url }));
                     }
                     else {
                         // 成功
@@ -76,7 +71,7 @@ var Version = /** @class */ (function () {
                         case 4:
                         case 5:
                             // 4xx和5xx的状态码认为是错误，转调错误回调
-                            request.onerror(new ErrorEvent(request.status + "", { message: request.statusText }));
+                            request.onerror(new ErrorEvent("RequestError", { filename: url, message: request.status + " " + request.statusText }));
                             break;
                     }
                 }
@@ -187,7 +182,7 @@ var Version = /** @class */ (function () {
         url = url.replace(/\-r_[a-z0-9]+\./ig, ".");
         return url;
     };
-    Version = __decorate([
+    Version = tslib_1.__decorate([
         Injectable
     ], Version);
     return Version;

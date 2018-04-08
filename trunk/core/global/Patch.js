@@ -14,8 +14,29 @@ if (Array.prototype.hasOwnProperty("findIndex")) {
         Object.defineProperty(Array.prototype, "findIndex", desc);
     }
 }
-export var decorateThis = {};
+/** 为某些不支持ErrorEvent的浏览器添加ErrorEvent支持 */
+try {
+    new ErrorEvent("");
+}
+catch (err) {
+    window["ErrorEvent"] = function ErrorEvent(type, errorEventInitDict) {
+        Event.call(this, type, errorEventInitDict);
+        if (!errorEventInitDict)
+            errorEventInitDict = {};
+        this.initErrorEvent(type, errorEventInitDict.bubbles, errorEventInitDict.cancelable, errorEventInitDict.message, errorEventInitDict.filename, errorEventInitDict.lineno);
+        this.error = errorEventInitDict.error;
+    };
+    window["ErrorEvent"].prototype.initErrorEvent = function initErrorEvent(typeArg, canBubbleArg, cancelableArg, messageArg, filenameArg, linenoArg) {
+        this.type = typeArg;
+        this.bubbles = canBubbleArg;
+        this.cancelable = cancelableArg;
+        this.message = messageArg;
+        this.filename = filenameArg;
+        this.lineno = linenoArg;
+    };
+}
 /** 篡改Reflect.decorate方法，用于为装饰器方法打个flag，标记装饰器是否为参数化装饰 */
+export var decorateThis = {};
 if (Reflect && Reflect.decorate) {
     var oriDecorate = Reflect.decorate;
     Reflect.decorate = function () {

@@ -1,9 +1,4 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
+import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import none from "./NonePanelPolicy";
@@ -277,7 +272,7 @@ var PanelManager = /** @class */ (function () {
     };
     PanelManager.PRIORITY_NORMAL = 0;
     PanelManager.PRIORITY_PROMPT = 1;
-    PanelManager = PanelManager_1 = __decorate([
+    PanelManager = PanelManager_1 = tslib_1.__decorate([
         Injectable
     ], PanelManager);
     return PanelManager;
