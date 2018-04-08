@@ -8,7 +8,6 @@
 */
 namespace olympus
 {
-    
     /**
      * 获取当前页面的origin，会兼容IE10以下
      * 
@@ -204,8 +203,8 @@ namespace olympus
                         // 说明是不支持XMLHttpRequest的情况，查看其responseText是否为""
                         if(request.responseText === "")
                         {
-                            // 失败，使用Event代替ErrorEvent
-                            request.onerror(new Event("请求错误：" + url) as any);
+                            // 失败
+                            request.onerror(new Event("RequestError: " + JSON.stringify({filename: url})) as any);
                         }
                         else
                         {
@@ -229,7 +228,7 @@ namespace olympus
                             case 4:
                             case 5:
                                 // 4xx和5xx的状态码认为是错误，转调错误回调
-                                request.onerror(new ErrorEvent(request.status + "", {message: request.statusText}));
+                                request.onerror(new Event("RequestError: " + JSON.stringify({filename: url, message: request.status + " " + request.statusText})) as any);
                                 break;
                         }
                     }
@@ -485,7 +484,7 @@ namespace olympus
                 // 说明是不支持XMLHttpRequest的情况，查看其responseText是否为""
                 if(xhr.responseText === "")
                 {
-                    // 失败，使用Event代替ErrorEvent
+                    // 失败
                     onJSONPLoadError();
                 }
                 else
