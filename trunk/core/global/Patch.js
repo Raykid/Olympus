@@ -20,11 +20,19 @@ try {
 }
 catch (err) {
     window["ErrorEvent"] = function ErrorEvent(type, errorEventInitDict) {
-        Event.call(this, type, errorEventInitDict);
         if (!errorEventInitDict)
             errorEventInitDict = {};
-        this.initErrorEvent(type, errorEventInitDict.bubbles, errorEventInitDict.cancelable, errorEventInitDict.message, errorEventInitDict.filename, errorEventInitDict.lineno);
-        this.error = errorEventInitDict.error;
+        if (Event instanceof Function) {
+            Event.call(this, type, errorEventInitDict);
+            this.initErrorEvent(type, errorEventInitDict.bubbles, errorEventInitDict.cancelable, errorEventInitDict.message, errorEventInitDict.filename, errorEventInitDict.lineno);
+            this.error = errorEventInitDict.error;
+            return this;
+        }
+        else {
+            var evt = document.createEvent("ErrorEvent");
+            evt.initErrorEvent(type, errorEventInitDict.bubbles, errorEventInitDict.cancelable, errorEventInitDict.message, errorEventInitDict.filename, errorEventInitDict.lineno);
+            return evt;
+        }
     };
     window["ErrorEvent"].prototype.initErrorEvent = function initErrorEvent(typeArg, canBubbleArg, cancelableArg, messageArg, filenameArg, linenoArg) {
         this.type = typeArg;
