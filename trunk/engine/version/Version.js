@@ -36,7 +36,7 @@ var Version = /** @class */ (function () {
                 // code for IE7 - IE9
                 request = new window["XDomainRequest"]();
             }
-            if (window["XMLHttpRequest"]) {
+            else if (window["XMLHttpRequest"]) {
                 // code for IE10, Firefox, Chrome, Opera, Safari
                 request = new XMLHttpRequest();
             }
