@@ -10,7 +10,7 @@ import Watcher from "./Watcher";
  * 变异器，将ViewModel变异为具有依赖功能的形式，也可以认为是编译过程
 */
 // 记录数组中会造成数据更新的所有方法名
-var _arrMethods = [
+var arrMethods = [
     "push",
     "pop",
     "unshift",
@@ -19,6 +19,8 @@ var _arrMethods = [
     "sort",
     "reverse"
 ];
+// 用来判断是否支持Proxy
+var hasProxy = (window["Proxy"] && Proxy.revocable instanceof Function);
 /**
  * 将用户传进来的数据“变异”成为具有截获数据变更能力的数据
  * @param data 原始数据
@@ -28,24 +30,114 @@ export function mutate(data) {
     // 如果是简单类型，则啥也不做
     if (!data || typeof data != "object")
         return data;
-    // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
-    var keys = Object.keys(data).concat(Object.keys(data.__proto__ || {}));
-    // 去重
-    var temp = {};
-    for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-        var key = keys_1[_i];
-        if (!temp[key]) {
-            temp[key] = key;
-            mutateObject(data, key);
+    // 判断是否支持Proxy
+    if (hasProxy) {
+        var lock = false;
+        // 支持Proxy，使用Proxy整体变异对象
+        var _a = Proxy.revocable(Object.getPrototypeOf(data) || Object.create(null), {
+            get: function (target, key, receiver) {
+                // 获取时如果没这个key则不作处理
+                if (!target.hasOwnProperty(key))
+                    return undefined;
+                // 获取结果
+                var result = Reflect.get(target, key, receiver);
+                // 如果被锁住了，则直接返回结果
+                if (lock)
+                    return result;
+                // 如果属性不是可遍历的则也直接返回结果
+                var desc = Object.getOwnPropertyDescriptor(target, key);
+                if (!desc.enumerable)
+                    return result;
+                // 获取依赖key
+                lock = true;
+                var depKey = getObjectHashs(data, key);
+                lock = false;
+                // 对每个复杂类型对象都要有一个对应的依赖列表
+                var dep = data[depKey];
+                var mutateSub = (dep == null);
+                if (!dep) {
+                    dep = new Dep();
+                    // 打一个标记表示已经变异过了
+                    Object.defineProperty(data, depKey, {
+                        value: dep,
+                        writable: false,
+                        enumerable: false,
+                        configurable: false
+                    });
+                }
+                // 执行处理
+                onGet(dep, result, mutateSub);
+                // 返回结果
+                return result;
+            },
+            set: function (target, key, value, receiver) {
+                // 设置结果
+                Reflect.set(target, key, value, receiver);
+                // 获取依赖key
+                var depKey = getObjectHashs(data, key);
+                // 对每个复杂类型对象都要有一个对应的依赖列表
+                var dep = data[depKey];
+                if (!dep) {
+                    dep = new Dep();
+                    // 打一个标记表示已经变异过了
+                    Object.defineProperty(data, depKey, {
+                        value: dep,
+                        writable: false,
+                        enumerable: false,
+                        configurable: false
+                    });
+                }
+                // 执行处理
+                onSet(dep, value);
+                // 返回
+                return true;
+            }
+        }), proxy = _a.proxy, revoke = _a.revoke;
+        Object.setPrototypeOf(data, proxy);
+    }
+    else {
+        // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
+        var keys = Object.keys(data).concat(Object.keys(data.__proto__ || {}));
+        // 去重
+        var temp = {};
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+            var key = keys_1[_i];
+            if (!temp[key]) {
+                temp[key] = key;
+                mutateObject(data, key);
+            }
         }
     }
     return data;
+}
+function onGet(dep, result, mutateSub) {
+    // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
+    var watcher = Watcher.updating;
+    if (watcher)
+        dep.watch(watcher);
+    // 首次获取需要变异
+    if (mutateSub) {
+        // 如果是数组就走专门的数组变异方法，否则递归变异对象
+        if (Array.isArray(result))
+            mutateArray(result, dep);
+        else
+            mutate(result);
+    }
+}
+function onSet(dep, value) {
+    // 如果是数组就走专门的数组变异方法，否则递归变异对象
+    if (Array.isArray(value))
+        mutateArray(value, dep);
+    else
+        mutate(value);
+    // 触发通知
+    dep.notify();
 }
 function mutateObject(data, key) {
     var depKey = getObjectHashs(data, key);
     // 对每个复杂类型对象都要有一个对应的依赖列表
     var dep = data[depKey];
-    var subMutated = false;
+    var mutateSub = true;
     if (!dep) {
         dep = new Dep();
         // 判断本来这个属性是值属性还是getter/setter属性，要有不同的操作方式
@@ -58,35 +150,21 @@ function mutateObject(data, key) {
                     enumerable: true,
                     configurable: true,
                     get: function () {
-                        // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
-                        var watcher = Watcher.updating;
-                        if (watcher)
-                            dep.watch(watcher);
                         // 利用闭包保存原始值
                         var result = desc.value;
-                        // 首次获取需要变异
-                        if (!subMutated) {
-                            subMutated = true;
-                            // 如果是数组，则要进行一下数组变异
-                            if (result instanceof Array)
-                                mutateArray(result, dep);
-                            // 递归子属性
-                            mutate(result);
-                        }
+                        // 执行处理
+                        onGet(dep, result, mutateSub);
+                        // 设置标记
+                        mutateSub = false;
                         // 返回值
                         return result;
                     },
-                    set: function (v) {
-                        if (!desc.writable || v === desc.value)
+                    set: function (value) {
+                        if (!desc.writable || value === desc.value)
                             return;
-                        desc.value = v;
-                        // 如果是数组就走专门的数组变异方法，否则递归变异对象
-                        if (Array.isArray(v))
-                            mutateArray(v, dep);
-                        else
-                            mutate(v);
-                        // 触发通知
-                        dep.notify();
+                        desc.value = value;
+                        // 执行处理
+                        onSet(dep, value);
                     }
                 });
             }
@@ -98,36 +176,22 @@ function mutateObject(data, key) {
                     get: function () {
                         if (!desc.get)
                             return;
-                        // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
-                        var watcher = Watcher.updating;
-                        if (watcher)
-                            dep.watch(watcher);
                         // 获取get方法结果
                         var result = desc.get.call(data);
-                        // 首次获取需要变异
-                        if (!subMutated) {
-                            subMutated = true;
-                            // 如果是数组，则要进行一下数组变异
-                            if (result instanceof Array)
-                                mutateArray(result, dep);
-                            // 递归子属性
-                            mutate(result);
-                        }
+                        // 执行处理
+                        onGet(dep, result, mutateSub);
+                        // 设置标记
+                        mutateSub = false;
                         // 返回值
                         return result;
                     },
-                    set: function (v) {
+                    set: function (value) {
                         if (!desc.set)
                             return;
                         // 设置
-                        desc.set.call(data, v);
-                        // 如果是数组就走专门的数组变异方法，否则递归变异对象
-                        if (Array.isArray(v))
-                            mutateArray(v, dep);
-                        else
-                            mutate(v);
-                        // 触发通知
-                        dep.notify();
+                        desc.set.call(data, value);
+                        // 执行处理
+                        onSet(dep, value);
                     }
                 });
             }
@@ -158,7 +222,7 @@ function defineReactiveArray(dep) {
     var proto = Array.prototype;
     var result = Object.create(proto);
     // 遍历所有方法，一个一个地变异
-    _arrMethods.forEach(function (method) {
+    arrMethods.forEach(function (method) {
         // 利用闭包记录一个原始方法
         var oriMethod = proto[method];
         // 开始变异

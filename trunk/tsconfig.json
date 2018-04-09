@@ -8,7 +8,12 @@
     "emitDecoratorMetadata": true,
     "sourceMap": false,
     "declaration": true,
-    "outDir": "./"
+    "outDir": "./",
+    "lib": [
+        "es2017",
+        "dom",
+        "scripthost"
+    ]
   },
   "include": [
     "./src/"
