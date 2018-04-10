@@ -219,18 +219,18 @@ export function getQueryParams(url: string):{[key:string]:string}
     var queryString: string = url.substring(index + 1);
     var params:{[key:string]:string} = {};
     var kvs: string[] = queryString.split("&");
-    kvs.forEach(function (kv: string)
+    for(var kv of kvs)
     {
         var pair: string[] = kv.split("=", 2);
         if (pair.length !== 2 || !pair[0])
         {
             console.log(`[URLUtil] invalid query params: ${kv}`);
-            return;
+            continue;
         }
         var name = decodeURIComponent(pair[0]);
         var value = decodeURIComponent(pair[1]);
         params[name] = value;
-    });
+    }
     return params;
 }
 

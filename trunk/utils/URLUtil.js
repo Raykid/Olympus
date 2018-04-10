@@ -194,16 +194,17 @@ export function getQueryParams(url) {
     var queryString = url.substring(index + 1);
     var params = {};
     var kvs = queryString.split("&");
-    kvs.forEach(function (kv) {
+    for (var _i = 0, kvs_1 = kvs; _i < kvs_1.length; _i++) {
+        var kv = kvs_1[_i];
         var pair = kv.split("=", 2);
         if (pair.length !== 2 || !pair[0]) {
             console.log("[URLUtil] invalid query params: " + kv);
-            return;
+            continue;
         }
         var name = decodeURIComponent(pair[0]);
         var value = decodeURIComponent(pair[1]);
         params[name] = value;
-    });
+    }
     return params;
 }
 /**
