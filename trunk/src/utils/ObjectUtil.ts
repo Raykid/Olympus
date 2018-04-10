@@ -37,7 +37,7 @@ export function extendObject(target:any, ...sources:any[]):any
 export function cloneObject(target:any, deep:boolean=false):any
 {
     if(target == null) return null;
-    var newObject:any = Object.create(Object.getPrototypeOf(target));;
+    var newObject:any = Object.create(Object.getPrototypeOf(target));
     var keys:string[] = Object.keys(target);
     for(var key of keys)
     {
