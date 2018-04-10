@@ -37,8 +37,9 @@ export function extendObject(target:any, ...sources:any[]):any
 export function cloneObject(target:any, deep:boolean=false):any
 {
     if(target == null) return null;
-    var newObject:any = {};
-    for(var key in target)
+    var newObject:any = Object.create(Object.getPrototypeOf(target));;
+    var keys:string[] = Object.keys(target);
+    for(var key of keys)
     {
         var value:any = target[key];
         if(deep && typeof value == "object")
@@ -46,7 +47,8 @@ export function cloneObject(target:any, deep:boolean=false):any
             // 如果是深表复制，则需要递归复制子对象
             value = cloneObject(value, true);
         }
-        newObject[key] = value;
+        var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(target, key);
+        Object.defineProperty(newObject, key, desc);
     }
     return newObject;
 }
@@ -144,7 +146,7 @@ export function getObjectHash(target:any):string
     var key:string = "__object_hash__";
     var value:string;
     // 只有当前对象上有key才算
-    if(target.hasOwnProperty(key)) value = target[key];
+    if(Object.prototype.hasOwnProperty.call(target, key)) value = target[key];
     // 如果已经有哈希值则直接返回
     if(value) return value;
     // 如果是基础类型则直接返回对应字符串

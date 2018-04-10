@@ -1,4 +1,4 @@
-import { getObjectHashs } from "../../utils/ObjectUtil";
+import { getObjectHashs, cloneObject } from "../../utils/ObjectUtil";
 import Dep from "./Dep";
 import Watcher from "./Watcher";
 
@@ -22,7 +22,7 @@ var arrMethods:string[] = [
 ];
 
 // 用来判断是否支持Proxy
-var hasProxy:boolean = (window["Proxy"] && Proxy.revocable instanceof Function);
+var hasProxy:boolean = false;//(window["Proxy"] && Proxy.revocable instanceof Function);
 
 /**
  * 将用户传进来的数据“变异”成为具有截获数据变更能力的数据
@@ -36,20 +36,23 @@ export function mutate(data:any):any
     // 判断是否支持Proxy
     if(hasProxy)
     {
+        // 支持Proxy，使用Proxy整体变异对象。原理是将data的复制品打包成一个Proxy，然后设置为data的原型，以此监控data上所有取值和赋值操作
         var lock:boolean = false;
-        // 支持Proxy，使用Proxy整体变异对象
-        var {proxy, revoke} = Proxy.revocable(Object.getPrototypeOf(data) || Object.create(null), {
-            get: function(target:any, key:PropertyKey, receiver:any):any
+        // 产生一个data的浅表拷贝对象
+        var temp:any = cloneObject(data);
+        // 用temp生成一个proxy对象
+        var proxy = new Proxy(temp, {
+            get: function(target:any, key:PropertyKey):any
             {
                 // 获取时如果没这个key则不作处理
-                if(!target.hasOwnProperty(key)) return undefined;
-                // 获取结果
-                var result:any = Reflect.get(target, key, receiver);
+                if(!(key in target)) return undefined;
+                // 从temp中获取结果
+                var result:any = Reflect.get(target, key, temp);
                 // 如果被锁住了，则直接返回结果
                 if(lock) return result;
                 // 如果属性不是可遍历的则也直接返回结果
                 var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(target, key);
-                if(!desc.enumerable) return result;
+                if(!desc || !desc.enumerable) return result;
                 // 获取依赖key
                 lock = true;
                 var depKey:string = getObjectHashs(data, key);
@@ -73,10 +76,10 @@ export function mutate(data:any):any
                 // 返回结果
                 return result;
             },
-            set: function(target:any, key:PropertyKey, value:any, receiver:any):boolean
+            set: function(target:any, key:PropertyKey, value:any):boolean
             {
                 // 设置结果
-                Reflect.set(target, key, value, receiver);
+                Reflect.set(target, key, value, temp);
                 // 获取依赖key
                 var depKey:string = getObjectHashs(data, key);
                 // 对每个复杂类型对象都要有一个对应的依赖列表
@@ -98,6 +101,12 @@ export function mutate(data:any):any
                 return true;
             }
         });
+        // 清空data
+        for(var key in data)
+        {
+            delete data[key];
+        }
+        // 将proxy设置为data的原型对象
         Object.setPrototypeOf(data, proxy);
     }
     else

@@ -37,14 +37,18 @@ export function cloneObject(target, deep) {
     if (deep === void 0) { deep = false; }
     if (target == null)
         return null;
-    var newObject = {};
-    for (var key in target) {
+    var newObject = Object.create(Object.getPrototypeOf(target));
+    ;
+    var keys = Object.keys(target);
+    for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+        var key = keys_1[_i];
         var value = target[key];
         if (deep && typeof value == "object") {
             // 如果是深表复制，则需要递归复制子对象
             value = cloneObject(value, true);
         }
-        newObject[key] = value;
+        var desc = Object.getOwnPropertyDescriptor(target, key);
+        Object.defineProperty(newObject, key, desc);
     }
     return newObject;
 }
@@ -129,7 +133,7 @@ export function getObjectHash(target) {
     var key = "__object_hash__";
     var value;
     // 只有当前对象上有key才算
-    if (target.hasOwnProperty(key))
+    if (Object.prototype.hasOwnProperty.call(target, key))
         value = target[key];
     // 如果已经有哈希值则直接返回
     if (value)
