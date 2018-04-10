@@ -8,6 +8,8 @@ import Dictionary from "../utils/Dictionary";
  *
  * 装饰器工具集
 */
+// 用来判断是否支持Proxy
+var hasProxy = (window["Proxy"] && Proxy.revocable instanceof Function);
 var instanceDict = new Dictionary();
 function handleInstance(instance) {
     var cls = instance.constructor;
@@ -27,17 +29,31 @@ function handleInstance(instance) {
  * @returns {IConstructor} 新的构造函数
  */
 export function wrapConstruct(cls) {
-    // 创建一个新的构造函数
-    var func;
-    eval('func = function ' + cls["name"] + '(){onConstruct.call(this, arguments)}');
-    // 动态设置继承
-    extendsClass(func, cls);
-    // 为新的构造函数打一个标签，用以记录原始的构造函数
-    func["__ori_constructor__"] = cls;
-    // 为原始构造函数也打一个标签，用以记录新构造函数
-    cls["__wrap_constructor__"] = func;
-    // 返回新的构造函数
-    return func;
+    if (hasProxy) {
+        // 使用Proxy监听类型构建
+        return new Proxy(cls, {
+            construct: function (target, args, newTarget) {
+                var result = Reflect.construct(target, args, newTarget);
+                if (newTarget)
+                    result.constructor = newTarget;
+                handleInstance(result);
+                return result;
+            }
+        });
+    }
+    else {
+        // 创建一个新的构造函数
+        var func;
+        eval('func = function ' + cls["name"] + '(){onConstruct.call(this, arguments)}');
+        // 动态设置继承
+        extendsClass(func, cls);
+        // 为新的构造函数打一个标签，用以记录原始的构造函数
+        func["__ori_constructor__"] = cls;
+        // 为原始构造函数也打一个标签，用以记录新构造函数
+        cls["__wrap_constructor__"] = func;
+        // 返回新的构造函数
+        return func;
+    }
     function onConstruct(args) {
         // 恢复__proto__
         Object.defineProperty(this, "__proto__", {

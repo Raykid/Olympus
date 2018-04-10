@@ -453,17 +453,6 @@ var Mediator = /** @class */ (function () {
                                             // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
                                             if (!_this._viewModel)
                                                 _this.viewModel = {};
-                                            // 开始一个个开启子中介者
-                                            var onSubMediatorOpened = function () {
-                                                // 修改状态
-                                                _this._status = MediatorStatus.OPENED;
-                                                // 调用模板方法
-                                                _this.__afterOnOpen.apply(_this, [data].concat(args));
-                                                // 调用回调
-                                                _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
-                                                // 派发事件
-                                                _this.dispatch(MediatorMessage.MEDIATOR_OPENED, _this);
-                                            };
                                             // 记录子中介者数量，并监听其开启完毕事件
                                             var subCount = _this._children.length;
                                             if (subCount > 0) {
@@ -473,8 +462,14 @@ var Mediator = /** @class */ (function () {
                                                     mediator.open(data);
                                                 }
                                             }
-                                            // 执行开启
-                                            onSubMediatorOpened();
+                                            // 修改状态
+                                            _this._status = MediatorStatus.OPENED;
+                                            // 调用模板方法
+                                            _this.__afterOnOpen.apply(_this, [data].concat(args));
+                                            // 调用回调
+                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
+                                            // 派发事件
+                                            _this.dispatch(MediatorMessage.MEDIATOR_OPENED, _this);
                                         }
                                     });
                                 }
