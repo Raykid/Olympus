@@ -38,7 +38,6 @@ export function cloneObject(target, deep) {
     if (target == null)
         return null;
     var newObject = Object.create(Object.getPrototypeOf(target));
-    ;
     var keys = Object.keys(target);
     for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
         var key = keys_1[_i];

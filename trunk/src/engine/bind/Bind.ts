@@ -1,8 +1,7 @@
-import IMediator from "../mediator/IMediator";
-import { mutate } from "./Mutator";
-import Watcher, { IWatcher, WatcherCallback } from "./Watcher";
 import { getObjectHashs } from "../../utils/ObjectUtil";
+import IMediator from "../mediator/IMediator";
 import { EvalExp } from "./Utils";
+import Watcher, { IWatcher, WatcherCallback } from "./Watcher";
 
 /**
  * @author Raykid

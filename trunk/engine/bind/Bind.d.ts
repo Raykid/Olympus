@@ -1,6 +1,6 @@
 import IMediator from "../mediator/IMediator";
-import { IWatcher, WatcherCallback } from "./Watcher";
 import { EvalExp } from "./Utils";
+import { IWatcher, WatcherCallback } from "./Watcher";
 /**
  * @author Raykid
  * @email initial_r@qq.com

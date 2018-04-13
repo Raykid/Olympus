@@ -1,4 +1,4 @@
-import { getObjectHashs, cloneObject } from "../../utils/ObjectUtil";
+import { getObjectHashs } from "../../utils/ObjectUtil";
 import Dep from "./Dep";
 import Watcher from "./Watcher";
 /**
@@ -19,8 +19,6 @@ var arrMethods = [
     "sort",
     "reverse"
 ];
-// 用来判断是否支持Proxy
-var hasProxy = false; //(window["Proxy"] && Proxy.revocable instanceof Function);
 /**
  * 将用户传进来的数据“变异”成为具有截获数据变更能力的数据
  * @param data 原始数据
@@ -30,90 +28,16 @@ export function mutate(data) {
     // 如果是简单类型，则啥也不做
     if (!data || typeof data != "object")
         return data;
-    // 判断是否支持Proxy
-    if (hasProxy) {
-        // 支持Proxy，使用Proxy整体变异对象。原理是将data的复制品打包成一个Proxy，然后设置为data的原型，以此监控data上所有取值和赋值操作
-        var lock = false;
-        // 产生一个data的浅表拷贝对象
-        var temp = cloneObject(data);
-        // 用temp生成一个proxy对象
-        var proxy = new Proxy(temp, {
-            get: function (target, key) {
-                // 获取时如果没这个key则不作处理
-                if (!(key in target))
-                    return undefined;
-                // 从temp中获取结果
-                var result = Reflect.get(target, key, temp);
-                // 如果被锁住了，则直接返回结果
-                if (lock)
-                    return result;
-                // 如果属性不是可遍历的则也直接返回结果
-                var desc = Object.getOwnPropertyDescriptor(target, key);
-                if (!desc || !desc.enumerable)
-                    return result;
-                // 获取依赖key
-                lock = true;
-                var depKey = getObjectHashs(data, key);
-                lock = false;
-                // 对每个复杂类型对象都要有一个对应的依赖列表
-                var dep = data[depKey];
-                var mutateSub = (dep == null);
-                if (!dep) {
-                    dep = new Dep();
-                    // 打一个标记表示已经变异过了
-                    Object.defineProperty(data, depKey, {
-                        value: dep,
-                        writable: false,
-                        enumerable: false,
-                        configurable: false
-                    });
-                }
-                // 执行处理
-                onGet(dep, result, mutateSub);
-                // 返回结果
-                return result;
-            },
-            set: function (target, key, value) {
-                // 设置结果
-                Reflect.set(target, key, value, temp);
-                // 获取依赖key
-                var depKey = getObjectHashs(data, key);
-                // 对每个复杂类型对象都要有一个对应的依赖列表
-                var dep = data[depKey];
-                if (!dep) {
-                    dep = new Dep();
-                    // 打一个标记表示已经变异过了
-                    Object.defineProperty(data, depKey, {
-                        value: dep,
-                        writable: false,
-                        enumerable: false,
-                        configurable: false
-                    });
-                }
-                // 执行处理
-                onSet(dep, value);
-                // 返回
-                return true;
-            }
-        });
-        // 清空data
-        for (var key in data) {
-            delete data[key];
-        }
-        // 将proxy设置为data的原型对象
-        Object.setPrototypeOf(data, proxy);
-    }
-    else {
-        // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
-        var keys = Object.keys(data).concat(Object.keys(data.__proto__ || {}));
-        // 去重
-        var temp = {};
-        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-            var key = keys_1[_i];
-            if (!temp[key]) {
-                temp[key] = key;
-                mutateObject(data, key);
-            }
+    // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
+    var keys = Object.keys(data).concat(Object.keys(data.__proto__ || {}));
+    // 去重
+    var temp = {};
+    for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+        var key = keys_1[_i];
+        if (!temp[key]) {
+            temp[key] = key;
+            // 递归变异
+            mutateObject(data, key);
         }
     }
     return data;

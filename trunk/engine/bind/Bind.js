@@ -1,5 +1,5 @@
-import Watcher from "./Watcher";
 import { getObjectHashs } from "../../utils/ObjectUtil";
+import Watcher from "./Watcher";
 /**
  * @author Raykid
  * @email initial_r@qq.com
