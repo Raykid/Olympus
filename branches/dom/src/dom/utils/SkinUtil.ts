@@ -22,7 +22,7 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
 {
     var result:HTMLElement = (skin instanceof HTMLElement ? skin : document.createElement("div"));
     // 判断中介者当前状态
-    if(mediator.status < MediatorStatus.OPENED)
+    if(mediator.status < MediatorStatus.OPENING)
     {
         // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
         var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;

@@ -1,6 +1,7 @@
 import IConstructor from "../core/interfaces/IConstructor";
-import { extendsClass } from "../utils/ObjectUtil";
+import IMediator from '../engine/mediator/IMediator';
 import Dictionary from "../utils/Dictionary";
+import { extendsClass } from "../utils/ObjectUtil";
 
 /**
  * @author Raykid
@@ -142,6 +143,41 @@ export function listenDispose(cls:IConstructor, handler:(instance?:any)=>void):v
             handler(this);
             // 调用原始dispose方法执行销毁
             return dispose.apply(this, arguments);
+        };
+    }
+}
+
+/**
+ * 监听Mediator的onOpen方法
+ * 
+ * @export
+ * @param {IConstructor} target 要监听的Mediator类型或实例
+ * @param {(mediator:IMediator)=>void} [before] onOpen执行前调用的回调
+ * @param {(mediator:IMediator)=>void} [after] onOpen执行后调用的回调
+ */
+export function listenOnOpen(target:IConstructor|IMediator, before?:(mediator:IMediator)=>void, after?:(mediator:IMediator)=>void):void
+{
+    if(target instanceof Function)
+        listenConstruct(target, onGetMediator);
+    else
+        onGetMediator(target);
+
+    function onGetMediator(mediator:IMediator):void
+    {
+        // 篡改onOpen方法
+        var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
+        mediator.onOpen = function(...args:any[]):any
+        {
+            // 调用回调
+            before && before(mediator);
+            // 恢复原始方法
+            if(oriFunc) mediator.onOpen = oriFunc;
+            else delete mediator.onOpen;
+            // 调用原始方法
+            var result:any = mediator.onOpen.apply(this, args);
+            // 调用回调
+            after && after(mediator);
+            return result;
         };
     }
 }

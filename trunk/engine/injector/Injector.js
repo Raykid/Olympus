@@ -1,7 +1,7 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import Message from "../../core/message/Message";
-import { wrapConstruct, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
+import { wrapConstruct, listenConstruct, listenDispose, listenOnOpen } from "../../utils/ConstructUtil";
 import ResponseData from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import { bridgeManager } from "../bridge/BridgeManager";
@@ -318,45 +318,30 @@ export function SubMediator(arg1, arg2) {
     }
 }
 var onOpenDict = new Dictionary();
-function listenOnOpen(prototype, propertyKey, before, after) {
-    listenConstruct(prototype.constructor, function (mediator) {
-        // 篡改onOpen方法
-        var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-        mediator.onOpen = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            // 调用回调
-            before && before(mediator);
-            // 恢复原始方法
-            if (oriFunc)
-                mediator.onOpen = oriFunc;
-            else
-                delete mediator.onOpen;
-            // 调用原始方法
-            var result = mediator.onOpen.apply(this, args);
-            // 调用回调
-            after && after(mediator);
-            // 递减篡改次数
-            var count = onOpenDict.get(mediator) - 1;
-            onOpenDict.set(mediator, count);
-            // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
-            if (count <= 0) {
-                // 移除数据
-                onOpenDict.delete(mediator);
-                // 全调用完毕了，按层级顺序由浅入深编译
-                var bindTargets = mediator.bindTargets;
-                for (var depth in bindTargets) {
-                    var dict = bindTargets[depth];
-                    dict.forEach(function (currentTarget) { return BindUtil.compile(mediator, currentTarget); });
-                }
-            }
-            return result;
-        };
+function _listenOnOpen(prototype, before, after) {
+    listenOnOpen(prototype.constructor, function (mediator) {
         // 记录onOpen篡改次数
         var count = onOpenDict.get(mediator) || 0;
         onOpenDict.set(mediator, count + 1);
+        // 调用回调
+        before && before(mediator);
+    }, function (mediator) {
+        // 调用回调
+        after && after(mediator);
+        // 递减篡改次数
+        var count = onOpenDict.get(mediator) - 1;
+        onOpenDict.set(mediator, count);
+        // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
+        if (count <= 0) {
+            // 移除数据
+            onOpenDict.delete(mediator);
+            // 全调用完毕了，按层级顺序由浅入深编译
+            var bindTargets = mediator.bindTargets;
+            for (var depth in bindTargets) {
+                var dict = bindTargets[depth];
+                dict.forEach(function (currentTarget) { return BindUtil.compile(mediator, currentTarget); });
+            }
+        }
     });
 }
 /**
@@ -414,7 +399,7 @@ function searchUIDepth(values, mediator, target, callback, addressing) {
  */
 export function BindValue(arg1, arg2) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             // 组织参数字典
             var uiDict;
             if (typeof arg1 == "string") {
@@ -438,7 +423,7 @@ export function BindValue(arg1, arg2) {
  */
 export function BindExp(exp) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             // 组织参数字典
             var uiDict = {};
             if (exp instanceof Array) {
@@ -463,7 +448,7 @@ export function BindExp(exp) {
  */
 export function BindFunc(arg1, arg2) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             // 组织参数字典
             var funcDict;
             if (typeof arg1 == "string") {
@@ -490,7 +475,7 @@ export function BindFunc(arg1, arg2) {
  */
 export function BindOn(arg1, arg2, arg3) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             // 获取编译启动目标
             var target = mediator[propertyKey];
             // 组织参数字典
@@ -529,7 +514,7 @@ export function BindOn(arg1, arg2, arg3) {
  */
 export function BindIf(arg1, arg2) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             var target = mediator[propertyKey];
             if (typeof arg1 === "string" || arg1 instanceof Function) {
                 if (!arg2) {
@@ -584,7 +569,7 @@ export function BindFor(arg1, arg2, arg3) {
         uiDict = arg1;
     }
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             // 取到编译目标对象
             var target = mediator[propertyKey];
             // 开始赋值指令
@@ -633,7 +618,7 @@ function doBindMessage(mediator, target, type, uiDict, observable) {
  */
 export function BindMessage(arg1, arg2) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式
@@ -653,7 +638,7 @@ export function BindMessage(arg1, arg2) {
  */
 export function BindGlobalMessage(arg1, arg2) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式
@@ -679,7 +664,7 @@ function doBindResponse(mediator, target, type, uiDict, observable) {
 export function BindResponse(arg1, arg2) {
     return function (prototype, propertyKey) {
         // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式
@@ -699,7 +684,7 @@ export function BindResponse(arg1, arg2) {
  */
 export function BindGlobalResponse(arg1, arg2) {
     return function (prototype, propertyKey) {
-        listenOnOpen(prototype, propertyKey, function (mediator) {
+        _listenOnOpen(prototype, function (mediator) {
             var target = mediator[propertyKey];
             if (typeof arg1 == "string" || arg1 instanceof Function) {
                 // 是类型方式

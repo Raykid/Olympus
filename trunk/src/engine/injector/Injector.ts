@@ -2,7 +2,7 @@ import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import Message from "../../core/message/Message";
 import IObservable from "../../core/observable/IObservable";
-import { wrapConstruct, listenConstruct, listenDispose, getConstructor } from "../../utils/ConstructUtil";
+import { wrapConstruct, listenConstruct, listenDispose, getConstructor, listenOnOpen } from "../../utils/ConstructUtil";
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import { netManager } from "../net/NetManager";
 import { bridgeManager } from "../bridge/BridgeManager";
@@ -404,44 +404,35 @@ export function SubMediator(arg1:any, arg2?:any):any
 }
 
 var onOpenDict:Dictionary<IMediator, number> = new Dictionary();
-function listenOnOpen(prototype:any, propertyKey:string, before?:(mediator:IMediator)=>void, after?:(mediator:IMediator)=>void):void
+function _listenOnOpen(prototype:any, before?:(mediator:IMediator)=>void, after?:(mediator:IMediator)=>void):void
 {
-    listenConstruct(prototype.constructor, function(mediator:IMediator):void
+    listenOnOpen(prototype.constructor, function(mediator:IMediator):void
     {
-        // 篡改onOpen方法
-        var oriFunc:any = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-        mediator.onOpen = function(...args:any[]):any
-        {
-            // 调用回调
-            before && before(mediator);
-            // 恢复原始方法
-            if(oriFunc) mediator.onOpen = oriFunc;
-            else delete mediator.onOpen;
-            // 调用原始方法
-            var result:any = mediator.onOpen.apply(this, args);
-            // 调用回调
-            after && after(mediator);
-            // 递减篡改次数
-            var count:number = onOpenDict.get(mediator) - 1;
-            onOpenDict.set(mediator, count);
-            // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
-            if(count <= 0)
-            {
-                // 移除数据
-                onOpenDict.delete(mediator);
-                // 全调用完毕了，按层级顺序由浅入深编译
-                var bindTargets:Dictionary<any, any>[] = mediator.bindTargets;
-                for(var depth in bindTargets)
-                {
-                    var dict:Dictionary<any, any> = bindTargets[depth];
-                    dict.forEach(currentTarget=>BindUtil.compile(mediator, currentTarget));
-                }
-            }
-            return result;
-        };
         // 记录onOpen篡改次数
         var count:number = onOpenDict.get(mediator) || 0;
         onOpenDict.set(mediator, count + 1);
+        // 调用回调
+        before && before(mediator);
+    }, function(mediator:IMediator):void
+    {
+        // 调用回调
+        after && after(mediator);
+        // 递减篡改次数
+        var count:number = onOpenDict.get(mediator) - 1;
+        onOpenDict.set(mediator, count);
+        // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
+        if(count <= 0)
+        {
+            // 移除数据
+            onOpenDict.delete(mediator);
+            // 全调用完毕了，按层级顺序由浅入深编译
+            var bindTargets:Dictionary<any, any>[] = mediator.bindTargets;
+            for(var depth in bindTargets)
+            {
+                var dict:Dictionary<any, any> = bindTargets[depth];
+                dict.forEach(currentTarget=>BindUtil.compile(mediator, currentTarget));
+            }
+        }
     });
 }
 
@@ -520,7 +511,7 @@ export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):Proper
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             // 组织参数字典
             var uiDict:{[name:string]:any};
             if(typeof arg1 == "string")
@@ -565,7 +556,7 @@ export function BindExp(exp:EvalExp|EvalExp[]):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             // 组织参数字典
             var uiDict:{[name:string]:any} = {};
             if(exp instanceof Array)
@@ -618,7 +609,7 @@ export function BindFunc(arg1:BindFuncDict|string, arg2?:(EvalExp)|(EvalExp)[]):
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             // 组织参数字典
             var funcDict:BindFuncDict;
             if(typeof arg1 == "string")
@@ -676,7 +667,7 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:EvalExp, arg3?:Eva
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             // 获取编译启动目标
             var target:any = mediator[propertyKey];
             // 组织参数字典
@@ -747,7 +738,7 @@ export function BindIf(arg1:{[path:string]:any}|EvalExp, arg2?:EvalExp):Property
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             var target:any = mediator[propertyKey];
             if(typeof arg1 === "string" || arg1 instanceof Function)
             {
@@ -841,7 +832,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any):P
     }
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             // 取到编译目标对象
             var target:any = mediator[propertyKey];
             // 开始赋值指令
@@ -916,7 +907,7 @@ export function BindMessage(arg1:{[type:string]:{[name:string]:any}}|IConstructo
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
@@ -959,7 +950,7 @@ export function BindGlobalMessage(arg1:{[type:string]:{[name:string]:any}}|ICons
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
@@ -1010,7 +1001,7 @@ export function BindResponse(arg1:{[type:string]:{[name:string]:any}}|IResponseD
     return function(prototype:any, propertyKey:string):void
     {
         // Response需要在onOpen之后执行，因为可能有初始化消息需要绑定，要在onOpen后有了viewModel再首次更新显示
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {
@@ -1053,7 +1044,7 @@ export function BindGlobalResponse(arg1:{[type:string]:{[name:string]:any}}|IRes
 {
     return function(prototype:any, propertyKey:string):void
     {
-        listenOnOpen(prototype, propertyKey, (mediator:IMediator)=>{
+        _listenOnOpen(prototype, (mediator:IMediator)=>{
             var target:any = mediator[propertyKey];
             if(typeof arg1 == "string" || arg1 instanceof Function)
             {

@@ -1,4 +1,5 @@
 import IConstructor from "../core/interfaces/IConstructor";
+import IMediator from '../engine/mediator/IMediator';
 /**
  * 包装一个类型，监听类型的实例化操作
  *
@@ -39,3 +40,12 @@ export declare function unlistenConstruct(cls: IConstructor, handler: (instance?
  * @param {(instance?:any)=>void} handler 处理函数
  */
 export declare function listenDispose(cls: IConstructor, handler: (instance?: any) => void): void;
+/**
+ * 监听Mediator的onOpen方法
+ *
+ * @export
+ * @param {IConstructor} target 要监听的Mediator类型或实例
+ * @param {(mediator:IMediator)=>void} [before] onOpen执行前调用的回调
+ * @param {(mediator:IMediator)=>void} [after] onOpen执行后调用的回调
+ */
+export declare function listenOnOpen(target: IConstructor | IMediator, before?: (mediator: IMediator) => void, after?: (mediator: IMediator) => void): void;
