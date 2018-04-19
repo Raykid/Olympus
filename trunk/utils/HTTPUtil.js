@@ -89,9 +89,11 @@ export function load(params) {
             xhr.withCredentials = true;
         xhr.onload = onLoad;
         xhr.onerror = onError;
-        // 添加自定义请求头
-        for (var key in params.headerDict) {
-            xhr.setRequestHeader(key, params.headerDict[key]);
+        // 添加自定义请求头，如果可以的话
+        if (xhr.setRequestHeader) {
+            for (var key in params.headerDict) {
+                xhr.setRequestHeader(key, params.headerDict[key]);
+            }
         }
         // 开始发送
         xhr.send(sendData);
@@ -99,8 +101,8 @@ export function load(params) {
         timeoutId = window.setTimeout(abortAndRetry, timeout);
     }
     function onLoad(evt) {
-        // 即使是onLoad也要判断下状态码
-        var statusHead = Math.floor(xhr.status * 0.01);
+        // 即使是onLoad也要判断下状态码，但如果没有状态码，比如说XDomainRequest就直接认为成功了
+        var statusHead = xhr.status ? Math.floor(xhr.status * 0.01) : 2;
         switch (statusHead) {
             case 2:
             case 3:
@@ -108,7 +110,7 @@ export function load(params) {
                 timeoutId && clearTimeout(timeoutId);
                 timeoutId = 0;
                 // 成功回调
-                params.onResponse && params.onResponse(xhr.response);
+                params.onResponse && params.onResponse(xhr.response || xhr.responseText);
                 break;
             case 4:
             case 5:
@@ -134,7 +136,7 @@ export function load(params) {
             }
             else {
                 // 切换完了还失败，则汇报错误
-                var err = new Error(xhr.status + " " + xhr.statusText);
+                var err = new Error(xhr.status ? xhr.status + " " + xhr.statusText : "请求错误，且无法获取错误信息");
                 params.onError && params.onError(err);
             }
         }

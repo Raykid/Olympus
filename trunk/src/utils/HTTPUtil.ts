@@ -199,10 +199,13 @@ export function load(params:IHTTPRequestParams):void
         if(params.withCredentials) xhr.withCredentials = true;
         xhr.onload = onLoad;
         xhr.onerror = onError;
-        // 添加自定义请求头
-        for(var key in params.headerDict)
+        // 添加自定义请求头，如果可以的话
+        if(xhr.setRequestHeader)
         {
-            xhr.setRequestHeader(key, params.headerDict[key]);
+            for(var key in params.headerDict)
+            {
+                xhr.setRequestHeader(key, params.headerDict[key]);
+            }
         }
         // 开始发送
         xhr.send(sendData);
@@ -212,8 +215,8 @@ export function load(params:IHTTPRequestParams):void
 
     function onLoad(evt:Event):void
     {
-        // 即使是onLoad也要判断下状态码
-        var statusHead:number = Math.floor(xhr.status * 0.01);
+        // 即使是onLoad也要判断下状态码，但如果没有状态码，比如说XDomainRequest就直接认为成功了
+        var statusHead:number = xhr.status ? Math.floor(xhr.status * 0.01) : 2;
         switch(statusHead)
         {
             case 2:
@@ -222,7 +225,7 @@ export function load(params:IHTTPRequestParams):void
                 timeoutId && clearTimeout(timeoutId);
                 timeoutId = 0;
                 // 成功回调
-                params.onResponse && params.onResponse(xhr.response);
+                params.onResponse && params.onResponse(xhr.response || xhr.responseText);
                 break;
             case 4:
             case 5:
@@ -254,7 +257,7 @@ export function load(params:IHTTPRequestParams):void
             else
             {
                 // 切换完了还失败，则汇报错误
-                var err:Error = new Error(xhr.status + " " + xhr.statusText);
+                var err:Error = new Error(xhr.status ? xhr.status + " " + xhr.statusText : "请求错误，且无法获取错误信息");
                 params.onError && params.onError(err);
             }
         }
