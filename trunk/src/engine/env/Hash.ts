@@ -1,5 +1,5 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../core/injector/Injector"
+import { Injectable } from "../../core/injector/Injector";
 
 /**
  * @author Raykid
@@ -111,7 +111,14 @@ export default class Hash
             this._moduleDatas.push(data);
         }
         // 如果keepHash不是true，则移除哈希值
-        if(!this._keepHash) window.location.hash = "";
+        if(!this._keepHash)
+        {
+            // 要使用window.location.replace方法，不能直接设置hash属性，否则会产生历史记录
+            var url:string = window.location.href;
+            var index:number = url.indexOf("#");
+            if(index >= 0)
+                window.location.replace(url.substr(0, index + 1));
+        }
     }
 
     /**

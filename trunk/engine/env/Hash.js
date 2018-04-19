@@ -50,8 +50,13 @@ var Hash = /** @class */ (function () {
             this._moduleDatas.push(data);
         }
         // 如果keepHash不是true，则移除哈希值
-        if (!this._keepHash)
-            window.location.hash = "";
+        if (!this._keepHash) {
+            // 要使用window.location.replace方法，不能直接设置hash属性，否则会产生历史记录
+            var url = window.location.href;
+            var index = url.indexOf("#");
+            if (index >= 0)
+                window.location.replace(url.substr(0, index + 1));
+        }
     }
     Object.defineProperty(Hash.prototype, "hash", {
         /**

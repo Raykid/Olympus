@@ -227,10 +227,16 @@ var Mediator = /** @class */ (function () {
         };
         // 加载自身资源
         var assets = this.listAssets();
-        // 去重
-        assets = unique(assets);
-        // 开始加载
-        this.bridge.loadAssets(assets, this, temp);
+        if (assets && assets.length > 0) {
+            // 去重
+            assets = unique(assets);
+            // 开始加载
+            this.bridge.loadAssets(assets, this, temp);
+        }
+        else {
+            // 没有资源，直接调用回调
+            handler();
+        }
     };
     /**
      * 加载从listStyleFiles中获取到的所有资源
