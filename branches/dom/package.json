@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.6.13",
+  "version": "0.6.14",
   "description": "Olympus的DOM表现层库",
   "files": [
     "dom/",
@@ -35,7 +35,7 @@
     "@types/tween.js": "^16.9.0"
   },
   "devDependencies": {
-    "olympus-r": "^0.6.70",
+    "olympus-r": "^0.6.73",
     "typedoc": "^0.11.1"
   }
 }
