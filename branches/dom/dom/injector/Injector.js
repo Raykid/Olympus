@@ -1,6 +1,6 @@
 import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
 import { MediatorClass } from "olympus-r/engine/injector/Injector";
-import { listenConstruct, listenOnOpen } from "olympus-r/utils/ConstructUtil";
+import { listenConstruct, listenApply } from "olympus-r/utils/ConstructUtil";
 import DOMBridge from "../../DOMBridge";
 /**
  * @author Raykid
@@ -31,7 +31,9 @@ export function DOMMediatorClass(moduleName, skin) {
             // 先赋值桥
             mediator.bridge = bridgeManager.getBridge(DOMBridge.TYPE);
             // 然后监听onOpen，在onOpen中设置皮肤
-            listenOnOpen(mediator, function (mediator) { return mediator.skin = finalSkin; });
+            listenApply(mediator, "onOpen", function (mediator) {
+                mediator.skin = finalSkin;
+            });
         });
         // 返回结果类型
         return cls;

@@ -1,23 +1,23 @@
+import "reflect-metadata";
 import { core } from "../../core/Core";
+import { decorateThis } from "../../core/global/Patch";
 import { Injectable } from "../../core/injector/Injector";
 import Message from "../../core/message/Message";
 import IObservable from "../../core/observable/IObservable";
-import { wrapConstruct, listenConstruct, listenDispose, getConstructor, listenOnOpen } from "../../utils/ConstructUtil";
-import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
-import { netManager } from "../net/NetManager";
-import { bridgeManager } from "../bridge/BridgeManager";
-import Mediator, { registerModule } from "../mediator/Mediator";
-import { decorateThis } from "../../core/global/Patch";
+import { listenApply, listenConstruct, listenDispose, wrapConstruct } from "../../utils/ConstructUtil";
 import Dictionary from "../../utils/Dictionary";
+import { replaceDisplay } from "../../utils/DisplayUtil";
+import { EvalExp, evalExp } from "../bind/Utils";
+import { bridgeManager } from "../bridge/BridgeManager";
+import IBridge from "../bridge/IBridge";
 import IMediator from "../mediator/IMediator";
+import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import Mediator, { registerModule } from "../mediator/Mediator";
+import MediatorStatus from "../mediator/MediatorStatus";
+import { netManager } from "../net/NetManager";
+import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
-import IBridge from "../bridge/IBridge";
-import "reflect-metadata";
-import { EvalExp } from "../bind/Utils";
-import IMediatorConstructor from "../mediator/IMediatorConstructor";
-import MediatorStatus from "../mediator/MediatorStatus";
-import { replaceDisplay } from "../../utils/DisplayUtil";
 
 /**
  * @author Raykid
@@ -257,13 +257,14 @@ function addSubHandler(instance:IMediator, handler:(instance?:IMediator)=>void):
 }
 
 /** 添加子Mediator */
-export function SubMediator(mediator:IMediatorConstructor):PropertyDecorator;
-export function SubMediator(skin:any, mediator?:IMediatorConstructor):PropertyDecorator;
+export function SubMediator(mediator:IMediatorConstructor, dataExp?:string):PropertyDecorator;
+export function SubMediator(skin:any, mediator?:IMediatorConstructor, dataExp?:string):PropertyDecorator;
 export function SubMediator(prototype:any, propertyKey:string):void;
-export function SubMediator(arg1:any, arg2?:any):any
+export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
 {
     var skin:any;
     var mediatorCls:IMediatorConstructor;
+    var dataExp:string;
     // 判断是否是参数化装饰
     if(this === decorateThis)
     {
@@ -276,11 +277,13 @@ export function SubMediator(arg1:any, arg2?:any):any
         if(arg1 instanceof Function)
         {
             mediatorCls = arg1;
+            dataExp = arg2;
         }
         else
         {
             skin = arg1;
             mediatorCls = arg2;
+            dataExp = arg3;
         }
         // 返回装饰器方法
         return doSubMediator;
@@ -389,6 +392,16 @@ export function SubMediator(arg1:any, arg2?:any):any
                     subHandlerDict.delete(mediator);
                 }
             });
+            // 监听open方法
+            listenApply(prototype.constructor, "open", function(instance:IMediator):any[]|void
+            {
+                // 如果dataExp有值，则篡改open参数
+                if(dataExp)
+                {
+                    var data:any = evalExp(dataExp, instance.viewModel, instance.viewModel);
+                    if(data) return [data];
+                }
+            });
             // 监听销毁
             listenDispose(prototype.constructor, function(instance:IMediator):void
             {
@@ -406,7 +419,7 @@ export function SubMediator(arg1:any, arg2?:any):any
 var onOpenDict:Dictionary<IMediator, number> = new Dictionary();
 function _listenOnOpen(prototype:any, before?:(mediator:IMediator)=>void, after?:(mediator:IMediator)=>void):void
 {
-    listenOnOpen(prototype.constructor, function(mediator:IMediator):void
+    listenApply(prototype.constructor, "onOpen", function(mediator:IMediator):void
     {
         // 记录onOpen篡改次数
         var count:number = onOpenDict.get(mediator) || 0;

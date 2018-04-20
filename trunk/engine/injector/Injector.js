@@ -1,18 +1,19 @@
+import "reflect-metadata";
 import { core } from "../../core/Core";
+import { decorateThis } from "../../core/global/Patch";
 import { Injectable } from "../../core/injector/Injector";
 import Message from "../../core/message/Message";
-import { wrapConstruct, listenConstruct, listenDispose, listenOnOpen } from "../../utils/ConstructUtil";
-import ResponseData from "../net/ResponseData";
-import { netManager } from "../net/NetManager";
+import { listenApply, listenConstruct, listenDispose, wrapConstruct } from "../../utils/ConstructUtil";
+import Dictionary from "../../utils/Dictionary";
+import { replaceDisplay } from "../../utils/DisplayUtil";
+import { evalExp } from "../bind/Utils";
 import { bridgeManager } from "../bridge/BridgeManager";
 import Mediator, { registerModule } from "../mediator/Mediator";
-import { decorateThis } from "../../core/global/Patch";
-import Dictionary from "../../utils/Dictionary";
+import MediatorStatus from "../mediator/MediatorStatus";
+import { netManager } from "../net/NetManager";
+import ResponseData from "../net/ResponseData";
 import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
-import "reflect-metadata";
-import MediatorStatus from "../mediator/MediatorStatus";
-import { replaceDisplay } from "../../utils/DisplayUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -201,9 +202,10 @@ function addSubHandler(instance, handler) {
     if (handlers.indexOf(handler) < 0)
         handlers.push(handler);
 }
-export function SubMediator(arg1, arg2) {
+export function SubMediator(arg1, arg2, arg3) {
     var skin;
     var mediatorCls;
+    var dataExp;
     // 判断是否是参数化装饰
     if (this === decorateThis) {
         // 无参数
@@ -213,10 +215,12 @@ export function SubMediator(arg1, arg2) {
         // 有参数，分配参数
         if (arg1 instanceof Function) {
             mediatorCls = arg1;
+            dataExp = arg2;
         }
         else {
             skin = arg1;
             mediatorCls = arg2;
+            dataExp = arg3;
         }
         // 返回装饰器方法
         return doSubMediator;
@@ -306,6 +310,15 @@ export function SubMediator(arg1, arg2) {
                     subHandlerDict.delete(mediator);
                 }
             });
+            // 监听open方法
+            listenApply(prototype.constructor, "open", function (instance) {
+                // 如果dataExp有值，则篡改open参数
+                if (dataExp) {
+                    var data = evalExp(dataExp, instance.viewModel, instance.viewModel);
+                    if (data)
+                        return [data];
+                }
+            });
             // 监听销毁
             listenDispose(prototype.constructor, function (instance) {
                 var mediator = instance[propertyKey];
@@ -319,7 +332,7 @@ export function SubMediator(arg1, arg2) {
 }
 var onOpenDict = new Dictionary();
 function _listenOnOpen(prototype, before, after) {
-    listenOnOpen(prototype.constructor, function (mediator) {
+    listenApply(prototype.constructor, "onOpen", function (mediator) {
         // 记录onOpen篡改次数
         var count = onOpenDict.get(mediator) || 0;
         onOpenDict.set(mediator, count + 1);

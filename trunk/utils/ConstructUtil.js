@@ -130,37 +130,51 @@ export function listenDispose(cls, handler) {
     }
 }
 /**
- * 监听Mediator的onOpen方法
+ * 监听某个实例的某个方法调用，并插入逻辑
  *
  * @export
- * @param {IConstructor} target 要监听的Mediator类型或实例
- * @param {(mediator:IMediator)=>void} [before] onOpen执行前调用的回调
- * @param {(mediator:IMediator)=>void} [after] onOpen执行后调用的回调
+ * @param {IConstructor|any} target 要监听的对象类型或实例
+ * @param {string} name 要监听调用的方法名
+ * @param {(instance:any)=>any[]|void} [before] 执行前调用的回调，如果有返回值则替换掉正式方法执行时的参数
+ * @param {(instance:any, result?:any)=>any} [after] 执行后调用的回调，可以接收正式方法的返回值，如果after有返回值则替换掉正式方法的返回值
+ * @param {boolean} [once=true] 是否是一次性监听，默认是true
  */
-export function listenOnOpen(target, before, after) {
+export function listenApply(target, name, before, after, once) {
+    if (once === void 0) { once = true; }
     if (target instanceof Function)
-        listenConstruct(target, onGetMediator);
+        // 是个类型，监听构建后再执行处理
+        listenConstruct(target, onGetInstance);
     else
-        onGetMediator(target);
-    function onGetMediator(mediator) {
-        // 篡改onOpen方法
-        var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-        mediator.onOpen = function () {
+        // 是个实例，直接执行处理
+        onGetInstance(target);
+    function onGetInstance(instance) {
+        // 篡改指定方法
+        var oriFunc = instance.hasOwnProperty(name) ? instance[name] : null;
+        instance[name] = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
             // 调用回调
-            before && before(mediator);
-            // 恢复原始方法
-            if (oriFunc)
-                mediator.onOpen = oriFunc;
-            else
-                delete mediator.onOpen;
+            var tempArgs = before && before(instance);
+            // 替换参数
+            if (tempArgs)
+                args = tempArgs;
+            // 如果是一次性监听，则恢复原始方法
+            if (once) {
+                if (oriFunc)
+                    instance[name] = oriFunc;
+                else
+                    delete instance[name];
+            }
             // 调用原始方法
-            var result = mediator.onOpen.apply(this, args);
+            var result = instance[name].apply(this, args);
             // 调用回调
-            after && after(mediator);
+            var tempResult = after && after(instance, result);
+            // 替换结果
+            if (tempResult)
+                result = tempResult;
+            // 返回结果
             return result;
         };
     }
