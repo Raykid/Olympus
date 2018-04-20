@@ -213,7 +213,10 @@ export function SubMediator(arg1, arg2, arg3) {
     }
     else {
         // 有参数，分配参数
-        if (arg1 instanceof Function) {
+        if (typeof arg1 === "string" && !arg2 && !arg3) {
+            dataExp = arg1;
+        }
+        else if (arg1 instanceof Function) {
             mediatorCls = arg1;
             dataExp = arg2;
         }
@@ -239,6 +242,7 @@ export function SubMediator(arg1, arg2, arg3) {
                         return mediator;
                     },
                     set: function (value) {
+                        var _this = this;
                         if (value instanceof Mediator) {
                             // 取消托管中介者
                             if (mediator) {
@@ -284,8 +288,33 @@ export function SubMediator(arg1, arg2, arg3) {
                             // 托管中介者
                             this.delegateMediator(mediator);
                             // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                            if (this.status === MediatorStatus.OPENED && mediator.status === MediatorStatus.UNOPEN) {
-                                mediator.open(this.data);
+                            if (mediator.status === MediatorStatus.UNOPEN) {
+                                var getCommonScope = function () {
+                                    return {
+                                        $this: _this,
+                                        $data: _this.viewModel,
+                                        $bridge: _this.bridge,
+                                        $currentTarget: mediator,
+                                        $target: mediator
+                                    };
+                                };
+                                // 子Mediator还没有open，open之
+                                if (this.status === MediatorStatus.OPENED) {
+                                    // 父Mediator已经open了，直接open之
+                                    var data = dataExp ? evalExp(dataExp, this.viewModel, this.viewModel, this.data, getCommonScope()) : this.data;
+                                    if (!data)
+                                        data = this.data;
+                                    // 执行open方法
+                                    mediator.open(data);
+                                }
+                                else if (this.status < MediatorStatus.OPENED && dataExp) {
+                                    // 父Mediator也没有open，监听子Mediator的open，篡改参数
+                                    listenApply(mediator, "open", function () {
+                                        var data = evalExp(dataExp, _this.viewModel, _this.viewModel, _this.data, getCommonScope());
+                                        if (data)
+                                            return [data];
+                                    });
+                                }
                             }
                         }
                     }
@@ -297,7 +326,7 @@ export function SubMediator(arg1, arg2, arg3) {
                 else if (temp === undefined) {
                     // 优先使用装饰器提供的中介者类型，如果没有则使用元数据
                     var cls = mediatorCls || Reflect.getMetadata("design:type", prototype, propertyKey);
-                    instance[propertyKey] = new cls(skin);
+                    instance[propertyKey] = temp = new cls(skin);
                 }
                 // 执行回调
                 var handlers = subHandlerDict.get(mediator);
@@ -308,15 +337,6 @@ export function SubMediator(arg1, arg2, arg3) {
                     }
                     // 移除记录
                     subHandlerDict.delete(mediator);
-                }
-            });
-            // 监听open方法
-            listenApply(prototype.constructor, "open", function (instance) {
-                // 如果dataExp有值，则篡改open参数
-                if (dataExp) {
-                    var data = evalExp(dataExp, instance.viewModel, instance.viewModel);
-                    if (data)
-                        return [data];
                 }
             });
             // 监听销毁

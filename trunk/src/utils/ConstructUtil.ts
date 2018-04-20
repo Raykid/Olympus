@@ -152,11 +152,11 @@ export function listenDispose(cls:IConstructor, handler:(instance?:any)=>void):v
  * @export
  * @param {IConstructor|any} target 要监听的对象类型或实例
  * @param {string} name 要监听调用的方法名
- * @param {(instance:any)=>any[]|void} [before] 执行前调用的回调，如果有返回值则替换掉正式方法执行时的参数
- * @param {(instance:any, result?:any)=>any} [after] 执行后调用的回调，可以接收正式方法的返回值，如果after有返回值则替换掉正式方法的返回值
+ * @param {(instance:any, args?:any[])=>any[]|void} [before] 执行前调用的回调，如果有返回值则替换掉正式方法执行时的参数
+ * @param {(instance:any, args?:any[], result?:any)=>any} [after] 执行后调用的回调，可以接收正式方法的返回值，如果after有返回值则替换掉正式方法的返回值
  * @param {boolean} [once=true] 是否是一次性监听，默认是true
  */
-export function listenApply(target:IConstructor|any, name:string, before?:(instance:any)=>any[]|void, after?:(instance:any, result?:any)=>any, once:boolean=true):void
+export function listenApply(target:IConstructor|any, name:string, before?:(instance:any, args?:any[])=>any[]|void, after?:(instance:any, args?:any[], result?:any)=>any, once:boolean=true):void
 {
     if(target instanceof Function)
         // 是个类型，监听构建后再执行处理
@@ -172,7 +172,7 @@ export function listenApply(target:IConstructor|any, name:string, before?:(insta
         instance[name] = function(...args:any[]):any
         {
             // 调用回调
-            var tempArgs:any[]|void = before && before(instance);
+            var tempArgs:any[]|void = before && before(instance, args);
             // 替换参数
             if(tempArgs) args = tempArgs;
             // 如果是一次性监听，则恢复原始方法
@@ -184,7 +184,7 @@ export function listenApply(target:IConstructor|any, name:string, before?:(insta
             // 调用原始方法
             var result:any = instance[name].apply(this, args);
             // 调用回调
-            var tempResult:any = after && after(instance, result);
+            var tempResult:any = after && after(instance, args, result);
             // 替换结果
             if(tempResult) result = tempResult;
             // 返回结果

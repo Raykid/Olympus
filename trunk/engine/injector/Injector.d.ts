@@ -27,6 +27,7 @@ export declare function ResponseHandler(cls: IResponseDataConstructor): MethodDe
 export declare function GlobalResponseHandler(prototype: any, propertyKey: string): void;
 export declare function GlobalResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
 /** 添加子Mediator */
+export declare function SubMediator(dataExp?: string): PropertyDecorator;
 export declare function SubMediator(mediator: IMediatorConstructor, dataExp?: string): PropertyDecorator;
 export declare function SubMediator(skin: any, mediator?: IMediatorConstructor, dataExp?: string): PropertyDecorator;
 export declare function SubMediator(prototype: any, propertyKey: string): void;

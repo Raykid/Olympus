@@ -135,8 +135,8 @@ export function listenDispose(cls, handler) {
  * @export
  * @param {IConstructor|any} target 要监听的对象类型或实例
  * @param {string} name 要监听调用的方法名
- * @param {(instance:any)=>any[]|void} [before] 执行前调用的回调，如果有返回值则替换掉正式方法执行时的参数
- * @param {(instance:any, result?:any)=>any} [after] 执行后调用的回调，可以接收正式方法的返回值，如果after有返回值则替换掉正式方法的返回值
+ * @param {(instance:any, args?:any[])=>any[]|void} [before] 执行前调用的回调，如果有返回值则替换掉正式方法执行时的参数
+ * @param {(instance:any, args?:any[], result?:any)=>any} [after] 执行后调用的回调，可以接收正式方法的返回值，如果after有返回值则替换掉正式方法的返回值
  * @param {boolean} [once=true] 是否是一次性监听，默认是true
  */
 export function listenApply(target, name, before, after, once) {
@@ -156,7 +156,7 @@ export function listenApply(target, name, before, after, once) {
                 args[_i] = arguments[_i];
             }
             // 调用回调
-            var tempArgs = before && before(instance);
+            var tempArgs = before && before(instance, args);
             // 替换参数
             if (tempArgs)
                 args = tempArgs;
@@ -170,7 +170,7 @@ export function listenApply(target, name, before, after, once) {
             // 调用原始方法
             var result = instance[name].apply(this, args);
             // 调用回调
-            var tempResult = after && after(instance, result);
+            var tempResult = after && after(instance, args, result);
             // 替换结果
             if (tempResult)
                 result = tempResult;

@@ -45,8 +45,8 @@ export declare function listenDispose(cls: IConstructor, handler: (instance?: an
  * @export
  * @param {IConstructor|any} target 要监听的对象类型或实例
  * @param {string} name 要监听调用的方法名
- * @param {(instance:any)=>any[]|void} [before] 执行前调用的回调，如果有返回值则替换掉正式方法执行时的参数
- * @param {(instance:any, result?:any)=>any} [after] 执行后调用的回调，可以接收正式方法的返回值，如果after有返回值则替换掉正式方法的返回值
+ * @param {(instance:any, args?:any[])=>any[]|void} [before] 执行前调用的回调，如果有返回值则替换掉正式方法执行时的参数
+ * @param {(instance:any, args?:any[], result?:any)=>any} [after] 执行后调用的回调，可以接收正式方法的返回值，如果after有返回值则替换掉正式方法的返回值
  * @param {boolean} [once=true] 是否是一次性监听，默认是true
  */
-export declare function listenApply(target: IConstructor | any, name: string, before?: (instance: any) => any[] | void, after?: (instance: any, result?: any) => any, once?: boolean): void;
+export declare function listenApply(target: IConstructor | any, name: string, before?: (instance: any, args?: any[]) => any[] | void, after?: (instance: any, args?: any[], result?: any) => any, once?: boolean): void;

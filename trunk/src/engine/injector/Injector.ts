@@ -257,6 +257,7 @@ function addSubHandler(instance:IMediator, handler:(instance?:IMediator)=>void):
 }
 
 /** 添加子Mediator */
+export function SubMediator(dataExp?:string):PropertyDecorator;
 export function SubMediator(mediator:IMediatorConstructor, dataExp?:string):PropertyDecorator;
 export function SubMediator(skin:any, mediator?:IMediatorConstructor, dataExp?:string):PropertyDecorator;
 export function SubMediator(prototype:any, propertyKey:string):void;
@@ -274,7 +275,11 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
     else
     {
         // 有参数，分配参数
-        if(arg1 instanceof Function)
+        if(typeof arg1 === "string" && !arg2 && !arg3)
+        {
+            dataExp = arg1;
+        }
+        else if(arg1 instanceof Function)
         {
             mediatorCls = arg1;
             dataExp = arg2;
@@ -362,10 +367,36 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
                             // 托管中介者
                             this.delegateMediator(mediator);
                             // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                            if(this.status === MediatorStatus.OPENED && mediator.status === MediatorStatus.UNOPEN)
+                            if(mediator.status === MediatorStatus.UNOPEN)
                             {
-                                mediator.open(this.data);
+                                var getCommonScope:()=>any = ()=>{
+                                    return {
+                                        $this: this,
+                                        $data: this.viewModel,
+                                        $bridge: this.bridge,
+                                        $currentTarget: mediator,
+                                        $target: mediator
+                                    };
+                                };
+                                // 子Mediator还没有open，open之
+                                if(this.status === MediatorStatus.OPENED)
+                                {
+                                    // 父Mediator已经open了，直接open之
+                                    var data:any = dataExp ? evalExp(dataExp, this.viewModel, this.viewModel, this.data, getCommonScope()) : this.data;
+                                    if(!data) data = this.data;
+                                    // 执行open方法
+                                    mediator.open(data);
+                                }
+                                else if(this.status < MediatorStatus.OPENED && dataExp)
+                                {
+                                    // 父Mediator也没有open，监听子Mediator的open，篡改参数
+                                    listenApply(mediator, "open", ()=>{
+                                        var data:any = evalExp(dataExp, this.viewModel, this.viewModel, this.data, getCommonScope());
+                                        if(data) return [data];
+                                    });
+                                }
                             }
+
                         }
                     }
                 });
@@ -378,7 +409,7 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
                 {
                     // 优先使用装饰器提供的中介者类型，如果没有则使用元数据
                     var cls:IConstructor = mediatorCls || Reflect.getMetadata("design:type", prototype, propertyKey);
-                    instance[propertyKey] = new cls(skin);
+                    instance[propertyKey] = temp = new cls(skin);
                 }
                 // 执行回调
                 var handlers:((instance:IMediator)=>void)[] = subHandlerDict.get(mediator);
@@ -390,16 +421,6 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
                     }
                     // 移除记录
                     subHandlerDict.delete(mediator);
-                }
-            });
-            // 监听open方法
-            listenApply(prototype.constructor, "open", function(instance:IMediator):any[]|void
-            {
-                // 如果dataExp有值，则篡改open参数
-                if(dataExp)
-                {
-                    var data:any = evalExp(dataExp, instance.viewModel, instance.viewModel);
-                    if(data) return [data];
                 }
             });
             // 监听销毁
