@@ -1,17 +1,16 @@
-import Second from "./Second";
-import Third from "./Third";
-import TestResponse from "../net/response/TestResponse";
-import TestRequest from "../net/request/TestRequest";
-import FuckModel, { IFuckModel } from "../models/FuckModel";
-import SceneMediator from 'olympus-r/engine/scene/SceneMediator';
+import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
 import { Inject } from "olympus-r/core/injector/Injector";
+import { audioManager } from "olympus-r/engine/audio/AudioManager";
+import { BindFor, BindIf, BindOn, BindValue, GlobalMessageHandler, MessageHandler, ResponseHandler } from "olympus-r/engine/injector/Injector";
 import ModuleManager from "olympus-r/engine/module/ModuleManager";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import { BindOn, BindIf, BindFor, BindValue, MessageHandler, GlobalMessageHandler, ResponseHandler } from "olympus-r/engine/injector/Injector";
-import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
-import { audioManager } from "olympus-r/engine/audio/AudioManager";
-import TestPanel from "./TestPanel";
+import SceneMediator from 'olympus-r/engine/scene/SceneMediator';
+import FuckModel, { IFuckModel } from "../models/FuckModel";
+import TestRequest from "../net/request/TestRequest";
+import TestResponse from "../net/response/TestResponse";
+import Second from "./Second";
 import TestForMediator from "./TestForMediator";
+import Third from "./Third";
 
 /**
  * @author Raykid
@@ -39,7 +38,7 @@ export default class First extends SceneMediator
     @BindOn({click: "onClickBtn"})
     @BindIf("fuckText == '1234'")
     public btn:HTMLElement
-    @BindFor("fuck in fuckList", TestForMediator)
+    @BindFor("fuck of fuckList", TestForMediator)
     public txt:HTMLElement;
     @BindOn("click", "onClickFuck")
     @BindValue("textContent", "fuckModel.fuck")
@@ -84,7 +83,8 @@ export default class First extends SceneMediator
 
         setTimeout(()=>{
             this.viewModel.fuckText = "1234";
-            this.viewModel.fuckList = ["hello", "world"];
+            // this.viewModel.fuckList = ["hello", "world"];
+            this.viewModel.fuckList.push("jfksdjlf");
             this.fuckModel1.fuck = "You!!!";
         }, 3000);
 

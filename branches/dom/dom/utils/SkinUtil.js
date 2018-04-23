@@ -1,5 +1,6 @@
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import MediatorStatus from "olympus-r/engine/mediator/MediatorStatus";
+import { listenApply } from 'olympus-r/utils/ConstructUtil';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -20,22 +21,7 @@ export function wrapSkin(mediator, skin) {
     var result = (skin instanceof HTMLElement ? skin : document.createElement("div"));
     // 判断中介者当前状态
     if (mediator.status < MediatorStatus.OPENING) {
-        // 篡改mediator的onOpen方法，先于onOpen将皮肤附上去
-        var oriFunc = mediator.hasOwnProperty("onOpen") ? mediator.onOpen : null;
-        mediator.onOpen = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            doWrapSkin();
-            // 恢复原始方法
-            if (oriFunc)
-                mediator.onOpen = oriFunc;
-            else
-                delete mediator.onOpen;
-            // 调用原始方法
-            return mediator.onOpen.apply(this, args);
-        };
+        listenApply(mediator, "onOpen", doWrapSkin);
     }
     else {
         // 直接执行要执行的
