@@ -2,9 +2,9 @@ import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import { getConstructor } from "../../utils/ConstructUtil";
-import ModuleMessage from "./ModuleMessage";
 import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
 import { getModule } from "../mediator/Mediator";
+import ModuleMessage from "./ModuleMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -174,10 +174,13 @@ var ModuleManager = /** @class */ (function () {
             target.moduleOpenHandler = function (status, err) {
                 switch (status) {
                     case ModuleOpenStatus.Stop:
-                        // 移除先行数据
-                        var tempData = _this._moduleStack.shift();
-                        // 销毁模块
-                        tempData[1].dispose();
+                        // 需要判断是否是最后一个模块，最后一个模块不允许被销毁
+                        if (_this._moduleStack.length > 1) {
+                            // 移除先行数据
+                            var tempData = _this._moduleStack.shift();
+                            // 销毁模块
+                            tempData[1].dispose();
+                        }
                         // 派发失败消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
                         // 结束一次模块开启

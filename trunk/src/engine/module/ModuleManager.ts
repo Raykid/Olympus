@@ -1,11 +1,11 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../core/injector/Injector"
+import { Injectable } from "../../core/injector/Injector";
 import { getConstructor } from "../../utils/ConstructUtil";
-import ModuleMessage from "./ModuleMessage";
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
-import { ModuleType, registerModule, getModuleName, getModule } from "../mediator/Mediator";
+import { ModuleType, getModule } from "../mediator/Mediator";
+import ModuleMessage from "./ModuleMessage";
 
 /**
  * @author Raykid
@@ -189,10 +189,14 @@ export default class ModuleManager
                 switch(status)
                 {
                     case ModuleOpenStatus.Stop:
-                        // 移除先行数据
-                        var tempData:ModuleData = this._moduleStack.shift();
-                        // 销毁模块
-                        tempData[1].dispose();
+                        // 需要判断是否是最后一个模块，最后一个模块不允许被销毁
+                        if(this._moduleStack.length > 1)
+                        {
+                            // 移除先行数据
+                            var tempData:ModuleData = this._moduleStack.shift();
+                            // 销毁模块
+                            tempData[1].dispose();
+                        }
                         // 派发失败消息
                         core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
                         // 结束一次模块开启
