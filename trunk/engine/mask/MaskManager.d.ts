@@ -20,6 +20,7 @@ export default class MaskManager {
      * @param entity 遮罩实体
      */
     registerMask(type: string, entity: IMaskEntity): void;
+    private _isShowingMask;
     /**
      * 显示遮罩
      */
@@ -40,6 +41,7 @@ export default class MaskManager {
     hideLoading(key?: string): void;
     /**当前是否在显示loading*/
     isShowingLoading(): boolean;
+    private _modalMaskDict;
     /** 显示模态窗口遮罩 */
     showModalMask(popup: IPanel, alpha?: number): void;
     /** 隐藏模态窗口遮罩 */
@@ -52,13 +54,10 @@ export interface IMaskEntity {
     readonly loadingSkin: any;
     showMask(alpha?: number): void;
     hideMask(): void;
-    isShowingMask(): boolean;
     showLoading(alpha?: number): void;
     hideLoading(): void;
-    isShowingLoading(): boolean;
     showModalMask(popup: IPanel, alpha?: number): void;
     hideModalMask(popup: IPanel): void;
-    isShowingModalMask(popup: IPanel): boolean;
 }
 /** 再额外导出一个单例 */
 export declare const maskManager: MaskManager;

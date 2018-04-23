@@ -1,7 +1,9 @@
-import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
-import IPanel from "../panel/IPanel";
+import { Injectable } from "../../core/injector/Injector";
+import Dictionary from '../../utils/Dictionary';
 import { bridgeManager } from "../bridge/BridgeManager";
+import IBridge from '../bridge/IBridge';
+import IPanel from "../panel/IPanel";
 import IMaskData from "./IMaskData";
 
 /**
@@ -57,19 +59,27 @@ export default class MaskManager
         this._entityDict[type] = entity;
     }
 
+    private _isShowingMask:boolean = false;
+
     /**
      * 显示遮罩
      */
     public showMask(alpha?:number):void
     {
-        var type:string = bridgeManager.currentBridge.type;
-        var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null)
+        // 判断是否已经开启了
+        if(this._isShowingMask) return;
+        this._isShowingMask = true;
+        // 每个已注册的表现层都显示遮罩
+        for(var bridge of bridgeManager.bridges)
         {
-            // 显示遮罩
-            entity.showMask(alpha);
-            // 调用回调
-            entity.maskData.onShowMask && entity.maskData.onShowMask();
+            var entity:IMaskEntity = this._entityDict[bridge.type];
+            if(entity != null)
+            {
+                // 显示遮罩
+                entity.showMask(alpha);
+                // 调用回调
+                entity.maskData.onShowMask && entity.maskData.onShowMask();
+            }
         }
     }
 
@@ -78,24 +88,27 @@ export default class MaskManager
      */
     public hideMask():void
     {
-        var type:string = bridgeManager.currentBridge.type;
-        var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null)
+        // 判断是否已经开启了
+        if(!this._isShowingMask) return;
+        this._isShowingMask = false;
+        // 每个已注册的表现层都移除遮罩
+        for(var bridge of bridgeManager.bridges)
         {
-            // 调用回调
-            entity.maskData.onHideMask && entity.maskData.onHideMask();
-            // 隐藏遮罩
-            entity.hideMask();
+            var entity:IMaskEntity = this._entityDict[bridge.type];
+            if(entity != null)
+            {
+                // 调用回调
+                entity.maskData.onHideMask && entity.maskData.onHideMask();
+                // 隐藏遮罩
+                entity.hideMask();
+            }
         }
     }
 
     /**当前是否在显示遮罩*/
     public isShowingMask():boolean
     {
-        var type:string = bridgeManager.currentBridge.type;
-        var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null) return entity.isShowingMask();
-        return false;
+        return this._isShowingMask;
     }
 
     /**
@@ -106,14 +119,16 @@ export default class MaskManager
         // 若当前你没有loading则显示loading
         if(this.getLoadingMaskCount() == 0)
         {
-            var type:string = bridgeManager.currentBridge.type;
-            var entity:IMaskEntity = this._entityDict[type];
-            if(entity != null)
+            for(var bridge of bridgeManager.bridges)
             {
-                // 显示遮罩
-                entity.showLoading(alpha);
-                // 调用回调
-                entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
+                var entity:IMaskEntity = this._entityDict[bridge.type];
+                if(entity != null)
+                {
+                    // 显示遮罩
+                    entity.showLoading(alpha);
+                    // 调用回调
+                    entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
+                }
             }
         }
         // 增计数
@@ -130,14 +145,16 @@ export default class MaskManager
         if(this.getLoadingMaskCount() == 0)
         {
             // 移除loading
-            var type:string = bridgeManager.currentBridge.type;
-            var entity:IMaskEntity = this._entityDict[type];
-            if(entity != null)
+            for(var bridge of bridgeManager.bridges)
             {
-                // 调用回调
-                entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
-                // 隐藏遮罩
-                entity.hideLoading();
+                var entity:IMaskEntity = this._entityDict[bridge.type];
+                if(entity != null)
+                {
+                    // 调用回调
+                    entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
+                    // 隐藏遮罩
+                    entity.hideLoading();
+                }
             }
         }
     }
@@ -145,47 +162,59 @@ export default class MaskManager
     /**当前是否在显示loading*/
     public isShowingLoading():boolean
     {
-        var type:string = bridgeManager.currentBridge.type;
-        var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null) return entity.isShowingLoading();
-        return false;
+        return (this.getLoadingMaskCount() > 0);
     }
+
+    private _modalMaskDict:Dictionary<IPanel, IPanel> = new Dictionary();
 
     /** 显示模态窗口遮罩 */
     public showModalMask(popup:IPanel, alpha?:number):void
     {
-        var type:string = popup.bridge.type;
-        var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null)
+        // 判断是否已经在打开了
+        if(this.isShowingModalMask(popup)) return;
+        // 开启遮罩
+        var bridge:IBridge = bridgeManager.getBridgeBySkin(popup.skin);
+        if(bridge)
         {
-            // 显示遮罩
-            entity.showModalMask(popup, alpha);
-            // 调用回调
-            entity.maskData.onShowModalMask && entity.maskData.onShowModalMask(popup);
+            var entity:IMaskEntity = this._entityDict[bridge.type];
+            if(entity != null)
+            {
+                // 记录
+                this._modalMaskDict.set(popup, popup);
+                // 显示遮罩
+                entity.showModalMask(popup, alpha);
+                // 调用回调
+                entity.maskData.onShowModalMask && entity.maskData.onShowModalMask(popup);
+            }
         }
     }
 
     /** 隐藏模态窗口遮罩 */
     public hideModalMask(popup:IPanel):void
     {
-        var type:string = popup.bridge.type;
-        var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null)
+        // 判断是否已经开启了
+        if(!this.isShowingModalMask(popup)) return;
+        // 开始关闭遮罩
+        var bridge:IBridge = bridgeManager.getBridgeBySkin(popup.skin);
+        if(bridge)
         {
-            // 调用回调
-            entity.maskData.onHideModalMask && entity.maskData.onHideModalMask(popup);
-            // 隐藏遮罩
-            entity.hideModalMask(popup);
+            var entity:IMaskEntity = this._entityDict[bridge.type];
+            if(entity != null)
+            {
+                // 记录
+                this._modalMaskDict.delete(popup);
+                // 调用回调
+                entity.maskData.onHideModalMask && entity.maskData.onHideModalMask(popup);
+                // 隐藏遮罩
+                entity.hideModalMask(popup);
+            }
         }
     }
 
     /** 当前是否在显示模态窗口遮罩 */
     public isShowingModalMask(popup:IPanel):boolean
     {
-        var type:string = popup.bridge.type;
-        var entity:IMaskEntity = this._entityDict[type];
-        if(entity != null) return entity.isShowingModalMask(popup);
-        return false;
+        return (this._modalMaskDict.get(popup) != null);
     }
 }
 
@@ -196,15 +225,12 @@ export interface IMaskEntity
 
     showMask(alpha?:number):void;
     hideMask():void;
-    isShowingMask():boolean;
 
     showLoading(alpha?:number):void;
     hideLoading():void;
-    isShowingLoading():boolean;
 
     showModalMask(popup:IPanel, alpha?:number):void;
     hideModalMask(popup:IPanel):void;
-    isShowingModalMask(popup:IPanel):boolean;
 }
 /** 再额外导出一个单例 */
 export const maskManager:MaskManager = core.getInject(MaskManager);

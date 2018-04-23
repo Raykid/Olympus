@@ -20,15 +20,12 @@ export default class MaskEntityImpl implements IMaskEntity
     private _loadingAlpha:number = 0.5;
     private _modalPanelAlpha:number = 0.5;
 
-    private _showingMask:boolean = false;
     private _mask:egret.Shape;
 
     private _loadingSkin:egret.DisplayObject;
     private _loadingSkinFactory:()=>egret.DisplayObject;
-    private _showingLoading:boolean = false;
     private _loadingMask:egret.Shape;
 
-    private _modalPanelDict:Dictionary<IPanel, IPanel>;
     private _modalPanelList:IPanel[];
     private _modalPanelMask:egret.Shape;
 
@@ -58,7 +55,6 @@ export default class MaskEntityImpl implements IMaskEntity
         this._loadingMask = new egret.Shape();
         this._loadingMask.touchEnabled = true;
 
-        this._modalPanelDict = new Dictionary();
         this._modalPanelList = [];
         this._modalPanelMask = new egret.Shape();
         this._modalPanelMask.touchEnabled = true;
@@ -69,8 +65,6 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public showMask(alpha?:number):void
     {
-        if(this._showingMask) return;
-        this._showingMask = true;
         // 显示
         var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
@@ -88,16 +82,8 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public hideMask():void
     {
-        if(!this._showingMask) return;
-        this._showingMask = false;
         // 隐藏
         if(this._mask.parent != null) this._mask.parent.removeChild(this._mask);
-    }
-
-    /**当前是否在显示遮罩*/
-    public isShowingMask():boolean
-    {
-        return this._showingMask;
     }
 
     /**
@@ -105,8 +91,6 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public showLoading(alpha?:number):void
     {
-        if(this._showingLoading) return;
-        this._showingLoading = true;
         // 显示
         var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
@@ -127,24 +111,14 @@ export default class MaskEntityImpl implements IMaskEntity
      */
     public hideLoading():void
     {
-        if(!this._showingLoading) return;
-        this._showingLoading = false;
         // 隐藏
         if(this._loadingMask.parent != null) this._loadingMask.parent.removeChild(this._loadingMask);
         if(this.loadingSkin != null && this.loadingSkin.parent != null) this.loadingSkin.parent.removeChild(this._loadingSkin);
     }
 
-    /**当前是否在显示loading*/
-    public isShowingLoading():boolean
-    {
-        return this._showingLoading;
-    }
-
     /** 显示模态窗口遮罩 */
     public showModalMask(panel:IPanel, alpha?:number):void
     {
-        if(this.isShowingModalMask(panel)) return;
-        this._modalPanelDict.set(panel, panel);
         this._modalPanelList.push(panel);
         // 显示
         var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
@@ -170,8 +144,6 @@ export default class MaskEntityImpl implements IMaskEntity
     /** 隐藏模态窗口遮罩 */
     public hideModalMask(panel:IPanel):void
     {
-        if(!this.isShowingModalMask(panel)) return;
-        this._modalPanelDict.delete(panel);
         this._modalPanelList.splice(this._modalPanelList.indexOf(panel), 1);
         // 判断是否还需要Mask
         if(this._modalPanelList.length <= 0)
@@ -193,12 +165,6 @@ export default class MaskEntityImpl implements IMaskEntity
                 parent.addChildAt(this._modalPanelMask, index);
             }
         }
-    }
-
-    /** 当前是否在显示模态窗口遮罩 */
-    public isShowingModalMask(panel:IPanel):boolean
-    {
-        return (this._modalPanelDict.get(panel) != null);
     }
 }
 

@@ -18,6 +18,14 @@ export default class BridgeManager {
      * @memberof BridgeManager
      */
     readonly currentBridge: IBridge;
+    /**
+     * 获取所有表现层桥
+     *
+     * @readonly
+     * @type {IBridge[]}
+     * @memberof BridgeManager
+     */
+    readonly bridges: IBridge[];
     private getAllHasBridges(hasBridge);
     /**
      * 获取表现层桥实例

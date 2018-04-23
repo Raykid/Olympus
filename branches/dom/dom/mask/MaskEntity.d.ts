@@ -13,11 +13,8 @@ export default class MaskEntityImpl implements IMaskEntity {
     private _maskAlpha;
     private _loadingAlpha;
     private _modalPanelAlpha;
-    private _showingMask;
     private _mask;
-    private _showingLoading;
     private _loadingMask;
-    private _modalPanelDict;
     private _modalPanelList;
     private _modalPanelMask;
     loadingSkin: HTMLElement;
@@ -31,8 +28,6 @@ export default class MaskEntityImpl implements IMaskEntity {
      * 隐藏遮罩
      */
     hideMask(): void;
-    /**当前是否在显示遮罩*/
-    isShowingMask(): boolean;
     /**
      * 显示加载图
      */
@@ -41,14 +36,10 @@ export default class MaskEntityImpl implements IMaskEntity {
      * 隐藏加载图
      */
     hideLoading(): void;
-    /**当前是否在显示loading*/
-    isShowingLoading(): boolean;
     /** 显示模态窗口遮罩 */
     showModalMask(panel: IPanel, alpha?: number): void;
     /** 隐藏模态窗口遮罩 */
     hideModalMask(panel: IPanel): void;
-    /** 当前是否在显示模态窗口遮罩 */
-    isShowingModalMask(panel: IPanel): boolean;
 }
 export interface MaskData extends IMaskData {
     maskAlpha?: number;

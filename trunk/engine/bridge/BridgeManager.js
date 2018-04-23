@@ -1,12 +1,12 @@
 import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import { maskManager } from "../mask/MaskManager";
 import Mediator from "../mediator/Mediator";
-import BridgeMessage from "./BridgeMessage";
+import { moduleManager } from "../module/ModuleManager";
 import { panelManager } from "../panel/PanelManager";
 import { sceneManager } from "../scene/SceneManager";
-import { moduleManager } from "../module/ModuleManager";
-import { maskManager } from "../mask/MaskManager";
+import BridgeMessage from "./BridgeMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -42,6 +42,20 @@ var BridgeManager = /** @class */ (function () {
             }
             // 没找到，再用第一个桥代替
             return (this._bridgeList[0] && this._bridgeList[0][0]);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BridgeManager.prototype, "bridges", {
+        /**
+         * 获取所有表现层桥
+         *
+         * @readonly
+         * @type {IBridge[]}
+         * @memberof BridgeManager
+         */
+        get: function () {
+            return this._bridgeList.map(function (bridgeData) { return bridgeData[0]; });
         },
         enumerable: true,
         configurable: true

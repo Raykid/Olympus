@@ -1,5 +1,4 @@
 import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
-import Dictionary from "olympus-r/utils/Dictionary";
 import DOMBridge from "../../DOMBridge";
 /**
  * @author Raykid
@@ -14,8 +13,6 @@ var MaskEntityImpl = /** @class */ (function () {
         this._maskAlpha = 0.5;
         this._loadingAlpha = 0.5;
         this._modalPanelAlpha = 0.5;
-        this._showingMask = false;
-        this._showingLoading = false;
         if (params != null) {
             this._maskAlpha = (params.maskAlpha != null ? params.maskAlpha : 0.5);
             this._loadingAlpha = (params.loadingAlpha != null ? params.loadingAlpha : 0.5);
@@ -31,7 +28,6 @@ var MaskEntityImpl = /** @class */ (function () {
         this.maskData = params || {};
         this._mask = document.createElement("div");
         this._loadingMask = document.createElement("div");
-        this._modalPanelDict = new Dictionary();
         this._modalPanelList = [];
         this._modalPanelMask = document.createElement("div");
     }
@@ -39,9 +35,6 @@ var MaskEntityImpl = /** @class */ (function () {
      * 显示遮罩
      */
     MaskEntityImpl.prototype.showMask = function (alpha) {
-        if (this._showingMask)
-            return;
-        this._showingMask = true;
         // 显示
         var bridge = bridgeManager.getBridge(DOMBridge.TYPE);
         // 绘制遮罩
@@ -58,24 +51,14 @@ var MaskEntityImpl = /** @class */ (function () {
      * 隐藏遮罩
      */
     MaskEntityImpl.prototype.hideMask = function () {
-        if (!this._showingMask)
-            return;
-        this._showingMask = false;
         // 隐藏
         if (this._mask.parentElement != null)
             this._mask.parentElement.removeChild(this._mask);
-    };
-    /**当前是否在显示遮罩*/
-    MaskEntityImpl.prototype.isShowingMask = function () {
-        return this._showingMask;
     };
     /**
      * 显示加载图
      */
     MaskEntityImpl.prototype.showLoading = function (alpha) {
-        if (this._showingLoading)
-            return;
-        this._showingLoading = true;
         // 显示
         var bridge = bridgeManager.getBridge(DOMBridge.TYPE);
         // 绘制遮罩
@@ -95,24 +78,14 @@ var MaskEntityImpl = /** @class */ (function () {
      * 隐藏加载图
      */
     MaskEntityImpl.prototype.hideLoading = function () {
-        if (!this._showingLoading)
-            return;
-        this._showingLoading = false;
         // 隐藏
         if (this._loadingMask.parentElement != null)
             this._loadingMask.parentElement.removeChild(this._loadingMask);
         if (this.loadingSkin != null && this.loadingSkin.parentElement != null)
             this.loadingSkin.parentElement.removeChild(this.loadingSkin);
     };
-    /**当前是否在显示loading*/
-    MaskEntityImpl.prototype.isShowingLoading = function () {
-        return this._showingLoading;
-    };
     /** 显示模态窗口遮罩 */
     MaskEntityImpl.prototype.showModalMask = function (panel, alpha) {
-        if (this.isShowingModalMask(panel))
-            return;
-        this._modalPanelDict.set(panel, panel);
         this._modalPanelList.push(panel);
         // 绘制遮罩
         if (alpha == null)
@@ -135,9 +108,6 @@ var MaskEntityImpl = /** @class */ (function () {
     };
     /** 隐藏模态窗口遮罩 */
     MaskEntityImpl.prototype.hideModalMask = function (panel) {
-        if (!this.isShowingModalMask(panel))
-            return;
-        this._modalPanelDict.delete(panel);
         this._modalPanelList.splice(this._modalPanelList.indexOf(panel), 1);
         // 判断是否还需要Mask
         if (this._modalPanelList.length <= 0) {
@@ -158,10 +128,6 @@ var MaskEntityImpl = /** @class */ (function () {
                 bridge.addChildAt(parent, this._modalPanelMask, index);
             }
         }
-    };
-    /** 当前是否在显示模态窗口遮罩 */
-    MaskEntityImpl.prototype.isShowingModalMask = function (panel) {
-        return (this._modalPanelDict.get(panel) != null);
     };
     return MaskEntityImpl;
 }());

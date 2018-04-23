@@ -1,13 +1,12 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
-import IBridge from "./IBridge";
-import IMediator from "../mediator/IMediator";
+import { maskManager } from "../mask/MaskManager";
 import Mediator from "../mediator/Mediator";
-import BridgeMessage from "./BridgeMessage";
+import { moduleManager } from "../module/ModuleManager";
 import { panelManager } from "../panel/PanelManager";
 import { sceneManager } from "../scene/SceneManager";
-import { moduleManager } from "../module/ModuleManager";
-import { maskManager } from "../mask/MaskManager";
+import BridgeMessage from "./BridgeMessage";
+import IBridge from "./IBridge";
 import IHasBridge from "./IHasBridge";
 
 /**
@@ -46,6 +45,18 @@ export default class BridgeManager
         }
         // 没找到，再用第一个桥代替
         return (this._bridgeList[0] && this._bridgeList[0][0]);
+    }
+
+    /**
+     * 获取所有表现层桥
+     * 
+     * @readonly
+     * @type {IBridge[]}
+     * @memberof BridgeManager
+     */
+    public get bridges():IBridge[]
+    {
+        return this._bridgeList.map(bridgeData=>bridgeData[0]);
     }
 
     private getAllHasBridges(hasBridge:IHasBridge):IHasBridge[]
