@@ -1,6 +1,6 @@
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import { Easing, Tween } from "@tweenjs/tween.js";
 import IPanel from "olympus-r/engine/panel/IPanel";
-import { Tween, Easing } from "@tweenjs/tween.js";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
 
 /**
  * @author Raykid
@@ -26,8 +26,10 @@ export default class BackPanelPolicy implements IPanelPolicy
         var curStyle:CSSStyleDeclaration = getComputedStyle(entity);
         var tween:Tween = new Tween(entity).end().stop();
         entity.style.position = "fixed";
-        entity.style.left = "calc(50% - " + curStyle.width + " * 0.5)";
-        entity.style.top = "calc(50% - " + curStyle.height + " * 0.5)";
+        entity.style.left = "0";
+        entity.style.top = "0";
+        entity.style.width = "100%";
+        entity.style.height = "100%";
         entity.style.transform = "scale(0, 0)";
         // 开始缓动
         var key:string = "__tween__step__";

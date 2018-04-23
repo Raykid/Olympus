@@ -1,4 +1,4 @@
-import { Tween, Easing } from "@tweenjs/tween.js";
+import { Easing, Tween } from "@tweenjs/tween.js";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -22,8 +22,10 @@ var BackPanelPolicy = /** @class */ (function () {
         var curStyle = getComputedStyle(entity);
         var tween = new Tween(entity).end().stop();
         entity.style.position = "fixed";
-        entity.style.left = "calc(50% - " + curStyle.width + " * 0.5)";
-        entity.style.top = "calc(50% - " + curStyle.height + " * 0.5)";
+        entity.style.left = "0";
+        entity.style.top = "0";
+        entity.style.width = "100%";
+        entity.style.height = "100%";
         entity.style.transform = "scale(0, 0)";
         // 开始缓动
         var key = "__tween__step__";
