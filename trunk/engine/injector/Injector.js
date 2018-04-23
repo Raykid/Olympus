@@ -283,37 +283,39 @@ export function SubMediator(arg1, arg2, arg3) {
                             }
                             mediator = value;
                         }
-                        // 托管中介者
-                        this.delegateMediator(mediator);
                         // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                        if (mediator && mediator.skin) {
+                        if (mediator) {
+                            // 托管中介者
+                            this.delegateMediator(mediator);
                             // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
-                            if (mediator.status === MediatorStatus.UNOPEN) {
-                                var getCommonScope = function () {
-                                    return {
-                                        $this: _this,
-                                        $data: _this.viewModel,
-                                        $bridge: _this.bridge,
-                                        $currentTarget: mediator,
-                                        $target: mediator
+                            if (mediator.skin) {
+                                if (mediator.status === MediatorStatus.UNOPEN) {
+                                    var getCommonScope = function () {
+                                        return {
+                                            $this: _this,
+                                            $data: _this.viewModel,
+                                            $bridge: _this.bridge,
+                                            $currentTarget: mediator,
+                                            $target: mediator
+                                        };
                                     };
-                                };
-                                // 子Mediator还没有open，open之
-                                if (this.status === MediatorStatus.OPENED) {
-                                    // 父Mediator已经open了，直接open之
-                                    var data = dataExp ? evalExp(dataExp, this.viewModel, this.viewModel, this.data, getCommonScope()) : this.data;
-                                    if (!data)
-                                        data = this.data;
-                                    // 执行open方法
-                                    mediator.open(data);
-                                }
-                                else if (this.status < MediatorStatus.OPENED && dataExp) {
-                                    // 父Mediator也没有open，监听子Mediator的open，篡改参数
-                                    listenApply(mediator, "open", function () {
-                                        var data = evalExp(dataExp, _this.viewModel, _this.viewModel, _this.data, getCommonScope());
-                                        if (data)
-                                            return [data];
-                                    });
+                                    // 子Mediator还没有open，open之
+                                    if (this.status === MediatorStatus.OPENED) {
+                                        // 父Mediator已经open了，直接open之
+                                        var data = dataExp ? evalExp(dataExp, this.viewModel, this.viewModel, this.data, getCommonScope()) : this.data;
+                                        if (!data)
+                                            data = this.data;
+                                        // 执行open方法
+                                        mediator.open(data);
+                                    }
+                                    else if (this.status < MediatorStatus.OPENED && dataExp) {
+                                        // 父Mediator也没有open，监听子Mediator的open，篡改参数
+                                        listenApply(mediator, "open", function () {
+                                            var data = evalExp(dataExp, _this.viewModel, _this.viewModel, _this.data, getCommonScope());
+                                            if (data)
+                                                return [data];
+                                        });
+                                    }
                                 }
                             }
                         }
