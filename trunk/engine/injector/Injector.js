@@ -283,10 +283,10 @@ export function SubMediator(arg1, arg2, arg3) {
                             }
                             mediator = value;
                         }
+                        // 托管中介者
+                        this.delegateMediator(mediator);
                         // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
                         if (mediator && mediator.skin) {
-                            // 托管中介者
-                            this.delegateMediator(mediator);
                             // 如果当前中介者已经为正在打开或已打开状态，则额外调用open
                             if (mediator.status === MediatorStatus.UNOPEN) {
                                 var getCommonScope = function () {
