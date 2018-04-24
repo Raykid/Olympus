@@ -17,6 +17,7 @@ export default class AudioTagImpl implements IAudio {
      * @memberof AudioTagImpl
      */
     mute: boolean;
+    private listenProgress(data);
     private _audioCache;
     /**
      * 加载音频

@@ -45,6 +45,21 @@ export default class AudioTagImpl implements IAudio
         }
     }
 
+    private listenProgress(data:AudioData):void
+    {
+        data.node.ontimeupdate = (evt:Event)=>{
+            // 只有播放状态可以派发PROGRESS事件
+            if(data.status == AudioStatus.PLAYING)
+            {
+                // 我们规定使用毫秒值作为单位
+                var curTime:number = data.node.currentTime * 1000;
+                var totalTime:number = data.node.duration * 1000;
+                // 派发播放进度事件
+                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime);
+            }
+        };
+    }
+
     private _audioCache:{[url:string]:AudioData} = {};
     /**
      * 加载音频
@@ -76,7 +91,17 @@ export default class AudioTagImpl implements IAudio
                 // 派发加载完毕事件
                 core.dispatch(AudioMessage.AUDIO_LOAD_ENDED, url);
                 // 如果不自动播放则暂停
-                if(!data.playParams) node.pause();
+                if(!data.playParams)
+                {
+                    node.pause();
+                }
+                else
+                {
+                    // 设置状态
+                    data.status = AudioStatus.PLAYING;
+                    // 监听播放进度
+                    this.listenProgress(data);
+                }
             };
             node.onended = ()=>{
                 // 派发播放完毕事件
@@ -123,17 +148,7 @@ export default class AudioTagImpl implements IAudio
                     if(params.loop != null) data.node.loop = params.loop;
                     if(params.time != null) data.node.currentTime = params.time * 0.001;
                     // 监听播放进度
-                    data.node.ontimeupdate = (evt:Event)=>{
-                        // 只有播放状态可以派发PROGRESS事件
-                        if(data.status == AudioStatus.PLAYING)
-                        {
-                            // 我们规定使用毫秒值作为单位
-                            var curTime:number = data.node.currentTime * 1000;
-                            var totalTime:number = data.node.duration * 1000;
-                            // 派发播放进度事件
-                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
-                        }
-                    };
+                    this.listenProgress(data);
                     // 开始播放，safari不支持直接play(WTF?)所以要用autoplay加load进行播放
                     data.node.autoplay = true;
                     data.node.load();

@@ -43,6 +43,18 @@ var AudioTagImpl = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    AudioTagImpl.prototype.listenProgress = function (data) {
+        data.node.ontimeupdate = function (evt) {
+            // 只有播放状态可以派发PROGRESS事件
+            if (data.status == AudioStatus.PLAYING) {
+                // 我们规定使用毫秒值作为单位
+                var curTime = data.node.currentTime * 1000;
+                var totalTime = data.node.duration * 1000;
+                // 派发播放进度事件
+                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime);
+            }
+        };
+    };
     /**
      * 加载音频
      *
@@ -50,6 +62,7 @@ var AudioTagImpl = /** @class */ (function () {
      * @memberof AudioTagImpl
      */
     AudioTagImpl.prototype.load = function (url) {
+        var _this = this;
         var toUrl = environment.toCDNHostURL(url);
         // 尝试获取缓存数据
         var data = this._audioCache[toUrl];
@@ -71,8 +84,15 @@ var AudioTagImpl = /** @class */ (function () {
                 // 派发加载完毕事件
                 core.dispatch(AudioMessage.AUDIO_LOAD_ENDED, url);
                 // 如果不自动播放则暂停
-                if (!data.playParams)
+                if (!data.playParams) {
                     node.pause();
+                }
+                else {
+                    // 设置状态
+                    data.status = AudioStatus.PLAYING;
+                    // 监听播放进度
+                    _this.listenProgress(data);
+                }
             };
             node.onended = function () {
                 // 派发播放完毕事件
@@ -117,16 +137,7 @@ var AudioTagImpl = /** @class */ (function () {
                     if (params.time != null)
                         data.node.currentTime = params.time * 0.001;
                     // 监听播放进度
-                    data.node.ontimeupdate = function (evt) {
-                        // 只有播放状态可以派发PROGRESS事件
-                        if (data.status == AudioStatus.PLAYING) {
-                            // 我们规定使用毫秒值作为单位
-                            var curTime = data.node.currentTime * 1000;
-                            var totalTime = data.node.duration * 1000;
-                            // 派发播放进度事件
-                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
-                        }
-                    };
+                    this.listenProgress(data);
                     // 开始播放，safari不支持直接play(WTF?)所以要用autoplay加load进行播放
                     data.node.autoplay = true;
                     data.node.load();
