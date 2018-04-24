@@ -20,8 +20,8 @@ var AudioContextImpl = /** @class */ (function () {
         this._audioCache = {};
         this._context = new (window["AudioContext"] || window["webkitAudioContext"])();
         var onInit = function () {
-            window.removeEventListener("touchstart", onInit);
-            window.removeEventListener("mousedown", onInit);
+            window.removeEventListener("touchstart", onInit, true);
+            window.removeEventListener("mousedown", onInit, true);
             // 生成一个空的音频，播放并停止，用以解除限制
             var source = _this._context.createBufferSource();
             source.buffer = _this._context.createBuffer(1, 1, 44100);
@@ -41,8 +41,9 @@ var AudioContextImpl = /** @class */ (function () {
                 }
             }
         };
-        window.addEventListener("touchstart", onInit);
-        window.addEventListener("mousedown", onInit);
+        // 这里监听触摸事件，一定要使用捕获阶段，否则会被某些框架阻止，比如egret
+        window.addEventListener("touchstart", onInit, true);
+        window.addEventListener("mousedown", onInit, true);
     }
     Object.defineProperty(AudioContextImpl.prototype, "mute", {
         /**
