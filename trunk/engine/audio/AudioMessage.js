@@ -10,6 +10,22 @@ var AudioMessage = /** @class */ (function () {
     function AudioMessage() {
     }
     /**
+     * 音频加载开始事件
+     *
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    AudioMessage.AUDIO_LOAD_STARTED = "audioLoadStarted";
+    /**
+     * 音频加载完毕事件
+     *
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    AudioMessage.AUDIO_LOAD_ENDED = "audioLoadEnded";
+    /**
      * 音频播放开始事件
      *
      * @static

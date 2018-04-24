@@ -1,7 +1,7 @@
-import IAudio, { AudioPlayParams } from "./IAudio";
 import { core } from "../../core/Core";
-import AudioMessage from "./AudioMessage";
 import { environment } from "../env/Environment";
+import AudioMessage from "./AudioMessage";
+import IAudio, { AudioPlayParams } from "./IAudio";
 
 /**
  * @author Raykid
@@ -60,6 +60,8 @@ export default class AudioTagImpl implements IAudio
         // 如果没有缓存才去加载
         if(!data)
         {
+            // 派发加载开始事件
+            core.dispatch(AudioMessage.AUDIO_LOAD_STARTED, url);
             // 使用Audio标签加载
             var node:HTMLAudioElement = document.createElement("audio");
             // 这里强制使用autoplay，因为在IOS的safari上如果没这个参数，则根本不会触发onloadeddata事件
@@ -71,6 +73,8 @@ export default class AudioTagImpl implements IAudio
             node.onloadeddata = ()=>{
                 // 记录加载完毕
                 data.status = AudioStatus.PAUSED;
+                // 派发加载完毕事件
+                core.dispatch(AudioMessage.AUDIO_LOAD_ENDED, url);
                 // 如果不自动播放则暂停
                 if(!data.playParams) node.pause();
             };

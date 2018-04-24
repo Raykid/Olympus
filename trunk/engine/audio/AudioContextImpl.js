@@ -87,6 +87,8 @@ var AudioContextImpl = /** @class */ (function () {
         if (!data) {
             // 使用AudioContext加载
             this._audioCache[toUrl] = data = { buffer: null, status: AudioStatus.LOADING, playParams: null, progress: null };
+            // 派发加载开始事件
+            core.dispatch(AudioMessage.AUDIO_LOAD_STARTED, url);
             // 开始加载
             assetsManager.loadAssets(toUrl, function (result) {
                 if (result instanceof ArrayBuffer) {
@@ -94,6 +96,8 @@ var AudioContextImpl = /** @class */ (function () {
                         data.buffer = buffer;
                         // 设置状态
                         data.status = AudioStatus.PAUSED;
+                        // 派发加载完毕事件
+                        core.dispatch(AudioMessage.AUDIO_LOAD_ENDED, url);
                         // 如果自动播放则播放
                         if (data.playParams)
                             _this.play(data.playParams);

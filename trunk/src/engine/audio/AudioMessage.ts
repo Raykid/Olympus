@@ -9,6 +9,22 @@
 export default class AudioMessage
 {
     /**
+     * 音频加载开始事件
+     * 
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    public static AUDIO_LOAD_STARTED:string = "audioLoadStarted";
+    /**
+     * 音频加载完毕事件
+     * 
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    public static AUDIO_LOAD_ENDED:string = "audioLoadEnded";
+    /**
      * 音频播放开始事件
      * 
      * @static

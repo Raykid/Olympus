@@ -8,6 +8,22 @@
 */
 export default class AudioMessage {
     /**
+     * 音频加载开始事件
+     *
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    static AUDIO_LOAD_STARTED: string;
+    /**
+     * 音频加载完毕事件
+     *
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    static AUDIO_LOAD_ENDED: string;
+    /**
      * 音频播放开始事件
      *
      * @static
