@@ -1,8 +1,8 @@
-import { assetsManager } from "../assets/AssetsManager";
 import { core } from "../../core/Core";
-import AudioMessage from "./AudioMessage";
+import { assetsManager } from "../assets/AssetsManager";
 import { environment } from "../env/Environment";
 import { system } from "../system/System";
+import AudioMessage from "./AudioMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -192,7 +192,13 @@ var AudioContextImpl = /** @class */ (function () {
                 data.progress.cancel();
             // 结束播放
             if (data.node) {
-                data.node.stop(time);
+                try {
+                    // 这里可能会报错，需要try cath
+                    data.node.stop(time);
+                }
+                catch (err) {
+                    console.warn(err);
+                }
                 // 派发播放停止事件
                 core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
             }
