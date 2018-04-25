@@ -9,7 +9,8 @@ import { extendsClass } from "../utils/ObjectUtil";
  * 装饰器工具集
 */
 // 用来判断是否支持Proxy
-var hasProxy = (window["Proxy"] && Proxy.revocable instanceof Function);
+var hasProxy = false;
+(window["Proxy"] && Proxy.revocable instanceof Function);
 var instanceDict = new Dictionary();
 function handleInstance(instance) {
     var cls = instance.constructor;

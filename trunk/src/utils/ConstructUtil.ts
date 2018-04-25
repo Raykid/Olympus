@@ -12,7 +12,7 @@ import { extendsClass } from "../utils/ObjectUtil";
 */
 
 // 用来判断是否支持Proxy
-var hasProxy:boolean = (window["Proxy"] && Proxy.revocable instanceof Function);
+var hasProxy:boolean = false;(window["Proxy"] && Proxy.revocable instanceof Function);
 
 var instanceDict:Dictionary<IConstructor, ((instance?:any)=>void)[]> = new Dictionary();
 
