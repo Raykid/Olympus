@@ -142,46 +142,44 @@ var AudioContextImpl = /** @class */ (function () {
                     // 记录播放中
                     this._playingDict[toUrl] = params;
                     // 已经加载完毕，直接播放
-                    if (this._inited) {
-                        data.node = this._context.createBufferSource();
-                        data.node.buffer = data.buffer;
-                        if (params.loop != null)
-                            data.node.loop = params.loop;
-                        data.node.connect(this._context.destination);
-                        // 监听播放完毕
-                        data.node.onended = function () {
-                            var data = _this._audioCache[toUrl];
-                            if (data) {
-                                // 停止播放
-                                _this.stop(params.url);
-                                // 派发播放完毕事件
-                                core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
-                            }
-                        };
-                        // 开始播放，优先取参数中的时间，没有就取默认开始时间
-                        var playTime;
-                        if (params && params.time != null)
-                            playTime = params.time * 0.001;
-                        else
-                            playTime = data.playTime;
-                        delete data.playTime;
-                        data.node.start(playTime);
-                        // 开始播放进度监测
-                        var lastTime = this._context.currentTime;
-                        var curTime = playTime || 0;
-                        data.progress = system.enterFrame(function () {
-                            var nowTime = _this._context.currentTime;
-                            var deltaTime = nowTime - lastTime;
-                            lastTime = nowTime;
-                            if (data.status == AudioStatus.PLAYING) {
-                                curTime += deltaTime * 1000;
-                                var totalTime = data.node.buffer.duration * 1000;
-                                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
-                            }
-                        });
-                        // 派发播放开始事件
-                        core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
-                    }
+                    data.node = this._context.createBufferSource();
+                    data.node.buffer = data.buffer;
+                    if (params.loop != null)
+                        data.node.loop = params.loop;
+                    data.node.connect(this._context.destination);
+                    // 监听播放完毕
+                    data.node.onended = function () {
+                        var data = _this._audioCache[toUrl];
+                        if (data) {
+                            // 停止播放
+                            _this.stop(params.url);
+                            // 派发播放完毕事件
+                            core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
+                        }
+                    };
+                    // 开始播放，优先取参数中的时间，没有就取默认开始时间
+                    var playTime;
+                    if (params && params.time != null)
+                        playTime = params.time * 0.001;
+                    else
+                        playTime = data.playTime;
+                    delete data.playTime;
+                    data.node.start(playTime);
+                    // 开始播放进度监测
+                    var lastTime = this._context.currentTime;
+                    var curTime = playTime || 0;
+                    data.progress = system.enterFrame(function () {
+                        var nowTime = _this._context.currentTime;
+                        var deltaTime = nowTime - lastTime;
+                        lastTime = nowTime;
+                        if (data.status == AudioStatus.PLAYING) {
+                            curTime += deltaTime * 1000;
+                            var totalTime = data.node.buffer.duration * 1000;
+                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
+                        }
+                    });
+                    // 派发播放开始事件
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
                     break;
             }
         }
@@ -193,6 +191,7 @@ var AudioContextImpl = /** @class */ (function () {
             // 设置状态
             data.status = AudioStatus.PAUSED;
             // 取消进度监测
+            data.node.onended = null;
             if (data.progress)
                 data.progress.cancel();
             // 结束播放

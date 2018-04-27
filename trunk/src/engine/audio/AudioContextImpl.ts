@@ -157,46 +157,43 @@ export default class AudioContextImpl implements IAudio
                     // 记录播放中
                     this._playingDict[toUrl] = params;
                     // 已经加载完毕，直接播放
-                    if(this._inited)
-                    {
-                        data.node = this._context.createBufferSource();
-                        data.node.buffer = data.buffer;
-                        if(params.loop != null) data.node.loop = params.loop;
-                        data.node.connect(this._context.destination);
-                        // 监听播放完毕
-                        data.node.onended = ()=>{
-                            var data:AudioData = this._audioCache[toUrl];
-                            if(data)
-                            {
-                                // 停止播放
-                                this.stop(params.url);
-                                // 派发播放完毕事件
-                                core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
-                            }
-                        };
-                        // 开始播放，优先取参数中的时间，没有就取默认开始时间
-                        var playTime:number;
-                        if(params && params.time != null) playTime = params.time * 0.001;
-                        else playTime = data.playTime;
-                        delete data.playTime;
-                        data.node.start(playTime);
-                        // 开始播放进度监测
-                        var lastTime:number = this._context.currentTime;
-                        var curTime:number = playTime || 0;
-                        data.progress = system.enterFrame(()=>{
-                            var nowTime:number = this._context.currentTime;
-                            var deltaTime:number = nowTime - lastTime;
-                            lastTime = nowTime;
-                            if(data.status == AudioStatus.PLAYING)
-                            {
-                                curTime += deltaTime * 1000;
-                                var totalTime:number = data.node.buffer.duration * 1000;
-                                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
-                            }
-                        });
-                        // 派发播放开始事件
-                        core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
-                    }
+                    data.node = this._context.createBufferSource();
+                    data.node.buffer = data.buffer;
+                    if(params.loop != null) data.node.loop = params.loop;
+                    data.node.connect(this._context.destination);
+                    // 监听播放完毕
+                    data.node.onended = ()=>{
+                        var data:AudioData = this._audioCache[toUrl];
+                        if(data)
+                        {
+                            // 停止播放
+                            this.stop(params.url);
+                            // 派发播放完毕事件
+                            core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
+                        }
+                    };
+                    // 开始播放，优先取参数中的时间，没有就取默认开始时间
+                    var playTime:number;
+                    if(params && params.time != null) playTime = params.time * 0.001;
+                    else playTime = data.playTime;
+                    delete data.playTime;
+                    data.node.start(playTime);
+                    // 开始播放进度监测
+                    var lastTime:number = this._context.currentTime;
+                    var curTime:number = playTime || 0;
+                    data.progress = system.enterFrame(()=>{
+                        var nowTime:number = this._context.currentTime;
+                        var deltaTime:number = nowTime - lastTime;
+                        lastTime = nowTime;
+                        if(data.status == AudioStatus.PLAYING)
+                        {
+                            curTime += deltaTime * 1000;
+                            var totalTime:number = data.node.buffer.duration * 1000;
+                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
+                        }
+                    });
+                    // 派发播放开始事件
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
                     break;
             }
         }
@@ -211,6 +208,7 @@ export default class AudioContextImpl implements IAudio
             // 设置状态
             data.status = AudioStatus.PAUSED;
             // 取消进度监测
+            data.node.onended = null;
             if(data.progress) data.progress.cancel();
             // 结束播放
             if(data.node)
