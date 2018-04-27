@@ -106,6 +106,9 @@ export default class AudioTagImpl implements IAudio
             node.onended = ()=>{
                 // 派发播放完毕事件
                 core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
+                // 如果循环则再开
+                if(data.playParams.loop)
+                    this.play(data.playParams);
             };
         }
     }

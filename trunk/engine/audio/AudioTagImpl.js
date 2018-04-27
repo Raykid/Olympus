@@ -97,6 +97,9 @@ var AudioTagImpl = /** @class */ (function () {
             node.onended = function () {
                 // 派发播放完毕事件
                 core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
+                // 如果循环则再开
+                if (data.playParams.loop)
+                    _this.play(data.playParams);
             };
         }
     };
