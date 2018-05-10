@@ -1,17 +1,17 @@
-import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
-import Dictionary from "../../utils/Dictionary";
-import IMediator from "../mediator/IMediator";
-import Bind from "./Bind";
-import IBridge from "../bridge/IBridge";
-import { evalExp, createRunFunc, EvalExp } from "./Utils";
-import { IResponseDataConstructor } from "../net/ResponseData";
-import { netManager } from "../net/NetManager";
+import { Injectable } from "../../core/injector/Injector";
 import IObservable from "../../core/observable/IObservable";
-import { IWatcher } from "./Watcher";
-import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
-import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import Dictionary from "../../utils/Dictionary";
 import { replaceDisplay } from "../../utils/DisplayUtil";
+import { extendObject, getObjectHashs } from "../../utils/ObjectUtil";
+import IBridge from "../bridge/IBridge";
+import IMediator from "../mediator/IMediator";
+import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import { netManager } from "../net/NetManager";
+import { IResponseDataConstructor } from "../net/ResponseData";
+import Bind from "./Bind";
+import { EvalExp, createRunFunc, evalExp } from "./Utils";
+import { IWatcher } from "./Watcher";
 
 /**
  * @author Raykid
@@ -316,12 +316,14 @@ export default class BindManager
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
+     * @param {string} name 绑定本来所在的对象在Mediator中的名字
      * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
      * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
+     * @param {IMediatorConstructor} [declaredMediatorCls] 声明的Mediator类型
      * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    public bindFor(mediator:IMediator, currentTarget:any, target:any, envModels:any[], exp:string, mediatorCls?:IMediatorConstructor, callback?:(data:any, renderer:any, envModels:any[])=>void):void
+    public bindFor(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:string, mediatorCls?:IMediatorConstructor, declaredMediatorCls?:IMediatorConstructor, callback?:(data:any, renderer:any, envModels:any[])=>void):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -331,6 +333,14 @@ export default class BindManager
             // 解析表达式
             var res:RegExpExecArray = this._regExp.exec(exp);
             if(!res) return;
+            // 如果给出了声明的Mediator类型，则生成一个声明Mediator，替换掉mediator当前的皮肤
+            var declaredMediator:IMediator
+            if(declaredMediatorCls)
+            {
+                declaredMediator = new declaredMediatorCls(target);
+                mediator.delegateMediator(declaredMediator);
+                mediator[name] = declaredMediator;
+            }
             // 包装渲染器创建回调
             var memento:any = mediator.bridge.wrapBindFor(currentTarget, (key:any, value:any, renderer:any)=>{
                 // 设置环境变量
@@ -361,8 +371,8 @@ export default class BindManager
                     // 更新渲染器
                     if(subMediator.skin && subMediator.bridge === mediator.bridge)
                         renderer = subMediator.skin;
-                    // 托管子中介者
-                    mediator.delegateMediator(subMediator);
+                    // 托管子中介者，优先托管在声明出来的中间中介者上
+                    (declaredMediator || mediator).delegateMediator(subMediator);
                     // 使用当前所有的数据开启该中介者
                     subMediator.open(extendObject({}, ...subEnvModels, value));
                     // 缓存子中介者

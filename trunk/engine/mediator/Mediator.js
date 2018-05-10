@@ -1,17 +1,18 @@
 import { core } from "../../core/Core";
 import Observable from "../../core/observable/Observable";
-import Dictionary from "../../utils/Dictionary";
-import { mutate } from "../bind/Mutator";
-import { bindManager } from "../bind/BindManager";
-import { maskManager } from "../mask/MaskManager";
-import { assetsManager } from "../assets/AssetsManager";
-import { netManager } from "../net/NetManager";
-import MediatorStatus from "./MediatorStatus";
-import { ModuleOpenStatus } from "./IMediatorModulePart";
 import { unique } from "../../utils/ArrayUtil";
-import MediatorMessage from "./MediatorMessage";
 import { getConstructor } from "../../utils/ConstructUtil";
+import Dictionary from "../../utils/Dictionary";
+import { assetsManager } from "../assets/AssetsManager";
+import { bindManager } from "../bind/BindManager";
+import { mutate } from "../bind/Mutator";
+import { bridgeManager } from '../bridge/BridgeManager';
+import { maskManager } from "../mask/MaskManager";
+import { netManager } from "../net/NetManager";
 import { system } from "../system/System";
+import { ModuleOpenStatus } from "./IMediatorModulePart";
+import MediatorMessage from "./MediatorMessage";
+import MediatorStatus from "./MediatorStatus";
 var moduleDict = {};
 var moduleNameDict = new Dictionary();
 /**
@@ -72,8 +73,11 @@ var Mediator = /** @class */ (function () {
         // 赋值模块名称
         this._moduleName = getModuleName(this);
         // 赋值皮肤
-        if (skin)
+        if (skin) {
             this.skin = skin;
+            // 赋值桥
+            this.bridge = bridgeManager.getBridgeBySkin(skin);
+        }
         this.oriSkin = skin;
         // 初始化绑定
         bindManager.bind(this);

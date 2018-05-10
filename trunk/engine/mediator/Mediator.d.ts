@@ -6,9 +6,9 @@ import IBridge from "../bridge/IBridge";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
 import IMediator from "./IMediator";
-import MediatorStatus from "./MediatorStatus";
-import { ModuleOpenStatus } from "./IMediatorModulePart";
 import IMediatorConstructor from "./IMediatorConstructor";
+import { ModuleOpenStatus } from "./IMediatorModulePart";
+import MediatorStatus from "./MediatorStatus";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -278,7 +278,7 @@ export default class Mediator implements IMediator {
      * @memberof IMediator
      */
     readonly root: IMediator;
-    private _children;
+    protected _children: IMediator[];
     /**
      * 获取所有子中介者
      *

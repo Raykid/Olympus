@@ -3,25 +3,24 @@ import ICommandConstructor from "../../core/command/ICommandConstructor";
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
 import Observable from "../../core/observable/Observable";
+import { unique } from "../../utils/ArrayUtil";
+import { getConstructor } from "../../utils/ConstructUtil";
 import Dictionary from "../../utils/Dictionary";
-import IBridge from "../bridge/IBridge";
-import { mutate } from "../bind/Mutator";
+import { assetsManager } from "../assets/AssetsManager";
 import { bindManager } from "../bind/BindManager";
+import { mutate } from "../bind/Mutator";
+import { bridgeManager } from '../bridge/BridgeManager';
+import IBridge from "../bridge/IBridge";
+import { maskManager } from "../mask/MaskManager";
+import { netManager } from "../net/NetManager";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
-import { maskManager } from "../mask/MaskManager";
-import { environment } from "../env/Environment";
-import { version } from "../version/Version";
-import { assetsManager } from "../assets/AssetsManager";
-import { netManager } from "../net/NetManager";
-import IMediator from "./IMediator";
-import MediatorStatus from "./MediatorStatus";
-import { ModuleOpenStatus } from "./IMediatorModulePart";
-import { unique } from "../../utils/ArrayUtil";
-import MediatorMessage from "./MediatorMessage";
-import IMediatorConstructor from "./IMediatorConstructor";
-import { getConstructor } from "../../utils/ConstructUtil";
 import { system } from "../system/System";
+import IMediator from "./IMediator";
+import IMediatorConstructor from "./IMediatorConstructor";
+import { ModuleOpenStatus } from "./IMediatorModulePart";
+import MediatorMessage from "./MediatorMessage";
+import MediatorStatus from "./MediatorStatus";
 
 /**
  * @author Raykid
@@ -237,7 +236,12 @@ export default class Mediator implements IMediator
         // 赋值模块名称
         this._moduleName = getModuleName(this);
         // 赋值皮肤
-        if(skin) this.skin = skin;
+        if(skin)
+        {
+            this.skin = skin;
+            // 赋值桥
+            this.bridge = bridgeManager.getBridgeBySkin(skin);
+        }
         this.oriSkin = skin;
         // 初始化绑定
         bindManager.bind(this);
@@ -773,7 +777,7 @@ export default class Mediator implements IMediator
         return (this.parent ? this.parent.root : this);
     }
 
-    private _children:IMediator[] = [];
+    protected _children:IMediator[] = [];
     /**
      * 获取所有子中介者
      * 

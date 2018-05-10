@@ -1,9 +1,9 @@
+import IObservable from "../../core/observable/IObservable";
 import IMediator from "../mediator/IMediator";
+import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import { IResponseDataConstructor } from "../net/ResponseData";
 import Bind from "./Bind";
 import { EvalExp } from "./Utils";
-import { IResponseDataConstructor } from "../net/ResponseData";
-import IObservable from "../../core/observable/IObservable";
-import IMediatorConstructor from "../mediator/IMediatorConstructor";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -99,12 +99,14 @@ export default class BindManager {
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
+     * @param {string} name 绑定本来所在的对象在Mediator中的名字
      * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
      * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
+     * @param {IMediatorConstructor} [declaredMediatorCls] 声明的Mediator类型
      * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    bindFor(mediator: IMediator, currentTarget: any, target: any, envModels: any[], exp: string, mediatorCls?: IMediatorConstructor, callback?: (data: any, renderer: any, envModels: any[]) => void): void;
+    bindFor(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, exp: string, mediatorCls?: IMediatorConstructor, declaredMediatorCls?: IMediatorConstructor, callback?: (data: any, renderer: any, envModels: any[]) => void): void;
     /**
      * 绑定Message
      *

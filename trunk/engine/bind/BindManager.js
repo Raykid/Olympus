@@ -1,12 +1,12 @@
 import * as tslib_1 from "tslib";
-import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector";
 import Dictionary from "../../utils/Dictionary";
-import Bind from "./Bind";
-import { evalExp, createRunFunc } from "./Utils";
-import { netManager } from "../net/NetManager";
-import { getObjectHashs, extendObject } from "../../utils/ObjectUtil";
 import { replaceDisplay } from "../../utils/DisplayUtil";
+import { extendObject, getObjectHashs } from "../../utils/ObjectUtil";
+import { netManager } from "../net/NetManager";
+import Bind from "./Bind";
+import { createRunFunc, evalExp } from "./Utils";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -304,12 +304,14 @@ var BindManager = /** @class */ (function () {
      * @param {*} currentTarget 绑定到的target实体对象
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
+     * @param {string} name 绑定本来所在的对象在Mediator中的名字
      * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
      * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
+     * @param {IMediatorConstructor} [declaredMediatorCls] 声明的Mediator类型
      * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    BindManager.prototype.bindFor = function (mediator, currentTarget, target, envModels, exp, mediatorCls, callback) {
+    BindManager.prototype.bindFor = function (mediator, currentTarget, target, envModels, name, exp, mediatorCls, declaredMediatorCls, callback) {
         var _this = this;
         var watcher;
         var bindData = this._bindDict.get(mediator);
@@ -320,6 +322,13 @@ var BindManager = /** @class */ (function () {
             var res = _this._regExp.exec(exp);
             if (!res)
                 return;
+            // 如果给出了声明的Mediator类型，则生成一个声明Mediator，替换掉mediator当前的皮肤
+            var declaredMediator;
+            if (declaredMediatorCls) {
+                declaredMediator = new declaredMediatorCls(target);
+                mediator.delegateMediator(declaredMediator);
+                mediator[name] = declaredMediator;
+            }
             // 包装渲染器创建回调
             var memento = mediator.bridge.wrapBindFor(currentTarget, function (key, value, renderer) {
                 // 设置环境变量
@@ -349,8 +358,8 @@ var BindManager = /** @class */ (function () {
                     // 更新渲染器
                     if (subMediator.skin && subMediator.bridge === mediator.bridge)
                         renderer = subMediator.skin;
-                    // 托管子中介者
-                    mediator.delegateMediator(subMediator);
+                    // 托管子中介者，优先托管在声明出来的中间中介者上
+                    (declaredMediator || mediator).delegateMediator(subMediator);
                     // 使用当前所有的数据开启该中介者
                     subMediator.open(extendObject.apply(void 0, [{}].concat(subEnvModels, [value])));
                     // 缓存子中介者

@@ -202,6 +202,9 @@ function addSubHandler(instance, handler) {
     if (handlers.indexOf(handler) < 0)
         handlers.push(handler);
 }
+function isMediator(target) {
+    return (target.delegateMediator instanceof Function && target.undelegateMediator instanceof Function);
+}
 export function SubMediator(arg1, arg2, arg3) {
     var skin;
     var mediatorCls;
@@ -229,9 +232,13 @@ export function SubMediator(arg1, arg2, arg3) {
         return doSubMediator;
     }
     function doSubMediator(prototype, propertyKey) {
-        if (prototype.delegateMediator instanceof Function && prototype.undelegateMediator instanceof Function) {
+        if (isMediator(prototype)) {
             // 监听实例化
             listenConstruct(prototype.constructor, function (instance) {
+                var declaredCls = Reflect.getMetadata("design:type", prototype, propertyKey);
+                var declaredMediatorCls;
+                if (isMediator(declaredCls.prototype))
+                    declaredMediatorCls = declaredCls;
                 var mediator;
                 var temp = instance[propertyKey];
                 // 篡改属性
@@ -239,7 +246,8 @@ export function SubMediator(arg1, arg2, arg3) {
                     configurable: true,
                     enumerable: true,
                     get: function () {
-                        return mediator;
+                        // 如果类型声明为Mediator，则返回Mediator，否则返回皮肤本身
+                        return (declaredMediatorCls ? mediator : skin);
                     },
                     set: function (value) {
                         var _this = this;
@@ -326,8 +334,10 @@ export function SubMediator(arg1, arg2, arg3) {
                     instance[propertyKey] = temp;
                 }
                 else if (temp === undefined) {
-                    // 优先使用装饰器提供的中介者类型，如果没有则使用元数据
-                    var cls = mediatorCls || Reflect.getMetadata("design:type", prototype, propertyKey);
+                    // 优先使用是中介者类的元数据类型，其次使用装饰器提供的中介者类型
+                    var cls = declaredMediatorCls || mediatorCls;
+                    if (!cls)
+                        throw new Error("必须在类型声明或装饰器中至少一处提供Mediator的类型");
                     instance[propertyKey] = temp = new cls(skin);
                 }
                 // 执行回调
@@ -604,6 +614,10 @@ export function BindFor(arg1, arg2, arg3) {
         uiDict = arg1;
     }
     return function (prototype, propertyKey) {
+        var declaredCls = Reflect.getMetadata("design:type", prototype, propertyKey);
+        var declaredMediatorCls;
+        if (isMediator(declaredCls.prototype))
+            declaredMediatorCls = declaredCls;
         _listenOnOpen(prototype, function (mediator) {
             // 取到编译目标对象
             var target = mediator[propertyKey];
@@ -613,7 +627,7 @@ export function BindFor(arg1, arg2, arg3) {
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
                     searchUIDepth({ r: 13 }, mediator, target, function (currentTarget, target, _name, _exp, leftHandlers, index) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, exp, mediatorCls);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredMediatorCls);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     });
@@ -625,7 +639,7 @@ export function BindFor(arg1, arg2, arg3) {
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                     searchUIDepth(uiDict, mediator, target, function (currentTarget, target, _name, _exp, leftHandlers, index) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, _exp, mediatorCls);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     }, true);
@@ -635,7 +649,7 @@ export function BindFor(arg1, arg2, arg3) {
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                 searchUIDepth(uiDict, mediator, target, function (currentTarget, target, _name, _exp, leftHandlers, index) {
                     // 添加编译指令
-                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, _exp, mediatorCls);
+                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls);
                     // 设置中断编译
                     target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                 }, true);

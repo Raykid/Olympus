@@ -150,11 +150,11 @@ export function compileIf(mediator, currentTarget, target, envModels, exp) {
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export function compileFor(mediator, currentTarget, target, envModels, exp, mediatorCls) {
+export function compileFor(mediator, currentTarget, target, envModels, name, exp, mediatorCls, declaredMediatorCls) {
     // 将后面的编译命令缓存起来
     var leftHandlers = target.__stop_left_handlers__;
     // 绑定for命令
-    bindManager.bindFor(mediator, currentTarget, target, envModels, exp, mediatorCls, function (data, renderer, subEnvModels) {
+    bindManager.bindFor(mediator, currentTarget, target, envModels, name, exp, mediatorCls, declaredMediatorCls, function (data, renderer, subEnvModels) {
         var subLeftHandlers = leftHandlers.concat();
         var bindTargets = [];
         // 针对每一个renderer赋值后续编译指令

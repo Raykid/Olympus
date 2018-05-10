@@ -1,8 +1,8 @@
 import IObservable from "../../core/observable/IObservable";
-import { IResponseDataConstructor } from "../net/ResponseData";
-import IMediator from "../mediator/IMediator";
 import Dictionary from "../../utils/Dictionary";
+import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import { IResponseDataConstructor } from "../net/ResponseData";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -121,7 +121,7 @@ export declare function compileIf(mediator: IMediator, currentTarget: ICompileTa
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export declare function compileFor(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], exp: string, mediatorCls?: IMediatorConstructor): void;
+export declare function compileFor(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], name: string, exp: string, mediatorCls?: IMediatorConstructor, declaredMediatorCls?: IMediatorConstructor): void;
 /**
  * 编译bindMessage命令，不会中止编译
  */

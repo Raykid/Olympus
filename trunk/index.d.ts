@@ -57,6 +57,7 @@ import * as EngineInjector from "./engine/injector/Injector";
 import * as IMaskData from "./engine/mask/IMaskData";
 import * as MaskManager from "./engine/mask/MaskManager";
 
+import * as ForMediator from "./engine/mediator/IMediator";
 import * as IMediator from "./engine/mediator/IMediator";
 import * as IMediatorBasicPart from "./engine/mediator/IMediatorBasicPart";
 import * as IMediatorBindPart from "./engine/mediator/IMediatorBindPart";
