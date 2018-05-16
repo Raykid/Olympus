@@ -133,6 +133,7 @@ var AudioTagImpl = /** @class */ (function () {
                     break;
                 case AudioStatus.PAUSED:
                     // 已经加载完毕，暂停中，直接播放
+                    data.playParams = params;
                     if (params.stopOthers)
                         this.stopAll();
                     if (params.loop != null)

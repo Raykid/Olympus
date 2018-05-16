@@ -147,6 +147,7 @@ export default class AudioTagImpl implements IAudio
                     break;
                 case AudioStatus.PAUSED:
                     // 已经加载完毕，暂停中，直接播放
+                    data.playParams = params;
                     if(params.stopOthers) this.stopAll();
                     if(params.loop != null) data.node.loop = params.loop;
                     if(params.time != null) data.node.currentTime = params.time * 0.001;
