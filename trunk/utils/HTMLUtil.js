@@ -1,0 +1,36 @@
+/**
+ * @author Raykid
+ * @email initial_r@qq.com
+ * @create date 2018-05-16
+ * @modify date 2018-05-16
+ *
+ * HTML相关工具
+*/
+/**
+ * 获取当前所在的容器iframe，如果没有则返回null
+ *
+ * @export
+ * @returns {(HTMLIFrameElement|null)}
+ */
+export function getIFrameContainer() {
+    var parentWindow = window.parent;
+    if (!parentWindow)
+        return null;
+    var tempIFrames = parentWindow.document.getElementsByTagName("iframe");
+    for (var i = 0, len = tempIFrames.length; i < len; i++) {
+        var tempIFrame = tempIFrames[i];
+        // 如果寻找到的iframe中的window和当前window一致，则返回之
+        if (tempIFrame.contentWindow === window)
+            return tempIFrame;
+    }
+    return null;
+}
+/**
+ * 获取当前是否在iframe中
+ *
+ * @export
+ * @returns {boolean}
+ */
+export function isInIframe() {
+    return (getIFrameContainer() !== null);
+}

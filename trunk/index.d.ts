@@ -114,6 +114,7 @@ import * as ArrayUtil from "./utils/ArrayUtil";
 import * as ConstructUtil from "./utils/ConstructUtil";
 import * as CookieUtil from "./utils/CookieUtil";
 import * as Dictionary from "./utils/Dictionary";
+import * as HTMLUtil from "./utils/HTMLUtil";
 import * as HTTPUtil from "./utils/HTTPUtil";
 import * as ObjectUtil from "./utils/ObjectUtil";
 import * as DisplayUtil from "./utils/DisplayUtil";
