@@ -92,6 +92,7 @@ export function validateProtocol(url:string, protocol?:string):string
  */
 export function wrapHost(url:string, host:string, forced:boolean = false):string
 {
+    if(url == null) return url;
     host = host || getCurOrigin();
     var re: RegExp = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
     var arr: string[] = url.match(re);

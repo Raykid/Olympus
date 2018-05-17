@@ -84,6 +84,8 @@ export function validateProtocol(url, protocol) {
  */
 export function wrapHost(url, host, forced) {
     if (forced === void 0) { forced = false; }
+    if (url == null)
+        return url;
     host = host || getCurOrigin();
     var re = /^(?:[^\/]+):\/{2,}(?:[^\/]+)\//;
     var arr = url.match(re);
