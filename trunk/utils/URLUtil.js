@@ -77,7 +77,7 @@ export function validateProtocol(url, protocol) {
     }
 }
 /**
- * 替换url中的host
+ * 替换url中的host，如果传入的是绝对路径且forced为false，则不会合法化protocol
  * @param url       url
  * @param host      要替换的host
  * @param forced    是否强制替换（默认false）
@@ -91,13 +91,15 @@ export function wrapHost(url, host, forced) {
         if (forced) {
             url = url.substr(arr[0].length);
             url = host + "/" + url;
+            // 合法化一下protocol
+            url = validateProtocol(url);
         }
     }
     else {
         url = host + "/" + url;
+        // 合法化一下protocol
+        url = validateProtocol(url);
     }
-    // 合法化一下protocol
-    url = validateProtocol(url);
     // 最后规整一下url
     url = trimURL(url);
     return url;

@@ -23,7 +23,7 @@ export declare function isAbsolutePath(url: string): boolean;
  */
 export declare function validateProtocol(url: string, protocol?: string): string;
 /**
- * 替换url中的host
+ * 替换url中的host，如果传入的是绝对路径且forced为false，则不会合法化protocol
  * @param url       url
  * @param host      要替换的host
  * @param forced    是否强制替换（默认false）
