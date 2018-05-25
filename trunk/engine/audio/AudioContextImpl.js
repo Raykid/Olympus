@@ -157,6 +157,8 @@ var AudioContextImpl = /** @class */ (function () {
                             core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
                         }
                     };
+                    // 要播放之前要起用
+                    this._context.resume();
                     // 开始播放，优先取参数中的时间，没有就取默认开始时间
                     var playTime;
                     if (params && params.time != null)
@@ -199,6 +201,8 @@ var AudioContextImpl = /** @class */ (function () {
                 try {
                     // 这里可能会报错，需要try cath
                     data.node.stop(time);
+                    // 停止播音频时需要挂起
+                    this._context.suspend();
                 }
                 catch (err) {
                     console.warn(err);

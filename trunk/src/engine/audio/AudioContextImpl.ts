@@ -172,6 +172,8 @@ export default class AudioContextImpl implements IAudio
                             core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
                         }
                     };
+                    // 要播放之前要起用
+                    this._context.resume();
                     // 开始播放，优先取参数中的时间，没有就取默认开始时间
                     var playTime:number;
                     if(params && params.time != null) playTime = params.time * 0.001;
@@ -217,6 +219,8 @@ export default class AudioContextImpl implements IAudio
                 {
                     // 这里可能会报错，需要try cath
                     data.node.stop(time);
+                    // 停止播音频时需要挂起
+                    this._context.suspend();
                 }
                 catch(err)
                 {
