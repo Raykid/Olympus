@@ -268,7 +268,7 @@ export function SubMediator(skin:any, mediatorCls?:IMediatorConstructor, dataExp
 export function SubMediator(prototype:any, propertyKey:string):void;
 export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
 {
-    var skin:any;
+    var oriSkin:any;
     var mediatorCls:IMediatorConstructor;
     var dataExp:string;
     // 判断是否是参数化装饰
@@ -291,7 +291,7 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
         }
         else
         {
-            skin = arg1;
+            oriSkin = arg1;
             mediatorCls = arg2;
             dataExp = arg3;
         }
@@ -306,6 +306,7 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
             // 监听实例化
             listenConstruct(prototype.constructor, function(instance:IMediator):void
             {
+                var skin:any = oriSkin;
                 var declaredCls:any = Reflect.getMetadata("design:type", prototype, propertyKey);
                 var declaredMediatorCls:any;
                 if(isMediator(declaredCls.prototype))

@@ -206,7 +206,7 @@ function isMediator(target) {
     return (target.delegateMediator instanceof Function && target.undelegateMediator instanceof Function);
 }
 export function SubMediator(arg1, arg2, arg3) {
-    var skin;
+    var oriSkin;
     var mediatorCls;
     var dataExp;
     // 判断是否是参数化装饰
@@ -224,7 +224,7 @@ export function SubMediator(arg1, arg2, arg3) {
             dataExp = arg2;
         }
         else {
-            skin = arg1;
+            oriSkin = arg1;
             mediatorCls = arg2;
             dataExp = arg3;
         }
@@ -235,6 +235,7 @@ export function SubMediator(arg1, arg2, arg3) {
         if (isMediator(prototype)) {
             // 监听实例化
             listenConstruct(prototype.constructor, function (instance) {
+                var skin = oriSkin;
                 var declaredCls = Reflect.getMetadata("design:type", prototype, propertyKey);
                 var declaredMediatorCls;
                 if (isMediator(declaredCls.prototype))
