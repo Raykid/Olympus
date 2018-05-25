@@ -63,6 +63,8 @@ export default class AudioContextImpl implements IAudio
             source.connect(this._context.destination);
             source.start();
             source.stop();
+            // 要先挂起
+            this._context.suspend();
             // 设置标识符
             this._inited = true;
             // 如果当前有正在播放的音频，全部再播放一次

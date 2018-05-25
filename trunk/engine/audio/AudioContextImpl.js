@@ -28,6 +28,8 @@ var AudioContextImpl = /** @class */ (function () {
             source.connect(_this._context.destination);
             source.start();
             source.stop();
+            // 要先挂起
+            _this._context.suspend();
             // 设置标识符
             _this._inited = true;
             // 如果当前有正在播放的音频，全部再播放一次
