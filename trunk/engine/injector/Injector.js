@@ -356,6 +356,8 @@ export function SubMediator(arg1, arg2, arg3) {
             listenDispose(prototype.constructor, function (instance) {
                 var mediator = instance[propertyKey];
                 if (mediator) {
+                    // 销毁子中介者
+                    mediator.dispose();
                     // 移除实例
                     instance[propertyKey] = undefined;
                 }
