@@ -368,7 +368,6 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
                             if(mediator)
                             {
                                 mediator.skin = value;
-                                this.undelegateMediator(mediator);
                             }
                             mediator = value;
                         }
@@ -443,8 +442,6 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
                 var mediator:IMediator = instance[propertyKey];
                 if(mediator)
                 {
-                    // 销毁子中介者
-                    mediator.dispose();
                     // 移除实例
                     instance[propertyKey] = undefined;
                 }
