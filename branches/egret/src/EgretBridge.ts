@@ -327,27 +327,37 @@ export default class EgretBridge implements IBridge
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-            RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
+            self.loadResJson() ;
         }
+    };
 
-        function onConfigComplete(evt:RES.ResourceEvent):void
-        {
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-            // 加载主题配置
-            var theme:eui.Theme = new eui.Theme(this._initParams.pathPrefix + "resource/default.thm.json", self._root.stage);
-            theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-        }
+    /** 
+     * 加载资源配置
+    */
+    public loadResJson():void{
+        RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.loadThemeJson, this);
+        RES.loadConfig(this._initParams.pathPrefix + "resource/default.res.json", this._initParams.pathPrefix + "resource/");
+    } ;
 
-        function onThemeLoadComplete(evt:eui.UIEvent):void
-        {
-            evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-            // 加载预加载资源组
-            var preloadGroups:string[] = this._initParams.preloadGroups;
-            self.loadAssets(preloadGroups, null, err=>complete(self));
-        }
+    /** 
+     * 加载主题配置
+    */
+    public loadThemeJson():void{
+        RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, this.loadResJson, this);
+        var theme:eui.Theme = new eui.Theme(this._initParams.pathPrefix + "resource/default.thm.json", this._root.stage);
+        theme.addEventListener(eui.UIEvent.COMPLETE, this.loadPreloadGroup, this);
     }
-    
+
+    /** 
+     * 预加载资源组
+    */
+    public loadPreloadGroup(evt):void{
+        evt.target.removeEventListener(eui.UIEvent.COMPLETE, this.loadThemeJson, this);
+        var preloadGroups = this._initParams.preloadGroups;
+        this.loadAssets(preloadGroups, null, function (err) { 
+            return this.initCompleted(this); 
+        }.bind(this));
+    }
     /**
      * 判断皮肤是否是Egret显示对象
      * 
