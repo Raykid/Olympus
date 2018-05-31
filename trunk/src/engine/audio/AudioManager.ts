@@ -1,10 +1,10 @@
-import { Injectable, Inject } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector";
 import Shell from "../env/Shell";
-import IAudio, { AudioPlayParams } from "./IAudio";
-import AudioTagImpl from "./AudioTagImpl";
-import AudioContextImpl from "./AudioContextImpl";
 import EngineMessage from "../message/EngineMessage";
+import AudioContextImpl from "./AudioContextImpl";
+import AudioTagImpl from "./AudioTagImpl";
+import IAudio, { AudioPlayParams } from "./IAudio";
 
 /**
  * @author Raykid

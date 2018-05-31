@@ -29,6 +29,20 @@ export function getIFrameContainer():HTMLIFrameElement|null
 }
 
 /**
+ * 获取最根节点的Window实例
+ * 
+ * @export
+ * @returns {Window} 
+ */
+export function getRootWindow():Window
+{
+    let curWindow:Window = window;
+    while(curWindow.parent)
+        curWindow = curWindow.parent;
+    return curWindow;
+}
+
+/**
  * 获取当前是否在iframe中
  * 
  * @export

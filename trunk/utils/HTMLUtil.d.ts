@@ -14,6 +14,13 @@
  */
 export declare function getIFrameContainer(): HTMLIFrameElement | null;
 /**
+ * 获取最根节点的Window实例
+ *
+ * @export
+ * @returns {Window}
+ */
+export declare function getRootWindow(): Window;
+/**
  * 获取当前是否在iframe中
  *
  * @export
