@@ -121,7 +121,7 @@ export declare function compileIf(mediator: IMediator, currentTarget: ICompileTa
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export declare function compileFor(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], name: string, exp: string, mediatorCls?: IMediatorConstructor, declaredMediatorCls?: IMediatorConstructor): void;
+export declare function compileFor(mediator: IMediator, currentTarget: ICompileTarget, target: any, envModels: any[], name: string, exp: string, mediatorCls?: IMediatorConstructor, declaredMediatorCls?: IMediatorConstructor, dataExp?: string): void;
 /**
  * 编译bindMessage命令，不会中止编译
  */

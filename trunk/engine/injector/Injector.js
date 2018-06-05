@@ -593,21 +593,24 @@ export function BindIf(arg1, arg2) {
 /**
  * @private
  */
-export function BindFor(arg1, arg2, arg3) {
+export function BindFor(arg1, arg2, arg3, arg4) {
     // 组织参数
     var uiDict;
     var name;
     var exp;
     var mediatorCls;
+    var dataExp;
     if (typeof arg1 === "string") {
         if (typeof arg2 === "string") {
             name = arg1;
             exp = arg2;
             mediatorCls = arg3;
+            dataExp = arg4;
         }
         else {
             exp = arg1;
             mediatorCls = arg2;
+            dataExp = arg3;
         }
     }
     else {
@@ -627,7 +630,7 @@ export function BindFor(arg1, arg2, arg3) {
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
                     searchUIDepth({ r: 13 }, mediator, target, function (currentTarget, target, _name, _exp, leftHandlers, index) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredMediatorCls);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredMediatorCls, dataExp);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     });
@@ -639,7 +642,7 @@ export function BindFor(arg1, arg2, arg3) {
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                     searchUIDepth(uiDict, mediator, target, function (currentTarget, target, _name, _exp, leftHandlers, index) {
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     }, true);
@@ -649,7 +652,7 @@ export function BindFor(arg1, arg2, arg3) {
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                 searchUIDepth(uiDict, mediator, target, function (currentTarget, target, _name, _exp, leftHandlers, index) {
                     // 添加编译指令
-                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls);
+                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
                     // 设置中断编译
                     target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                 }, true);

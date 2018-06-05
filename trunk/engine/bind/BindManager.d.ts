@@ -103,10 +103,11 @@ export default class BindManager {
      * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
      * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
      * @param {IMediatorConstructor} [declaredMediatorCls] 声明的Mediator类型
+     * @param {string} [dataExp] 提供给中介者包装器的数据表达式
      * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    bindFor(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, exp: string, mediatorCls?: IMediatorConstructor, declaredMediatorCls?: IMediatorConstructor, callback?: (data: any, renderer: any, envModels: any[]) => void): void;
+    bindFor(mediator: IMediator, currentTarget: any, target: any, envModels: any[], name: string, exp: string, mediatorCls?: IMediatorConstructor, declaredMediatorCls?: IMediatorConstructor, dataExp?: string, callback?: (data: any, renderer: any, envModels: any[]) => void): void;
     /**
      * 绑定Message
      *

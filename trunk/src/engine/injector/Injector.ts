@@ -831,34 +831,37 @@ export function BindIf(arg1:{[path:string]:any}|EvalExp, arg2?:EvalExp):Property
  */
 export function BindFor(uiDict:{[name:string]:any}):PropertyDecorator;
 /**
- * 一次绑定一个数据集合
- * 
- * @export
- * @param {string} name ui属性名称
- * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
- * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
- * @returns {PropertyDecorator} 
- */
-export function BindFor(name:string, exp:string, mediatorCls?:IMediatorConstructor):PropertyDecorator;
-/**
  * 绑定数据集合到当前显示对象
  * 
  * @export
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
+ * @param {string} [dataExp] 传递给中介者的数据表达式
  * @returns {PropertyDecorator} 
  */
-export function BindFor(exp:string, mediatorCls?:IMediatorConstructor):PropertyDecorator;
+export function BindFor(exp:string, mediatorCls?:IMediatorConstructor, dataExp?:string):PropertyDecorator;
+/**
+ * 绑定数据集合到指定对象
+ * 
+ * @export
+ * @param {string} name ui属性名称
+ * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
+ * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
+ * @param {string} [dataExp] 传递给中介者的数据表达式
+ * @returns {PropertyDecorator} 
+ */
+export function BindFor(name:string, exp:string, mediatorCls?:IMediatorConstructor, dataExp?:string):PropertyDecorator;
 /**
  * @private
  */
-export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any):PropertyDecorator
+export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, arg4?:string):PropertyDecorator
 {
     // 组织参数
     var uiDict:{[name:string]:any};
     var name:string;
     var exp:string;
     var mediatorCls:IMediatorConstructor;
+    var dataExp:string;
     if(typeof arg1 === "string")
     {
         if(typeof arg2 === "string")
@@ -866,11 +869,13 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any):P
             name = arg1;
             exp = arg2;
             mediatorCls = arg3;
+            dataExp = arg4;
         }
         else
         {
             exp = arg1;
             mediatorCls = arg2;
+            dataExp = arg3;
         }
     }
     else
@@ -894,7 +899,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any):P
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
                     searchUIDepth({r: 13}, mediator, target, (currentTarget:any, target:any, _name:string, _exp:string, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredMediatorCls);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredMediatorCls, dataExp);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     });
@@ -907,7 +912,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any):P
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                     searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:string, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     }, true);
@@ -918,7 +923,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any):P
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                 searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:string, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                     // 添加编译指令
-                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls);
+                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
                     // 设置中断编译
                     target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                 }, true);
