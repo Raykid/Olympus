@@ -7,6 +7,8 @@ import * as UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeComman
 
 import * as Injector from "./egret/injector/Injector";
 
+import * as FlowLayout from "./egret/layouts/FlowLayout";
+
 import * as MaskEntity from "./egret/mask/MaskEntity";
 
 import * as BackPanelPolicy from "./egret/panel/BackPanelPolicy";
