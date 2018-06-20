@@ -110,6 +110,13 @@ export default class AudioTagImpl implements IAudio
                 if(data.playParams.loop)
                     this.play(data.playParams);
             };
+
+            node.onerror = (e)=>{
+
+                //派发错误事件
+                core.dispatch(AudioMessage.AUDIO_ONERROR, url,e);
+    
+            };
         }
     }
 
