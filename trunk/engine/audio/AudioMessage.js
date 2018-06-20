@@ -57,6 +57,14 @@ var AudioMessage = /** @class */ (function () {
      * @memberof AudioMessage
      */
     AudioMessage.AUDIO_PLAY_PROGRESS = "audioPlayProgress";
+    /**
+     * 音频发生错误
+     *
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    AudioMessage.AUDIO_ONERROR = "AUDIO_ONERROR";
     return AudioMessage;
 }());
 export default AudioMessage;

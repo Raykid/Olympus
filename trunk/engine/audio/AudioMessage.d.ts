@@ -55,4 +55,12 @@ export default class AudioMessage {
      * @memberof AudioMessage
      */
     static AUDIO_PLAY_PROGRESS: string;
+    /**
+     * 音频发生错误
+     *
+     * @static
+     * @type {string}
+     * @memberof AudioMessage
+     */
+    static AUDIO_ONERROR: string;
 }
