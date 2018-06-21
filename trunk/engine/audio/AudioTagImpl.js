@@ -101,9 +101,9 @@ var AudioTagImpl = /** @class */ (function () {
                 if (data.playParams.loop)
                     _this.play(data.playParams);
             };
-            node.onerror = function (e) {
+            node.onerror = function (evt) {
                 //派发错误事件
-                core.dispatch(AudioMessage.AUDIO_ONERROR, url, e);
+                core.dispatch(AudioMessage.AUDIO_ERROR, url, evt);
             };
         }
     };

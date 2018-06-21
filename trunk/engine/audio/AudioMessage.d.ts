@@ -56,11 +56,11 @@ export default class AudioMessage {
      */
     static AUDIO_PLAY_PROGRESS: string;
     /**
-     * 音频发生错误
+     * 音频错误事件
      *
      * @static
      * @type {string}
      * @memberof AudioMessage
      */
-    static AUDIO_ONERROR: string;
+    static AUDIO_ERROR: string;
 }
