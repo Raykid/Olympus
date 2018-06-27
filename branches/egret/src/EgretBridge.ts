@@ -2,25 +2,25 @@
 
 import { core } from "olympus-r/core/Core";
 import IBridge from "olympus-r/engine/bridge/IBridge";
+import { environment } from "olympus-r/engine/env/Environment";
+import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import IMediator from "olympus-r/engine/mediator/IMediator";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
 import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
+import { panelManager } from 'olympus-r/engine/panel/PanelManager';
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import SceneMessage from "olympus-r/engine/scene/SceneMessage";
-import IMediator from "olympus-r/engine/mediator/IMediator";
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import { environment } from "olympus-r/engine/env/Environment";
+import { load } from "olympus-r/utils/HTTPUtil";
 import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
-import RenderMode from "./egret/RenderMode";
-import AssetsLoader, { IItemDict, IResourceDict } from "./egret/AssetsLoader";
-import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
-import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
-import * as UIUtil from './egret/utils/UIUtil';
-import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
-import * as Injector from './egret/injector/Injector';
-import { wrapEUIList } from "./egret/utils/UIUtil";
+import AssetsLoader, { IResourceDict } from "./egret/AssetsLoader";
 import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
+import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
+import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
+import RenderMode from "./egret/RenderMode";
+import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
 import { wrapSkin } from "./egret/utils/SkinUtil";
+import { wrapEUIList } from "./egret/utils/UIUtil";
 
 /**
  * @author Raykid
@@ -36,7 +36,6 @@ export default class EgretBridge implements IBridge
     public static TYPE:string = "Egret";
 
     private _initParams:IInitParams;
-    private _promptPanel:IPromptPanel;
 
     /**
      * 获取表现层类型名称
@@ -325,10 +324,8 @@ export default class EgretBridge implements IBridge
                     return result;
                 };
                 // 篡改Watcher.checkBindable方法，把__listeners__赋值变为不可遍历
-                var oriCheckBindable:Function = eui.Watcher["checkBindable"];
                 eui.Watcher["checkBindable"] = function(host:any, property:string):any
                 {
-                    var result:any = oriCheckBindable.call(this, host, property);
                     // 改变可遍历性
                     var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(host, "__listeners__");
                     if(desc && desc.enumerable)
@@ -379,18 +376,27 @@ export default class EgretBridge implements IBridge
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-            var url:string = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.res.json", environment.curCDNHost);
-            RES.loadConfig(url, self._initParams.pathPrefix + "resource/");
-        }
+            doLoad();
 
-        function onConfigComplete(evt:RES.ResourceEvent):void
-        {
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-            // 加载主题配置
-            var url:string = wrapAbsolutePath(this._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
-            var theme:eui.Theme = new eui.Theme(url, self._root.stage);
-            theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+            function doLoad():void
+            {
+                load({
+                    url: self._initParams.pathPrefix + "resource/default.res.json",
+                    useCDN: true,
+                    responseType: "text",
+                    onResponse: (content:string)=>{
+                        var data:any = JSON.parse(content);
+                        RES.parseConfig(data, self._initParams.pathPrefix + "resource/");
+                        // 加载主题配置
+                        var url:string = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
+                        var theme:eui.Theme = new eui.Theme(url, self._root.stage);
+                        theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+                    },
+                    onError: err=>{
+                        panelManager.alert(err.message + "\nPlease try again.", doLoad);
+                    }
+                });
+            }
         }
 
         function onThemeLoadComplete(evt:eui.UIEvent):void
@@ -896,39 +902,33 @@ class ThemeAdapter implements eui.IThemeAdapter
      */
     public getTheme(url:string,compFunc:Function,errorFunc:Function,thisObject:any):void
     {
-        RES.addEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
-        RES.getResByUrl(url, onGetRes, this, RES.ResourceItem.TYPE_TEXT);
-
-        function onGetRes(e:string):void
-        {
-            try
-            {
-                // 需要为所有主题资源添加路径前缀
-                var data:any = JSON.parse(e);
-                for(var key in data.skins)
-                    data.skins[key] = this._initParams.pathPrefix + data.skins[key];
-                for(var key in data.exmls)
+        load({
+            url: environment.toCDNHostURL(url),
+            responseType: "text",
+            onResponse: (result:string)=>{
+                try
                 {
-                    // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
-                    var exml:any = data.exmls[key];
-                    if(typeof exml == "string")
-                        data.exmls[key] = this._initParams.pathPrefix + exml;
-                    else
-                        exml.path = this._initParams.pathPrefix + exml.path;
+                    // 需要为所有主题资源添加路径前缀
+                    var data:any = JSON.parse(result);
+                    for(var key in data.skins)
+                        data.skins[key] = this._initParams.pathPrefix + data.skins[key];
+                    for(var key in data.exmls)
+                    {
+                        // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
+                        var exml:any = data.exmls[key];
+                        if(typeof exml == "string")
+                            data.exmls[key] = this._initParams.pathPrefix + exml;
+                        else
+                            exml.path = this._initParams.pathPrefix + exml.path;
+                    }
+                    result = JSON.stringify(data);
                 }
-                e = JSON.stringify(data);
-            }
-            catch(err){}
-            compFunc.call(thisObject, e);
-        }
-
-        function onError(e:RES.ResourceEvent):void
-        {
-            if(e.resItem.url == url)
-            {
-                RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
+                catch(err){}
+                compFunc.call(thisObject, result);
+            },
+            onError: ()=>{
                 errorFunc.call(thisObject);
             }
-        }
+        })
     }
 }

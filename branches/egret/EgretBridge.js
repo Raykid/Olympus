@@ -1,17 +1,19 @@
 /// <amd-module name="EgretBridge"/>
 import { core } from "olympus-r/core/Core";
-import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import SceneMessage from "olympus-r/engine/scene/SceneMessage";
 import { environment } from "olympus-r/engine/env/Environment";
+import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
+import { panelManager } from 'olympus-r/engine/panel/PanelManager';
+import SceneMessage from "olympus-r/engine/scene/SceneMessage";
+import { load } from "olympus-r/utils/HTTPUtil";
 import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
-import RenderMode from "./egret/RenderMode";
 import AssetsLoader from "./egret/AssetsLoader";
-import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
-import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
-import MaskEntity from "./egret/mask/MaskEntity";
-import { wrapEUIList } from "./egret/utils/UIUtil";
 import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
+import MaskEntity from "./egret/mask/MaskEntity";
+import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
+import RenderMode from "./egret/RenderMode";
+import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
 import { wrapSkin } from "./egret/utils/SkinUtil";
+import { wrapEUIList } from "./egret/utils/UIUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -298,9 +300,7 @@ var EgretBridge = /** @class */ (function () {
                     return result;
                 };
                 // 篡改Watcher.checkBindable方法，把__listeners__赋值变为不可遍历
-                var oriCheckBindable = eui.Watcher["checkBindable"];
                 eui.Watcher["checkBindable"] = function (host, property) {
-                    var result = oriCheckBindable.call(this, host, property);
                     // 改变可遍历性
                     var desc = Object.getOwnPropertyDescriptor(host, "__listeners__");
                     if (desc && desc.enumerable) {
@@ -348,16 +348,25 @@ var EgretBridge = /** @class */ (function () {
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-            var url = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.res.json", environment.curCDNHost);
-            RES.loadConfig(url, self._initParams.pathPrefix + "resource/");
-        }
-        function onConfigComplete(evt) {
-            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigComplete, self);
-            // 加载主题配置
-            var url = wrapAbsolutePath(this._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
-            var theme = new eui.Theme(url, self._root.stage);
-            theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+            doLoad();
+            function doLoad() {
+                load({
+                    url: self._initParams.pathPrefix + "resource/default.res.json",
+                    useCDN: true,
+                    responseType: "text",
+                    onResponse: function (content) {
+                        var data = JSON.parse(content);
+                        RES.parseConfig(data, self._initParams.pathPrefix + "resource/");
+                        // 加载主题配置
+                        var url = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
+                        var theme = new eui.Theme(url, self._root.stage);
+                        theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+                    },
+                    onError: function (err) {
+                        panelManager.alert(err.message + "\nPlease try again.", doLoad);
+                    }
+                });
+            }
         }
         function onThemeLoadComplete(evt) {
             evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
@@ -765,33 +774,33 @@ var ThemeAdapter = /** @class */ (function () {
      * @param thisObject 回调的this引用
      */
     ThemeAdapter.prototype.getTheme = function (url, compFunc, errorFunc, thisObject) {
-        RES.addEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
-        RES.getResByUrl(url, onGetRes, this, RES.ResourceItem.TYPE_TEXT);
-        function onGetRes(e) {
-            try {
-                // 需要为所有主题资源添加路径前缀
-                var data = JSON.parse(e);
-                for (var key in data.skins)
-                    data.skins[key] = this._initParams.pathPrefix + data.skins[key];
-                for (var key in data.exmls) {
-                    // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
-                    var exml = data.exmls[key];
-                    if (typeof exml == "string")
-                        data.exmls[key] = this._initParams.pathPrefix + exml;
-                    else
-                        exml.path = this._initParams.pathPrefix + exml.path;
+        var _this = this;
+        load({
+            url: environment.toCDNHostURL(url),
+            responseType: "text",
+            onResponse: function (result) {
+                try {
+                    // 需要为所有主题资源添加路径前缀
+                    var data = JSON.parse(result);
+                    for (var key in data.skins)
+                        data.skins[key] = _this._initParams.pathPrefix + data.skins[key];
+                    for (var key in data.exmls) {
+                        // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
+                        var exml = data.exmls[key];
+                        if (typeof exml == "string")
+                            data.exmls[key] = _this._initParams.pathPrefix + exml;
+                        else
+                            exml.path = _this._initParams.pathPrefix + exml.path;
+                    }
+                    result = JSON.stringify(data);
                 }
-                e = JSON.stringify(data);
-            }
-            catch (err) { }
-            compFunc.call(thisObject, e);
-        }
-        function onError(e) {
-            if (e.resItem.url == url) {
-                RES.removeEventListener(RES.ResourceEvent.ITEM_LOAD_ERROR, onError, null);
+                catch (err) { }
+                compFunc.call(thisObject, result);
+            },
+            onError: function () {
                 errorFunc.call(thisObject);
             }
-        }
+        });
     };
     return ThemeAdapter;
 }());
