@@ -329,7 +329,7 @@ var olympus;
      * @export
      * @param {string[]} jsFiles 要加载的js文件列表
      * @param {string} [host] CDN域名，不传则使用当前域名
-     * @param {()=>void} [callback] 全部加载完成后的回调
+     * @param {(err?:Error)=>void} [callback] 全部加载完成后的回调
      * @param {boolean} [ordered=false] 是否保证标签形式js的执行顺序，保证执行顺序会降低标签形式js的加载速度，因为必须串行加载。该参数不会影响JSONP形式的加载速度和执行顺序，JSONP形式脚本总是并行加载且顺序执行的。默认是true
      * @param {string} [version] 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
      */
@@ -338,10 +338,15 @@ var olympus;
         // 首先初始化version
         _version.initialize(function () {
             loadJsFiles(jsFiles, host || getCurOrigin(), function (err) {
-                if (err)
-                    throw err;
-                else
-                    callback && callback();
+                if (callback) {
+                    // 有回调，将逻辑交给回调处理
+                    callback(err);
+                }
+                else if (err) {
+                    // 有错误，使用alert提示用户，并延迟5秒刷新页面
+                    alert(err.message + "\n点击确定5秒后将刷新页面。");
+                    setTimeout(function () { return window.location.reload(true); }, 5000);
+                }
             }, ordered);
         }, host, version);
     }
