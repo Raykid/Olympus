@@ -901,36 +901,42 @@ class ThemeAdapter implements eui.IThemeAdapter
      * @param errorFunc 解析失败回调函数，示例：errorFunc():void;
      * @param thisObject 回调的this引用
      */
-    public getTheme(url:string,compFunc:Function,errorFunc:Function,thisObject:any):void
+    public getTheme(url:string, compFunc:Function, errorFunc:Function, thisObject:any):void
     {
-        load({
-            url: version.wrapHashUrl(url),
-            useCDN: true,
-            responseType: "text",
-            onResponse: (result:string)=>{
-                try
-                {
-                    // 需要为所有主题资源添加路径前缀
-                    var data:any = JSON.parse(result);
-                    for(var key in data.skins)
-                        data.skins[key] = this._initParams.pathPrefix + data.skins[key];
-                    for(var key in data.exmls)
+        doLoad();
+
+        function doLoad():void
+        {
+            load({
+                url: version.wrapHashUrl(url),
+                useCDN: true,
+                responseType: "text",
+                onResponse: (result:string)=>{
+                    try
                     {
-                        // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
-                        var exml:any = data.exmls[key];
-                        if(typeof exml == "string")
-                            data.exmls[key] = this._initParams.pathPrefix + exml;
-                        else
-                            exml.path = this._initParams.pathPrefix + exml.path;
+                        // 需要为所有主题资源添加路径前缀
+                        var data:any = JSON.parse(result);
+                        for(var key in data.skins)
+                            data.skins[key] = this._initParams.pathPrefix + data.skins[key];
+                        for(var key in data.exmls)
+                        {
+                            // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
+                            var exml:any = data.exmls[key];
+                            if(typeof exml == "string")
+                                data.exmls[key] = this._initParams.pathPrefix + exml;
+                            else
+                                exml.path = this._initParams.pathPrefix + exml.path;
+                        }
+                        result = JSON.stringify(data);
                     }
-                    result = JSON.stringify(data);
+                    catch(err){}
+                    compFunc.call(thisObject, result);
+                },
+                onError: err=>{
+                    alert(err.message + "\nPlease try again later.");
+                    doLoad();
                 }
-                catch(err){}
-                compFunc.call(thisObject, result);
-            },
-            onError: ()=>{
-                errorFunc.call(thisObject);
-            }
-        })
+            });
+        }
     }
 }
