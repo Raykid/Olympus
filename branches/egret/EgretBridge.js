@@ -776,7 +776,8 @@ var ThemeAdapter = /** @class */ (function () {
     ThemeAdapter.prototype.getTheme = function (url, compFunc, errorFunc, thisObject) {
         var _this = this;
         load({
-            url: environment.toCDNHostURL(url),
+            url: url,
+            useCDN: true,
             responseType: "text",
             onResponse: function (result) {
                 try {
