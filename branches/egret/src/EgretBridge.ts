@@ -903,7 +903,8 @@ class ThemeAdapter implements eui.IThemeAdapter
     public getTheme(url:string,compFunc:Function,errorFunc:Function,thisObject:any):void
     {
         load({
-            url: environment.toCDNHostURL(url),
+            url: url,
+            useCDN: true,
             responseType: "text",
             onResponse: (result:string)=>{
                 try
