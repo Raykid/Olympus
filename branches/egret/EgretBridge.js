@@ -775,38 +775,34 @@ var ThemeAdapter = /** @class */ (function () {
      * @param thisObject 回调的this引用
      */
     ThemeAdapter.prototype.getTheme = function (url, compFunc, errorFunc, thisObject) {
-        doLoad();
-        function doLoad() {
-            var _this = this;
-            load({
-                url: version.wrapHashUrl(url),
-                useCDN: true,
-                responseType: "text",
-                onResponse: function (result) {
-                    try {
-                        // 需要为所有主题资源添加路径前缀
-                        var data = JSON.parse(result);
-                        for (var key in data.skins)
-                            data.skins[key] = _this._initParams.pathPrefix + data.skins[key];
-                        for (var key in data.exmls) {
-                            // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
-                            var exml = data.exmls[key];
-                            if (typeof exml == "string")
-                                data.exmls[key] = _this._initParams.pathPrefix + exml;
-                            else
-                                exml.path = _this._initParams.pathPrefix + exml.path;
-                        }
-                        result = JSON.stringify(data);
+        var _this = this;
+        load({
+            url: version.wrapHashUrl(url),
+            useCDN: true,
+            responseType: "text",
+            onResponse: function (result) {
+                try {
+                    // 需要为所有主题资源添加路径前缀
+                    var data = JSON.parse(result);
+                    for (var key in data.skins)
+                        data.skins[key] = _this._initParams.pathPrefix + data.skins[key];
+                    for (var key in data.exmls) {
+                        // 如果只是URL则直接添加前缀，否则是内容集成方式，需要单独修改path属性
+                        var exml = data.exmls[key];
+                        if (typeof exml == "string")
+                            data.exmls[key] = _this._initParams.pathPrefix + exml;
+                        else
+                            exml.path = _this._initParams.pathPrefix + exml.path;
                     }
-                    catch (err) { }
-                    compFunc.call(thisObject, result);
-                },
-                onError: function (err) {
-                    alert(err.message + "\nPlease try again later.");
-                    doLoad();
+                    result = JSON.stringify(data);
                 }
-            });
-        }
+                catch (err) { }
+                compFunc.call(thisObject, result);
+            },
+            onError: function () {
+                errorFunc.call(thisObject);
+            }
+        });
     };
     return ThemeAdapter;
 }());
