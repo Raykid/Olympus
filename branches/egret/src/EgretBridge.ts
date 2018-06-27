@@ -11,6 +11,7 @@ import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
 import { panelManager } from 'olympus-r/engine/panel/PanelManager';
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import SceneMessage from "olympus-r/engine/scene/SceneMessage";
+import { version } from 'olympus-r/engine/version/Version';
 import { load } from "olympus-r/utils/HTTPUtil";
 import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
 import AssetsLoader, { IResourceDict } from "./egret/AssetsLoader";
@@ -381,7 +382,7 @@ export default class EgretBridge implements IBridge
             function doLoad():void
             {
                 load({
-                    url: self._initParams.pathPrefix + "resource/default.res.json",
+                    url: version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"),
                     useCDN: true,
                     responseType: "text",
                     onResponse: (content:string)=>{
@@ -903,7 +904,7 @@ class ThemeAdapter implements eui.IThemeAdapter
     public getTheme(url:string,compFunc:Function,errorFunc:Function,thisObject:any):void
     {
         load({
-            url: url,
+            url: version.wrapHashUrl(url),
             useCDN: true,
             responseType: "text",
             onResponse: (result:string)=>{
