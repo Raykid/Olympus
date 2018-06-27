@@ -8,7 +8,6 @@ import IMediator from "olympus-r/engine/mediator/IMediator";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
 import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
 import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import { panelManager } from 'olympus-r/engine/panel/PanelManager';
 import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import SceneMessage from "olympus-r/engine/scene/SceneMessage";
 import { version } from 'olympus-r/engine/version/Version';
@@ -394,7 +393,8 @@ export default class EgretBridge implements IBridge
                         theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
                     },
                     onError: err=>{
-                        panelManager.alert(err.message + "\nPlease try again.", doLoad);
+                        alert(err.message + "\nPlease try again later.");
+                        doLoad();
                     }
                 });
             }

@@ -2,7 +2,6 @@
 import { core } from "olympus-r/core/Core";
 import { environment } from "olympus-r/engine/env/Environment";
 import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import { panelManager } from 'olympus-r/engine/panel/PanelManager';
 import SceneMessage from "olympus-r/engine/scene/SceneMessage";
 import { version } from 'olympus-r/engine/version/Version';
 import { load } from "olympus-r/utils/HTTPUtil";
@@ -364,7 +363,8 @@ var EgretBridge = /** @class */ (function () {
                         theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
                     },
                     onError: function (err) {
-                        panelManager.alert(err.message + "\nPlease try again.", doLoad);
+                        alert(err.message + "\nPlease try again later.");
+                        doLoad();
                     }
                 });
             }
