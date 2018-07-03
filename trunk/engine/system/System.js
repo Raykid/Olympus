@@ -94,21 +94,24 @@ var System = /** @class */ (function () {
             args[_i - 2] = arguments[_i];
         }
         var self = this;
-        var cancelable = this.nextFrame.apply(this, [wrapHandler, thisArg].concat(args));
+        var cancelable = this.nextFrame.apply(this, [onNextFrame, thisArg].concat(args));
+        var canceled = false;
         return {
             cancel: function () {
                 cancelable.cancel();
+                canceled = true;
             }
         };
-        function wrapHandler() {
+        function onNextFrame() {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
             // 调用回调
             handler.apply(this, args);
-            // 执行下一帧
-            cancelable = self.nextFrame.apply(self, [wrapHandler, this].concat(args));
+            // 如果没被取消，则执行下一帧
+            if (!canceled)
+                cancelable = self.nextFrame.apply(self, [onNextFrame, this].concat(args));
         }
     };
     /**
@@ -162,18 +165,21 @@ var System = /** @class */ (function () {
             args[_i - 3] = arguments[_i];
         }
         var timeout = this.setTimeout(duration, onTimeout, this);
-        function onTimeout() {
-            // 触发回调
-            handler.apply(thisArg, args);
-            // 继续下一次
-            timeout = this.setTimeout(duration, onTimeout, this);
-        }
+        var canceled = false;
         return {
             cancel: function () {
                 timeout && timeout.cancel();
                 timeout = null;
+                canceled = true;
             }
         };
+        function onTimeout() {
+            // 触发回调
+            handler.apply(thisArg, args);
+            // 继续下一次
+            if (!canceled)
+                timeout = this.setTimeout(duration, onTimeout, this);
+        }
     };
     System = tslib_1.__decorate([
         Injectable,

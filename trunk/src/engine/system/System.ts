@@ -102,20 +102,23 @@ export default class System
     public enterFrame(handler:Function, thisArg?:any, ...args:any[]):ICancelable
     {
         var self:System = this;
-        var cancelable:ICancelable = this.nextFrame(wrapHandler, thisArg, ...args);
+        var cancelable:ICancelable = this.nextFrame(onNextFrame, thisArg, ...args);
+        var canceled:boolean = false;
 
         return {
             cancel: ()=>{
                 cancelable.cancel();
+                canceled = true;
             }
         };
 
-        function wrapHandler(...args:any[]):void
+        function onNextFrame(...args:any[]):void
         {
             // 调用回调
             handler.apply(this, args);
-            // 执行下一帧
-            cancelable = self.nextFrame(wrapHandler, this, ...args);
+            // 如果没被取消，则执行下一帧
+            if(!canceled)
+                cancelable = self.nextFrame(onNextFrame, this, ...args);
         }
     }
 
@@ -171,22 +174,25 @@ export default class System
     public setInterval(duration:number, handler:Function, thisArg?:any, ...args:any[]):ICancelable
     {
         var timeout:ICancelable = this.setTimeout(duration, onTimeout, this);
-
-        function onTimeout():void
-        {
-            // 触发回调
-            handler.apply(thisArg, args);
-            // 继续下一次
-            timeout = this.setTimeout(duration, onTimeout, this);
-        }
+        var canceled:boolean = false;
 
         return {
             cancel():void
             {
                 timeout && timeout.cancel();
                 timeout = null;
+                canceled = true;
             }
         };
+
+        function onTimeout():void
+        {
+            // 触发回调
+            handler.apply(thisArg, args);
+            // 继续下一次
+            if(!canceled)
+                timeout = this.setTimeout(duration, onTimeout, this);
+        }
     }
 }
 
