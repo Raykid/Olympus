@@ -1,6 +1,6 @@
 import { environment } from "../engine/env/Environment";
-import { validateProtocol, joinQueryParams, trimURL } from "./URLUtil";
 import { cloneObject } from "./ObjectUtil";
+import { joinQueryParams, trimURL, validateProtocol } from "./URLUtil";
 
 /**
  * @author Raykid
@@ -210,7 +210,7 @@ export function load(params:IHTTPRequestParams):void
         // 开始发送
         xhr.send(sendData);
         // 开始计时
-        timeoutId = window.setTimeout(abortAndRetry, timeout);
+        timeoutId = window.setTimeout(onError, timeout);
     }
 
     function onLoad(evt:Event):void

@@ -1,6 +1,6 @@
 import { environment } from "../engine/env/Environment";
-import { validateProtocol, joinQueryParams, trimURL } from "./URLUtil";
 import { cloneObject } from "./ObjectUtil";
+import { joinQueryParams, trimURL, validateProtocol } from "./URLUtil";
 /**
  * 发送一个或多个HTTP请求
  *
@@ -98,7 +98,7 @@ export function load(params) {
         // 开始发送
         xhr.send(sendData);
         // 开始计时
-        timeoutId = window.setTimeout(abortAndRetry, timeout);
+        timeoutId = window.setTimeout(onError, timeout);
     }
     function onLoad(evt) {
         // 即使是onLoad也要判断下状态码，但如果没有状态码，比如说XDomainRequest就直接认为成功了
