@@ -300,13 +300,18 @@ var EgretBridge = /** @class */ (function () {
                     return result;
                 };
                 // 篡改Watcher.checkBindable方法，把__listeners__赋值变为不可遍历
+                var oriCheckBindable = eui.Watcher["checkBindable"];
                 eui.Watcher["checkBindable"] = function (host, property) {
+                    // 调用原始方法
+                    var result = oriCheckBindable.call(this, host, property);
                     // 改变可遍历性
                     var desc = Object.getOwnPropertyDescriptor(host, "__listeners__");
                     if (desc && desc.enumerable) {
                         desc.enumerable = false;
                         Object.defineProperty(host, "__listeners__", desc);
                     }
+                    // 返回结果
+                    return result;
                 };
             }
             // 启动Egret引擎

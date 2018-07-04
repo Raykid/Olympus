@@ -324,8 +324,11 @@ export default class EgretBridge implements IBridge
                     return result;
                 };
                 // 篡改Watcher.checkBindable方法，把__listeners__赋值变为不可遍历
+                var oriCheckBindable:Function = eui.Watcher["checkBindable"];
                 eui.Watcher["checkBindable"] = function(host:any, property:string):any
                 {
+                    // 调用原始方法
+                    var result:any = oriCheckBindable.call(this, host, property);
                     // 改变可遍历性
                     var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(host, "__listeners__");
                     if(desc && desc.enumerable)
@@ -333,6 +336,8 @@ export default class EgretBridge implements IBridge
                         desc.enumerable = false;
                         Object.defineProperty(host, "__listeners__", desc);
                     }
+                    // 返回结果
+                    return result;
                 }
             }
             // 启动Egret引擎
