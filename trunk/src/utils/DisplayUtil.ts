@@ -1,4 +1,4 @@
-import IBridge from "../engine/bridge/IBridge";
+import IBridge from '../core/interfaces/IBridge';
 
 /**
  * @author Raykid

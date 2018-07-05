@@ -1,21 +1,20 @@
 /// <amd-module name="DOMBridge"/>
 /// <reference types="tween.js"/>
 
-import IBridge from "olympus-r/engine/bridge/IBridge";
-import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
-import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import IMediator from "olympus-r/engine/mediator/IMediator";
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import * as TWEEN from "@tweenjs/tween.js";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
+import IBridge from "olympus-r/engine/bridge/IBridge";
+import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import { system } from "olympus-r/engine/system/System";
+import { extendObject, getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
-import * as Injector from "./dom/injector/Injector";
-import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
-import * as TWEEN from "@tweenjs/tween.js";
+import { copyRef, isDOMPath, isDOMStr, toHTMLElement, wrapSkin } from "./dom/utils/SkinUtil";
 
 /**
  * @author Raykid
@@ -31,7 +30,6 @@ export default class DOMBridge implements IBridge
     public static TYPE:string = "DOM";
 
     private _initParams:IInitParams;
-    private _promptPanel:IPromptPanel;
 
     /**
      * 获取表现层类型名称

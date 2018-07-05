@@ -1,4 +1,4 @@
-import IConstructor from "../core/interfaces/IConstructor";
+import IConstructor from "../engine/interfaces/IConstructor";
 import Dictionary from "../utils/Dictionary";
 import { extendsClass } from "../utils/ObjectUtil";
 

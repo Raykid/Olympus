@@ -1,5 +1,5 @@
 import { engine, IInitParams } from "./engine/Engine";
-export { core } from "./core/Core";
+export { core } from "./engine/core/Core";
 
 /**
  * @author Raykid
