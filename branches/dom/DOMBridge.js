@@ -1,8 +1,5 @@
 /// <amd-module name="DOMBridge"/>
-/// <reference types="tween.js"/>
-import * as TWEEN from "@tweenjs/tween.js";
 import { extendObject, getObjectHashs } from "olympus-r/utils/ObjectUtil";
-import { system } from "olympus-r/utils/System";
 import { copyRef, isDOMPath, isDOMStr } from "./dom/utils/SkinUtil";
 /**
  * @author Raykid
@@ -74,11 +71,6 @@ var DOMBridge = /** @class */ (function () {
             this._initParams.container = document.createElement("div");
             document.body.appendChild(this._initParams.container);
         }
-        // 添加Tween.js驱动
-        system.enterFrame(function () {
-            // 每次使用最新的当前运行毫秒数更新Tween.js
-            TWEEN.update(system.getTimer());
-        });
         // 调用回调
         complete(this);
     };

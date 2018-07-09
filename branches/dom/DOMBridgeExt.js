@@ -1,6 +1,9 @@
 /// <amd-module name="DOMBridgeExt"/>
+/// <reference types="tween.js"/>
 import * as tslib_1 from "tslib";
+import * as TWEEN from "@tweenjs/tween.js";
 import { assetsManager } from "olympus-r/project/assets/AssetsManager";
+import { system } from "olympus-r/utils/System";
 import MaskEntity from "./dom/mask/MaskEntity";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
@@ -197,6 +200,11 @@ var DOMBridgeExt = /** @class */ (function (_super) {
             _this._maskLayer = _this.createLayer();
             // 创建顶级显示层
             _this._topLayer = _this.createLayer();
+            // 添加Tween.js驱动
+            system.enterFrame(function () {
+                // 每次使用最新的当前运行毫秒数更新Tween.js
+                TWEEN.update(system.getTimer());
+            });
             // 调用回调
             complete(bridge);
         });

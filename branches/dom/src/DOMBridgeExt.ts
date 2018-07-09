@@ -1,5 +1,7 @@
 /// <amd-module name="DOMBridgeExt"/>
+/// <reference types="tween.js"/>
 
+import * as TWEEN from "@tweenjs/tween.js";
 import { assetsManager } from "olympus-r/project/assets/AssetsManager";
 import IBridgeExt from "olympus-r/project/bridge/IBridgeExt";
 import { IMaskEntity } from 'olympus-r/project/mask/MaskManager';
@@ -7,6 +9,7 @@ import IMediator from 'olympus-r/project/mediator/IMediator';
 import IPanelPolicy from 'olympus-r/project/panel/IPanelPolicy';
 import { IPromptPanelConstructor } from 'olympus-r/project/panel/IPromptPanel';
 import IScenePolicy from 'olympus-r/project/scene/IScenePolicy';
+import { system } from "olympus-r/utils/System";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
@@ -202,6 +205,11 @@ export default class DOMBridgeExt extends DOMBridge implements IBridgeExt
             this._maskLayer = this.createLayer();
             // 创建顶级显示层
             this._topLayer = this.createLayer();
+            // 添加Tween.js驱动
+            system.enterFrame(()=>{
+                // 每次使用最新的当前运行毫秒数更新Tween.js
+                TWEEN.update(system.getTimer());
+            });
             // 调用回调
             complete(bridge);
         });

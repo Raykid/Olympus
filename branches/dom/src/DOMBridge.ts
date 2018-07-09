@@ -1,10 +1,7 @@
 /// <amd-module name="DOMBridge"/>
-/// <reference types="tween.js"/>
 
-import * as TWEEN from "@tweenjs/tween.js";
 import IBridge from "olympus-r/kernel/interfaces/IBridge";
 import { extendObject, getObjectHashs } from "olympus-r/utils/ObjectUtil";
-import { system } from "olympus-r/utils/System";
 import { copyRef, isDOMPath, isDOMStr } from "./dom/utils/SkinUtil";
 
 /**
@@ -81,11 +78,6 @@ export default class DOMBridge implements IBridge
             this._initParams.container = document.createElement("div");
             document.body.appendChild(this._initParams.container);
         }
-        // 添加Tween.js驱动
-        system.enterFrame(()=>{
-            // 每次使用最新的当前运行毫秒数更新Tween.js
-            TWEEN.update(system.getTimer());
-        });
         // 调用回调
         complete(this);
     }
