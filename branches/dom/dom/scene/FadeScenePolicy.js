@@ -1,4 +1,4 @@
-import { Tween, Easing } from "@tweenjs/tween.js";
+import { Easing, Tween } from "@tweenjs/tween.js";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -30,7 +30,7 @@ var FadeScenePolicy = /** @class */ (function () {
             this._stageClone.style.zIndex = "2147483647"; // 层级要最高
             this._stageClone.style.pointerEvents = "none"; // 要屏蔽点击事件
             // 添加克隆节点
-            from.bridge.htmlWrapper.appendChild(this._stageClone);
+            from.bridge.wrapper.appendChild(this._stageClone);
             // 移除from
             var fromDisplay = from.skin;
             if (fromDisplay.parentElement != null) {

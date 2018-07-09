@@ -2,19 +2,10 @@
 /// <reference types="tween.js"/>
 
 import * as TWEEN from "@tweenjs/tween.js";
-import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
-import IBridge from "olympus-r/engine/bridge/IBridge";
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import IMediator from "olympus-r/engine/mediator/IMediator";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
-import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import { system } from "olympus-r/engine/system/System";
+import IBridge from "olympus-r/kernel/interfaces/IBridge";
 import { extendObject, getObjectHashs } from "olympus-r/utils/ObjectUtil";
-import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
-import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
-import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
-import { copyRef, isDOMPath, isDOMStr, toHTMLElement, wrapSkin } from "./dom/utils/SkinUtil";
+import { system } from "olympus-r/utils/System";
+import { copyRef, isDOMPath, isDOMStr } from "./dom/utils/SkinUtil";
 
 /**
  * @author Raykid
@@ -29,7 +20,7 @@ export default class DOMBridge implements IBridge
     /** 提供静态类型常量 */
     public static TYPE:string = "DOM";
 
-    private _initParams:IInitParams;
+    protected _initParams:IInitParams;
 
     /**
      * 获取表现层类型名称
@@ -50,7 +41,7 @@ export default class DOMBridge implements IBridge
      * @type {HTMLElement}
      * @memberof DOMBridge
      */
-    public get htmlWrapper():HTMLElement
+    public get wrapper():HTMLElement
     {
         return <HTMLElement>this._initParams.container;
     }
@@ -66,161 +57,12 @@ export default class DOMBridge implements IBridge
     {
         return <HTMLElement>this._initParams.container;
     }
-
-    /**
-     * 获取舞台引用，DOM的舞台指向根节点
-     * 
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    public get stage():HTMLElement
-    {
-        return <HTMLElement>this._initParams.container;
-    }
-
-    private _bgLayer:HTMLElement;
-    /**
-     * 获取背景容器
-     * 
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    public get bgLayer():HTMLElement
-    {
-        return this._bgLayer;
-    }
-
-    private _sceneLayer:HTMLElement;
-    /**
-     * 获取场景容器
-     * 
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    public get sceneLayer():HTMLElement
-    {
-        return this._sceneLayer;
-    }
-
-    private _frameLayer:HTMLElement;
-    /**
-     * 获取框架容器
-     * 
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    public get frameLayer():HTMLElement
-    {
-        return this._frameLayer;
-    }
-
-    private _panelLayer:HTMLElement;
-    /**
-     * 获取弹窗容器
-     * 
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    public get panelLayer():HTMLElement
-    {
-        return this._panelLayer;
-    }
-
-    private _maskLayer:HTMLElement;
-    /**
-     * 获取遮罩容器
-     * 
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    public get maskLayer():HTMLElement
-    {
-        return this._maskLayer;
-    }
-
-    private _topLayer:HTMLElement;
-    /**
-     * 获取顶级容器
-     * 
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    public get topLayer():HTMLElement
-    {
-        return this._topLayer;
-    }
-
-    /**
-     * 获取通用提示框
-     * 
-     * @readonly
-     * @type {IPromptPanelConstructor}
-     * @memberof DOMBridge
-     */
-    public get promptClass():IPromptPanelConstructor
-    {
-        return this._initParams.promptClass;
-    }
-
-    /**
-     * 获取遮罩实体
-     * 
-     * @readonly
-     * @type {IMaskEntity}
-     * @memberof DOMBridge
-     */
-    public get maskEntity():IMaskEntity
-    {
-        return new MaskEntity(this._initParams.maskData);
-    }
-    
-    /**
-     * 获取默认弹窗策略
-     * 
-     * @type {IPanelPolicy}
-     * @memberof DOMBridge
-     */
-    public defaultPanelPolicy:IPanelPolicy = new BackPanelPolicy();
-
-    /**
-     * 获取默认场景切换策略
-     * 
-     * @type {IScenePolicy}
-     * @memberof DOMBridge
-     */
-    public defaultScenePolicy:IScenePolicy = new FadeScenePolicy();
     
     public constructor(params:IInitParams)
     {
         this._initParams = params;
     }
 
-    private createLayer():HTMLElement
-    {
-        // 生成一个父容器，不响应点击事件，但会撑起全屏幕范围
-        var layer:HTMLElement = document.createElement("div");
-        layer.style.position = "fixed";
-        layer.style.top = "0%";
-        layer.style.left = "0%";
-        layer.style.width = "100%";
-        layer.style.height = "100%";
-        layer.style.pointerEvents = "none";
-        this.root.appendChild(layer);
-        // 生成一个子容器，实际用来放置子对象，目的是响应点击事件
-        var subLayer:HTMLElement = document.createElement("div");
-        subLayer.style.pointerEvents = "auto";
-        layer.appendChild(subLayer);
-        // 返回子容器
-        return subLayer;
-    }
-    
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调
@@ -239,18 +81,6 @@ export default class DOMBridge implements IBridge
             this._initParams.container = document.createElement("div");
             document.body.appendChild(this._initParams.container);
         }
-        // 创建背景显示层
-        this._bgLayer = this.createLayer();
-        // 创建场景显示层
-        this._sceneLayer = this.createLayer();
-        // 创建框架显示层
-        this._frameLayer = this.createLayer();
-        // 创建弹出层
-        this._panelLayer = this.createLayer();
-        // 创建遮罩层
-        this._maskLayer = this.createLayer();
-        // 创建顶级显示层
-        this._topLayer = this.createLayer();
         // 添加Tween.js驱动
         system.enterFrame(()=>{
             // 每次使用最新的当前运行毫秒数更新Tween.js
@@ -288,43 +118,6 @@ export default class DOMBridge implements IBridge
             return result;
         }
         return false;
-    }
-
-    /**
-     * 包装HTMLElement节点
-     * 
-     * @param {IMediator} mediator 中介者
-     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
-     * @returns {HTMLElement} 包装后的HTMLElement节点
-     * @memberof DOMBridge
-     */
-    public wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):HTMLElement
-    {
-        return wrapSkin(mediator, skin);
-    }
-    /**
-     * 替换皮肤，用于组件变身时不同表现层桥的处理
-     * 
-     * @param {IMediator} mediator 中介者
-     * @param {*} current 当前皮肤
-     * @param {HTMLElement|string|string[]} target 要替换的皮肤
-     * @returns {*} 替换完毕的皮肤
-     * @memberof DOMBridge
-     */
-    public replaceSkin(mediator:IMediator, current:HTMLElement, target:HTMLElement|string|string[]):any
-    {
-        target = toHTMLElement(target);
-        // 如果有父节点，则用目标节点替换当前节点位置
-        var parent:HTMLElement = current.parentElement;
-        if(parent)
-        {
-            parent.insertBefore(target, current);
-            parent.removeChild(current);
-        }
-        // 重新包装节点
-        this.wrapSkin(mediator, target);
-        // 返回皮肤
-        return target;
     }
 
     /**
@@ -489,46 +282,9 @@ export default class DOMBridge implements IBridge
         return parent.childElementCount;
     }
     
-    /**
-     * 加载资源
-     * 
-     * @param {string[]} assets 资源数组
-     * @param {IMediator} mediator 资源列表
-     * @param {(err?:Error)=>void} handler 回调函数
-     * @memberof DOMBridge
-     */
-    public loadAssets(assets:string[], mediator:IMediator, handler:(err?:Error)=>void):void
-    {
-        // 开始加载皮肤列表
-        if(assets) assets = assets.concat();
-        loadNext();
-        
-        function loadNext():void
-        {
-            if(!assets || assets.length <= 0)
-            {
-                // 调用回调
-                handler();
-            }
-            else
-            {
-                var skin:string = assets.shift();
-                assetsManager.loadAssets(
-                    skin,
-                    result=>{
-                        if(result instanceof Error)
-                            handler(result);
-                        else
-                            loadNext();
-                    }
-                );
-            }
-        }
-    }
-    
     private _listenerDict:{[key:string]:(evt:Event)=>void} = {};
     /**
-     * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+     * 监听事件，从这个方法监听的事件会在组件销毁时被自动移除监听
      * 
      * @param {EventTarget} target 事件目标对象
      * @param {string} type 事件类型
@@ -635,8 +391,4 @@ export interface IInitParams
 {
     /** DOM容器名称或引用，不传递则自动生成一个 */
     container?:string|HTMLElement;
-    /** 通用提示框类型 */
-    promptClass?:IPromptPanelConstructor;
-    /** 遮罩皮肤 */
-    maskData?:MaskData;
 }

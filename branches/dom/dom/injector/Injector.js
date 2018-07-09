@@ -1,6 +1,6 @@
-import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
-import { MediatorClass } from "olympus-r/engine/injector/Injector";
-import { listenConstruct, listenApply } from "olympus-r/utils/ConstructUtil";
+import { bridgeManager } from 'olympus-r/project/bridge/BridgeManager';
+import { MediatorClass } from "olympus-r/project/injector/InjectorExt";
+import { listenApply, listenConstruct } from "olympus-r/utils/ConstructUtil";
 import DOMBridge from "../../DOMBridge";
 /**
  * @author Raykid

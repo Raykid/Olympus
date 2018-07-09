@@ -1,9 +1,8 @@
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import IBridge from "olympus-r/engine/bridge/IBridge";
-import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
-import IPanel from "olympus-r/engine/panel/IPanel";
-import IMaskData from "olympus-r/engine/mask/IMaskData";
-import Dictionary from "olympus-r/utils/Dictionary";
+import { bridgeManager } from "olympus-r/project/bridge/BridgeManager";
+import IBridgeExt from 'olympus-r/project/bridge/IBridgeExt';
+import IMaskData from 'olympus-r/project/mask/IMaskData';
+import { IMaskEntity } from 'olympus-r/project/mask/MaskManager';
+import IPanel from 'olympus-r/project/panel/IPanel';
 import DOMBridge from "../../DOMBridge";
 
 /**
@@ -62,7 +61,7 @@ export default class MaskEntityImpl implements IMaskEntity
     public showMask(alpha?:number):void
     {
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+        var bridge:IBridgeExt = bridgeManager.getBridge(DOMBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._maskAlpha;
         this._mask.style.backgroundColor = "#000";
@@ -88,7 +87,7 @@ export default class MaskEntityImpl implements IMaskEntity
     public showLoading(alpha?:number):void
     {
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+        var bridge:IBridgeExt = bridgeManager.getBridge(DOMBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._loadingAlpha;
         this._loadingMask.style.backgroundColor = "#000";
@@ -132,7 +131,7 @@ export default class MaskEntityImpl implements IMaskEntity
             if(this._modalPanelMask.parentElement) {
                 this._modalPanelMask.parentElement.removeChild(this._modalPanelMask);
             }
-            var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+            var bridge:IBridgeExt = bridgeManager.getBridge(DOMBridge.TYPE);
             var index:number = bridge.getChildIndex(parent, entity);
             bridge.addChildAt(parent, this._modalPanelMask, index);
         }
@@ -159,7 +158,7 @@ export default class MaskEntityImpl implements IMaskEntity
                 if(this._modalPanelMask.parentElement) {
                     this._modalPanelMask.parentElement.removeChild(this._modalPanelMask);
                 }
-                var bridge:IBridge = bridgeManager.getBridge(DOMBridge.TYPE);
+                var bridge:IBridgeExt = bridgeManager.getBridge(DOMBridge.TYPE);
                 var index:number = bridge.getChildIndex(parent, entity);
                 bridge.addChildAt(parent, this._modalPanelMask, index);
             }

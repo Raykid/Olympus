@@ -1,6 +1,6 @@
 import { Easing, Tween } from "@tweenjs/tween.js";
-import IPanel from "olympus-r/engine/panel/IPanel";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import IPanel from 'olympus-r/project/panel/IPanel';
+import IPanelPolicy from 'olympus-r/project/panel/IPanelPolicy';
 
 /**
  * @author Raykid

@@ -1,6 +1,6 @@
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import IScene from "olympus-r/engine/scene/IScene";
-import { Tween, Easing } from "@tweenjs/tween.js";
+import { Easing, Tween } from "@tweenjs/tween.js";
+import IScene from 'olympus-r/project/scene/IScene';
+import IScenePolicy from 'olympus-r/project/scene/IScenePolicy';
 
 /**
  * @author Raykid
@@ -37,7 +37,7 @@ export default class FadeScenePolicy implements IScenePolicy
             this._stageClone.style.zIndex = "2147483647";// 层级要最高
             this._stageClone.style.pointerEvents = "none";// 要屏蔽点击事件
             // 添加克隆节点
-            from.bridge.htmlWrapper.appendChild(this._stageClone);
+            from.bridge.wrapper.appendChild(this._stageClone);
             // 移除from
             var fromDisplay:HTMLElement = from.skin;
             if(fromDisplay.parentElement != null)

@@ -1,6 +1,6 @@
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import IPanel from "olympus-r/engine/panel/IPanel";
-import IMaskData from "olympus-r/engine/mask/IMaskData";
+import IMaskData from 'olympus-r/project/mask/IMaskData';
+import { IMaskEntity } from 'olympus-r/project/mask/MaskManager';
+import IPanel from 'olympus-r/project/panel/IPanel';
 /**
  * @author Raykid
  * @email initial_r@qq.com

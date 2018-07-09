@@ -1,10 +1,4 @@
-import IBridge from "olympus-r/engine/bridge/IBridge";
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import IMediator from "olympus-r/engine/mediator/IMediator";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
-import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import { MaskData } from "./dom/mask/MaskEntity";
+import IBridge from "olympus-r/kernel/interfaces/IBridge";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -16,7 +10,7 @@ import { MaskData } from "./dom/mask/MaskEntity";
 export default class DOMBridge implements IBridge {
     /** 提供静态类型常量 */
     static TYPE: string;
-    private _initParams;
+    protected _initParams: IInitParams;
     /**
      * 获取表现层类型名称
      *
@@ -32,7 +26,7 @@ export default class DOMBridge implements IBridge {
      * @type {HTMLElement}
      * @memberof DOMBridge
      */
-    readonly htmlWrapper: HTMLElement;
+    readonly wrapper: HTMLElement;
     /**
      * 获取根显示节点
      *
@@ -41,100 +35,7 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     readonly root: HTMLElement;
-    /**
-     * 获取舞台引用，DOM的舞台指向根节点
-     *
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    readonly stage: HTMLElement;
-    private _bgLayer;
-    /**
-     * 获取背景容器
-     *
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    readonly bgLayer: HTMLElement;
-    private _sceneLayer;
-    /**
-     * 获取场景容器
-     *
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    readonly sceneLayer: HTMLElement;
-    private _frameLayer;
-    /**
-     * 获取框架容器
-     *
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    readonly frameLayer: HTMLElement;
-    private _panelLayer;
-    /**
-     * 获取弹窗容器
-     *
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    readonly panelLayer: HTMLElement;
-    private _maskLayer;
-    /**
-     * 获取遮罩容器
-     *
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    readonly maskLayer: HTMLElement;
-    private _topLayer;
-    /**
-     * 获取顶级容器
-     *
-     * @readonly
-     * @type {HTMLElement}
-     * @memberof DOMBridge
-     */
-    readonly topLayer: HTMLElement;
-    /**
-     * 获取通用提示框
-     *
-     * @readonly
-     * @type {IPromptPanelConstructor}
-     * @memberof DOMBridge
-     */
-    readonly promptClass: IPromptPanelConstructor;
-    /**
-     * 获取遮罩实体
-     *
-     * @readonly
-     * @type {IMaskEntity}
-     * @memberof DOMBridge
-     */
-    readonly maskEntity: IMaskEntity;
-    /**
-     * 获取默认弹窗策略
-     *
-     * @type {IPanelPolicy}
-     * @memberof DOMBridge
-     */
-    defaultPanelPolicy: IPanelPolicy;
-    /**
-     * 获取默认场景切换策略
-     *
-     * @type {IScenePolicy}
-     * @memberof DOMBridge
-     */
-    defaultScenePolicy: IScenePolicy;
     constructor(params: IInitParams);
-    private createLayer();
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调
@@ -149,25 +50,6 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     isMySkin(skin: HTMLElement | string | string[]): boolean;
-    /**
-     * 包装HTMLElement节点
-     *
-     * @param {IMediator} mediator 中介者
-     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
-     * @returns {HTMLElement} 包装后的HTMLElement节点
-     * @memberof DOMBridge
-     */
-    wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
-    /**
-     * 替换皮肤，用于组件变身时不同表现层桥的处理
-     *
-     * @param {IMediator} mediator 中介者
-     * @param {*} current 当前皮肤
-     * @param {HTMLElement|string|string[]} target 要替换的皮肤
-     * @returns {*} 替换完毕的皮肤
-     * @memberof DOMBridge
-     */
-    replaceSkin(mediator: IMediator, current: HTMLElement, target: HTMLElement | string | string[]): any;
     /**
      * 同步皮肤，用于组件变身后的重新定位
      *
@@ -270,18 +152,9 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     getChildCount(parent: Element): number;
-    /**
-     * 加载资源
-     *
-     * @param {string[]} assets 资源数组
-     * @param {IMediator} mediator 资源列表
-     * @param {(err?:Error)=>void} handler 回调函数
-     * @memberof DOMBridge
-     */
-    loadAssets(assets: string[], mediator: IMediator, handler: (err?: Error) => void): void;
     private _listenerDict;
     /**
-     * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+     * 监听事件，从这个方法监听的事件会在组件销毁时被自动移除监听
      *
      * @param {EventTarget} target 事件目标对象
      * @param {string} type 事件类型
@@ -322,8 +195,4 @@ export default class DOMBridge implements IBridge {
 export interface IInitParams {
     /** DOM容器名称或引用，不传递则自动生成一个 */
     container?: string | HTMLElement;
-    /** 通用提示框类型 */
-    promptClass?: IPromptPanelConstructor;
-    /** 遮罩皮肤 */
-    maskData?: MaskData;
 }
