@@ -1,4 +1,4 @@
-import { bindMessage, bindResponse } from '../bind/BindUtilExt';
+import { bindMessage, bindResponse } from '../bind/UtilsExt';
 /**
  * 编译bindMessage命令，不会中止编译
  */

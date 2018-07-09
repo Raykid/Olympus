@@ -45,7 +45,7 @@ import * as AudioMessageType from "./project/audio/AudioMessageType";
 import * as AudioTagImpl from "./project/audio/AudioTagImpl";
 import * as IAudio from "./project/audio/IAudio";
 
-import * as BindUtilExt from "./project/bind/BindUtilExt";
+import * as UtilsExt from "./project/bind/UtilsExt";
 
 import * as BridgeManager from "./project/bridge/BridgeManager";
 import * as BridgeMessageType from "./project/bridge/BridgeMessageType";
@@ -84,10 +84,10 @@ import * as Mediator from "./project/mediator/Mediator";
 
 import * as EngineMessageType from "./project/message/EngineMessageType";
 
-import * as Model from "./project/message/Model";
+import * as Model from "./project/model/Model";
 
-import * as ModuleManager from "./project/message/ModuleManager";
-import * as ModuleMessageType from "./project/message/ModuleMessageType";
+import * as ModuleManager from "./project/module/ModuleManager";
+import * as ModuleMessageType from "./project/module/ModuleMessageType";
 
 import * as HTTPRequestPolicy from "./project/net/policies/HTTPRequestPolicy";
 

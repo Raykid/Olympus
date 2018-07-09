@@ -1,7 +1,7 @@
 import { ICompileTarget } from '../../kernel/injector/BindUtil';
 import IComponent from '../../kernel/interfaces/IComponent';
 import IObservable from '../../kernel/interfaces/IObservable';
-import { bindMessage, bindResponse } from '../bind/BindUtilExt';
+import { bindMessage, bindResponse } from '../bind/UtilsExt';
 import { IResponseDataConstructor } from '../net/ResponseData';
 
 /**
