@@ -1,5 +1,5 @@
+import IMessage from '../../../kernel/interfaces/IMessage';
 import { core } from "../Core";
-import IMessage from "../message/IMessage";
 
 /**
  * @author Raykid

@@ -1,9 +1,9 @@
 import IBridge from "olympus-r/engine/bridge/IBridge";
-import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import IMediator from "olympus-r/engine/mediator/IMediator";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import { MaskData } from "./dom/mask/MaskEntity";
 /**
  * @author Raykid
@@ -17,7 +17,6 @@ export default class DOMBridge implements IBridge {
     /** 提供静态类型常量 */
     static TYPE: string;
     private _initParams;
-    private _promptPanel;
     /**
      * 获取表现层类型名称
      *

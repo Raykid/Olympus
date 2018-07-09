@@ -1,5 +1,5 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 import IPlatform from "./IPlatform";
 import WebPlatform from "./WebPlatform";
 

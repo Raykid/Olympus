@@ -1,7 +1,7 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
+import { core } from '../core/Core';
 import Shell from "../env/Shell";
-import EngineMessage from "../message/EngineMessage";
+import { Injectable } from '../injector/InjectorExt';
+import EngineMessageType from '../message/EngineMessageType';
 import AudioContextImpl from "./AudioContextImpl";
 import AudioTagImpl from "./AudioTagImpl";
 import IAudio, { AudioPlayParams } from "./IAudio";
@@ -30,7 +30,7 @@ export default class AudioManager
         // 由于IE可能不支持AudioContext，因此如果是IE则要改用Audio标签实现
         this._musicImpl = (window["AudioContext"] ? new AudioContextImpl() : this._soundImpl);
 
-        core.listen(EngineMessage.INITIALIZED, ()=>{
+        core.listen(EngineMessageType.INITIALIZED, ()=>{
             // 读取持久化记录
             var shell:Shell = core.getInject(Shell);
             this.muteSound = (shell.localStorageGet(AudioManager.STORAGE_KEY_MUTE_SOUND) === "true");

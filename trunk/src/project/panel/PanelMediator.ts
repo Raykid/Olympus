@@ -1,8 +1,8 @@
+import ComponentMessageType from '../../kernel/messages/ComponentMessageType';
 import Mediator from "../mediator/Mediator";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 import { panelManager } from "./PanelManager";
-import MediatorMessage from "../mediator/MediatorMessage";
 
 /**
  * @author Raykid
@@ -40,7 +40,7 @@ export default class PanelMediator extends Mediator implements IPanel
         this.onAfterDrop = (data?:any, to?:{x:number, y:number})=>{
             oriOnAfterDrop.call(this, data, to);
             // 派发关闭事件
-            this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+            this.dispatch(ComponentMessageType.COMPONENT_CLOSED, this);
         };
         panelManager.drop(this, data, to);
     }

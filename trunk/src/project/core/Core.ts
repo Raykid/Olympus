@@ -1,9 +1,9 @@
 import "reflect-metadata";
+import IMessage from '../../kernel/interfaces/IMessage';
 import Dictionary from '../../utils/Dictionary';
 import ICommandConstructor from "./command/ICommandConstructor";
-import IMessage from "./message/IMessage";
-import IObservable from "./observable/IObservable";
-import Observable from "./observable/Observable";
+import IObservable from "./observable/IObservableExt";
+import Observable from "./observable/ObservableExt";
 
 /**
  * @author Raykid

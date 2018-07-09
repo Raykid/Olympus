@@ -1,4 +1,4 @@
-import { environment } from "../engine/env/Environment";
+import { environment } from '../project/env/Environment';
 import { cloneObject } from "./ObjectUtil";
 import { joinQueryParams, trimURL, validateProtocol } from "./URLUtil";
 /**

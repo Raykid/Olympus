@@ -1,9 +1,9 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
 import { unique } from "../../utils/ArrayUtil";
 import { load } from "../../utils/HTTPUtil";
 import { isAbsolutePath } from "../../utils/URLUtil";
+import { core } from '../core/Core';
 import { environment } from "../env/Environment";
+import { Injectable } from '../injector/InjectorExt';
 import { version } from "../version/Version";
 
 /**

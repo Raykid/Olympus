@@ -1,11 +1,10 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector"
-import IConstructor from "../../engine/interfaces/IConstructor";
+import { notify, wait } from "../../utils/SyncUtil";
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import none from "./NoneScenePolicy";
-import SceneMessage from "./SceneMessage";
-import { wait, notify } from "../../utils/SyncUtil";
+import SceneMessage from "./SceneMessageType";
 
 /**
  * @author Raykid
@@ -202,11 +201,11 @@ export default class SceneManager
         // 如果from和to有一个为null则policy为none
         if(!from || !to) policy = none;
         // to指定的场景必须要显示
-        if(to) to.bridge.htmlWrapper.style.display = "";
+        if(to) to.bridge.wrapper.style.display = "";
         // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
         if(from && to && to.bridge.type != from.bridge.type)
         {
-            from.bridge.htmlWrapper.style.display = "none";
+            from.bridge.wrapper.style.display = "none";
             policy = none;
         }
         // 调用回调

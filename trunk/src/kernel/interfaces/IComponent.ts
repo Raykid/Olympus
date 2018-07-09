@@ -63,6 +63,23 @@ export default interface IComponent extends IHasBridge, IObservable, IOpenClose,
      */
     unmapAllListeners():void;
 
+    /**
+     * 当打开时调用
+     * 
+     * @param {*} [data] 可能的打开参数
+     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
+     * @memberof IComponent
+     */
+    onOpen(data?:any):any;
+
+    /**
+     * 当关闭时调用
+     * 
+     * @param {*} [data] 可能的关闭参数
+     * @memberof IComponent
+     */
+    onClose(data?:any):void;
+
 
     /******************** 下面是组件的绑定接口 ********************/
 

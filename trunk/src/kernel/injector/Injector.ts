@@ -1,13 +1,13 @@
 import "reflect-metadata";
-import { EvalExp, evalExp } from "../../core/bind/Utils";
-import { decorateThis } from "../../core/global/Patch";
-import IComponentConstructor from "../../core/interfaces/IComponentConstructor";
 import { listenApply, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
 import Dictionary from "../../utils/Dictionary";
 import { replaceDisplay } from "../../utils/DisplayUtil";
+import { evalExp, EvalExp } from '../bind/Utils';
 import ComponentStatus from '../enums/ComponentStatus';
+import { decorateThis } from '../global/Patch';
 import IBridge from '../interfaces/IBridge';
 import IComponent from '../interfaces/IComponent';
+import IComponentConstructor from '../interfaces/IComponentConstructor';
 import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
 
@@ -224,7 +224,7 @@ export function SubComponent(arg1:any, arg2?:any, arg3?:string):any
 }
 
 var onOpenDict:Dictionary<IComponent, number> = new Dictionary();
-function _listenOnOpen(prototype:any, before?:(comp:IComponent)=>void, after?:(comp:IComponent)=>void):void
+export function listenOnOpen(prototype:any, before?:(comp:IComponent)=>void, after?:(comp:IComponent)=>void):void
 {
     listenApply(prototype.constructor, "onOpen", function(comp:IComponent):void
     {
@@ -263,7 +263,7 @@ function _listenOnOpen(prototype:any, before?:(comp:IComponent)=>void, after?:(c
  * @param {*} target 目标显示对象
  * @returns {number} 
  */
-function getDepth(comp:IComponent, target:any):number
+export function getDepth(comp:IComponent, target:any):number
 {
     var skin:any = comp.skin;
     var bridge:IBridge = comp.bridge;
@@ -281,7 +281,7 @@ function getDepth(comp:IComponent, target:any):number
     return depth;
 }
 
-function searchUIDepth(values:any, comp:IComponent, target:any, callback:(currentTarget:any, target:any, key:string, value:any, leftHandlers?:BindUtil.IStopLeftHandler[], index?:number)=>void, addressing:boolean=false):void
+export function searchUIDepth(values:any, comp:IComponent, target:any, callback:(currentTarget:any, target:any, key:string, value:any, leftHandlers?:BindUtil.IStopLeftHandler[], index?:number)=>void, addressing:boolean=false):void
 {
     // 获取显示层级
     var depth:number = getDepth(comp, target);
@@ -331,7 +331,7 @@ export function BindValue(arg1:{[path:string]:any}|string, arg2?:EvalExp):Proper
 {
     return function(prototype:any, propertyKey:string):void
     {
-        _listenOnOpen(prototype, (comp:IComponent)=>{
+        listenOnOpen(prototype, (comp:IComponent)=>{
             // 组织参数字典
             var uiDict:{[name:string]:any};
             if(typeof arg1 == "string")
@@ -376,7 +376,7 @@ export function BindExp(exp:EvalExp|EvalExp[]):PropertyDecorator
 {
     return function(prototype:any, propertyKey:string):void
     {
-        _listenOnOpen(prototype, (comp:IComponent)=>{
+        listenOnOpen(prototype, (comp:IComponent)=>{
             // 组织参数字典
             var uiDict:{[name:string]:any} = {};
             if(exp instanceof Array)
@@ -429,7 +429,7 @@ export function BindFunc(arg1:BindFuncDict|string, arg2?:(EvalExp)|(EvalExp)[]):
 {
     return function(prototype:any, propertyKey:string):void
     {
-        _listenOnOpen(prototype, (comp:IComponent)=>{
+        listenOnOpen(prototype, (comp:IComponent)=>{
             // 组织参数字典
             var funcDict:BindFuncDict;
             if(typeof arg1 == "string")
@@ -487,7 +487,7 @@ export function BindOn(arg1:{[type:string]:any}|string, arg2?:EvalExp, arg3?:Eva
 {
     return function(prototype:any, propertyKey:string):void
     {
-        _listenOnOpen(prototype, (comp:IComponent)=>{
+        listenOnOpen(prototype, (comp:IComponent)=>{
             // 获取编译启动目标
             var target:any = comp[propertyKey];
             // 组织参数字典
@@ -558,7 +558,7 @@ export function BindIf(arg1:{[path:string]:any}|EvalExp, arg2?:EvalExp):Property
 {
     return function(prototype:any, propertyKey:string):void
     {
-        _listenOnOpen(prototype, (comp:IComponent)=>{
+        listenOnOpen(prototype, (comp:IComponent)=>{
             var target:any = comp[propertyKey];
             if(typeof arg1 === "string" || arg1 instanceof Function)
             {
@@ -661,7 +661,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
         var declaredComponentCls:any;
         if(isComponent(declaredCls.prototype))
             declaredComponentCls = declaredCls;
-        _listenOnOpen(prototype, (comp:IComponent)=>{
+        listenOnOpen(prototype, (comp:IComponent)=>{
             // 取到编译目标对象
             var target:any = comp[propertyKey];
             // 开始赋值指令

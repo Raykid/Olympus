@@ -1,6 +1,6 @@
-import { core } from "../../engine/core/Core";
+import { core } from '../core/Core';
 import { environment } from "../env/Environment";
-import AudioMessage from "./AudioMessage";
+import AudioMessageType from './AudioMessageType';
 import IAudio, { AudioPlayParams } from "./IAudio";
 
 /**
@@ -55,7 +55,7 @@ export default class AudioTagImpl implements IAudio
                 var curTime:number = data.node.currentTime * 1000;
                 var totalTime:number = data.node.duration * 1000;
                 // 派发播放进度事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime);
+                core.dispatch(AudioMessageType.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime);
             }
         };
     }
@@ -76,7 +76,7 @@ export default class AudioTagImpl implements IAudio
         if(!data)
         {
             // 派发加载开始事件
-            core.dispatch(AudioMessage.AUDIO_LOAD_STARTED, url);
+            core.dispatch(AudioMessageType.AUDIO_LOAD_STARTED, url);
             // 使用Audio标签加载
             var node:HTMLAudioElement = document.createElement("audio");
             // 这里强制使用autoplay，因为在IOS的safari上如果没这个参数，则根本不会触发onloadeddata事件
@@ -89,7 +89,7 @@ export default class AudioTagImpl implements IAudio
                 // 记录加载完毕
                 data.status = AudioStatus.PAUSED;
                 // 派发加载完毕事件
-                core.dispatch(AudioMessage.AUDIO_LOAD_ENDED, url);
+                core.dispatch(AudioMessageType.AUDIO_LOAD_ENDED, url);
                 // 如果不自动播放则暂停
                 if(!data.playParams)
                 {
@@ -105,14 +105,14 @@ export default class AudioTagImpl implements IAudio
             };
             node.onended = ()=>{
                 // 派发播放完毕事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
+                core.dispatch(AudioMessageType.AUDIO_PLAY_ENDED, url);
                 // 如果循环则再开
                 if(data.playParams.loop)
                     this.play(data.playParams);
             };
             node.onerror = (evt:ErrorEvent)=>{
                 //派发错误事件
-                core.dispatch(AudioMessage.AUDIO_ERROR, url, evt);
+                core.dispatch(AudioMessageType.AUDIO_ERROR, url, evt);
             };
         }
     }
@@ -165,7 +165,7 @@ export default class AudioTagImpl implements IAudio
                     // 记录播放中
                     this._playingDict[toUrl] = params;
                     // 派发播放开始事件
-                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
+                    core.dispatch(AudioMessageType.AUDIO_PLAY_STARTED, params.url);
                     break;
             }
         }
@@ -184,7 +184,7 @@ export default class AudioTagImpl implements IAudio
             // 设置状态
             data.status = AudioStatus.PAUSED;
             // 派发播放停止事件
-            core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
+            core.dispatch(AudioMessageType.AUDIO_PLAY_STOPPED, url);
         }
     }
 

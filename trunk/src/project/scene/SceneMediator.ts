@@ -1,8 +1,8 @@
+import ComponentMessageType from '../../kernel/messages/ComponentMessageType';
 import Mediator from "../mediator/Mediator";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import { sceneManager } from "./SceneManager";
-import MediatorMessage from "../mediator/MediatorMessage";
 
 /**
  * @author Raykid
@@ -40,7 +40,7 @@ export default class SceneMediator extends Mediator implements IScene
         this.onAfterOut = (toScene:IScene, data?:any)=>{
             oriOnAfterOut.call(this, toScene, data);
             // 派发关闭事件
-            this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+            this.dispatch(ComponentMessageType.COMPONENT_CLOSED, this);
         };
         sceneManager.pop(this, data);
     }

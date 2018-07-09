@@ -1,7 +1,7 @@
 import Dictionary from '../utils/Dictionary';
 import { system } from '../utils/System';
-import { bindManager } from './bind/BindManager';
 import { mutate } from './bind/Mutator';
+import { bind, unbind } from './bind/Utils';
 import ComponentStatus from './enums/ComponentStatus';
 import * as Patch from "./global/Patch";
 import IBridge from './interfaces/IBridge';
@@ -24,6 +24,17 @@ Patch;
 */
 export default class Component implements IComponent
 {
+    public constructor(skin?:any)
+    {
+        // 赋值皮肤
+        this.skin = skin;
+        // 记录原始皮肤
+        this.oriSkin = skin;
+        // 初始化绑定
+        bind(this);
+    }
+
+
     /******************** 下面是组件的基础接口 ********************/
 
     /**
@@ -48,7 +59,7 @@ export default class Component implements IComponent
     public set data(value:any)
     {
         this._data = value;
-        // 递归设置子中介者的data
+        // 递归设置子组件的data
         for(let child of this._children)
         {
             child.data = value;
@@ -67,7 +78,7 @@ export default class Component implements IComponent
 
     private _listeners:ListenerData[] = [];
     /**
-     * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
+     * 监听事件，从这个方法监听的事件会在组件销毁时被自动移除监听
      * 
      * @param {*} target 事件目标对象
      * @param {string} type 事件类型
@@ -118,7 +129,7 @@ export default class Component implements IComponent
     }
 
     /**
-     * 注销所有注册在当前中介者上的事件监听
+     * 注销所有注册在当前组件上的事件监听
      * 
      * @memberof Mediator
      */
@@ -135,7 +146,7 @@ export default class Component implements IComponent
 
     /******************** 下面是组件的绑定功能实现 ********************/
 
-    private _viewModel:any;
+    protected _viewModel:any;
     /**
      * 获取或设置ViewModel
      * 
@@ -151,7 +162,7 @@ export default class Component implements IComponent
         // 设置的时候进行一次变异
         this._viewModel = mutate(value);
         // 更新绑定
-        bindManager.bind(this);
+        bind(this);
     }
 
     /**
@@ -176,7 +187,7 @@ export default class Component implements IComponent
     };
 
     /**
-     * 父中介者
+     * 父组件
      * 
      * @type {IComponent}
      * @memberof Component
@@ -184,7 +195,7 @@ export default class Component implements IComponent
     public parent:IComponent = null;
 
     /**
-     * 获取根级中介者（当做模块直接被打开的中介者）
+     * 获取根级组件（当做模块直接被打开的组件）
      * 
      * @type {IComponent}
      * @memberof Component
@@ -196,7 +207,7 @@ export default class Component implements IComponent
 
     protected _children:IComponent[] = [];
     /**
-     * 获取所有子中介者
+     * 获取所有子组件
      * 
      * @type {IComponent[]}
      * @memberof Component
@@ -207,16 +218,16 @@ export default class Component implements IComponent
     }
 
     /**
-     * 托管子中介者
+     * 托管子组件
      * 
-     * @param {IComponent} comp 要托管的中介者
+     * @param {IComponent} comp 要托管的组件
      * @memberof Component
      */
     public delegate(comp:IComponent):void
     {
         if(this._children.indexOf(comp) < 0)
         {
-            // 托管新的中介者
+            // 托管新的组件
             this._children.push(comp);
             // 设置关系
             comp.parent = this;
@@ -229,9 +240,9 @@ export default class Component implements IComponent
     }
 
     /**
-     * 取消托管子中介者
+     * 取消托管子组件
      * 
-     * @param {IComponent} comp 要取消托管的中介者
+     * @param {IComponent} comp 要取消托管的组件
      * @memberof Component
      */
     public undelegate(comp:IComponent):void
@@ -239,7 +250,7 @@ export default class Component implements IComponent
         var index:number = this._children.indexOf(comp);
         if(index >= 0)
         {
-            // 取消托管中介者
+            // 取消托管组件
             this._children.splice(index, 1);
             // 移除关系
             comp.parent = null;
@@ -252,9 +263,9 @@ export default class Component implements IComponent
     }
     
     /**
-     * 判断指定中介者是否包含在该中介者里（判断范围包括当前中介者和子孙级中介者）
+     * 判断指定组件是否包含在该组件里（判断范围包括当前组件和子孙级组件）
      * 
-     * @param {IComponent} comp 要判断的中介者
+     * @param {IComponent} comp 要判断的组件
      * @returns {boolean} 
      * @memberof Component
      */
@@ -262,7 +273,7 @@ export default class Component implements IComponent
     {
         // 首先判断自身
         if(comp === this) return true;
-        // 判断子中介者
+        // 判断子组件
         var contains:boolean = false;
         for(var child of this._children)
         {
@@ -278,7 +289,7 @@ export default class Component implements IComponent
 
     /******************** 下面是组件的消息功能实现 ********************/
 
-    private _observable:IObservable = new Observable();
+    protected _observable:IObservable = new Observable();
     /**
      * 暴露IObservable
      * 
@@ -343,9 +354,9 @@ export default class Component implements IComponent
 
     /******************** 下面是组件的打开关闭功能实现 ********************/
 
-    private _status:ComponentStatus = ComponentStatus.UNOPEN;
+    protected _status:ComponentStatus = ComponentStatus.UNOPEN;
     /**
-     * 获取中介者状态
+     * 获取组件状态
      * 
      * @readonly
      * @type {ComponentStatus}
@@ -360,11 +371,10 @@ export default class Component implements IComponent
      * 打开，为了实现IOpenClose接口
      * 
      * @param {*} [data] 开启数据
-     * @param {...any[]} args 其他数据
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
-    public open(data?:any, ...args:any[]):any
+    public open(data?:any):any
     {
         // 判断状态
         if(this._status === ComponentStatus.UNOPEN)
@@ -374,27 +384,27 @@ export default class Component implements IComponent
             // 赋值参数
             this.data = data;
             // 调用模板方法
-            this.__beforeOnOpen(data, ...args);
+            this.__beforeOnOpen(data);
             // 调用自身onOpen方法
-            var result:any = this.onOpen(data, ...args);
+            var result:any = this.onOpen(data);
             if(result !== undefined)
                 this.data = data = result;
             // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
             if(!this._viewModel) this.viewModel = {};
-            // 记录子中介者数量，并监听其开启完毕事件
+            // 记录子组件数量，并监听其开启完毕事件
             var subCount:number = this._children.length;
             if(subCount > 0)
             {
-                // 调用所有已托管中介者的open方法
-                for(var mediator of this._children)
+                // 调用所有已托管组件的open方法
+                for(var child of this._children)
                 {
-                    mediator.open(data);
+                    child.open(data);
                 }
             }
             // 修改状态
             this._status = ComponentStatus.OPENED;
             // 调用模板方法
-            this.__afterOnOpen(data, ...args);
+            this.__afterOnOpen(data);
             // 派发事件
             this.dispatch(ComponentMessageType.COMPONENT_OPENED, this);
         }
@@ -402,12 +412,12 @@ export default class Component implements IComponent
         return this;
     }
 
-    protected __beforeOnOpen(data?:any, ...args:any[]):void
+    protected __beforeOnOpen(data?:any):void
     {
         // 给子类用的模板方法
     }
 
-    protected __afterOnOpen(data?:any, ...args:any[]):void
+    protected __afterOnOpen(data?:any):void
     {
         // 给子类用的模板方法
     }
@@ -420,27 +430,27 @@ export default class Component implements IComponent
      * @returns {*} 返回自身引用
      * @memberof Mediator
      */
-    public close(data?:any, ...args:any[]):any
+    public close(data?:any):any
     {
         if(this._status === ComponentStatus.OPENED)
         {
             var doClose:()=>void = ()=>{
                 // 调用模板方法
-                this.__beforeOnClose(data, ...args);
+                this.__beforeOnClose(data);
                 // 修改状态
                 this._status = ComponentStatus.CLOSING;
                 // 调用自身onClose方法
-                this.onClose(data, ...args);
+                this.onClose(data);
                 // 修改状态
                 this._status = ComponentStatus.CLOSED;
                 // 调用模板方法
-                this.__afterOnClose(data, ...args);
+                this.__afterOnClose(data);
             };
             var subCount:number = this._children.length;
             if(subCount > 0)
             {
-                var handler:(comp:IComponent)=>void = (mediator:IComponent)=>{
-                    if(this._children.indexOf(mediator) >= 0 && --subCount === 0)
+                var handler:(comp:IComponent)=>void = (comp:IComponent)=>{
+                    if(this._children.indexOf(comp) >= 0 && --subCount === 0)
                     {
                         // 取消监听
                         this.unlisten(ComponentMessageType.COMPONENT_CLOSED, handler);
@@ -449,15 +459,15 @@ export default class Component implements IComponent
                     }
                 };
                 this.listen(ComponentMessageType.COMPONENT_CLOSED, handler);
-                // 调用所有已托管中介者的close方法
-                for(var mediator of this._children.concat())
+                // 调用所有已托管组件的close方法
+                for(var child of this._children.concat())
                 {
-                    mediator.close(data);
+                    child.close(data);
                 }
             }
             else
             {
-                // 没有子中介者，直接执行
+                // 没有子组件，直接执行
                 doClose();
             }
         }
@@ -465,12 +475,12 @@ export default class Component implements IComponent
         return this;
     }
 
-    protected __beforeOnClose(data?:any, ...args:any[]):void
+    protected __beforeOnClose(data?:any):void
     {
         // 给子类用的模板方法
     }
 
-    protected __afterOnClose(data?:any, ...args:any[]):void
+    protected __afterOnClose(data?:any):void
     {
         // 派发关闭事件
         this.dispatch(ComponentMessageType.COMPONENT_CLOSED, this);
@@ -486,7 +496,7 @@ export default class Component implements IComponent
      * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
-    public onOpen(data?:any, ...args:any[]):any
+    public onOpen(data?:any):any
     {
         // 可重写
     }
@@ -498,7 +508,7 @@ export default class Component implements IComponent
      * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
-    public onClose(data?:any, ...args:any[]):void
+    public onClose(data?:any):void
     {
         // 可重写
     }
@@ -507,7 +517,7 @@ export default class Component implements IComponent
     /******************** 下面是组件的销毁功能实现 ********************/
 
     /**
-     * 获取中介者是否已被销毁
+     * 获取组件是否已被销毁
      * 
      * @readonly
      * @type {boolean}
@@ -519,7 +529,7 @@ export default class Component implements IComponent
     }
     
     /**
-     * 销毁中介者
+     * 销毁组件
      * 
      * @memberof Mediator
      */
@@ -530,7 +540,7 @@ export default class Component implements IComponent
         // 修改状态
         this._status = ComponentStatus.DISPOSING;
         // 移除绑定
-        bindManager.unbind(this);
+        unbind(this);
         // 注销事件监听
         this.unmapAllListeners();
         // 调用模板方法
@@ -552,7 +562,8 @@ export default class Component implements IComponent
         this.bindTargets = null;
         // 移除皮肤
         this.skin = null;
-        // 将所有子中介者销毁
+        this.oriSkin = null;
+        // 将所有子组件销毁
         for(var i:number = 0, len:number = this._children.length; i < len; i++)
         {
             var child:IComponent = this._children.pop();

@@ -1,4 +1,4 @@
-import IBridge from "../engine/bridge/IBridge";
+import IBridge from '../kernel/interfaces/IBridge';
 /**
  * @author Raykid
  * @email initial_r@qq.com

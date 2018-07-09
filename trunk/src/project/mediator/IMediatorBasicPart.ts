@@ -1,9 +1,5 @@
-import IOpenClose from "../../core/interfaces/IOpenClose";
-import IDisposable from "../../core/interfaces/IDisposable";
-import IHasBridge from "../bridge/IHasBridge";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
-import MediatorStatus from "./MediatorStatus";
 
 /**
  * @author Raykid
@@ -13,24 +9,8 @@ import MediatorStatus from "./MediatorStatus";
  * 
  * 该接口规定了中介者具有的基础功能
 */
-export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDisposable
+export default interface IMediatorBasicPart
 {
-    /**
-     * 获取中介者状态
-     * 
-     * @type {MediatorStatus}
-     * @memberof IMediatorBasicPart
-     */
-    readonly status:MediatorStatus;
-
-    /**
-     * 打开时传递的data
-     * 
-     * @type {*}
-     * @memberof IMediatorBasicPart
-     */
-    data:any;
-
     /**
      * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
      * 
@@ -39,14 +19,6 @@ export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDis
      */
     openMask:boolean;
 
-    /**
-     * 皮肤
-     * 
-     * @readonly
-     * @type {*}
-     * @memberof IMediatorBasicPart
-     */
-    skin:any;
     /**
      * 模块初始消息的返回数据
      * 
@@ -118,33 +90,4 @@ export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDis
      * @memberof IMediator
      */
     sendInitRequests(handler:(err?:Error)=>void):void;
-
-    /**
-     * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
-     * 
-     * @param {*} target 事件目标对象
-     * @param {string} type 事件类型
-     * @param {Function} handler 事件处理函数
-     * @param {*} [thisArg] this指向对象
-     * @memberof IMediator
-     */
-    mapListener(target:any, type:string, handler:Function, thisArg?:any):void;
-    
-    /**
-     * 注销监听事件
-     * 
-     * @param {*} target 事件目标对象
-     * @param {string} type 事件类型
-     * @param {Function} handler 事件处理函数
-     * @param {*} [thisArg] this指向对象
-     * @memberof IMediator
-     */
-    unmapListener(target:any, type:string, handler:Function, thisArg?:any):void;
-    
-    /**
-     * 注销所有注册在当前中介者上的事件监听
-     * 
-     * @memberof IMediator
-     */
-    unmapAllListeners():void;
 }

@@ -1,15 +1,14 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
-import IConstructor from "../../engine/interfaces/IConstructor";
 import Dictionary from "../../utils/Dictionary";
 import { bridgeManager } from "../bridge/BridgeManager";
-import IBridge from "../bridge/IBridge";
+import IBridgeExt from '../bridge/IBridgeExt';
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 import { maskManager } from "../mask/MaskManager";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 import IPromptPanel, { ButtonType, IPromptHandler, IPromptPanelConstructor, IPromptParams } from "./IPromptPanel";
 import none from "./NonePanelPolicy";
-import PanelMessage from "./PanelMessage";
+import PanelMessage from "./PanelMessageType";
 
 /**
  * @author Raykid
@@ -91,7 +90,7 @@ export default class PanelManager
             // 数据先行
             this._panels.push(panel);
             // 弹窗所在的表现层必须要显示
-            panel.bridge.htmlWrapper.style.display = "";
+            panel.bridge.wrapper.style.display = "";
             // 获取策略
             var policy:IPanelPolicy = panel.policy || panel.bridge.defaultPanelPolicy || none;
             // 调用回调
@@ -101,7 +100,7 @@ export default class PanelManager
             // 调用准备接口
             policy.prepare && policy.prepare(panel);
             // 添加显示
-            var bridge:IBridge = panel.bridge;
+            var bridge:IBridgeExt = panel.bridge;
             bridge.addChild(panel.bridge.panelLayer, panel.skin);
             // 根据优先级进行排序
             this._panels.sort((a:IPanel, b:IPanel)=>{
@@ -158,7 +157,7 @@ export default class PanelManager
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
                 // 移除显示
-                var bridge:IBridge = panel.bridge;
+                var bridge:IBridgeExt = panel.bridge;
                 var parent:any = bridge.getParent(panel.skin);
                 if(parent) bridge.removeChild(parent, panel.skin);
                 // 调用接口
@@ -234,7 +233,7 @@ export default class PanelManager
             params = msgOrParams;
         }
         // 取到当前场景的类型
-        var curBridge:IBridge = bridgeManager.currentBridge;
+        var curBridge:IBridgeExt = bridgeManager.currentBridge;
         var type:string = curBridge && curBridge.type;
         // 用场景类型取到弹窗对象
         var promptCls:IPromptPanelConstructor = this._promptDict[type];

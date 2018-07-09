@@ -1,9 +1,9 @@
-import { Injectable } from "../../core/injector/Injector";
-import { core } from "../../engine/core/Core";
-import IShell, { IShellProxyConstructor } from "./IShell";
 import { assetsManager, JSLoadMode } from "../assets/AssetsManager";
 import AudioTagImpl from "../audio/AudioTagImpl";
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 import { environment } from "./Environment";
+import IShell, { IShellProxyConstructor } from "./IShell";
 
 /**
  * @author Raykid

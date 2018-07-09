@@ -1,4 +1,4 @@
-/// <reference path="../../core/global/IConstructor.ts"/>
+/// <reference path="../../kernel/global/IConstructor.ts"/>
 
 /**
  * @author Raykid

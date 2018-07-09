@@ -1,13 +1,13 @@
 /// <amd-module name="DOMBridge"/>
 /// <reference types="tween.js"/>
-import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
+import * as TWEEN from "@tweenjs/tween.js";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import { system } from "olympus-r/engine/system/System";
+import { extendObject, getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import MaskEntity from "./dom/mask/MaskEntity";
-import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
-import * as TWEEN from "@tweenjs/tween.js";
+import { copyRef, isDOMPath, isDOMStr, toHTMLElement, wrapSkin } from "./dom/utils/SkinUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com

@@ -1,9 +1,9 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
-import CoreMessage from "../../core/message/CoreMessage";
-import IMessage from "../../core/message/IMessage";
-import IObservable from "../../core/interfaces/IObservable";
+import IMessage from '../../kernel/interfaces/IMessage';
+import IObservable from '../../kernel/interfaces/IObservable';
+import CoreMessageType from '../../kernel/messages/CoreMessageType';
 import { extendObject } from "../../utils/ObjectUtil";
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 import { maskManager } from "../mask/MaskManager";
 import NetMessage from "./NetMessage";
 import RequestData, { commonData } from "./RequestData";
@@ -28,7 +28,7 @@ export default class NetManager
 {
     public constructor()
     {
-        core.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, core);
+        core.listen(CoreMessageType.MESSAGE_DISPATCHED, this.onMsgDispatched, core);
     }
     
     private onMsgDispatched(msg:IMessage):void

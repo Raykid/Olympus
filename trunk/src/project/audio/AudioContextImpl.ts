@@ -1,8 +1,8 @@
-import { core } from "../../engine/core/Core";
+import { ICancelable, system } from '../../utils/System';
 import { assetsManager } from "../assets/AssetsManager";
+import { core } from '../core/Core';
 import { environment } from "../env/Environment";
-import { ICancelable, system } from "../system/System";
-import AudioMessage from "./AudioMessage";
+import AudioMessageType from './AudioMessageType';
 import IAudio, { AudioPlayParams } from "./IAudio";
 
 /**
@@ -102,7 +102,7 @@ export default class AudioContextImpl implements IAudio
             // 使用AudioContext加载
             this._audioCache[toUrl] = data = {buffer: null, status: AudioStatus.LOADING, playParams: null, progress: null};
             // 派发加载开始事件
-            core.dispatch(AudioMessage.AUDIO_LOAD_STARTED, url);
+            core.dispatch(AudioMessageType.AUDIO_LOAD_STARTED, url);
             // 开始加载
             assetsManager.loadAssets(toUrl, (result:ArrayBuffer) => {
                 if(result instanceof ArrayBuffer)
@@ -112,7 +112,7 @@ export default class AudioContextImpl implements IAudio
                         // 设置状态
                         data.status = AudioStatus.PAUSED;
                         // 派发加载完毕事件
-                        core.dispatch(AudioMessage.AUDIO_LOAD_ENDED, url);
+                        core.dispatch(AudioMessageType.AUDIO_LOAD_ENDED, url);
                         // 如果自动播放则播放
                         if(data.playParams) this.play(data.playParams);
                     });
@@ -171,7 +171,7 @@ export default class AudioContextImpl implements IAudio
                             // 停止播放
                             this.stop(params.url);
                             // 派发播放完毕事件
-                            core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
+                            core.dispatch(AudioMessageType.AUDIO_PLAY_ENDED, params.url);
                         }
                     };
                     // 要播放之前要起用
@@ -193,11 +193,11 @@ export default class AudioContextImpl implements IAudio
                         {
                             curTime += deltaTime * 1000;
                             var totalTime:number = data.node.buffer.duration * 1000;
-                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
+                            core.dispatch(AudioMessageType.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
                         }
                     });
                     // 派发播放开始事件
-                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
+                    core.dispatch(AudioMessageType.AUDIO_PLAY_STARTED, params.url);
                     break;
             }
         }
@@ -229,7 +229,7 @@ export default class AudioContextImpl implements IAudio
                     console.warn(err);
                 }
                 // 派发播放停止事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
+                core.dispatch(AudioMessageType.AUDIO_PLAY_STOPPED, url);
             }
         }
     }

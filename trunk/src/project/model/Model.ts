@@ -1,7 +1,7 @@
-import { core } from "../../engine/core/Core";
-import IMessage from "../../core/message/IMessage";
-import IObservable from "../../core/interfaces/IObservable";
-import ICommandConstructor from "../../core/command/ICommandConstructor";
+import IMessage from '../../kernel/interfaces/IMessage';
+import IObservable from '../../kernel/interfaces/IObservable';
+import ICommandConstructor from '../core/command/ICommandConstructor';
+import { core } from '../core/Core';
 import EngineMessage from "../message/EngineMessageType";
 
 /**

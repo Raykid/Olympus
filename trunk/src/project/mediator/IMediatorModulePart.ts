@@ -1,5 +1,3 @@
-import RequestData from "../net/RequestData";
-import ResponseData from "../net/ResponseData";
 import IMediator from "./IMediator";
 
 /**

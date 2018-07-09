@@ -1,37 +1,17 @@
-import { core } from "../engine/core/Core";
-import { Injectable } from "../core/injector/Injector";
-import * as CookieUtil from "../utils/CookieUtil";
-import BridgeManager, { bridgeManager } from "./bridge/BridgeManager";
-import BridgeMessage from "./bridge/BridgeMessage";
-import PlatformManager from "./platform/PlatformManager"
-import System from "./system/System";
-import Model from "./model/Model";
-import Mediator from "./mediator/Mediator";
-import PanelManager from "./panel/PanelManager";
-import PanelMediator from "./panel/PanelMediator";
-import SceneManager from "./scene/SceneManager";
-import SceneMediator from "./scene/SceneMediator";
-import ModuleManager, {moduleManager} from "./module/ModuleManager";
-import AssetsManager, { assetsManager } from "./assets/AssetsManager";
-import AudioManager from "./audio/AudioManager";
-import Environment, { environment } from "./env/Environment";
-import Explorer from "./env/Explorer";
-import WindowExternal from "./env/WindowExternal";
-import Hash, { hash, IHashModuleData } from "./env/Hash";
-import Query from "./env/Query";
-import Shell from "./env/Shell";
-import Version, { version } from "./version/Version";
-import MaskManager from "./mask/MaskManager";
-import NetManager, { netManager } from "./net/NetManager";
-import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
-import { IResponseDataConstructor } from "./net/ResponseData";
-import BindManager from "./bind/BindManager";
-import ModuleMessage from "./module/ModuleMessage";
-import IBridge from "./bridge/IBridge";
+import { assetsManager } from "./assets/AssetsManager";
+import { bridgeManager } from "./bridge/BridgeManager";
+import BridgeMessage from "./bridge/BridgeMessageType";
+import IBridge from "./bridge/IBridgeExt";
+import { core } from './core/Core';
+import { environment } from "./env/Environment";
+import { hash, IHashModuleData } from "./env/Hash";
+import { Injectable } from './injector/InjectorExt';
+import IMediatorConstructor from './interfaces/IMediatorConstructor';
+import EngineMessageType from './message/EngineMessageType';
+import { moduleManager } from "./module/ModuleManager";
+import ModuleMessage from "./module/ModuleMessageType";
 import IPlugin from "./plugin/IPlugin";
-import * as Injector from "./injector/Injector";
-import EngineMessage from "./message/EngineMessage";
-import IComponentConstructor from "../core/interfaces/IComponentConstructor";
+import { version } from "./version/Version";
 
 /**
  * @author Raykid
@@ -144,7 +124,7 @@ export default class Engine
         // 调用进度回调，打开首个模块为90%
         this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
         // 派发事件
-        core.dispatch(EngineMessage.INITIALIZED);
+        core.dispatch(EngineMessageType.INITIALIZED);
         // 调用初始化完成回调
         this._initParams.onInited && this._initParams.onInited();
         // 监听首个模块开启
@@ -161,7 +141,7 @@ export default class Engine
         }
     }
 
-    private onModuleChange(from:IComponentConstructor):void
+    private onModuleChange(from:IMediatorConstructor):void
     {
         // 调用进度回调，全部过程完毕，100%
         this._initParams.onInitProgress && this._initParams.onInitProgress(1, InitStep.Inited);
@@ -211,7 +191,7 @@ export interface IInitParams
      * @type {IComponentConstructor}
      * @memberof OlympusInitParams
      */
-    firstModule:IComponentConstructor;
+    firstModule:IMediatorConstructor;
     /**
      * 会在首个模块被显示出来后从页面中移除
      * 

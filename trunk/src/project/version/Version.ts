@@ -1,6 +1,6 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
 import { trimURL, wrapAbsolutePath } from "../../utils/URLUtil";
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 
 /**
  * @author Raykid

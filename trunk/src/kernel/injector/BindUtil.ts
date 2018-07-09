@@ -1,5 +1,5 @@
 import Dictionary from '../../utils/Dictionary';
-import { bindManager } from "../bind/BindManager";
+import { bindExp, bindFor, bindFunc, bindIf, bindOn, bindValue } from '../bind/Utils';
 import IComponent from '../interfaces/IComponent';
 import IComponentConstructor from '../interfaces/IComponentConstructor';
 
@@ -154,7 +154,7 @@ export function compile(comp:IComponent, currentTarget:ICompileTarget, envModels
  */
 export function compileValue(comp:IComponent, currentTarget:ICompileTarget, target:any, envModels:any[], name:string, exp:string):void
 {
-    bindManager.bindValue(comp, currentTarget, target, envModels, name, exp);
+    bindValue(comp, currentTarget, target, envModels, name, exp);
 }
 
 /**
@@ -162,7 +162,7 @@ export function compileValue(comp:IComponent, currentTarget:ICompileTarget, targ
  */
 export function compileExp(comp:IComponent, currentTarget:ICompileTarget, target:any, envModels:any[], exp:string):void
 {
-    bindManager.bindExp(comp, currentTarget, target, envModels, exp);
+    bindExp(comp, currentTarget, target, envModels, exp);
 }
 
 /**
@@ -170,7 +170,7 @@ export function compileExp(comp:IComponent, currentTarget:ICompileTarget, target
  */
 export function compileFunc(comp:IComponent, currentTarget:ICompileTarget, target:any, envModels:any[], name:string, ...argExps:string[]):void
 {
-    bindManager.bindFunc(comp, currentTarget, target, envModels, name, ...argExps);
+    bindFunc(comp, currentTarget, target, envModels, name, ...argExps);
 }
 
 /**
@@ -178,7 +178,7 @@ export function compileFunc(comp:IComponent, currentTarget:ICompileTarget, targe
  */
 export function compileOn(comp:IComponent, currentTarget:ICompileTarget, target:any, envModels:any[], type:string, exp:string):void
 {
-    bindManager.bindOn(comp, currentTarget, target, envModels, type, exp);
+    bindOn(comp, currentTarget, target, envModels, type, exp);
 }
 
 function isPosterity(comp:IComponent, target:ICompileTarget, parent:ICompileTarget):boolean
@@ -220,7 +220,7 @@ export function compileIf(comp:IComponent, currentTarget:ICompileTarget, target:
     }
     // 绑定if命令
     var terminated:boolean = false;
-    bindManager.bindIf(comp, currentTarget, target, envModels, exp, (value:boolean)=>{
+    bindIf(comp, currentTarget, target, envModels, exp, (value:boolean)=>{
         // 如果条件为true，则启动继续编译，但只编译一次，编译过就不需要再编译了
         if(!terminated && value)
         {
@@ -245,7 +245,7 @@ export function compileFor(comp:IComponent, currentTarget:ICompileTarget, target
     // 将后面的编译命令缓存起来
     var leftHandlers:IStopLeftHandler[] = target.__stop_left_handlers__;
     // 绑定for命令
-    bindManager.bindFor(comp, currentTarget, target, envModels, name, exp, compCls, declaredComponentCls, dataExp, (data:any, renderer:ICompileTarget, subEnvModels:any[])=>{
+    bindFor(comp, currentTarget, target, envModels, name, exp, compCls, declaredComponentCls, dataExp, (data:any, renderer:ICompileTarget, subEnvModels:any[])=>{
         var subLeftHandlers:IStopLeftHandler[] = leftHandlers.concat();
         var bindTargets:Dictionary<any, any>[] = [];
         // 针对每一个renderer赋值后续编译指令

@@ -1,4 +1,4 @@
-import IBridge from '../core/interfaces/IBridge';
+import IBridge from '../kernel/interfaces/IBridge';
 
 /**
  * @author Raykid

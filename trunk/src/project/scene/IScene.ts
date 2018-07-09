@@ -1,7 +1,5 @@
-import IDisposable from "../../core/interfaces/IDisposable";
-import IHasBridge from "../bridge/IHasBridge";
+import IMediator from '../mediator/IMediator';
 import IScenePolicy from "./IScenePolicy";
-import IOpenClose from "../../core/interfaces/IOpenClose";
 
 /**
  * @author Raykid
@@ -11,10 +9,8 @@ import IOpenClose from "../../core/interfaces/IOpenClose";
  * 
  * 场景接口
 */
-export default interface IScene extends IHasBridge, IOpenClose, IDisposable
+export default interface IScene extends IMediator
 {
-    /** 显示对象 */
-    skin:any;
     /** 切换策略 */
     policy:IScenePolicy;
     /** 打开当前场景（相当于调用SceneManager.push方法） */

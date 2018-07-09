@@ -13,7 +13,7 @@ import CommonMessage from './CommonMessage';
 */
 export default class Observable implements IObservable
 {
-    private _listenerDict:{[type:string]:IMessageData[]} = {};
+    protected _listenerDict:{[type:string]:IMessageData[]} = {};
     
     /**
      * 获取到IObservable实体，若本身就是IObservable实体则返回本身
@@ -39,7 +39,7 @@ export default class Observable implements IObservable
         this.parent = parent && parent.observable;
     }
 
-    private handleMessages(msg:IMessage):void
+    protected handleMessages(msg:IMessage):void
     {
         var listeners1:IMessageData[] = this._listenerDict[msg.__type];
         var listeners2:IMessageData[] = this._listenerDict[msg.constructor.toString()];
@@ -66,7 +66,7 @@ export default class Observable implements IObservable
         }
     }
 
-    private doDispatch(msg:IMessage):void
+    protected doDispatch(msg:IMessage):void
     {
         // 记录流转内核
         msg.__observables.push(this);
@@ -92,6 +92,8 @@ export default class Observable implements IObservable
     /** dispatch方法实现 */
     public dispatch(typeOrMsg:string|IMessage, ...params:any[]):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         // 统一消息对象
         var msg:IMessage = typeOrMsg as IMessage;
         if(typeof typeOrMsg == "string")
@@ -118,6 +120,8 @@ export default class Observable implements IObservable
      */
     public listen(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         type = (typeof type == "string" ? type : type.toString());
         var listeners:IMessageData[] = this._listenerDict[type];
         if(!listeners) this._listenerDict[type] = listeners = [];
@@ -143,6 +147,8 @@ export default class Observable implements IObservable
      */
     public unlisten(type:IConstructor|string, handler:Function, thisArg?:any, once:boolean=false):void
     {
+        // 销毁判断
+        if(this._disposed) return;
         type = (typeof type == "string" ? type : type.toString());
         var listeners:IMessageData[] = this._listenerDict[type];
         // 检查存在性
@@ -161,7 +167,7 @@ export default class Observable implements IObservable
         }
     }
 
-    private _disposed:boolean = false;
+    protected _disposed:boolean = false;
     /** 是否已经被销毁 */
     public get disposed():boolean
     {
@@ -184,9 +190,10 @@ export default class Observable implements IObservable
 /**
  * 上下文模块内部使用的记录转发数据的接口
  * 
+ * @export
  * @interface IMessageData
  */
-interface IMessageData
+export interface IMessageData
 {
     handler:Function;
     thisArg:any;

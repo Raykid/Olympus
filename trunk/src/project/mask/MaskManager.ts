@@ -1,8 +1,8 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
+import IBridge from '../../kernel/interfaces/IBridge';
 import Dictionary from '../../utils/Dictionary';
 import { bridgeManager } from "../bridge/BridgeManager";
-import IBridge from '../bridge/IBridge';
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 import IPanel from "../panel/IPanel";
 import IMaskData from "./IMaskData";
 

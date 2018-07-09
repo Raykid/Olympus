@@ -1,7 +1,5 @@
-import IDisposable from "../../core/interfaces/IDisposable";
-import IHasBridge from "../bridge/IHasBridge";
+import IMediator from '../mediator/IMediator';
 import IPanelPolicy from "./IPanelPolicy";
-import IOpenClose from "../../core/interfaces/IOpenClose";
 
 /**
  * @author Raykid
@@ -11,10 +9,8 @@ import IOpenClose from "../../core/interfaces/IOpenClose";
  * 
  * 弹窗接口
 */
-export default interface IPanel extends IHasBridge, IOpenClose, IDisposable
+export default interface IPanel extends IMediator
 {
-    /** 实际显示对象 */
-    skin:any;
     /** 弹出策略 */
     policy:IPanelPolicy;
     /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */

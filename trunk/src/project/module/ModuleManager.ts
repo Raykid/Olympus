@@ -1,11 +1,11 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
 import { getConstructor } from "../../utils/ConstructUtil";
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
+import IMediatorConstructor from '../interfaces/IMediatorConstructor';
 import IMediator from "../mediator/IMediator";
-import IComponentConstructor from "../../core/interfaces/IComponentConstructor";
 import { ModuleOpenStatus } from "../mediator/IMediatorModulePart";
-import { ModuleType, getModule } from "../mediator/Mediator";
-import ModuleMessage from "./ModuleMessage";
+import { getModule, ModuleType } from "../mediator/Mediator";
+import ModuleMessage from "./ModuleMessageType";
 
 /**
  * @author Raykid
@@ -28,10 +28,10 @@ export default class ModuleManager
      * 获取当前模块
      * 
      * @readonly
-     * @type {IComponentConstructor|undefined}
+     * @type {IMediatorConstructor|undefined}
      * @memberof ModuleManager
      */ 
-    public get currentModule():IComponentConstructor|undefined
+    public get currentModule():IMediatorConstructor|undefined
     {
         var curData:ModuleData = this.getCurrent();
         return (curData && curData[0]);
@@ -65,11 +65,11 @@ export default class ModuleManager
     /**
      * 获取模块在栈中的索引
      * 
-     * @param {IComponentConstructor} cls 模块类型
+     * @param {IMediatorConstructor} cls 模块类型
      * @returns {number} 索引值
      * @memberof ModuleManager
      */
-    public getIndex(cls:IComponentConstructor):number
+    public getIndex(cls:IMediatorConstructor):number
     {
         for(var i:number = 0, len:number = this._moduleStack.length; i < len; i++)
         {
@@ -82,16 +82,16 @@ export default class ModuleManager
      * 获取索引处模块类型
      * 
      * @param {number} index 模块索引值
-     * @returns {IComponentConstructor} 模块类型
+     * @returns {IMediatorConstructor} 模块类型
      * @memberof ModuleManager
      */
-    public getModule(index:number):IComponentConstructor
+    public getModule(index:number):IMediatorConstructor
     {
         var data:ModuleData = this._moduleStack[index];
         return data && data[0];
     }
 
-    private getAfter(cls:IComponentConstructor):ModuleData[]|null
+    private getAfter(cls:IMediatorConstructor):ModuleData[]|null
     {
         var result:ModuleData[] = [];
         for(var module of this._moduleStack)
@@ -120,11 +120,11 @@ export default class ModuleManager
     /**
      * 获取模块是否开启中
      * 
-     * @param {IComponentConstructor} cls 要判断的模块类型
+     * @param {IMediatorConstructor} cls 要判断的模块类型
      * @returns {boolean} 是否开启
      * @memberof ModuleManager
      */
-    public isOpened(cls:IComponentConstructor):boolean
+    public isOpened(cls:IMediatorConstructor):boolean
     {
         return (this._moduleStack.filter(temp=>temp[0]==cls).length > 0);
     }
@@ -169,7 +169,7 @@ export default class ModuleManager
         }
         this._busy = true;
         // 取到类型
-        var cls:IComponentConstructor = <IComponentConstructor>getConstructor(type instanceof Function ? type : <IComponentConstructor>type.constructor);
+        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         var after:ModuleData[] = this.getAfter(cls);
         if(!after)
         {
@@ -274,7 +274,7 @@ export default class ModuleManager
         // 数量判断，不足一个模块时不关闭
         if(this.activeCount <= 1) return;
         // 取到类型
-        var cls:IComponentConstructor = <IComponentConstructor>getConstructor(type instanceof Function ? type : <IComponentConstructor>type.constructor);
+        var cls:IMediatorConstructor = <IMediatorConstructor>getConstructor(type instanceof Function ? type : <IMediatorConstructor>type.constructor);
         // 存在性判断
         var index:number = this.getIndex(cls);
         if(index < 0) return;
@@ -314,7 +314,7 @@ export default class ModuleManager
     }
 }
 
-type ModuleData = [IComponentConstructor, IMediator, (data?:any)=>void];
+type ModuleData = [IMediatorConstructor, IMediator, (data?:any)=>void];
 
 /** 再额外导出一个单例 */
 export const moduleManager:ModuleManager = core.getInject(ModuleManager);

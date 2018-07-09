@@ -1,13 +1,15 @@
-import { core } from "../../engine/core/Core";
-import { Injectable } from "../../core/injector/Injector";
+import { getBridge, getBridgeBySkin, getBridges, registerBridge } from '../../kernel/bridge/BridgeUtil';
+import IBridge from '../../kernel/interfaces/IBridge';
+import IHasBridge from '../../kernel/interfaces/IHasBridge';
+import { core } from '../core/Core';
+import { Injectable } from '../injector/InjectorExt';
 import { maskManager } from "../mask/MaskManager";
 import Mediator from "../mediator/Mediator";
 import { moduleManager } from "../module/ModuleManager";
 import { panelManager } from "../panel/PanelManager";
 import { sceneManager } from "../scene/SceneManager";
-import BridgeMessage from "./BridgeMessage";
-import IBridge from "./IBridge";
-import IHasBridge from "./IHasBridge";
+import BridgeMessage from "./BridgeMessageType";
+import IBridgeExt from './IBridgeExt';
 
 /**
  * @author Raykid
@@ -20,17 +22,14 @@ import IHasBridge from "./IHasBridge";
 @Injectable
 export default class BridgeManager
 {
-    private _bridgeDict:{[type:string]:[IBridge, boolean]} = {};
-    private _bridgeList:[IBridge, boolean][] = [];
-
     /**
      * 获取当前的表现层桥实例（规则是取当前模块的第一个拥有bridge属性的Mediator的bridge）
      * 
      * @readonly
-     * @type {IBridge}
+     * @type {IBridgeExt}
      * @memberof BridgeManager
      */
-    public get currentBridge():IBridge
+    public get currentBridge():IBridgeExt
     {
         // 找出当前的场景或模块
         var curHasBridge:IHasBridge = sceneManager.currentScene || moduleManager.currentModuleInstance;
@@ -40,23 +39,25 @@ export default class BridgeManager
             var hasBridges:IHasBridge[] = this.getAllHasBridges(curHasBridge);
             for(var hasBridge of hasBridges)
             {
-                if(hasBridge.bridge) return hasBridge.bridge;
+                if(hasBridge.bridge)
+                    return <IBridgeExt>hasBridge.bridge;
             }
         }
         // 没找到，再用第一个桥代替
-        return (this._bridgeList[0] && this._bridgeList[0][0]);
+        return this.bridges[0];
     }
 
     /**
      * 获取所有表现层桥
      * 
      * @readonly
-     * @type {IBridge[]}
+     * @type {IBridgeExt[]}
      * @memberof BridgeManager
      */
-    public get bridges():IBridge[]
+    public get bridges():IBridgeExt[]
     {
-        return this._bridgeList.map(bridgeData=>bridgeData[0]);
+        var bridgeList:[IBridge, boolean][] = getBridges();
+        return <IBridgeExt[]>bridgeList.map(bridgeData=>bridgeData[0]);
     }
 
     private getAllHasBridges(hasBridge:IHasBridge):IHasBridge[]
@@ -77,34 +78,25 @@ export default class BridgeManager
      * 获取表现层桥实例
      * 
      * @param {string} type 表现层类型
-     * @returns {IBridge} 表现层桥实例
+     * @returns {IBridgeExt} 表现层桥实例
      * @memberof BridgeManager
      */
-    public getBridge(type:string):IBridge
+    public getBridge(type:string):IBridgeExt
     {
-        var data:[IBridge, boolean] = this._bridgeDict[type];
-        return (data && data[0]);
+        var bridge:[IBridge, boolean] = getBridge(type);
+        return bridge && <IBridgeExt>bridge[0];
     }
 
     /**
      * 通过给出一个显示对象皮肤实例来获取合适的表现层桥实例
      * 
      * @param {*} skin 皮肤实例
-     * @returns {IBridge|null} 皮肤所属表现层桥实例
+     * @returns {IBridgeExt|null} 皮肤所属表现层桥实例
      * @memberof BridgeManager
      */
-    public getBridgeBySkin(skin:any):IBridge|null
+    public getBridgeBySkin(skin:any):IBridgeExt|null
     {
-        if(skin)
-        {
-            // 遍历所有已注册的表现层桥进行判断
-            for(var data of this._bridgeList)
-            {
-                var bridge:IBridge = data[0];
-                if(bridge.isMySkin(skin)) return bridge;
-            }
-        }
-        return null;
+        return <IBridgeExt>getBridgeBySkin(skin);
     }
 
     /**
@@ -113,12 +105,12 @@ export default class BridgeManager
      * @param {...IBridge[]} bridges 要注册的所有表现层桥
      * @memberof BridgeManager
      */
-    public registerBridge(...bridges:IBridge[]):void
+    public registerBridge(...bridges:IBridgeExt[]):void
     {
         // 进行DOM初始化判断
         if(!document.body)
         {
-            var onLoad:(evt:Event)=>void = (evt:Event)=>
+            var onLoad:()=>void = ()=>
             {
                 window.removeEventListener("load", onLoad);
                 // 重新调用注册方法
@@ -132,16 +124,7 @@ export default class BridgeManager
         {
             var self:BridgeManager = this;
             // 记录
-            for(var bridge of bridges)
-            {
-                var type:string = bridge.type;
-                if(!this._bridgeDict[type])
-                {
-                    var data:[IBridge, boolean] = [bridge, false];
-                    this._bridgeDict[type] = data;
-                    this._bridgeList.push(data);
-                }
-            }
+            registerBridge(...bridges);
             // 开始初始化
             for(var bridge of bridges)
             {
@@ -161,15 +144,15 @@ export default class BridgeManager
             this.testAllInit();
         }
 
-        function afterInitBridge(bridge:IBridge):void
+        function afterInitBridge(bridge:IBridgeExt):void
         {
             // 派发消息
             core.dispatch(BridgeMessage.BRIDGE_AFTER_INIT, bridge);
             // 设置初始化完毕属性
-            var data:[IBridge, boolean] = self._bridgeDict[bridge.type];
+            var data:[IBridge, boolean] = getBridge(bridge.type);
             data[1] = true;
-            // 先隐藏表现层桥的htmlWrapper
-            bridge.htmlWrapper.style.display = "none";
+            // 先隐藏表现层桥的wrapper
+            bridge.wrapper.style.display = "none";
             // 测试是否全部初始化完毕
             self.testAllInit();
         }
@@ -178,7 +161,7 @@ export default class BridgeManager
     private testAllInit():void
     {
         var allInited:boolean = true;
-        for(var data of this._bridgeList)
+        for(var data of getBridges())
         {
             allInited = allInited && data[1];
         }

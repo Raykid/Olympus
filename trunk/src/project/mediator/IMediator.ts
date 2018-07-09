@@ -1,8 +1,8 @@
+import IComponent from '../../kernel/interfaces/IComponent';
 import ResponseData from "../net/ResponseData";
 import IMediatorBasicPart from "./IMediatorBasicPart";
-import IMediatorBindPart from "./IMediatorBindPart";
 import IMediatorModulePart from "./IMediatorModulePart";
-import IMediatorTreePart from "./IMediatorTreePart";
+import IBridgeExt from '../bridge/IBridgeExt';
 
 /**
  * @author Raykid
@@ -12,26 +12,15 @@ import IMediatorTreePart from "./IMediatorTreePart";
  * 
  * 界面中介者接口
 */
-export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart, IMediatorTreePart, IMediatorModulePart
+export default interface IMediator extends IComponent, IMediatorBasicPart, IMediatorModulePart
 {
     /**
-     * 当打开时调用
-     * 
-     * @param {*} [data] 可能的打开参数
-     * @param {...any[]} args 其他参数
-     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
+     * 中介者拥有的桥是扩展桥
+     *
+     * @type {IBridgeExt}
      * @memberof IMediator
      */
-    onOpen(data?:any, ...args:any[]):any;
-
-    /**
-     * 当关闭时调用
-     * 
-     * @param {*} [data] 可能的关闭参数
-     * @param {...any[]} args 其他参数
-     * @memberof IMediator
-     */
-    onClose(data?:any, ...args:any[]):void;
+    bridge:IBridgeExt;
     
     /**
      * 当所需资源加载完毕后调用
