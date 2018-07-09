@@ -1,4 +1,4 @@
-import Command from "olympus-r/core/command/Command";
+import Command from "olympus-r/project/core/command/Command";
 /**
  * @author Raykid
  * @email initial_r@qq.com

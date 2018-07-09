@@ -1,4 +1,4 @@
-import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
+import { bridgeManager } from "olympus-r/project/bridge/BridgeManager";
 import EgretBridge from "../../EgretBridge";
 /**
  * @author Raykid

@@ -1,9 +1,8 @@
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import IPanel from "olympus-r/engine/panel/IPanel";
-import IBridge from "olympus-r/engine/bridge/IBridge";
-import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
-import Dictionary from "olympus-r/utils/Dictionary";
-import IMaskData from "olympus-r/engine/mask/IMaskData";
+import { bridgeManager } from "olympus-r/project/bridge/BridgeManager";
+import IBridgeExt from 'olympus-r/project/bridge/IBridgeExt';
+import IMaskData from 'olympus-r/project/mask/IMaskData';
+import { IMaskEntity } from 'olympus-r/project/mask/MaskManager';
+import IPanel from 'olympus-r/project/panel/IPanel';
 import EgretBridge from "../../EgretBridge";
 
 /**
@@ -66,7 +65,7 @@ export default class MaskEntityImpl implements IMaskEntity
     public showMask(alpha?:number):void
     {
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge:IBridgeExt = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._maskAlpha;
         this._mask.graphics.clear();
@@ -92,7 +91,7 @@ export default class MaskEntityImpl implements IMaskEntity
     public showLoading(alpha?:number):void
     {
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge:IBridgeExt = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._loadingAlpha;
         this._loadingMask.graphics.clear();
@@ -121,7 +120,7 @@ export default class MaskEntityImpl implements IMaskEntity
     {
         this._modalPanelList.push(panel);
         // 显示
-        var bridge:IBridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge:IBridgeExt = bridgeManager.getBridge(EgretBridge.TYPE);
         // 绘制遮罩
         if(alpha == null) alpha = this._modalPanelAlpha;
         this._modalPanelMask.graphics.clear();

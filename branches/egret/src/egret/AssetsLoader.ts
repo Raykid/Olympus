@@ -1,7 +1,7 @@
-import { environment } from "olympus-r/engine/env/Environment";
-import { panelManager } from "olympus-r/engine/panel/PanelManager";
-import { platformManager } from "olympus-r/engine/platform/PlatformManager";
-import { version } from "olympus-r/engine/version/Version";
+import { environment } from "olympus-r/project/env/Environment";
+import { panelManager } from "olympus-r/project/panel/PanelManager";
+import { platformManager } from "olympus-r/project/platform/PlatformManager";
+import { version } from "olympus-r/project/version/Version";
 
 /**
  * @author Raykid

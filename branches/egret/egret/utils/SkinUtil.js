@@ -1,5 +1,5 @@
-import MediatorStatus from "olympus-r/engine/mediator/MediatorStatus";
-import SceneMediator from "olympus-r/engine/scene/SceneMediator";
+import ComponentStatus from 'olympus-r/kernel/enums/ComponentStatus';
+import SceneMediator from "olympus-r/project/scene/SceneMediator";
 import { listenApply } from 'olympus-r/utils/ConstructUtil';
 /**
  * @author Raykid
@@ -22,7 +22,7 @@ export function wrapSkin(mediator, skin) {
         result = skin;
     }
     // 判断中介者当前状态
-    if (mediator.status < MediatorStatus.OPENING) {
+    if (mediator.status < ComponentStatus.OPENING) {
         listenApply(mediator, "onOpen", doWrapSkin);
     }
     else {

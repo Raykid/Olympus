@@ -1,4 +1,4 @@
-import IMediator from "olympus-r/engine/mediator/IMediator";
+import IMediator from 'olympus-r/project/mediator/IMediator';
 /**
  * @author Raykid
  * @email initial_r@qq.com

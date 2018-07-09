@@ -1,5 +1,5 @@
 import * as tslib_1 from "tslib";
-import Command from "olympus-r/core/command/Command";
+import Command from "olympus-r/project/core/command/Command";
 import EgretBridge from "../../EgretBridge";
 /**
  * @author Raykid

@@ -1,7 +1,6 @@
+import { MediatorClass } from "olympus-r/project/injector/InjectorExt";
+import IConstructor from "olympus-r/project/interfaces/IConstructor";
 import { listenConstruct } from "olympus-r/utils/ConstructUtil";
-import { MediatorClass } from "olympus-r/engine/injector/Injector";
-import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
-import EgretBridge from "../../EgretBridge";
 
 /**
  * @author Raykid

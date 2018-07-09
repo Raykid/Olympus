@@ -1,25 +1,8 @@
 /// <amd-module name="EgretBridge"/>
 
-import { core } from "olympus-r/core/Core";
-import IBridge from "olympus-r/engine/bridge/IBridge";
-import { environment } from "olympus-r/engine/env/Environment";
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
-import IMediator from "olympus-r/engine/mediator/IMediator";
-import ModuleMessage from "olympus-r/engine/module/ModuleMessage";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
-import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import SceneMessage from "olympus-r/engine/scene/SceneMessage";
-import { version } from 'olympus-r/engine/version/Version';
+import IBridge from 'olympus-r/kernel/interfaces/IBridge';
 import { load } from "olympus-r/utils/HTTPUtil";
-import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
-import AssetsLoader, { IResourceDict } from "./egret/AssetsLoader";
-import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
-import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
-import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import RenderMode from "./egret/RenderMode";
-import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
-import { wrapSkin } from "./egret/utils/SkinUtil";
 import { wrapEUIList } from "./egret/utils/UIUtil";
 
 /**
@@ -35,7 +18,7 @@ export default class EgretBridge implements IBridge
     /** 提供静态类型常量 */
     public static TYPE:string = "Egret";
 
-    private _initParams:IInitParams;
+    protected _initParams:IInitParams;
 
     /**
      * 获取表现层类型名称
@@ -56,12 +39,12 @@ export default class EgretBridge implements IBridge
      * @type {HTMLElement}
      * @memberof EgretBridge
      */
-    public get htmlWrapper():HTMLElement
+    public get wrapper():HTMLElement
     {
         return <HTMLElement>this._initParams.container;
     }
 
-    private _root:egret.DisplayObjectContainer;
+    protected _root:egret.DisplayObjectContainer;
     /**
      * 获取根显示节点
      * 
@@ -73,143 +56,12 @@ export default class EgretBridge implements IBridge
     {
         return this._root;
     }
-
-    private _stage:egret.Stage;
-    /**
-     * 获取舞台引用
-     * 
-     * @readonly
-     * @type {egret.Stage}
-     * @memberof EgretBridge
-     */
-    public get stage():egret.Stage
-    {
-        return this._stage;
-    }
-    
-    private _bgLayer:egret.DisplayObjectContainer;
-    /**
-     * 获取背景容器
-     * 
-     * @readonly
-     * @type {egret.DisplayObjectContainer}
-     * @memberof EgretBridge
-     */
-    public get bgLayer():egret.DisplayObjectContainer
-    {
-        return this._bgLayer;
-    }
-
-    private _sceneLayer:egret.DisplayObjectContainer;
-    /**
-     * 获取场景容器
-     * 
-     * @readonly
-     * @type {egret.DisplayObjectContainer}
-     * @memberof EgretBridge
-     */
-    public get sceneLayer():egret.DisplayObjectContainer
-    {
-        return this._sceneLayer;
-    }
-    
-    private _frameLayer:egret.DisplayObjectContainer;
-    /**
-     * 获取框架容器
-     * 
-     * @readonly
-     * @type {egret.DisplayObjectContainer}
-     * @memberof EgretBridge
-     */
-    public get frameLayer():egret.DisplayObjectContainer
-    {
-        return this._frameLayer;
-    }
-
-    private _panelLayer:egret.DisplayObjectContainer;
-    /**
-     * 获取弹窗容器
-     * 
-     * @readonly
-     * @type {egret.DisplayObjectContainer}
-     * @memberof EgretBridge
-     */
-    public get panelLayer():egret.DisplayObjectContainer
-    {
-        return this._panelLayer;
-    }
-
-    private _maskLayer:egret.DisplayObjectContainer;
-    /**
-     * 获取遮罩容器
-     * 
-     * @readonly
-     * @type {egret.DisplayObjectContainer}
-     * @memberof EgretBridge
-     */
-    public get maskLayer():egret.DisplayObjectContainer
-    {
-        return this._maskLayer;
-    }
-
-    private _topLayer:egret.DisplayObjectContainer;
-    /**
-     * 获取顶级容器
-     * 
-     * @readonly
-     * @type {egret.DisplayObjectContainer}
-     * @memberof EgretBridge
-     */
-    public get topLayer():egret.DisplayObjectContainer
-    {
-        return this._topLayer;
-    }
-    
-    /**
-     * 获取通用提示框
-     * 
-     * @readonly
-     * @type {IPromptPanelConstructor}
-     * @memberof EgretBridge
-     */
-    public get promptClass():IPromptPanelConstructor
-    {
-        return this._initParams.promptClass;
-    }
-    
-    /**
-     * 获取遮罩实体
-     * 
-     * @readonly
-     * @type {IMaskEntity}
-     * @memberof EgretBridge
-     */
-    public get maskEntity():IMaskEntity
-    {
-        return new MaskEntity(this._initParams.maskData) as IMaskEntity;
-    }
-
-    /**
-     * 默认弹窗策略
-     * 
-     * @type {IPanelPolicy}
-     * @memberof EgretBridge
-     */
-    public defaultPanelPolicy:IPanelPolicy = new BackPanelPolicy();
-
-    /**
-     * 默认场景切换策略
-     * 
-     * @type {IScenePolicy}
-     * @memberof EgretBridge
-     */
-    public defaultScenePolicy:IScenePolicy = new FadeScenePolicy();
     
     public constructor(params:IInitParams)
     {
         this._initParams = params;
     }
-    
+
     /**
      * 初始化表现层桥
      * @param {()=>void} complete 初始化完毕后的回调
@@ -275,7 +127,7 @@ export default class EgretBridge implements IBridge
             // 移除引用
             delete window["__EgretRoot__"];
             // 将控制权移交给Application对象
-            onRootInitialized(this);
+            self.onRootInitialized(this, complete);
         }
         // 根据渲染模式初始化Egret引擎
         switch(this._initParams.renderMode)
@@ -346,71 +198,44 @@ export default class EgretBridge implements IBridge
                 audioType: 0
             });
         }
+    }
 
-        function onRootInitialized(root:eui.UILayer):void
+    protected onRootInitialized(root:eui.UILayer, complete:(bridge:IBridge)=>void):void
+    {
+        this._root = root;
+        // 设置资源和主题适配器
+        egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
+        egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(this._initParams));
+        // 加载资源配置
+        doLoad.call(this);
+
+        function doLoad():void
         {
-            self._root = root;
-            self._stage = root.stage;
-            // 创建背景显示层
-            self._bgLayer = new eui.UILayer();
-            self._bgLayer.touchEnabled = false;
-            root.addChild(self._bgLayer);
-            // 创建场景显示层
-            self._sceneLayer = new eui.UILayer();
-            self._sceneLayer.touchEnabled = false;
-            root.addChild(self._sceneLayer);
-            // 创建框架显示层
-            self._frameLayer = new eui.UILayer();
-            self._frameLayer.touchEnabled = false;
-            root.addChild(self._frameLayer);
-            // 创建弹出层
-            self._panelLayer = new eui.UILayer();
-            self._panelLayer.touchEnabled = false;
-            root.addChild(self._panelLayer);
-            // 创建遮罩层
-            self._maskLayer = new eui.UILayer();
-            self._maskLayer.touchEnabled = false;
-            root.addChild(self._maskLayer);
-            // 创建顶级显示层
-            self._topLayer = new eui.UILayer();
-            self._topLayer.touchEnabled = false;
-            root.addChild(self._topLayer);
-            // 插入更新屏幕命令
-            core.mapCommand(SceneMessage.SCENE_BEFORE_CHANGE, UpdateScreenSizeCommand);
-            // 设置资源和主题适配器
-            egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
-            egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
-            // 加载资源配置
-            doLoad();
-
-            function doLoad():void
-            {
-                load({
-                    url: version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"),
-                    useCDN: true,
-                    responseType: "text",
-                    onResponse: (content:string)=>{
-                        var data:any = JSON.parse(content);
-                        RES.parseConfig(data, self._initParams.pathPrefix + "resource/");
-                        // 加载主题配置
-                        var url:string = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
-                        var theme:eui.Theme = new eui.Theme(url, self._root.stage);
-                        theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-                    },
-                    onError: err=>{
-                        alert(err.message + "\nPlease try again later.");
-                        doLoad();
-                    }
-                });
-            }
+            load({
+                url: this._initParams.pathPrefix + "resource/default.res.json",
+                useCDN: true,
+                responseType: "text",
+                onResponse: (content:string)=>{
+                    var data:any = JSON.parse(content);
+                    RES.parseConfig(data, this._initParams.pathPrefix + "resource/");
+                    // 加载主题配置
+                    var url:string = this._initParams.pathPrefix + "resource/default.thm.json";
+                    var theme:eui.Theme = new eui.Theme(url, this._root.stage);
+                    theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, this);
+                },
+                onError: err=>{
+                    alert(err.message + "\nPlease try again later.");
+                    doLoad.call(this);
+                }
+            });
         }
 
         function onThemeLoadComplete(evt:eui.UIEvent):void
         {
-            evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
+            evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, this);
             // 加载预加载资源组
             var preloadGroups:string[] = this._initParams.preloadGroups;
-            self.loadAssets(preloadGroups, null, err=>complete(self));
+            this.loadAssets(preloadGroups, null, err=>complete(this));
         }
     }
     
@@ -429,70 +254,6 @@ export default class EgretBridge implements IBridge
             return (skin.prototype instanceof egret.DisplayObject);
         if(typeof skin === "string")
             return (egret.getDefinitionByName(skin) != null);
-    }
-
-    /**
-     * 包装HTMLElement节点
-     * 
-     * @param {IMediator} mediator 中介者
-     * @param {*} skin 原始皮肤
-     * @returns {egret.DisplayObject} 包装后的皮肤
-     * @memberof EgretBridge
-     */
-    public wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
-    {
-        return wrapSkin(mediator, skin);
-    }
-    
-    /**
-     * 替换皮肤，用于组件变身时不同表现层桥的处理
-     * 
-     * @param {IMediator} mediator 中介者
-     * @param {*} current 当前皮肤
-     * @param {*} target 要替换的皮肤
-     * @returns {*} 替换完毕的皮肤
-     * @memberof EgretBridge
-     */
-    public replaceSkin(mediator:IMediator, current:egret.DisplayObject, target:any):any
-    {
-        // Egret皮肤需要判断类型，进行不同处理
-        if(current instanceof eui.Component)
-        {
-            if(target instanceof eui.Component)
-            {
-                // 两边都是eui组件，直接将右手皮肤赋值给左手
-                current.skinName = target.skin;
-            }
-            else if(target instanceof egret.DisplayObject)
-            {
-                // 右手是普通显示对象，移除左手皮肤，添加右手显示到其中
-                current.skinName = null;
-                current.addChild(target);
-            }
-            else
-            {
-                // 其他情况都认为右手是皮肤数据
-                current.skinName = target;
-            }
-            // 返回左手
-            return current;
-        }
-        else
-        {
-            if(!(target instanceof egret.DisplayObject))
-            {
-                // 右手不是显示对象，认为是皮肤数据，生成一个eui.Component包裹它
-                var temp:eui.Component = new eui.Component();
-                temp.skinName = target;
-                target = temp;
-            }
-            // 右手替换左手位置
-            var parent:egret.DisplayObjectContainer = current.parent;
-            parent.addChildAt(target, parent.getChildIndex(current));
-            parent.removeChild(current);
-            // 返回右手
-            return target;
-        }
     }
 
     /**
@@ -676,31 +437,6 @@ export default class EgretBridge implements IBridge
     {
         return parent.numChildren;
     }
-
-    /**
-     * 加载资源
-     * 
-     * @param {string[]} assets 资源数组
-     * @param {IMediator} mediator 资源列表
-     * @param {(err?:Error)=>void} handler 回调函数
-     * @memberof EgretBridge
-     */
-    public loadAssets(assets:string[], mediator:IMediator, handler:(err?:Error)=>void):void
-    {
-        var loader:AssetsLoader = new AssetsLoader({
-            oneError: (evt:RES.ResourceEvent)=>{
-                // 调用回调
-                handler(new Error("资源加载失败"));
-                // 派发加载错误事件
-                core.dispatch(ModuleMessage.MODULE_LOAD_ASSETS_ERROR, evt);
-            },
-            complete: (dict:IResourceDict)=>{
-                // 调用回调
-                handler();
-            }
-        });
-        loader.loadGroups(assets);
-    }
     
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
@@ -853,10 +589,6 @@ export interface IInitParams
     backgroundColor?:number;
     /** 渲染模式，在RenderMode中查找枚举值，默认为AUTO **/
     renderMode?:RenderMode;
-    /** 通用提示框类型 */
-    promptClass?:IPromptPanelConstructor;
-    /** 遮罩数据 */
-    maskData?:MaskData;
     /** 预加载资源组名 */
     preloadGroups?:string[];
 }
@@ -906,10 +638,10 @@ class ThemeAdapter implements eui.IThemeAdapter
      * @param errorFunc 解析失败回调函数，示例：errorFunc():void;
      * @param thisObject 回调的this引用
      */
-    public getTheme(url:string,compFunc:Function,errorFunc:Function,thisObject:any):void
+    public getTheme(url:string, compFunc:Function, errorFunc:Function, thisObject:any):void
     {
         load({
-            url: version.wrapHashUrl(url),
+            url: url,
             useCDN: true,
             responseType: "text",
             onResponse: (result:string)=>{

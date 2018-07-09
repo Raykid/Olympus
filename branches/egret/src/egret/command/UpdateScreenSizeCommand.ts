@@ -1,6 +1,6 @@
-import Command from "olympus-r/core/command/Command";
-import CommonMessage from "olympus-r/core/message/CommonMessage";
-import IScene from "olympus-r/engine/scene/IScene";
+import CommonMessage from "olympus-r/kernel/observable/CommonMessage";
+import Command from "olympus-r/project/core/command/Command";
+import IScene from "olympus-r/project/scene/IScene";
 import EgretBridge from "../../EgretBridge";
 
 /**

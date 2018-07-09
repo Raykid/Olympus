@@ -1,5 +1,5 @@
+import { MediatorClass } from "olympus-r/project/injector/InjectorExt";
 import { listenConstruct } from "olympus-r/utils/ConstructUtil";
-import { MediatorClass } from "olympus-r/engine/injector/Injector";
 /**
  * @author Raykid
  * @email initial_r@qq.com
