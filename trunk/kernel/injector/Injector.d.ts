@@ -5,6 +5,8 @@ import IComponentConstructor from '../interfaces/IComponentConstructor';
 import * as BindUtil from "./BindUtil";
 export declare function addSubHandler(instance: IComponent, handler: (instance?: IComponent) => void): void;
 export declare function isComponent(target: any): boolean;
+/** 定义组件，支持数据绑定功能 */
+export declare function ComponentClass(): ClassDecorator;
 /** 添加子Component */
 export declare function SubComponent(dataExp?: string): PropertyDecorator;
 export declare function SubComponent(compCls: IComponentConstructor, dataExp?: string): PropertyDecorator;

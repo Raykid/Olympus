@@ -1,3 +1,4 @@
+import IComponent from './IComponent';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -46,6 +47,25 @@ export default interface IBridge {
      * @memberof IBridge
      */
     syncSkin(current: any, target: any): void;
+    /**
+     * 包装皮肤
+     *
+     * @param {IComponent} comp 组件
+     * @param {*} skin 原始皮肤
+     * @returns {*} 包装后的皮肤
+     * @memberof IBridge
+     */
+    wrapSkin(comp: IComponent, skin: any): any;
+    /**
+     * 替换皮肤，用于组件变身时不同表现层桥的处理
+     *
+     * @param {IComponent} comp 组件
+     * @param {*} current 当前皮肤
+     * @param {*} target 要替换的皮肤
+     * @returns {*} 替换完毕的皮肤
+     * @memberof IBridge
+     */
+    replaceSkin(comp: IComponent, current: any, target: any): any;
     /**
      * 创建一个空的显示对象
      *

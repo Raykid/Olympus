@@ -1,7 +1,7 @@
 import ComponentStatus from 'olympus-r/kernel/enums/ComponentStatus';
 import { assetsManager } from 'olympus-r/project/assets/AssetsManager';
 import { listenApply } from 'olympus-r/utils/ConstructUtil';
-import { doCopyRef, isDOMStr } from './SkinUtil';
+import { isDOMStr } from './SkinUtil';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -43,6 +43,15 @@ export function wrapSkin(mediator, skin) {
             // 拷贝引用
             doCopyRef(result, skin, mediator);
         }
+    }
+}
+function doCopyRef(fromEle, fromStr, to) {
+    // 使用正则表达式将拥有id的节点赋值给mediator
+    var reg = /id=("([^"]+)"|'([^']+)')/g;
+    var res;
+    while (res = reg.exec(fromStr)) {
+        var id = res[2] || res[3];
+        to[id] = fromEle.querySelector("#" + id);
     }
 }
 /**

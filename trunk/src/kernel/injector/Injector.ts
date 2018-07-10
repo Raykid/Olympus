@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { listenApply, listenConstruct, listenDispose } from "../../utils/ConstructUtil";
+import { listenApply, listenConstruct, listenDispose, wrapConstruct } from "../../utils/ConstructUtil";
 import Dictionary from "../../utils/Dictionary";
 import { replaceDisplay } from "../../utils/DisplayUtil";
 import { evalExp, EvalExp } from '../bind/Utils';
@@ -32,6 +32,62 @@ export function addSubHandler(instance:IComponent, handler:(instance?:IComponent
 export function isComponent(target:any):boolean
 {
     return (target.delegate instanceof Function && target.undelegate instanceof Function);
+}
+
+/** 定义组件，支持数据绑定功能 */
+export function ComponentClass():ClassDecorator
+{
+    return function(cls:IConstructor):IConstructor
+    {
+        // 判断一下Component是否有dispose方法，没有的话弹一个警告
+        if(!cls.prototype.dispose)
+            console.warn("Component[" + cls["name"] + "]不具有dispose方法，可能会造成内存问题，请让该Mediator实现IDisposable接口");
+        // 监听实例化
+        listenConstruct(cls, function(instance:IComponent):void
+        {
+            // 替换skin属性
+            var $skin:any;
+            var oriSkin = instance.skin;
+            Object.defineProperty(instance, "skin", {
+                configurable: true,
+                enumerable: true,
+                get: function():any
+                {
+                    return $skin;
+                },
+                set: function(value:any):void
+                {
+                    if(value === $skin) return;
+                    // 记录值
+                    if(this.bridge)
+                    {
+                        if($skin)
+                        {
+                            // 需要判断桥的类型是否相同，且之前有皮肤，则替换皮肤
+                            $skin = this.bridge.replaceSkin(this, $skin, value);
+                        }
+                        else
+                        {
+                            // 否则直接包装一下皮肤
+                            $skin = this.bridge.wrapSkin(this, value);
+                        }
+                    }
+                    else 
+                    {
+                        // 不认识的皮肤类型，直接赋值
+                        $skin = value;
+                    }
+                }
+            });
+            // 如果本来就有皮肤，则赋值皮肤
+            if(oriSkin)
+                instance.skin = oriSkin;
+        });
+        // 包装类
+        var wrapperCls:IComponentConstructor = <IComponentConstructor>wrapConstruct(cls);
+        // 返回包装类
+        return wrapperCls;
+    } as ClassDecorator;
 }
 
 /** 添加子Component */

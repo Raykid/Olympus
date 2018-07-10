@@ -100,25 +100,6 @@ export default interface IBridgeExt extends IBridge {
      */
     defaultScenePolicy: IScenePolicy;
     /**
-     * 包装皮肤
-     *
-     * @param {IMediator} mediator 中介者
-     * @param {*} skin 原始皮肤
-     * @returns {*} 包装后的皮肤
-     * @memberof IBridge
-     */
-    wrapSkin(mediator: IMediator, skin: any): any;
-    /**
-     * 替换皮肤，用于组件变身时不同表现层桥的处理
-     *
-     * @param {IMediator} mediator 中介者
-     * @param {*} current 当前皮肤
-     * @param {*} target 要替换的皮肤
-     * @returns {*} 替换完毕的皮肤
-     * @memberof IBridge
-     */
-    replaceSkin(mediator: IMediator, current: any, target: any): any;
-    /**
      * 加载资源
      *
      * @param {string[]} assets 资源数组

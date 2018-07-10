@@ -128,16 +128,6 @@ export default class DOMBridgeExt extends DOMBridge implements IBridgeExt {
      */
     wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
     /**
-     * 替换皮肤，用于组件变身时不同表现层桥的处理
-     *
-     * @param {IMediator} mediator 中介者
-     * @param {*} current 当前皮肤
-     * @param {HTMLElement|string|string[]} target 要替换的皮肤
-     * @returns {*} 替换完毕的皮肤
-     * @memberof DOMBridge
-     */
-    replaceSkin(mediator: IMediator, current: HTMLElement, target: HTMLElement | string | string[]): any;
-    /**
      * 加载资源
      *
      * @param {string[]} assets 资源数组

@@ -2,7 +2,7 @@ import ComponentStatus from 'olympus-r/kernel/enums/ComponentStatus';
 import { assetsManager } from 'olympus-r/project/assets/AssetsManager';
 import IMediator from 'olympus-r/project/mediator/IMediator';
 import { listenApply } from 'olympus-r/utils/ConstructUtil';
-import { doCopyRef, isDOMStr } from './SkinUtil';
+import { isDOMStr } from './SkinUtil';
 
 /**
  * @author Raykid
@@ -52,6 +52,18 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
             // 拷贝引用
             doCopyRef(result, skin, mediator);
         }
+    }
+}
+
+function doCopyRef(fromEle:HTMLElement, fromStr:string, to:any):void
+{
+    // 使用正则表达式将拥有id的节点赋值给mediator
+    var reg:RegExp = /id=("([^"]+)"|'([^']+)')/g;
+    var res:RegExpExecArray;
+    while(res = reg.exec(fromStr))
+    {
+        var id:string = res[2] || res[3];
+        to[id] = fromEle.querySelector("#" + id);
     }
 }
 

@@ -1,4 +1,5 @@
 import IBridge from "olympus-r/kernel/interfaces/IBridge";
+import IComponent from 'olympus-r/kernel/interfaces/IComponent';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -58,6 +59,25 @@ export default class DOMBridge implements IBridge {
      * @memberof DOMBridge
      */
     syncSkin(current: HTMLElement, target: HTMLElement): void;
+    /**
+     * 包装HTMLElement节点
+     *
+     * @param {IMediator} comp 组件
+     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
+     * @returns {HTMLElement} 包装后的HTMLElement节点
+     * @memberof DOMBridge
+     */
+    wrapSkin(comp: IComponent, skin: HTMLElement | string | string[]): HTMLElement;
+    /**
+     * 替换皮肤，用于组件变身时不同表现层桥的处理
+     *
+     * @param {IMediator} comp 组件
+     * @param {*} current 当前皮肤
+     * @param {HTMLElement|string|string[]} target 要替换的皮肤
+     * @returns {*} 替换完毕的皮肤
+     * @memberof DOMBridge
+     */
+    replaceSkin(comp: IComponent, current: HTMLElement, target: HTMLElement | string | string[]): any;
     /**
      * 创建一个空的显示对象
      *
