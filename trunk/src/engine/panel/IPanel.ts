@@ -17,6 +17,8 @@ export default interface IPanel extends IHasBridge, IOpenClose, IDisposable
     skin:any;
     /** 弹出策略 */
     policy:IPanelPolicy;
+    /** 自定义弹窗遮罩透明度，不传则使用项目默认透明度 */
+    maskAlpha?:number;
     /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
     open(data?:any, isModel?:boolean, from?:{x:number, y:number}):IPanel;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */

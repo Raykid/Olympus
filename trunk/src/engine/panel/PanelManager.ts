@@ -69,7 +69,7 @@ export default class PanelManager
                 if(maskManager.isShowingModalMask(panel))
                     maskManager.hideModalMask(panel);
                 // 添加遮罩
-                maskManager.showModalMask(panel);
+                maskManager.showModalMask(panel, panel.maskAlpha);
                 break;
             }
         }
