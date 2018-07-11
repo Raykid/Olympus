@@ -35,7 +35,7 @@
     "@types/tween.js": "^16.9.0"
   },
   "devDependencies": {
-    "olympus-r": "^0.6.79",
+    "olympus-r": "^0.6.104",
     "typedoc": "^0.11.1"
   }
 }
