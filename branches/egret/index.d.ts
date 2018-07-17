@@ -5,6 +5,8 @@ import * as RenderMode from "./egret/RenderMode";
 
 import * as UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
 
+import * as Patch from "./egret/global/Patch";
+
 import * as Injector from "./egret/injector/Injector";
 
 import * as FlowLayout from "./egret/layouts/FlowLayout";

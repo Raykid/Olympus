@@ -15,12 +15,15 @@ import { load } from "olympus-r/utils/HTTPUtil";
 import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
 import AssetsLoader, { IResourceDict } from "./egret/AssetsLoader";
 import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
+import * as Patch from "./egret/global/Patch";
 import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import RenderMode from "./egret/RenderMode";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
 import { wrapSkin } from "./egret/utils/SkinUtil";
 import { wrapEUIList } from "./egret/utils/UIUtil";
+
+Patch;
 
 /**
  * @author Raykid
