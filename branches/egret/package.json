@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-egret",
-  "version": "0.6.24",
+  "version": "0.6.26",
   "description": "Olympus的Egret表现层库",
   "files": [
     "egret/",

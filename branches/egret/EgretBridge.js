@@ -8,14 +8,13 @@ import { load } from "olympus-r/utils/HTTPUtil";
 import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
 import AssetsLoader from "./egret/AssetsLoader";
 import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
-import * as Patch from "./egret/global/Patch";
 import MaskEntity from "./egret/mask/MaskEntity";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
 import RenderMode from "./egret/RenderMode";
 import FadeScenePolicy from "./egret/scene/FadeScenePolicy";
+import { embedFont } from './egret/utils/FontUtil';
 import { wrapSkin } from "./egret/utils/SkinUtil";
 import { wrapEUIList } from "./egret/utils/UIUtil";
-Patch;
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -349,6 +348,11 @@ var EgretBridge = /** @class */ (function () {
             self._topLayer = new eui.UILayer();
             self._topLayer.touchEnabled = false;
             root.addChild(self._topLayer);
+            // 提前加载嵌入字体
+            for (var _i = 0, _a = this._initParams.embededFonts || []; _i < _a.length; _i++) {
+                var familyName = _a[_i];
+                embedFont(familyName, self._stage);
+            }
             // 插入更新屏幕命令
             core.mapCommand(SceneMessage.SCENE_BEFORE_CHANGE, UpdateScreenSizeCommand);
             // 设置资源和主题适配器

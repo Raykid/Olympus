@@ -353,4 +353,6 @@ export interface IInitParams {
     maskData?: MaskData;
     /** 预加载资源组名 */
     preloadGroups?: string[];
+    /** 嵌入字体名称数组 */
+    embededFonts?: string[];
 }
