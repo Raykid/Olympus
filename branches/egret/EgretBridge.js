@@ -349,7 +349,7 @@ var EgretBridge = /** @class */ (function () {
             self._topLayer.touchEnabled = false;
             root.addChild(self._topLayer);
             // 提前加载嵌入字体
-            for (var _i = 0, _a = this._initParams.embededFonts || []; _i < _a.length; _i++) {
+            for (var _i = 0, _a = self._initParams.embededFonts || []; _i < _a.length; _i++) {
                 var familyName = _a[_i];
                 embedFont(familyName, self._stage);
             }

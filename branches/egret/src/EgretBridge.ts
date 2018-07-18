@@ -377,7 +377,7 @@ export default class EgretBridge implements IBridge
             self._topLayer.touchEnabled = false;
             root.addChild(self._topLayer);
             // 提前加载嵌入字体
-            for(var familyName of this._initParams.embededFonts || [])
+            for(var familyName of self._initParams.embededFonts || [])
             {
                 embedFont(familyName, self._stage);
             }
