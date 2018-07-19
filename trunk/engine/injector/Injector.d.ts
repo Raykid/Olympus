@@ -23,9 +23,13 @@ export declare function GlobalMessageHandler(type: string): MethodDecorator;
 /** 处理通讯消息返回 */
 export declare function ResponseHandler(prototype: any, propertyKey: string): void;
 export declare function ResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
+/** 处理通讯消息错误 */
+export declare function ResponseErrorHandler(cls: IResponseDataConstructor): MethodDecorator;
 /** 处理全局通讯消息返回 */
 export declare function GlobalResponseHandler(prototype: any, propertyKey: string): void;
 export declare function GlobalResponseHandler(cls: IResponseDataConstructor): MethodDecorator;
+/** 处理全局通讯消息错误 */
+export declare function GlobalResponseErrorHandler(cls: IResponseDataConstructor): MethodDecorator;
 /** 添加子Mediator */
 export declare function SubMediator(dataExp?: string): PropertyDecorator;
 export declare function SubMediator(mediatorCls: IMediatorConstructor, dataExp?: string): PropertyDecorator;

@@ -15,6 +15,7 @@ import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import Mediator, { registerModule } from "../mediator/Mediator";
 import MediatorStatus from "../mediator/MediatorStatus";
 import { netManager } from "../net/NetManager";
+import RequestData from '../net/RequestData';
 import ResponseData, { IResponseDataConstructor } from "../net/ResponseData";
 import * as BindUtil from "./BindUtil";
 import { searchUI } from "./BindUtil";
@@ -192,15 +193,23 @@ export function ResponseHandler(target:any, key?:string):MethodDecorator|void
         var resClass:IResponseDataConstructor = defs[0];
         if(!(resClass.prototype instanceof ResponseData))
             throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-        doResponseHandler(target.constructor, key, defs[0], true);
+        doResponseHandler(target.constructor, key, defs[0], true, false);
     }
     else
     {
         return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
         {
-            doResponseHandler(prototype.constructor, propertyKey, target, true);
+            doResponseHandler(prototype.constructor, propertyKey, target, true, false);
         };
     }
+}
+/** 处理通讯消息错误 */
+export function ResponseErrorHandler(cls:IResponseDataConstructor):MethodDecorator
+{
+    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    {
+        doResponseHandler(prototype.constructor, propertyKey, cls, true, true);
+    };
 }
 /** 处理全局通讯消息返回 */
 export function GlobalResponseHandler(prototype:any, propertyKey:string):void;
@@ -213,38 +222,70 @@ export function GlobalResponseHandler(target:any, key?:string):MethodDecorator|v
         var resClass:IResponseDataConstructor = defs[0];
         if(!(resClass.prototype instanceof ResponseData))
             throw new Error("无参数@GlobalResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-        doResponseHandler(target.constructor, key, defs[0], false);
+        doResponseHandler(target.constructor, key, defs[0], false, false);
     }
     else
     {
         return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
         {
-            doResponseHandler(prototype.constructor, propertyKey, target, false);
+            doResponseHandler(prototype.constructor, propertyKey, target, false, false);
         };
     }
 }
-function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConstructor, inModule:boolean):void
+/** 处理全局通讯消息错误 */
+export function GlobalResponseErrorHandler(cls:IResponseDataConstructor):MethodDecorator
 {
+    return function(prototype:any, propertyKey:string, descriptor:PropertyDescriptor):void
+    {
+        doResponseHandler(prototype.constructor, propertyKey, cls, false, true);
+    };
+}
+function doResponseHandler(cls:IConstructor, key:string, type:IResponseDataConstructor, inModule:boolean, listenError:boolean):void
+{
+    let curInstance:IObservable;
     // 监听实例化
     listenConstruct(cls, function(instance:IObservable):void
     {
+        // 记录赋值
+        curInstance = instance;
+        // 判断是否中介者
         if(instance instanceof Mediator && instance.parent)
         {
             // 如果是被托管的Mediator，则需要等到被托管后再执行注册
             addSubHandler(instance, ()=>{
-                netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+                netManager.listenResponse(type, handler, instance, false, (inModule ? instance.observable : undefined));
             });
         }
         else
         {
-            netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+            netManager.listenResponse(type, handler, instance, false, (inModule ? instance.observable : undefined));
         }
     });
     // 监听销毁
     listenDispose(cls, function(instance:IObservable):void
     {
-        netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+        netManager.unlistenResponse(type, handler, instance, false, (inModule ? instance.observable : undefined));
     });
+
+    function handler(response:ResponseData|Error, request:RequestData):void
+    {
+        if(listenError)
+        {
+            // 监听的是错误
+            if(response instanceof Error)
+            {
+                curInstance[key].call(this, response, request);
+            }
+        }
+        else
+        {
+            // 监听的是正确的返回
+            if(response instanceof ResponseData)
+            {
+                curInstance[key].call(this, response, request);
+            }
+        }
+    }
 }
 
 var subHandlerDict:Dictionary<IMediator, ((instance:IMediator)=>void)[]> = new Dictionary();

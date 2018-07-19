@@ -152,13 +152,19 @@ export function ResponseHandler(target, key) {
         var resClass = defs[0];
         if (!(resClass.prototype instanceof ResponseData))
             throw new Error("无参数@ResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-        doResponseHandler(target.constructor, key, defs[0], true);
+        doResponseHandler(target.constructor, key, defs[0], true, false);
     }
     else {
         return function (prototype, propertyKey, descriptor) {
-            doResponseHandler(prototype.constructor, propertyKey, target, true);
+            doResponseHandler(prototype.constructor, propertyKey, target, true, false);
         };
     }
+}
+/** 处理通讯消息错误 */
+export function ResponseErrorHandler(cls) {
+    return function (prototype, propertyKey, descriptor) {
+        doResponseHandler(prototype.constructor, propertyKey, cls, true, true);
+    };
 }
 export function GlobalResponseHandler(target, key) {
     if (key) {
@@ -166,31 +172,55 @@ export function GlobalResponseHandler(target, key) {
         var resClass = defs[0];
         if (!(resClass.prototype instanceof ResponseData))
             throw new Error("无参数@GlobalResponseHandler装饰器装饰的方法的首个参数必须是ResponseData");
-        doResponseHandler(target.constructor, key, defs[0], false);
+        doResponseHandler(target.constructor, key, defs[0], false, false);
     }
     else {
         return function (prototype, propertyKey, descriptor) {
-            doResponseHandler(prototype.constructor, propertyKey, target, false);
+            doResponseHandler(prototype.constructor, propertyKey, target, false, false);
         };
     }
 }
-function doResponseHandler(cls, key, type, inModule) {
+/** 处理全局通讯消息错误 */
+export function GlobalResponseErrorHandler(cls) {
+    return function (prototype, propertyKey, descriptor) {
+        doResponseHandler(prototype.constructor, propertyKey, cls, false, true);
+    };
+}
+function doResponseHandler(cls, key, type, inModule, listenError) {
+    var curInstance;
     // 监听实例化
     listenConstruct(cls, function (instance) {
+        // 记录赋值
+        curInstance = instance;
+        // 判断是否中介者
         if (instance instanceof Mediator && instance.parent) {
             // 如果是被托管的Mediator，则需要等到被托管后再执行注册
             addSubHandler(instance, function () {
-                netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+                netManager.listenResponse(type, handler, instance, false, (inModule ? instance.observable : undefined));
             });
         }
         else {
-            netManager.listenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+            netManager.listenResponse(type, handler, instance, false, (inModule ? instance.observable : undefined));
         }
     });
     // 监听销毁
     listenDispose(cls, function (instance) {
-        netManager.unlistenResponse(type, instance[key], instance, false, (inModule ? instance.observable : undefined));
+        netManager.unlistenResponse(type, handler, instance, false, (inModule ? instance.observable : undefined));
     });
+    function handler(response, request) {
+        if (listenError) {
+            // 监听的是错误
+            if (response instanceof Error) {
+                curInstance[key].call(this, response, request);
+            }
+        }
+        else {
+            // 监听的是正确的返回
+            if (response instanceof ResponseData) {
+                curInstance[key].call(this, response, request);
+            }
+        }
+    }
 }
 var subHandlerDict = new Dictionary();
 function addSubHandler(instance, handler) {

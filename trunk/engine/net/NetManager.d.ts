@@ -1,6 +1,6 @@
+import IObservable from "../../core/observable/IObservable";
 import RequestData from "./RequestData";
 import ResponseData, { IResponseDataConstructor } from "./ResponseData";
-import IObservable from "../../core/observable/IObservable";
 /**
  * @author Raykid
  * @email initial_r@qq.com

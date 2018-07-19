@@ -1,14 +1,13 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../core/injector/Injector"
-import IMessage from "../../core/message/IMessage";
+import { Injectable } from "../../core/injector/Injector";
 import CoreMessage from "../../core/message/CoreMessage";
+import IMessage from "../../core/message/IMessage";
+import IObservable from "../../core/observable/IObservable";
 import { extendObject } from "../../utils/ObjectUtil";
+import { maskManager } from "../mask/MaskManager";
+import NetMessage from "./NetMessage";
 import RequestData, { commonData } from "./RequestData";
 import ResponseData, { IResponseDataConstructor } from "./ResponseData";
-import NetMessage from "./NetMessage";
-import * as NetUtil from "./NetUtil";
-import { maskManager } from "../mask/MaskManager";
-import IObservable from "../../core/observable/IObservable";
 
 /**
  * @author Raykid

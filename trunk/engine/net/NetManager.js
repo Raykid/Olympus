@@ -3,9 +3,9 @@ import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import CoreMessage from "../../core/message/CoreMessage";
 import { extendObject } from "../../utils/ObjectUtil";
-import RequestData, { commonData } from "./RequestData";
-import NetMessage from "./NetMessage";
 import { maskManager } from "../mask/MaskManager";
+import NetMessage from "./NetMessage";
+import RequestData, { commonData } from "./RequestData";
 var NetManager = /** @class */ (function () {
     function NetManager() {
         this._responseDict = {};
