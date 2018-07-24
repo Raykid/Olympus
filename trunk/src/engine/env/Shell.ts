@@ -1,9 +1,10 @@
-import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
-import IShell, { IShellProxyConstructor } from "./IShell";
+import { Injectable } from "../../core/injector/Injector";
+import { validateProtocol } from '../../utils/URLUtil';
 import { assetsManager, JSLoadMode } from "../assets/AssetsManager";
 import AudioTagImpl from "../audio/AudioTagImpl";
 import { environment } from "./Environment";
+import IShell, { IShellProxyConstructor } from "./IShell";
 
 /**
  * @author Raykid
@@ -217,9 +218,9 @@ class ShellWX extends Shell
             if(!loadFlag)
             {
                 loadFlag = true;
-                // 去加载微信js
+                // 去加载微信js，微信浏览器用script标签加载js文件会判断protocol，所以需要validate一下
                 assetsManager.loadJsFiles([{
-                    url: "http://res.wx.qq.com/open/js/jweixin-1.2.0.js",
+                    url: validateProtocol("http://res.wx.qq.com/open/js/jweixin-1.2.0.js"),
                     mode: JSLoadMode.TAG
                 }], (err:Error)=>{
                     if(err)
