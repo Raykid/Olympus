@@ -206,7 +206,7 @@ var DOMBridge = /** @class */ (function () {
     DOMBridge.prototype.createLayer = function () {
         // 生成一个父容器，不响应点击事件，但会撑起全屏幕范围
         var layer = document.createElement("div");
-        layer.style.position = "fixed";
+        layer.style.position = "absolute";
         layer.style.top = "0%";
         layer.style.left = "0%";
         layer.style.width = "100%";

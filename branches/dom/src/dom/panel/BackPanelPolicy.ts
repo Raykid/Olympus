@@ -25,7 +25,7 @@ export default class BackPanelPolicy implements IPanelPolicy
         var entity:HTMLElement = panel.skin;
         var curStyle:CSSStyleDeclaration = getComputedStyle(entity);
         var tween:Tween = new Tween(entity).end().stop();
-        entity.style.position = "fixed";
+        entity.style.position = "absolute";
         entity.style.left = "0";
         entity.style.top = "0";
         entity.style.width = "100%";

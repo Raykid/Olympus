@@ -24,7 +24,7 @@ var FadeScenePolicy = /** @class */ (function () {
             // 克隆当前屏幕
             var stage = from.bridge.stage;
             this._stageClone = stage.cloneNode(true);
-            this._stageClone.style.position = "fixed";
+            this._stageClone.style.position = "absolute";
             this._stageClone.style.left = "0";
             this._stageClone.style.top = "0";
             this._stageClone.style.zIndex = "2147483647"; // 层级要最高

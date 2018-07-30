@@ -246,7 +246,7 @@ export default class EgretBridge implements IBridge
         container.style.margin = "auto";
         container.style.width = "100%";
         container.style.height = "100%";
-        container.style.position = "fixed";
+        container.style.position = "absolute";
         container.style.top = "0%";
         container.style.left = "0%";
         container.className = "egret-player";
