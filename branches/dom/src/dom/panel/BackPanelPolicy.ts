@@ -23,21 +23,23 @@ export default class BackPanelPolicy implements IPanelPolicy
     public pop(panel:IPanel, callback:()=>void, from?:{x:number, y:number}):void
     {
         var entity:HTMLElement = panel.skin;
+        // scale变换如果加在父容器上会导致子对象宽高获取错误，所以要尽可能加在子对象上
+        var subEntity:HTMLElement = entity.childElementCount > 1 ? entity : <HTMLElement>entity.children[0];
         var tween:Tween = new Tween(entity).end().stop();
         entity.style.position = "absolute";
         entity.style.left = "50%";
         entity.style.top = "50%";
-        entity.style.transform = "scale(0)";
+        subEntity.style.transform = "scale(0)";
         // 开始缓动
         var key:string = "__tween__step__";
         entity[key] = 0;
         var props:any = {};
         props[key] = 1;
         tween.to(props, 300).easing(Easing.Back.Out).onUpdate(()=>{
-            entity.style.transform = "scale(" + entity[key] + ")";
+            subEntity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(()=>{
             delete entity[key];
-            entity.style.transform = "";
+            subEntity.style.transform = "";
             callback();
         }).start();
     }
@@ -51,18 +53,20 @@ export default class BackPanelPolicy implements IPanelPolicy
     public drop(panel:IPanel, callback:()=>void, to?:{x:number, y:number}):void
     {
         var entity:HTMLElement = panel.skin;
+        // scale变换如果加在父容器上会导致子对象宽高获取错误，所以要尽可能加在子对象上
+        var subEntity:HTMLElement = entity.childElementCount > 1 ? entity : <HTMLElement>entity.children[0];
         var tween:Tween = new Tween(entity).end().stop();
-        entity.style.transform = "scale(1)";
+        subEntity.style.transform = "scale(1)";
         // 开始缓动
         var key:string = "__tween__step__";
         entity[key] = 1;
         var props:any = {};
         props[key] = 0;
         tween.to(props, 300).easing(Easing.Back.In).onUpdate(()=>{
-            entity.style.transform = "scale(" + entity[key] + ")";
+            subEntity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(()=>{
             delete entity[key];
-            entity.style.transform = "";
+            subEntity.style.transform = "";
             callback();
         }).start();
     }

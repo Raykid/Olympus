@@ -19,21 +19,23 @@ var BackPanelPolicy = /** @class */ (function () {
      */
     BackPanelPolicy.prototype.pop = function (panel, callback, from) {
         var entity = panel.skin;
+        // scale变换如果加在父容器上会导致子对象宽高获取错误，所以要尽可能加在子对象上
+        var subEntity = entity.childElementCount > 1 ? entity : entity.children[0];
         var tween = new Tween(entity).end().stop();
         entity.style.position = "absolute";
         entity.style.left = "50%";
         entity.style.top = "50%";
-        entity.style.transform = "scale(0)";
+        subEntity.style.transform = "scale(0)";
         // 开始缓动
         var key = "__tween__step__";
         entity[key] = 0;
         var props = {};
         props[key] = 1;
         tween.to(props, 300).easing(Easing.Back.Out).onUpdate(function () {
-            entity.style.transform = "scale(" + entity[key] + ")";
+            subEntity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(function () {
             delete entity[key];
-            entity.style.transform = "";
+            subEntity.style.transform = "";
             callback();
         }).start();
     };
@@ -45,18 +47,20 @@ var BackPanelPolicy = /** @class */ (function () {
      */
     BackPanelPolicy.prototype.drop = function (panel, callback, to) {
         var entity = panel.skin;
+        // scale变换如果加在父容器上会导致子对象宽高获取错误，所以要尽可能加在子对象上
+        var subEntity = entity.childElementCount > 1 ? entity : entity.children[0];
         var tween = new Tween(entity).end().stop();
-        entity.style.transform = "scale(1)";
+        subEntity.style.transform = "scale(1)";
         // 开始缓动
         var key = "__tween__step__";
         entity[key] = 1;
         var props = {};
         props[key] = 0;
         tween.to(props, 300).easing(Easing.Back.In).onUpdate(function () {
-            entity.style.transform = "scale(" + entity[key] + ")";
+            subEntity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(function () {
             delete entity[key];
-            entity.style.transform = "";
+            subEntity.style.transform = "";
             callback();
         }).start();
     };
