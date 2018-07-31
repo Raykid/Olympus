@@ -1,3 +1,4 @@
+import * as tslib_1 from "tslib";
 import { environment } from "../engine/env/Environment";
 import { cloneObject } from "./ObjectUtil";
 import { joinQueryParams, trimURL, validateProtocol } from "./URLUtil";
@@ -151,6 +152,24 @@ export function load(params) {
         // 重新发送
         send();
     }
+}
+/**
+ * 异步加载，用于异步编程，参数中的onResponse和onError将会失效
+ *
+ * @export
+ * @param {IHTTPRequestParams} params 请求参数
+ * @returns {(Promise<any|any[]>)}
+ */
+export function asyncLoad(params) {
+    return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return tslib_1.__generator(this, function (_a) {
+            return [2 /*return*/, new Promise(function (resolve, reject) {
+                    params.onResponse = resolve;
+                    params.onError = reject;
+                    load(params);
+                })];
+        });
+    });
 }
 /**
  * 将数据转换为form形式

@@ -277,6 +277,22 @@ export function load(params:IHTTPRequestParams):void
 }
 
 /**
+ * 异步加载，用于异步编程，参数中的onResponse和onError将会失效
+ *
+ * @export
+ * @param {IHTTPRequestParams} params 请求参数
+ * @returns {(Promise<any|any[]>)}
+ */
+export async function asyncLoad(params:IHTTPRequestParams):Promise<any|any[]>
+{
+    return new Promise((resolve:(value:any|any[])=>void, reject:(reason:any)=>void)=>{
+        params.onResponse = resolve;
+        params.onError = reject;
+        load(params);
+    });
+}
+
+/**
  * 将数据转换为form形式
  * 
  * @export

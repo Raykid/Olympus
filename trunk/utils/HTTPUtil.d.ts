@@ -102,6 +102,14 @@ export interface IHTTPRequestParams {
  */
 export declare function load(params: IHTTPRequestParams): void;
 /**
+ * 异步加载，用于异步编程，参数中的onResponse和onError将会失效
+ *
+ * @export
+ * @param {IHTTPRequestParams} params 请求参数
+ * @returns {(Promise<any|any[]>)}
+ */
+export declare function asyncLoad(params: IHTTPRequestParams): Promise<any | any[]>;
+/**
  * 将数据转换为form形式
  *
  * @export
