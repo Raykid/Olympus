@@ -19,21 +19,18 @@ var BackPanelPolicy = /** @class */ (function () {
      */
     BackPanelPolicy.prototype.pop = function (panel, callback, from) {
         var entity = panel.skin;
-        var curStyle = getComputedStyle(entity);
         var tween = new Tween(entity).end().stop();
         entity.style.position = "absolute";
-        entity.style.left = "0";
-        entity.style.top = "0";
-        entity.style.width = "100%";
-        entity.style.height = "100%";
-        entity.style.transform = "scale(0, 0)";
+        entity.style.left = "50%";
+        entity.style.top = "50%";
+        entity.style.transform = "scale(0)";
         // 开始缓动
         var key = "__tween__step__";
         entity[key] = 0;
         var props = {};
         props[key] = 1;
         tween.to(props, 300).easing(Easing.Back.Out).onUpdate(function () {
-            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+            entity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(function () {
             delete entity[key];
             entity.style.transform = "";
@@ -49,14 +46,14 @@ var BackPanelPolicy = /** @class */ (function () {
     BackPanelPolicy.prototype.drop = function (panel, callback, to) {
         var entity = panel.skin;
         var tween = new Tween(entity).end().stop();
-        entity.style.transform = "scale(1, 1)";
+        entity.style.transform = "scale(1)";
         // 开始缓动
         var key = "__tween__step__";
         entity[key] = 1;
         var props = {};
         props[key] = 0;
         tween.to(props, 300).easing(Easing.Back.In).onUpdate(function () {
-            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+            entity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(function () {
             delete entity[key];
             entity.style.transform = "";

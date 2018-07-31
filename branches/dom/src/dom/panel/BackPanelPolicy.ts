@@ -23,21 +23,18 @@ export default class BackPanelPolicy implements IPanelPolicy
     public pop(panel:IPanel, callback:()=>void, from?:{x:number, y:number}):void
     {
         var entity:HTMLElement = panel.skin;
-        var curStyle:CSSStyleDeclaration = getComputedStyle(entity);
         var tween:Tween = new Tween(entity).end().stop();
         entity.style.position = "absolute";
-        entity.style.left = "0";
-        entity.style.top = "0";
-        entity.style.width = "100%";
-        entity.style.height = "100%";
-        entity.style.transform = "scale(0, 0)";
+        entity.style.left = "50%";
+        entity.style.top = "50%";
+        entity.style.transform = "scale(0)";
         // 开始缓动
         var key:string = "__tween__step__";
         entity[key] = 0;
         var props:any = {};
         props[key] = 1;
         tween.to(props, 300).easing(Easing.Back.Out).onUpdate(()=>{
-            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+            entity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(()=>{
             delete entity[key];
             entity.style.transform = "";
@@ -55,14 +52,14 @@ export default class BackPanelPolicy implements IPanelPolicy
     {
         var entity:HTMLElement = panel.skin;
         var tween:Tween = new Tween(entity).end().stop();
-        entity.style.transform = "scale(1, 1)";
+        entity.style.transform = "scale(1)";
         // 开始缓动
         var key:string = "__tween__step__";
         entity[key] = 1;
         var props:any = {};
         props[key] = 0;
         tween.to(props, 300).easing(Easing.Back.In).onUpdate(()=>{
-            entity.style.transform = "scale(" + entity[key] + ", " + entity[key] + ")";
+            entity.style.transform = "scale(" + entity[key] + ")";
         }).onComplete(()=>{
             delete entity[key];
             entity.style.transform = "";
