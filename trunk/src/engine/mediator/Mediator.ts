@@ -1,5 +1,5 @@
-import { core } from "../../core/Core";
 import ICommandConstructor from "../../core/command/ICommandConstructor";
+import { core } from "../../core/Core";
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
 import Observable from "../../core/observable/Observable";
@@ -147,27 +147,13 @@ export default class Mediator implements IMediator
         return (this._status === MediatorStatus.DISPOSED);
     }
     
-    private _data:any;
-
     /**
      * 打开时传递的data对象
      * 
      * @type {*}
      * @memberof Mediator
      */
-    public get data():any
-    {
-        return this._data;
-    }
-    public set data(value:any)
-    {
-        this._data = value;
-        // 递归设置子中介者的data
-        for(var mediator of this._children)
-        {
-            mediator.data = value;
-        }
-    }
+    public data:any;
 
     private _openMask:boolean = true;
     /**

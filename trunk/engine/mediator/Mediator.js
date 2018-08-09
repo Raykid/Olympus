@@ -129,27 +129,6 @@ var Mediator = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Mediator.prototype, "data", {
-        /**
-         * 打开时传递的data对象
-         *
-         * @type {*}
-         * @memberof Mediator
-         */
-        get: function () {
-            return this._data;
-        },
-        set: function (value) {
-            this._data = value;
-            // 递归设置子中介者的data
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                var mediator = _a[_i];
-                mediator.data = value;
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
     Object.defineProperty(Mediator.prototype, "openMask", {
         /**
          * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true

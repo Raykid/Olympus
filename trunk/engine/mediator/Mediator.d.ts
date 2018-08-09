@@ -91,7 +91,6 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     readonly disposed: boolean;
-    private _data;
     /**
      * 打开时传递的data对象
      *
