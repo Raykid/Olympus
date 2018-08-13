@@ -1,4 +1,83 @@
+import { listenApply } from '../../utils/ConstructUtil';
+import Dictionary from "../../utils/Dictionary";
 import { bindManager } from "../bind/BindManager";
+var onOpenDict = new Dictionary();
+export function listenOnOpen(prototype, before, after) {
+    listenApply(prototype.constructor, "onOpen", function (mediator) {
+        // 记录onOpen篡改次数
+        var count = onOpenDict.get(mediator) || 0;
+        onOpenDict.set(mediator, count + 1);
+        // 调用回调
+        before && before(mediator);
+    }, function (mediator) {
+        // 调用回调
+        after && after(mediator);
+        // 递减篡改次数
+        var count = onOpenDict.get(mediator) - 1;
+        onOpenDict.set(mediator, count);
+        // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
+        if (count <= 0) {
+            // 移除数据
+            onOpenDict.delete(mediator);
+            // 全调用完毕了，按层级顺序由浅入深编译
+            var bindTargets = mediator.bindTargets;
+            for (var depth in bindTargets) {
+                var dict = bindTargets[depth];
+                dict.forEach(function (currentTarget) { return compile(mediator, currentTarget); });
+            }
+        }
+    });
+}
+/**
+ * 获取显示对象在mediator.skin中的嵌套层级
+ *
+ * @param {IMediator} mediator 中介者
+ * @param {*} target 目标显示对象
+ * @returns {number}
+ */
+function getDepth(mediator, target) {
+    var skin = mediator.skin;
+    var bridge = mediator.bridge;
+    var depth = 0;
+    if (bridge.isMySkin(target)) {
+        while (target && target !== skin) {
+            depth++;
+            target = bridge.getParent(target);
+        }
+        // 如果显示对象是没有根的，或者不在skin的显示树中，则返回0
+        if (!target)
+            depth = 0;
+    }
+    return depth;
+}
+export function searchUIDepth(values, mediator, target, callback, addressing) {
+    if (addressing === void 0) { addressing = false; }
+    // 获取显示层级
+    var depth = getDepth(mediator, target);
+    // 如果有中断编译则将遍历的工作推迟到中断重启后，否则直接开始遍历
+    var stopLeftHandlers = target.__stop_left_handlers__;
+    if (stopLeftHandlers)
+        stopLeftHandlers.push(handler);
+    else
+        handler(target, mediator.bindTargets, stopLeftHandlers);
+    function handler(target, bindTargets, leftHandlers) {
+        var index = -1;
+        if (leftHandlers)
+            index = leftHandlers.indexOf(handler);
+        // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+        searchUI(values, target, function (currentTarget, name, exp, depth) {
+            if (addressing)
+                currentTarget = currentTarget[name];
+            // 记录当前编译目标和命令本体目标到bindTargets中
+            var dict = bindTargets[depth];
+            if (!dict)
+                bindTargets[depth] = dict = new Dictionary();
+            dict.set(currentTarget, target);
+            // 调用回调
+            callback(currentTarget, target, name, exp, leftHandlers, index);
+        }, depth);
+    }
+}
 function getBindParams(currentTarget) {
     var bindParams = currentTarget.__bind_commands__;
     if (!bindParams) {

@@ -1,6 +1,8 @@
 import IObservable from "../../core/observable/IObservable";
+import { listenApply } from '../../utils/ConstructUtil';
 import Dictionary from "../../utils/Dictionary";
 import { bindManager } from "../bind/BindManager";
+import IBridge from '../bridge/IBridge';
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import { IResponseDataConstructor } from "../net/ResponseData";
@@ -78,6 +80,90 @@ export interface ICompileTarget
 export interface IStopLeftHandler
 {
     (target:any, bindTargets:Dictionary<any, any>[], leftHandlers:IStopLeftHandler[]):void;
+}
+
+var onOpenDict:Dictionary<IMediator, number> = new Dictionary();
+export function listenOnOpen(prototype:any, before?:(mediator:IMediator)=>void, after?:(mediator:IMediator)=>void):void
+{
+    listenApply(prototype.constructor, "onOpen", function(mediator:IMediator):void
+    {
+        // 记录onOpen篡改次数
+        var count:number = onOpenDict.get(mediator) || 0;
+        onOpenDict.set(mediator, count + 1);
+        // 调用回调
+        before && before(mediator);
+    }, function(mediator:IMediator):void
+    {
+        // 调用回调
+        after && after(mediator);
+        // 递减篡改次数
+        var count:number = onOpenDict.get(mediator) - 1;
+        onOpenDict.set(mediator, count);
+        // 判断是否所有onOpen都调用完毕，如果完毕了，则启动编译过程
+        if(count <= 0)
+        {
+            // 移除数据
+            onOpenDict.delete(mediator);
+            // 全调用完毕了，按层级顺序由浅入深编译
+            var bindTargets:Dictionary<any, any>[] = mediator.bindTargets;
+            for(var depth in bindTargets)
+            {
+                var dict:Dictionary<any, any> = bindTargets[depth];
+                dict.forEach(currentTarget=>compile(mediator, currentTarget));
+            }
+        }
+    });
+}
+
+/**
+ * 获取显示对象在mediator.skin中的嵌套层级
+ * 
+ * @param {IMediator} mediator 中介者
+ * @param {*} target 目标显示对象
+ * @returns {number} 
+ */
+function getDepth(mediator:IMediator, target:any):number
+{
+    var skin:any = mediator.skin;
+    var bridge:IBridge = mediator.bridge;
+    var depth:number = 0;
+    if(bridge.isMySkin(target))
+    {
+        while(target && target !== skin)
+        {
+            depth ++;
+            target = bridge.getParent(target);
+        }
+        // 如果显示对象是没有根的，或者不在skin的显示树中，则返回0
+        if(!target) depth = 0;
+    }
+    return depth;
+}
+
+export function searchUIDepth(values:any, mediator:IMediator, target:any, callback:(currentTarget:any, target:any, key:string, value:any, leftHandlers?:IStopLeftHandler[], index?:number)=>void, addressing:boolean=false):void
+{
+    // 获取显示层级
+    var depth:number = getDepth(mediator, target);
+    // 如果有中断编译则将遍历的工作推迟到中断重启后，否则直接开始遍历
+    var stopLeftHandlers:IStopLeftHandler[] = target.__stop_left_handlers__;
+    if(stopLeftHandlers) stopLeftHandlers.push(handler);
+    else handler(target, mediator.bindTargets, stopLeftHandlers);
+
+    function handler(target:any, bindTargets:Dictionary<any, any>[], leftHandlers:IStopLeftHandler[]):void
+    {
+        var index:number = -1;
+        if(leftHandlers) index = leftHandlers.indexOf(handler);
+        // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
+        searchUI(values, target, (currentTarget:any, name:string, exp:string, depth:number)=>{
+            if(addressing) currentTarget = currentTarget[name];
+            // 记录当前编译目标和命令本体目标到bindTargets中
+            var dict:Dictionary<any, any> = bindTargets[depth];
+            if(!dict) bindTargets[depth] = dict = new Dictionary();
+            dict.set(currentTarget, target);
+            // 调用回调
+            callback(currentTarget, target, name, exp, leftHandlers, index);
+        }, depth);
+    }
 }
 
 function getBindParams(currentTarget:ICompileTarget):IBindParams[]

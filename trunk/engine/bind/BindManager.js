@@ -21,6 +21,16 @@ var BindManager = /** @class */ (function () {
         this._regExp = /^\s*(\w+)\s+((in)|(of))\s+(.+?)\s*$/;
     }
     /**
+     * 获取mediator对应的BindData
+     *
+     * @param {IMediator} mediator
+     * @returns {BindData}
+     * @memberof BindManager
+     */
+    BindManager.prototype.getBindData = function (mediator) {
+        return this._bindDict.get(mediator);
+    };
+    /**
      * 绑定数据到UI上
      *
      * @param {IMediator} mediator 中介者

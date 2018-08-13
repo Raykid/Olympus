@@ -15,6 +15,14 @@ import { EvalExp } from "./Utils";
 export default class BindManager {
     private _bindDict;
     /**
+     * 获取mediator对应的BindData
+     *
+     * @param {IMediator} mediator
+     * @returns {BindData}
+     * @memberof BindManager
+     */
+    getBindData(mediator: IMediator): BindData;
+    /**
      * 绑定数据到UI上
      *
      * @param {IMediator} mediator 中介者
@@ -30,7 +38,7 @@ export default class BindManager {
      * @memberof BindManager
      */
     unbind(mediator: IMediator): Bind;
-    private addBindHandler(mediator, callback);
+    addBindHandler(mediator: IMediator, callback: () => void): void;
     private getNearestAncestor(bridge, target, propName);
     /**
      * 绑定属性值
@@ -136,6 +144,10 @@ export default class BindManager {
      * @memberof BindManager
      */
     bindResponse(mediator: IMediator, currentTarget: any, target: any, envModels: any[], type: IResponseDataConstructor | string, name: string, exp: EvalExp, observable?: IObservable): void;
+}
+export interface BindData {
+    bind: Bind;
+    callbacks: (() => void)[];
 }
 /** 再额外导出一个单例 */
 export declare const bindManager: BindManager;

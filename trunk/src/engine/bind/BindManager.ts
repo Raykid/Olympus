@@ -10,7 +10,7 @@ import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import { netManager } from "../net/NetManager";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import Bind from "./Bind";
-import { EvalExp, createRunFunc, evalExp } from "./Utils";
+import { createRunFunc, EvalExp, evalExp } from "./Utils";
 import { IWatcher } from "./Watcher";
 
 /**
@@ -25,6 +25,18 @@ import { IWatcher } from "./Watcher";
 export default class BindManager
 {
     private _bindDict:Dictionary<IMediator, BindData> = new Dictionary();
+
+    /**
+     * 获取mediator对应的BindData
+     *
+     * @param {IMediator} mediator
+     * @returns {BindData}
+     * @memberof BindManager
+     */
+    public getBindData(mediator:IMediator):BindData
+    {
+        return this._bindDict.get(mediator);
+    }
 
     /**
      * 绑定数据到UI上
@@ -70,7 +82,7 @@ export default class BindManager
         return bindData && bindData.bind;
     }
 
-    private addBindHandler(mediator:IMediator, callback:()=>void):void
+    public addBindHandler(mediator:IMediator, callback:()=>void):void
     {
         var handler:()=>void = ()=>{
             // 判断数据是否合法
@@ -514,7 +526,7 @@ export default class BindManager
     }
 }
 
-interface BindData
+export interface BindData
 {
     bind:Bind;
     callbacks:(()=>void)[];

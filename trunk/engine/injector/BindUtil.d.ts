@@ -69,6 +69,8 @@ export interface ICompileTarget {
 export interface IStopLeftHandler {
     (target: any, bindTargets: Dictionary<any, any>[], leftHandlers: IStopLeftHandler[]): void;
 }
+export declare function listenOnOpen(prototype: any, before?: (mediator: IMediator) => void, after?: (mediator: IMediator) => void): void;
+export declare function searchUIDepth(values: any, mediator: IMediator, target: any, callback: (currentTarget: any, target: any, key: string, value: any, leftHandlers?: IStopLeftHandler[], index?: number) => void, addressing?: boolean): void;
 /**
  * 添加编译命令到显示对象上（正向）
  *
