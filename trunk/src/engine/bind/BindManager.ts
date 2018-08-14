@@ -367,15 +367,6 @@ export default class BindManager
                 var subEnvModels:any[] = envModels.concat();
                 // 插入环境变量
                 subEnvModels.unshift(subScope);
-                // 设置通用属性
-                var commonScope:any = {
-                    $this: mediator,
-                    $data: mediator.viewModel,
-                    $bridge: mediator.bridge,
-                    $currentTarget: currentTarget,
-                    $target: target
-                };
-                subEnvModels.unshift(commonScope);
                 // 如果renderer已经有事件列表了，说明renderer是被重用的，删除所有事件
                 var events:BindEventData[] = renderer.__bind_sub_events__;
                 for(var i in events)
@@ -394,17 +385,25 @@ export default class BindManager
                         renderer = subMediator.skin;
                     // 托管子中介者，优先托管在声明出来的中间中介者上
                     (declaredMediator || mediator).delegateMediator(subMediator);
+                    // 设置通用属性
+                    var commonScope:any = {
+                        $this: mediator,
+                        $data: mediator.viewModel,
+                        $bridge: mediator.bridge,
+                        $currentTarget: currentTarget,
+                        $target: target
+                    };
                     // 开启该中介者，优先使用dataExp，如果没有则使用当前所有的数据
                     let data:any;
                     if(dataExp)
                     {
                         // 有数据表达式，求出数据表达式的值来
-                        data = evalExp(dataExp, mediator.viewModel, ...subEnvModels.concat().reverse(), mediator.viewModel);
+                        data = evalExp(dataExp, mediator.viewModel, ...subEnvModels.concat().reverse(), mediator.viewModel, commonScope);
                     }
                     else
                     {
                         // 没有数据表达式，套用当前所在变量域，且要打平做成一个data
-                        data = extendObject({}, mediator.viewModel, ...subEnvModels);
+                        data = extendObject({}, commonScope, mediator.viewModel, ...subEnvModels);
                     }
                     subMediator.open(data);
                     // 缓存子中介者
