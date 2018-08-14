@@ -340,7 +340,6 @@ export default class BindManager
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
-        var replacer:any = mediator.bridge.createEmptyDisplay();
         var subMediatorCache:IMediator[] = [];
         this.addBindHandler(mediator, ()=>{
             // 解析表达式
@@ -357,16 +356,25 @@ export default class BindManager
             // 包装渲染器创建回调
             var memento:any = mediator.bridge.wrapBindFor(currentTarget, (key:any, value:any, renderer:any)=>{
                 // 设置环境变量
-                var commonScope:any = {
+                var subScope:any = {
                     $key: key,
                     $value: value,
                     $parent: envModels[0] || mediator.viewModel
                 };
                 // 填入用户声明的属性
-                commonScope[res[1]] = (res[2] == "in" ? key : value);
+                subScope[res[1]] = (res[2] == "in" ? key : value);
                 // 生成一个环境变量的副本
                 var subEnvModels:any[] = envModels.concat();
                 // 插入环境变量
+                subEnvModels.unshift(subScope);
+                // 设置通用属性
+                var commonScope:any = {
+                    $this: mediator,
+                    $data: mediator.viewModel,
+                    $bridge: mediator.bridge,
+                    $currentTarget: currentTarget,
+                    $target: target
+                };
                 subEnvModels.unshift(commonScope);
                 // 如果renderer已经有事件列表了，说明renderer是被重用的，删除所有事件
                 var events:BindEventData[] = renderer.__bind_sub_events__;
@@ -448,7 +456,6 @@ export default class BindManager
     public bindMessage(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IConstructor|string, name:string, exp:EvalExp, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
-        var bindData:BindData = this._bindDict.get(mediator);
         var handler:(...args:any[])=>void = (...args:any[])=>{
             if(mediator.disposed)
             {
@@ -493,7 +500,6 @@ export default class BindManager
     public bindResponse(mediator:IMediator, currentTarget:any, target:any, envModels:any[], type:IResponseDataConstructor|string, name:string, exp:EvalExp, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
-        var bindData:BindData = this._bindDict.get(mediator);
         var handler:(response:any)=>void = (response:any)=>{
             if(mediator.disposed)
             {

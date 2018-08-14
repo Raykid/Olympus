@@ -326,7 +326,6 @@ var BindManager = /** @class */ (function () {
         var _this = this;
         var watcher;
         var bindData = this._bindDict.get(mediator);
-        var replacer = mediator.bridge.createEmptyDisplay();
         var subMediatorCache = [];
         this.addBindHandler(mediator, function () {
             // 解析表达式
@@ -343,16 +342,25 @@ var BindManager = /** @class */ (function () {
             // 包装渲染器创建回调
             var memento = mediator.bridge.wrapBindFor(currentTarget, function (key, value, renderer) {
                 // 设置环境变量
-                var commonScope = {
+                var subScope = {
                     $key: key,
                     $value: value,
                     $parent: envModels[0] || mediator.viewModel
                 };
                 // 填入用户声明的属性
-                commonScope[res[1]] = (res[2] == "in" ? key : value);
+                subScope[res[1]] = (res[2] == "in" ? key : value);
                 // 生成一个环境变量的副本
                 var subEnvModels = envModels.concat();
                 // 插入环境变量
+                subEnvModels.unshift(subScope);
+                // 设置通用属性
+                var commonScope = {
+                    $this: mediator,
+                    $data: mediator.viewModel,
+                    $bridge: mediator.bridge,
+                    $currentTarget: currentTarget,
+                    $target: target
+                };
                 subEnvModels.unshift(commonScope);
                 // 如果renderer已经有事件列表了，说明renderer是被重用的，删除所有事件
                 var events = renderer.__bind_sub_events__;
@@ -429,7 +437,6 @@ var BindManager = /** @class */ (function () {
     BindManager.prototype.bindMessage = function (mediator, currentTarget, target, envModels, type, name, exp, observable) {
         if (!observable)
             observable = core.observable;
-        var bindData = this._bindDict.get(mediator);
         var handler = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -475,7 +482,6 @@ var BindManager = /** @class */ (function () {
     BindManager.prototype.bindResponse = function (mediator, currentTarget, target, envModels, type, name, exp, observable) {
         if (!observable)
             observable = core.observable;
-        var bindData = this._bindDict.get(mediator);
         var handler = function (response) {
             if (mediator.disposed) {
                 // mediator已销毁，取消监听
