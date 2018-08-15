@@ -1,37 +1,17 @@
 import { core } from "../core/Core";
 import { Injectable } from "../core/injector/Injector";
-import * as CookieUtil from "../utils/CookieUtil";
-import BridgeManager, { bridgeManager } from "./bridge/BridgeManager";
+import { assetsManager } from "./assets/AssetsManager";
+import { bridgeManager } from "./bridge/BridgeManager";
 import BridgeMessage from "./bridge/BridgeMessage";
-import PlatformManager from "./platform/PlatformManager"
-import System from "./system/System";
-import Model from "./model/Model";
-import Mediator from "./mediator/Mediator";
-import PanelManager from "./panel/PanelManager";
-import PanelMediator from "./panel/PanelMediator";
-import SceneManager from "./scene/SceneManager";
-import SceneMediator from "./scene/SceneMediator";
-import ModuleManager, {moduleManager} from "./module/ModuleManager";
-import AssetsManager, { assetsManager } from "./assets/AssetsManager";
-import AudioManager from "./audio/AudioManager";
-import Environment, { environment } from "./env/Environment";
-import Explorer from "./env/Explorer";
-import WindowExternal from "./env/WindowExternal";
-import Hash, { hash, IHashModuleData } from "./env/Hash";
-import Query from "./env/Query";
-import Shell from "./env/Shell";
-import Version, { version } from "./version/Version";
-import MaskManager from "./mask/MaskManager";
-import NetManager, { netManager } from "./net/NetManager";
-import { HTTPRequestPolicy } from "./net/policies/HTTPRequestPolicy";
-import { IResponseDataConstructor } from "./net/ResponseData";
-import BindManager from "./bind/BindManager";
-import ModuleMessage from "./module/ModuleMessage";
 import IBridge from "./bridge/IBridge";
-import IPlugin from "./plugin/IPlugin";
-import * as Injector from "./injector/Injector";
-import EngineMessage from "./message/EngineMessage";
+import { environment } from "./env/Environment";
+import { hash, IHashModuleData } from "./env/Hash";
 import IMediatorConstructor from "./mediator/IMediatorConstructor";
+import EngineMessage from "./message/EngineMessage";
+import { moduleManager } from "./module/ModuleManager";
+import ModuleMessage from "./module/ModuleMessage";
+import IPlugin from "./plugin/IPlugin";
+import { version } from "./version/Version";
 
 /**
  * @author Raykid
@@ -47,6 +27,19 @@ export default class Engine
 {
     private _initParams:IInitParams;
     private _loadElement:Element;
+    
+    private _initStep:InitStep = InitStep.Uninit;
+    /**
+     * 获取框架初始化进程
+     *
+     * @readonly
+     * @type {InitStep}
+     * @memberof Engine
+     */
+    public get initStep():InitStep
+    {
+        return this._initStep;
+    }
 
     /**
      * 初始化Engine
@@ -58,7 +51,8 @@ export default class Engine
     {
         var self:Engine = this;
         // 调用进度回调，初始化为0%
-        params.onInitProgress && params.onInitProgress(0, InitStep.ReadyToInit);
+        this._initStep = InitStep.ReadyToInit;
+        params.onInitProgress && params.onInitProgress(0, this._initStep);
         // 执行初始化
         if(document.readyState == "loading") document.addEventListener("readystatechange", doInitialize);
         else doInitialize();
@@ -66,7 +60,8 @@ export default class Engine
         function doInitialize():void
         {
             // 调用进度回调，开始初始化为10%
-            params.onInitProgress && params.onInitProgress(0.1, InitStep.StartInit);
+            this._initStep = InitStep.StartInit;
+            params.onInitProgress && params.onInitProgress(0.1, this._initStep);
             // 移除事件
             if(this == document) document.removeEventListener("readystatechange", doInitialize);
             // 要判断document是否初始化完毕
@@ -80,7 +75,8 @@ export default class Engine
             // 初始化版本号工具
             version.initialize(()=>{
                 // 调用进度回调，版本号初始化完毕为20%
-                params.onInitProgress && params.onInitProgress(0.2, InitStep.VersionInited);
+                this._initStep = InitStep.VersionInited;
+                params.onInitProgress && params.onInitProgress(0.2, this._initStep);
                 // 监听Bridge初始化完毕事件，显示第一个模块
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
@@ -103,7 +99,8 @@ export default class Engine
     private onAllBridgesInit():void
     {
         // 调用进度回调，表现层桥初始化完毕为30%
-        this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, InitStep.BridgesInited);
+        this._initStep = InitStep.BridgesInited;
+        this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, this._initStep);
         // 注销监听
         core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
         // 初始化插件
@@ -129,7 +126,8 @@ export default class Engine
                 var progress:number = 0.3 + 0.6 * curIndex / totalCount;
                 // 保留2位小数
                 progress = Math.round(progress * 100) * 0.01;
-                this._initParams.onInitProgress && this._initParams.onInitProgress(progress, InitStep.Preload, key, value);
+                this._initStep = InitStep.Preload;
+                this._initParams.onInitProgress && this._initParams.onInitProgress(progress, this._initStep, key, value);
             });
         }
         else
@@ -142,7 +140,8 @@ export default class Engine
     private onPreloadOK():void
     {
         // 调用进度回调，打开首个模块为90%
-        this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
+        this._initStep = InitStep.OpenFirstModule;
+        this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, this._initStep);
         // 派发事件
         core.dispatch(EngineMessage.INITIALIZED);
         // 调用初始化完成回调
@@ -164,7 +163,8 @@ export default class Engine
     private onModuleChange(from:IMediatorConstructor):void
     {
         // 调用进度回调，全部过程完毕，100%
-        this._initParams.onInitProgress && this._initParams.onInitProgress(1, InitStep.Inited);
+        this._initStep = InitStep.Inited;
+        this._initParams.onInitProgress && this._initParams.onInitProgress(1, this._initStep);
         // 注销监听
         core.unlisten(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 移除loadElement显示
@@ -180,6 +180,8 @@ export const engine:Engine = core.getInject(Engine);
 
 export enum InitStep
 {
+    /** 框架尚未开始初始化 */
+    Uninit,
     /** 框架已准备好初始化 */
     ReadyToInit,
     /** 开始执行初始化 */

@@ -1,6 +1,6 @@
 import IBridge from "./bridge/IBridge";
-import IPlugin from "./plugin/IPlugin";
 import IMediatorConstructor from "./mediator/IMediatorConstructor";
+import IPlugin from "./plugin/IPlugin";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -13,6 +13,15 @@ import IMediatorConstructor from "./mediator/IMediatorConstructor";
 export default class Engine {
     private _initParams;
     private _loadElement;
+    private _initStep;
+    /**
+     * 获取框架初始化进程
+     *
+     * @readonly
+     * @type {InitStep}
+     * @memberof Engine
+     */
+    readonly initStep: InitStep;
     /**
      * 初始化Engine
      *
@@ -34,20 +43,22 @@ export default class Engine {
 /** 再额外导出一个单例 */
 export declare const engine: Engine;
 export declare enum InitStep {
+    /** 框架尚未开始初始化 */
+    Uninit = 0,
     /** 框架已准备好初始化 */
-    ReadyToInit = 0,
+    ReadyToInit = 1,
     /** 开始执行初始化 */
-    StartInit = 1,
+    StartInit = 2,
     /** 版本号系统初始化完毕 */
-    VersionInited = 2,
+    VersionInited = 3,
     /** 表现层桥初始化完毕 */
-    BridgesInited = 3,
+    BridgesInited = 4,
     /** 预加载，可能会触发多次，每次传递两个参数：预加载文件名或路径、预加载文件内容 */
-    Preload = 4,
+    Preload = 5,
     /** 开始打开首个模块 */
-    OpenFirstModule = 5,
+    OpenFirstModule = 6,
     /** 首个模块打开完毕，初始化流程完毕 */
-    Inited = 6,
+    Inited = 7,
 }
 export interface IInitParams {
     /**

@@ -1,15 +1,15 @@
 import * as tslib_1 from "tslib";
 import { core } from "../core/Core";
 import { Injectable } from "../core/injector/Injector";
+import { assetsManager } from "./assets/AssetsManager";
 import { bridgeManager } from "./bridge/BridgeManager";
 import BridgeMessage from "./bridge/BridgeMessage";
-import { moduleManager } from "./module/ModuleManager";
-import { assetsManager } from "./assets/AssetsManager";
 import { environment } from "./env/Environment";
 import { hash } from "./env/Hash";
-import { version } from "./version/Version";
-import ModuleMessage from "./module/ModuleMessage";
 import EngineMessage from "./message/EngineMessage";
+import { moduleManager } from "./module/ModuleManager";
+import ModuleMessage from "./module/ModuleMessage";
+import { version } from "./version/Version";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -21,7 +21,22 @@ import EngineMessage from "./message/EngineMessage";
 */
 var Engine = /** @class */ (function () {
     function Engine() {
+        this._initStep = InitStep.Uninit;
     }
+    Object.defineProperty(Engine.prototype, "initStep", {
+        /**
+         * 获取框架初始化进程
+         *
+         * @readonly
+         * @type {InitStep}
+         * @memberof Engine
+         */
+        get: function () {
+            return this._initStep;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 初始化Engine
      *
@@ -31,15 +46,18 @@ var Engine = /** @class */ (function () {
     Engine.prototype.initialize = function (params) {
         var self = this;
         // 调用进度回调，初始化为0%
-        params.onInitProgress && params.onInitProgress(0, InitStep.ReadyToInit);
+        this._initStep = InitStep.ReadyToInit;
+        params.onInitProgress && params.onInitProgress(0, this._initStep);
         // 执行初始化
         if (document.readyState == "loading")
             document.addEventListener("readystatechange", doInitialize);
         else
             doInitialize();
         function doInitialize() {
+            var _this = this;
             // 调用进度回调，开始初始化为10%
-            params.onInitProgress && params.onInitProgress(0.1, InitStep.StartInit);
+            this._initStep = InitStep.StartInit;
+            params.onInitProgress && params.onInitProgress(0.1, this._initStep);
             // 移除事件
             if (this == document)
                 document.removeEventListener("readystatechange", doInitialize);
@@ -55,7 +73,8 @@ var Engine = /** @class */ (function () {
             // 初始化版本号工具
             version.initialize(function () {
                 // 调用进度回调，版本号初始化完毕为20%
-                params.onInitProgress && params.onInitProgress(0.2, InitStep.VersionInited);
+                _this._initStep = InitStep.VersionInited;
+                params.onInitProgress && params.onInitProgress(0.2, _this._initStep);
                 // 监听Bridge初始化完毕事件，显示第一个模块
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
@@ -76,7 +95,8 @@ var Engine = /** @class */ (function () {
     Engine.prototype.onAllBridgesInit = function () {
         var _this = this;
         // 调用进度回调，表现层桥初始化完毕为30%
-        this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, InitStep.BridgesInited);
+        this._initStep = InitStep.BridgesInited;
+        this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, this._initStep);
         // 注销监听
         core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
         // 初始化插件
@@ -100,7 +120,8 @@ var Engine = /** @class */ (function () {
                 var progress = 0.3 + 0.6 * curIndex / totalCount;
                 // 保留2位小数
                 progress = Math.round(progress * 100) * 0.01;
-                _this._initParams.onInitProgress && _this._initParams.onInitProgress(progress, InitStep.Preload, key, value);
+                _this._initStep = InitStep.Preload;
+                _this._initParams.onInitProgress && _this._initParams.onInitProgress(progress, _this._initStep, key, value);
             });
         }
         else {
@@ -110,7 +131,8 @@ var Engine = /** @class */ (function () {
     };
     Engine.prototype.onPreloadOK = function () {
         // 调用进度回调，打开首个模块为90%
-        this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, InitStep.OpenFirstModule);
+        this._initStep = InitStep.OpenFirstModule;
+        this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, this._initStep);
         // 派发事件
         core.dispatch(EngineMessage.INITIALIZED);
         // 调用初始化完成回调
@@ -129,7 +151,8 @@ var Engine = /** @class */ (function () {
     };
     Engine.prototype.onModuleChange = function (from) {
         // 调用进度回调，全部过程完毕，100%
-        this._initParams.onInitProgress && this._initParams.onInitProgress(1, InitStep.Inited);
+        this._initStep = InitStep.Inited;
+        this._initParams.onInitProgress && this._initParams.onInitProgress(1, this._initStep);
         // 注销监听
         core.unlisten(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 移除loadElement显示
@@ -148,18 +171,20 @@ export default Engine;
 export var engine = core.getInject(Engine);
 export var InitStep;
 (function (InitStep) {
+    /** 框架尚未开始初始化 */
+    InitStep[InitStep["Uninit"] = 0] = "Uninit";
     /** 框架已准备好初始化 */
-    InitStep[InitStep["ReadyToInit"] = 0] = "ReadyToInit";
+    InitStep[InitStep["ReadyToInit"] = 1] = "ReadyToInit";
     /** 开始执行初始化 */
-    InitStep[InitStep["StartInit"] = 1] = "StartInit";
+    InitStep[InitStep["StartInit"] = 2] = "StartInit";
     /** 版本号系统初始化完毕 */
-    InitStep[InitStep["VersionInited"] = 2] = "VersionInited";
+    InitStep[InitStep["VersionInited"] = 3] = "VersionInited";
     /** 表现层桥初始化完毕 */
-    InitStep[InitStep["BridgesInited"] = 3] = "BridgesInited";
+    InitStep[InitStep["BridgesInited"] = 4] = "BridgesInited";
     /** 预加载，可能会触发多次，每次传递两个参数：预加载文件名或路径、预加载文件内容 */
-    InitStep[InitStep["Preload"] = 4] = "Preload";
+    InitStep[InitStep["Preload"] = 5] = "Preload";
     /** 开始打开首个模块 */
-    InitStep[InitStep["OpenFirstModule"] = 5] = "OpenFirstModule";
+    InitStep[InitStep["OpenFirstModule"] = 6] = "OpenFirstModule";
     /** 首个模块打开完毕，初始化流程完毕 */
-    InitStep[InitStep["Inited"] = 6] = "Inited";
+    InitStep[InitStep["Inited"] = 7] = "Inited";
 })(InitStep || (InitStep = {}));
