@@ -19,6 +19,25 @@ import { version } from "./version/Version";
  * Engine模组是开发框架的引擎部分，包括业务模块系统、应用程序启动和初始化、弹窗和场景管理器等与项目开发相关的逻辑都在这个模组中
  * 这个模组的逻辑都高度集成在子模组中了，因此也只是收集相关子模组
 */
+export var InitStep;
+(function (InitStep) {
+    /** 框架尚未开始初始化 */
+    InitStep[InitStep["Uninit"] = 0] = "Uninit";
+    /** 框架已准备好初始化 */
+    InitStep[InitStep["ReadyToInit"] = 1] = "ReadyToInit";
+    /** 开始执行初始化 */
+    InitStep[InitStep["StartInit"] = 2] = "StartInit";
+    /** 版本号系统初始化完毕 */
+    InitStep[InitStep["VersionInited"] = 3] = "VersionInited";
+    /** 表现层桥初始化完毕 */
+    InitStep[InitStep["BridgesInited"] = 4] = "BridgesInited";
+    /** 预加载，可能会触发多次，每次传递两个参数：预加载文件名或路径、预加载文件内容 */
+    InitStep[InitStep["Preload"] = 5] = "Preload";
+    /** 开始打开首个模块 */
+    InitStep[InitStep["OpenFirstModule"] = 6] = "OpenFirstModule";
+    /** 首个模块打开完毕，初始化流程完毕 */
+    InitStep[InitStep["Inited"] = 7] = "Inited";
+})(InitStep || (InitStep = {}));
 var Engine = /** @class */ (function () {
     function Engine() {
         this._initStep = InitStep.Uninit;
@@ -169,22 +188,3 @@ var Engine = /** @class */ (function () {
 export default Engine;
 /** 再额外导出一个单例 */
 export var engine = core.getInject(Engine);
-export var InitStep;
-(function (InitStep) {
-    /** 框架尚未开始初始化 */
-    InitStep[InitStep["Uninit"] = 0] = "Uninit";
-    /** 框架已准备好初始化 */
-    InitStep[InitStep["ReadyToInit"] = 1] = "ReadyToInit";
-    /** 开始执行初始化 */
-    InitStep[InitStep["StartInit"] = 2] = "StartInit";
-    /** 版本号系统初始化完毕 */
-    InitStep[InitStep["VersionInited"] = 3] = "VersionInited";
-    /** 表现层桥初始化完毕 */
-    InitStep[InitStep["BridgesInited"] = 4] = "BridgesInited";
-    /** 预加载，可能会触发多次，每次传递两个参数：预加载文件名或路径、预加载文件内容 */
-    InitStep[InitStep["Preload"] = 5] = "Preload";
-    /** 开始打开首个模块 */
-    InitStep[InitStep["OpenFirstModule"] = 6] = "OpenFirstModule";
-    /** 首个模块打开完毕，初始化流程完毕 */
-    InitStep[InitStep["Inited"] = 7] = "Inited";
-})(InitStep || (InitStep = {}));
