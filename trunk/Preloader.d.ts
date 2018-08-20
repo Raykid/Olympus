@@ -66,7 +66,7 @@ declare namespace olympus {
     enum JSLoadMode {
         AUTO = 0,
         JSONP = 1,
-        TAG = 2,
+        TAG = 2
     }
     interface JSFileData {
         url: string;

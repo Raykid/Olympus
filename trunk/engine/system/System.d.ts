@@ -17,7 +17,7 @@ export default class System {
      */
     getTimer(): number;
     constructor();
-    private tick();
+    private tick;
     /**
      * 在下一帧执行某个方法
      *

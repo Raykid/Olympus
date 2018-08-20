@@ -26,8 +26,8 @@ export default class Observable implements IObservable {
      */
     parent: IObservable;
     constructor(parent?: IObservable);
-    private handleMessages(msg);
-    private doDispatch(msg);
+    private handleMessages;
+    private doDispatch;
     /**
      * 派发内核消息
      *
@@ -64,7 +64,7 @@ export default class Observable implements IObservable {
      */
     unlisten(type: IConstructor | string, handler: Function, thisArg?: any, once?: boolean): void;
     private _commandDict;
-    private handleCommands(msg);
+    private handleCommands;
     /**
      * 注册命令到特定消息类型上，当这个类型的消息派发到框架内核时会触发Command运行
      *

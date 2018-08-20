@@ -3,11 +3,16 @@ import { environment } from "olympus-r/engine/env/Environment";
 import { panelManager } from "olympus-r/engine/panel/PanelManager";
 import { platformManager } from "olympus-r/engine/platform/PlatformManager";
 import { version } from "olympus-r/engine/version/Version";
-var ResourceVersionController = /** @class */ (function (_super) {
-    tslib_1.__extends(ResourceVersionController, _super);
+var ResourceVersionController = /** @class */ (function () {
     function ResourceVersionController() {
-        return _super !== null && _super.apply(this, arguments) || this;
     }
+    ResourceVersionController.prototype.init = function () {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                return [2 /*return*/];
+            });
+        });
+    };
     ResourceVersionController.prototype.getVirtualUrl = function (url) {
         // 添加imgDomain
         url = environment.toCDNHostURL(url);
@@ -17,13 +22,12 @@ var ResourceVersionController = /** @class */ (function (_super) {
         return url;
     };
     return ResourceVersionController;
-}(RES.VersionController));
+}());
 export { ResourceVersionController };
 // 这里直接注册一下
 RES.registerVersionController(new ResourceVersionController());
 var AssetsLoader = /** @class */ (function () {
     function AssetsLoader(handler) {
-        this._retryDict = {};
         this._handler = handler;
     }
     AssetsLoader.prototype.loadGroups = function (groups) {

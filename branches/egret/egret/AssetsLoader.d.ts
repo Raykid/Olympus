@@ -28,12 +28,12 @@ export interface ILoaderHandler {
     /** 加载完毕时调度 */
     complete?: (dict: IResourceDict) => void;
 }
-export declare class ResourceVersionController extends RES.VersionController {
+export declare class ResourceVersionController implements RES.IVersionController {
+    init(): Promise<void>;
     getVirtualUrl(url: string): string;
 }
 export default class AssetsLoader {
     private _handler;
-    private _retryDict;
     constructor(handler: ILoaderHandler);
     loadGroups(groups: (string | IGroupParams)[]): void;
 }

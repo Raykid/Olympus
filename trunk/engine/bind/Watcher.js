@@ -48,6 +48,7 @@ var Watcher = /** @class */ (function () {
      * @returns {any} 最新值
      */
     Watcher.prototype.getValue = function () {
+        var _a;
         if (this._disposed)
             return null;
         var value;
@@ -72,7 +73,6 @@ var Watcher = /** @class */ (function () {
         // 移除自身记录
         Watcher.updating = null;
         return value;
-        var _a;
     };
     /**
      * 当依赖的数据有更新时调用该方法

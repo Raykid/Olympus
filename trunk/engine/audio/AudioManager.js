@@ -215,6 +215,7 @@ var AudioManager = /** @class */ (function () {
     AudioManager.prototype.stopAllMusics = function () {
         this._musicImpl.stopAll();
     };
+    var AudioManager_1;
     AudioManager.STORAGE_KEY_MUTE_SOUND = "AudioManager::muteSound";
     AudioManager.STORAGE_KEY_MUTE_MUSIC = "AudioManager::muteMusic";
     AudioManager = AudioManager_1 = tslib_1.__decorate([
@@ -222,7 +223,6 @@ var AudioManager = /** @class */ (function () {
         tslib_1.__metadata("design:paramtypes", [])
     ], AudioManager);
     return AudioManager;
-    var AudioManager_1;
 }());
 export default AudioManager;
 /** 再额外导出一个单例 */

@@ -17,7 +17,7 @@ export default class AudioTagImpl implements IAudio {
      * @memberof AudioTagImpl
      */
     mute: boolean;
-    private listenProgress(data);
+    private listenProgress;
     private _audioCache;
     /**
      * 加载音频
@@ -34,7 +34,7 @@ export default class AudioTagImpl implements IAudio {
      * @memberof AudioTagImpl
      */
     play(params: AudioPlayParams): void;
-    private _doStop(url, time?);
+    private _doStop;
     /**
      * 暂停音频（不会重置进度）
      *

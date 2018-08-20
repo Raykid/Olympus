@@ -29,6 +29,7 @@ var Observable = /** @class */ (function () {
         configurable: true
     });
     Observable.prototype.handleMessages = function (msg) {
+        var _a;
         var listeners1 = this._listenerDict[msg.__type];
         var listeners2 = this._listenerDict[msg.constructor.toString()];
         var listeners = (listeners1 && listeners2 ? listeners1.concat(listeners2) : listeners1 || listeners2);
@@ -50,7 +51,6 @@ var Observable = /** @class */ (function () {
                 }
             }
         }
-        var _a;
     };
     Observable.prototype.doDispatch = function (msg) {
         // 记录流转内核

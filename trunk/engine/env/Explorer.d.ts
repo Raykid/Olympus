@@ -18,7 +18,7 @@ export declare enum ExplorerType {
     FIREFOX = 3,
     SAFARI = 4,
     CHROME = 5,
-    OTHERS = 6,
+    OTHERS = 6
 }
 export default class Explorer {
     private _type;

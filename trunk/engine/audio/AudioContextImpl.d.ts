@@ -36,7 +36,7 @@ export default class AudioContextImpl implements IAudio {
      * @memberof AudioContextImpl
      */
     play(params: AudioPlayParams): void;
-    private _doStop(url, time?);
+    private _doStop;
     /**
      * 暂停音频（不会重置进度）
      *

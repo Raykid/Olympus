@@ -9,7 +9,7 @@ import IPanel from "./IPanel";
 */
 export declare enum ButtonType {
     normal = 0,
-    important = 1,
+    important = 1
 }
 export interface IPromptParams {
     msg: string;

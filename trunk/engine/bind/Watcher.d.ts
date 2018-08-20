@@ -46,15 +46,15 @@ export default class Watcher implements IWatcher {
     /**
      * 是否相等，包括基础类型和对象/数组的对比
      */
-    private static isEqual(a, b);
+    private static isEqual;
     /**
      * 是否为对象(包括数组、正则等)
      */
-    private static isObject(obj);
+    private static isObject;
     /**
      * 复制对象，若为对象则深度复制
      */
-    private static deepCopy(from);
+    private static deepCopy;
 }
 export interface IWatcher {
     /**

@@ -19,4 +19,5 @@ export declare class NonePanelPolicy implements IPanelPolicy {
     }): void;
 }
 declare const _default: NonePanelPolicy;
+/** 默认导出实例 */
 export default _default;

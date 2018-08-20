@@ -52,8 +52,8 @@ export default class SceneManager {
      * @memberof SceneManager
      */
     pop(scene: IScene, data?: any): IScene;
-    private doPop(scene, data);
-    private doChange(from, to, data, policy, type, begin?, complete?);
+    private doPop;
+    private doChange;
 }
 /** 再额外导出一个单例 */
 export declare const sceneManager: SceneManager;

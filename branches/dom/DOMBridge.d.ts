@@ -1,3 +1,4 @@
+/// <amd-module name="DOMBridge" />
 import IBridge from "olympus-r/engine/bridge/IBridge";
 import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
 import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
@@ -135,7 +136,7 @@ export default class DOMBridge implements IBridge {
      */
     defaultScenePolicy: IScenePolicy;
     constructor(params: IInitParams);
-    private createLayer();
+    private createLayer;
     /**
      * 初始化表现层桥，可以没有该方法，没有该方法则表示该表现层无需初始化
      * @param {()=>void} complete 初始化完毕后的回调

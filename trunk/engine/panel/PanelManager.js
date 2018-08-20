@@ -270,13 +270,13 @@ var PanelManager = /** @class */ (function () {
         ];
         return this.prompt(params);
     };
+    var PanelManager_1;
     PanelManager.PRIORITY_NORMAL = 0;
     PanelManager.PRIORITY_PROMPT = 1;
     PanelManager = PanelManager_1 = tslib_1.__decorate([
         Injectable
     ], PanelManager);
     return PanelManager;
-    var PanelManager_1;
 }());
 export default PanelManager;
 /** 再额外导出一个单例 */

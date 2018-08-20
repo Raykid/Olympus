@@ -359,26 +359,15 @@ var EgretBridge = /** @class */ (function () {
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            doLoad();
-            function doLoad() {
-                load({
-                    url: version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"),
-                    useCDN: true,
-                    responseType: "text",
-                    onResponse: function (content) {
-                        var data = JSON.parse(content);
-                        RES.parseConfig(data, self._initParams.pathPrefix + "resource/");
-                        // 加载主题配置
-                        var url = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
-                        var theme = new eui.Theme(url, self._root.stage);
-                        theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-                    },
-                    onError: function (err) {
-                        alert(err.message + "\nPlease try again later.");
-                        doLoad();
-                    }
-                });
-            }
+            RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
+            RES.loadConfig(version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"), self._initParams.pathPrefix + "resource/");
+        }
+        function onConfigLoadComplete() {
+            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
+            // 加载主题配置
+            var url = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
+            var theme = new eui.Theme(url, self._root.stage);
+            theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
         }
         function onThemeLoadComplete(evt) {
             evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);

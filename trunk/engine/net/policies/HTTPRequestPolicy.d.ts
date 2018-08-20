@@ -18,4 +18,5 @@ export declare class HTTPRequestPolicy implements IRequestPolicy {
     sendRequest(request: RequestData): void;
 }
 declare const _default: HTTPRequestPolicy;
+/** 再额外导出一个实例 */
 export default _default;

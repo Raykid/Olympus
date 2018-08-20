@@ -39,7 +39,7 @@ export default class BindManager {
      */
     unbind(mediator: IMediator): Bind;
     addBindHandler(mediator: IMediator, callback: () => void): void;
-    private getNearestAncestor(bridge, target, propName);
+    private getNearestAncestor;
     /**
      * 绑定属性值
      *

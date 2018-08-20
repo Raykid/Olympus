@@ -104,6 +104,7 @@ var BindManager = /** @class */ (function () {
         var watcher;
         var bindData = this._bindDict.get(mediator);
         this.addBindHandler(mediator, function () {
+            var _a;
             // 如果之前绑定过，则要先销毁之
             if (watcher)
                 watcher.dispose();
@@ -111,7 +112,6 @@ var BindManager = /** @class */ (function () {
             watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (value) {
                     currentTarget[name] = value;
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
-            var _a;
         });
     };
     /**
@@ -128,6 +128,7 @@ var BindManager = /** @class */ (function () {
         var watcher;
         var bindData = this._bindDict.get(mediator);
         this.addBindHandler(mediator, function () {
+            var _a;
             // 如果之前绑定过，则要先销毁之
             if (watcher)
                 watcher.dispose();
@@ -135,7 +136,6 @@ var BindManager = /** @class */ (function () {
             watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (value) {
                     // 不干任何事情
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
-            var _a;
         });
     };
     /**
@@ -158,6 +158,7 @@ var BindManager = /** @class */ (function () {
         var watchers = [];
         var bindData = this._bindDict.get(mediator);
         this.addBindHandler(mediator, function () {
+            var _a;
             // 判断参数数量，无参数方法一次性执行即可，无需绑定，有参数的方法则需要每次参数改变就执行一次
             if (argExps.length > 0) {
                 // 将表达式中所有undefined和null变为内部值
@@ -217,7 +218,6 @@ var BindManager = /** @class */ (function () {
                 // 无参数执行，无需绑定，一次性执行即可
                 target[name]();
             }
-            var _a;
         });
     };
     /**
@@ -291,6 +291,7 @@ var BindManager = /** @class */ (function () {
         var bindData = this._bindDict.get(mediator);
         var replacer = mediator.bridge.createEmptyDisplay();
         this.addBindHandler(mediator, function () {
+            var _a;
             // 如果之前绑定过，则要先销毁之
             if (watcher)
                 watcher.dispose();
@@ -304,7 +305,6 @@ var BindManager = /** @class */ (function () {
                     // 触发回调
                     callback && callback(value);
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
-            var _a;
         });
     };
     /**
@@ -328,6 +328,7 @@ var BindManager = /** @class */ (function () {
         var bindData = this._bindDict.get(mediator);
         var subMediatorCache = [];
         this.addBindHandler(mediator, function () {
+            var _a;
             // 解析表达式
             var res = _this._regExp.exec(exp);
             if (!res)
@@ -417,7 +418,6 @@ var BindManager = /** @class */ (function () {
                     // 赋值
                     mediator.bridge.valuateBindFor(currentTarget, datas, memento);
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
-            var _a;
         });
     };
     /**

@@ -26,7 +26,7 @@ export declare enum InitStep {
     /** 开始打开首个模块 */
     OpenFirstModule = 6,
     /** 首个模块打开完毕，初始化流程完毕 */
-    Inited = 7,
+    Inited = 7
 }
 export default class Engine {
     private _initParams;
@@ -54,9 +54,9 @@ export default class Engine {
      * @memberof Engine
      */
     listenError(handler: (evt?: ErrorEvent) => void): void;
-    private onAllBridgesInit();
-    private onPreloadOK();
-    private onModuleChange(from);
+    private onAllBridgesInit;
+    private onPreloadOK;
+    private onModuleChange;
 }
 /** 再额外导出一个单例 */
 export declare const engine: Engine;

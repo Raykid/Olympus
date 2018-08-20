@@ -1279,7 +1279,7 @@ declare namespace eui.sys {
         /**
          * @private
          */
-        $invalidateMatrix(): void;
+        protected $updateUseTransform(): void;
         /**
          * @private
          */
@@ -2271,7 +2271,7 @@ declare namespace eui {
          *
          * @param value
          */
-        $setTouchEnabled(value: boolean): boolean;
+        $setTouchEnabled(value: boolean): void;
         /**
          * Whether the component can accept user interaction.
          * After setting the <code>enabled</code> property to <code>false</code>, components will disabled touch event
@@ -6248,7 +6248,7 @@ declare namespace eui {
          * @language zh_CN
          */
         source: string | egret.Texture;
-        $setBitmapData(value: egret.Texture): boolean;
+        $setTexture(value: egret.Texture): boolean;
         /**
          * @private
          * 解析source
@@ -6260,7 +6260,6 @@ declare namespace eui {
          *
          * @param context
          */
-        $render(): void;
         /**
          * @private
          * UIComponentImpl 定义的所有变量请不要添加任何初始值，必须统一在此处初始化。
@@ -6274,6 +6273,12 @@ declare namespace eui {
          * @platform Web,Native
          */
         protected createChildren(): void;
+        /**
+         * @private
+         * 设置组件的宽高。此方法不同于直接设置width,height属性，
+         * 不会影响显式标记尺寸属性
+         */
+        protected setActualSize(w: number, h: number): void;
         /**
          * @copy eui.UIComponent#childrenCreated
          *
@@ -6823,7 +6828,7 @@ declare namespace eui {
          * @private
          *
          */
-        $invalidateContentBounds(): void;
+        $invalidateTextField(): void;
         /**
          * @private
          *
@@ -8272,6 +8277,7 @@ declare namespace eui {
      */
     class Rect extends Component {
         constructor(width?: number, height?: number, fillColor?: number);
+        protected createNativeDisplayObject(): void;
         /**
          * @private
          */
@@ -8401,6 +8407,10 @@ declare namespace eui {
          * @platform Web,Native
          */
         protected updateDisplayList(unscaledWidth: number, unscaledHeight: number): void;
+        /**
+         * @private
+         */
+        $onRemoveFromStage(): void;
     }
 }
 declare namespace eui {
@@ -10558,7 +10568,7 @@ declare namespace eui {
          * @private
          *
          */
-        $invalidateContentBounds(): void;
+        $invalidateTextField(): void;
         /**
          * @private
          *
@@ -12806,7 +12816,6 @@ declare namespace eui {
         constructor(text?: string);
         /**
          * @private
-         *
          */
         $invalidateContentBounds(): void;
         /**
@@ -12827,7 +12836,7 @@ declare namespace eui {
          * @param value
          */
         $setText(value: string): boolean;
-        private $font;
+        private $fontForBitmapLabel;
         $setFont(value: any): boolean;
         private $createChildrenCalled;
         private $fontChanged;
@@ -12835,7 +12844,7 @@ declare namespace eui {
          * 解析source
          */
         private $parseFont();
-        $setFontData(value: egret.BitmapFont): boolean;
+        $setFontData(value: egret.BitmapFont, font?: string): boolean;
         /**
          * @private
          */
@@ -13208,12 +13217,13 @@ declare namespace EXML {
      * @private
      */
     function $loadAll(urls: string[], callBack?: (clazz: any[], url: string[]) => void, thisObject?: any, useCache?: boolean): void;
+    function update(url: string, clazz: any): void;
     /**
      * @private
      * @param url
      * @param text
      */
-    function $parseURLContentAsJs(url: string, text: string, className: string): any;
+    function $parseURLContentAsJs(url: string, text: string, className: string): void;
     /**
      * @private
      */

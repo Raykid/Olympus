@@ -11,9 +11,9 @@ import IMaskData from "./IMaskData";
 export default class MaskManager {
     private _entityDict;
     private _loadingMaskDict;
-    private getLoadingMaskCount();
-    private plusLoadingMaskCount(key);
-    private minusLoadingMaskCount(key);
+    private getLoadingMaskCount;
+    private plusLoadingMaskCount;
+    private minusLoadingMaskCount;
     /**
      * 初始化MaskUtil
      * @param type 所属表现层桥

@@ -10,7 +10,7 @@ import IMediator from "./IMediator";
 export declare enum ModuleOpenStatus {
     Stop = 0,
     BeforeOpen = 1,
-    AfterOpen = 2,
+    AfterOpen = 2
 }
 export default interface IMediatorModulePart {
     /**

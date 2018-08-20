@@ -48,6 +48,7 @@ function compileCSS(mediator, currentTarget, target, envModels, dict) {
     var watcher;
     var bindData = bindManager.getBindData(mediator);
     bindManager.addBindHandler(mediator, function () {
+        var _a;
         // 如果之前绑定过，则要先销毁之
         if (watcher)
             watcher.dispose();
@@ -69,7 +70,6 @@ function compileCSS(mediator, currentTarget, target, envModels, dict) {
                 // 为目标的className属性赋值
                 currentTarget["className"] = resultNames.join(" ");
             }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
-        var _a;
     });
 }
 /**

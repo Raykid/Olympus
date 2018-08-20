@@ -24,4 +24,5 @@ export declare class NoneScenePolicy implements IScenePolicy {
     switch(from: IScene, to: IScene, callback: () => void): void;
 }
 declare const _default: NoneScenePolicy;
+/** 默认导出实例 */
 export default _default;

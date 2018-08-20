@@ -13,6 +13,6 @@ declare enum MediatorStatus {
     CLOSING = 3,
     CLOSED = 4,
     DISPOSING = 5,
-    DISPOSED = 6,
+    DISPOSED = 6
 }
 export default MediatorStatus;

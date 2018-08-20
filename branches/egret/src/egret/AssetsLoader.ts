@@ -41,8 +41,13 @@ export interface ILoaderHandler
     complete?:(dict:IResourceDict)=>void;
 }
 
-export class ResourceVersionController extends RES.VersionController
+export class ResourceVersionController implements RES.IVersionController
 {
+    public async init():Promise<void>
+    {
+        // 无需任何准备
+    }
+
     public getVirtualUrl(url:string):string
     {
         // 添加imgDomain
@@ -59,7 +64,6 @@ RES.registerVersionController(new ResourceVersionController());
 export default class AssetsLoader
 {
     private _handler:ILoaderHandler;
-    private _retryDict:{[name:string]:number} = {};
 
     public constructor(handler:ILoaderHandler)
     {

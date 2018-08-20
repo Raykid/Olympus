@@ -31,7 +31,7 @@ export default class PanelManager {
      * @memberof PanelManager
      */
     isOpened(panel: IPanel): boolean;
-    private updateModalMask(panel);
+    private updateModalMask;
     /**
      * 打开一个弹窗
      *

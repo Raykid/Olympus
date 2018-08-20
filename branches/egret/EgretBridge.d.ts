@@ -1,3 +1,4 @@
+/// <amd-module name="EgretBridge" />
 import IBridge from "olympus-r/engine/bridge/IBridge";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import IMediator from "olympus-r/engine/mediator/IMediator";

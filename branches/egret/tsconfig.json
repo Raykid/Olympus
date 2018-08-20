@@ -8,7 +8,12 @@
     "emitDecoratorMetadata": true,
     "sourceMap": false,
     "declaration": true,
-    "outDir": "./"
+    "outDir": "./",
+    "lib": [
+      "es2015.promise",
+      "es5",
+      "dom"
+    ]
   },
   "include": [
     "./src/"

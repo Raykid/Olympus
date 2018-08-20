@@ -14,7 +14,7 @@ export interface ResponseHandler {
 }
 export default class NetManager {
     constructor();
-    private onMsgDispatched(msg);
+    private onMsgDispatched;
     private _responseDict;
     /**
      * 注册一个返回结构体
@@ -60,7 +60,7 @@ export default class NetManager {
     /** 这里导出不希望用户使用的方法，供框架内使用 */
     __onResponse(type: string, result: any, request?: RequestData): void | never;
     __onError(type: string, err: Error, request?: RequestData): void;
-    private recurseResponse(type, response, request, observable);
+    private recurseResponse;
 }
 /** 再额外导出一个单例 */
 export declare const netManager: NetManager;

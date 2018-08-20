@@ -262,7 +262,7 @@ export default class Mediator implements IMediator {
      */
     unmapAllListeners(): void;
     private _disposeDict;
-    private disposeChild(mediator, oriDispose);
+    private disposeChild;
     /**
      * 父中介者
      *

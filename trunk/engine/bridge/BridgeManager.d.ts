@@ -26,7 +26,7 @@ export default class BridgeManager {
      * @memberof BridgeManager
      */
     readonly bridges: IBridge[];
-    private getAllHasBridges(hasBridge);
+    private getAllHasBridges;
     /**
      * 获取表现层桥实例
      *
@@ -50,7 +50,7 @@ export default class BridgeManager {
      * @memberof BridgeManager
      */
     registerBridge(...bridges: IBridge[]): void;
-    private testAllInit();
+    private testAllInit;
 }
 /** 再额外导出一个单例 */
 export declare const bridgeManager: BridgeManager;

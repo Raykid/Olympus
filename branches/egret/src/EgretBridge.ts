@@ -387,28 +387,16 @@ export default class EgretBridge implements IBridge
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            doLoad();
+            RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
+            RES.loadConfig(version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"), self._initParams.pathPrefix + "resource/");
+        }
 
-            function doLoad():void
-            {
-                load({
-                    url: version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"),
-                    useCDN: true,
-                    responseType: "text",
-                    onResponse: (content:string)=>{
-                        var data:any = JSON.parse(content);
-                        RES.parseConfig(data, self._initParams.pathPrefix + "resource/");
-                        // 加载主题配置
-                        var url:string = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
-                        var theme:eui.Theme = new eui.Theme(url, self._root.stage);
-                        theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
-                    },
-                    onError: err=>{
-                        alert(err.message + "\nPlease try again later.");
-                        doLoad();
-                    }
-                });
-            }
+        function onConfigLoadComplete() {
+            RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
+            // 加载主题配置
+            var url:string = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
+            var theme:eui.Theme = new eui.Theme(url, self._root.stage);
+            theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
         }
 
         function onThemeLoadComplete(evt:eui.UIEvent):void

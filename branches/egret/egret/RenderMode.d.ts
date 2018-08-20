@@ -9,6 +9,6 @@
 declare enum RenderMode {
     AUTO = 0,
     CANVAS = 1,
-    WEBGL = 2,
+    WEBGL = 2
 }
 export default RenderMode;

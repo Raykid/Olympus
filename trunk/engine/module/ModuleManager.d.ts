@@ -54,8 +54,8 @@ export default class ModuleManager {
      * @memberof ModuleManager
      */
     getModule(index: number): IMediatorConstructor;
-    private getAfter(cls);
-    private getCurrent();
+    private getAfter;
+    private getCurrent;
     /**
      * 获取模块是否开启中
      *
@@ -64,8 +64,8 @@ export default class ModuleManager {
      * @memberof ModuleManager
      */
     isOpened(cls: IMediatorConstructor): boolean;
-    private activateModule(module, from, data);
-    private deactivateModule(module, to, data);
+    private activateModule;
+    private deactivateModule;
     /**
      * 打开模块
      *
@@ -75,7 +75,7 @@ export default class ModuleManager {
      * @memberof ModuleManager
      */
     open(module: ModuleType | string, data?: any, replace?: boolean): void;
-    private onFinishOpen();
+    private onFinishOpen;
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *

@@ -66,7 +66,7 @@ export default class AssetsManager {
 export declare enum JSLoadMode {
     AUTO = 0,
     JSONP = 1,
-    TAG = 2,
+    TAG = 2
 }
 export interface JSFileData {
     url: string;
