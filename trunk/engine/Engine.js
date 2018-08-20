@@ -73,10 +73,9 @@ var Engine = /** @class */ (function () {
         else
             doInitialize();
         function doInitialize() {
-            var _this = this;
             // 调用进度回调，开始初始化为10%
-            this._initStep = InitStep.StartInit;
-            params.onInitProgress && params.onInitProgress(0.1, this._initStep);
+            self._initStep = InitStep.StartInit;
+            params.onInitProgress && params.onInitProgress(0.1, self._initStep);
             // 移除事件
             if (this == document)
                 document.removeEventListener("readystatechange", doInitialize);
@@ -92,8 +91,8 @@ var Engine = /** @class */ (function () {
             // 初始化版本号工具
             version.initialize(function () {
                 // 调用进度回调，版本号初始化完毕为20%
-                _this._initStep = InitStep.VersionInited;
-                params.onInitProgress && params.onInitProgress(0.2, _this._initStep);
+                self._initStep = InitStep.VersionInited;
+                params.onInitProgress && params.onInitProgress(0.2, self._initStep);
                 // 监听Bridge初始化完毕事件，显示第一个模块
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
