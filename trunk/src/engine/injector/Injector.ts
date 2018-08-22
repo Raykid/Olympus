@@ -7,12 +7,13 @@ import IObservable from "../../core/observable/IObservable";
 import { listenApply, listenConstruct, listenDispose, wrapConstruct } from "../../utils/ConstructUtil";
 import Dictionary from "../../utils/Dictionary";
 import { replaceDisplay } from "../../utils/DisplayUtil";
+import { BindForExpType } from '../bind/BindManager';
 import { EvalExp, evalExp } from "../bind/Utils";
 import { bridgeManager } from "../bridge/BridgeManager";
 import IBridge from "../bridge/IBridge";
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
-import Mediator, { registerModule } from "../mediator/Mediator";
+import Mediator, { getModuleName, registerModule } from "../mediator/Mediator";
 import MediatorStatus from "../mediator/MediatorStatus";
 import { netManager } from "../net/NetManager";
 import RequestData from '../net/RequestData';
@@ -302,15 +303,15 @@ function isMediator(target:any):boolean
 }
 
 /** 添加子Mediator */
-export function SubMediator(dataExp?:string):PropertyDecorator;
-export function SubMediator(mediatorCls:IMediatorConstructor, dataExp?:string):PropertyDecorator;
-export function SubMediator(skin:any, mediatorCls?:IMediatorConstructor, dataExp?:string):PropertyDecorator;
+export function SubMediator(dataExp?:EvalExp):PropertyDecorator;
+export function SubMediator(mediatorCls:IMediatorConstructor, dataExp?:EvalExp):PropertyDecorator;
+export function SubMediator(skin:any, mediatorCls?:IMediatorConstructor, dataExp?:EvalExp):PropertyDecorator;
 export function SubMediator(prototype:any, propertyKey:string):void;
-export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
+export function SubMediator(arg1:any, arg2?:any, arg3?:EvalExp):any
 {
     var oriSkin:any;
     var mediatorCls:IMediatorConstructor;
-    var dataExp:string;
+    var dataExp:EvalExp;
     // 判断是否是参数化装饰
     if(this === decorateThis)
     {
@@ -320,9 +321,19 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:string):any
     else
     {
         // 有参数，分配参数
-        if(typeof arg1 === "string" && !arg2 && !arg3)
+        if(!arg2 && !arg3)
         {
-            dataExp = arg1;
+            // 一个参数，需要判断该参数是否是Mediator类型
+            if(arg1 instanceof Function && getModuleName(arg1) != null)
+            {
+                // 是Mediator类型
+                mediatorCls = arg1;
+            }
+            else
+            {
+                // 不是Mediator类型，认为是表达式
+                dataExp = arg1;
+            }
         }
         else if(arg1 instanceof Function)
         {
@@ -792,10 +803,10 @@ export function BindFor(uiDict:{[name:string]:any}):PropertyDecorator;
  * @export
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
- * @param {string} [dataExp] 传递给中介者的数据表达式
+ * @param {EvalExp} [dataExp] 传递给中介者的数据表达式
  * @returns {PropertyDecorator} 
  */
-export function BindFor(exp:string, mediatorCls?:IMediatorConstructor, dataExp?:string):PropertyDecorator;
+export function BindFor(exp:BindForExpType, mediatorCls?:IMediatorConstructor, dataExp?:EvalExp):PropertyDecorator;
 /**
  * 绑定数据集合到指定对象
  * 
@@ -803,39 +814,39 @@ export function BindFor(exp:string, mediatorCls?:IMediatorConstructor, dataExp?:
  * @param {string} name ui属性名称
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
- * @param {string} [dataExp] 传递给中介者的数据表达式
+ * @param {EvalExp} [dataExp] 传递给中介者的数据表达式
  * @returns {PropertyDecorator} 
  */
-export function BindFor(name:string, exp:string, mediatorCls?:IMediatorConstructor, dataExp?:string):PropertyDecorator;
+export function BindFor(name:string, exp:BindForExpType, mediatorCls?:IMediatorConstructor, dataExp?:EvalExp):PropertyDecorator;
 /**
  * @private
  */
-export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, arg4?:string):PropertyDecorator
+export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, arg4?:EvalExp):PropertyDecorator
 {
     // 组织参数
     var uiDict:{[name:string]:any};
     var name:string;
-    var exp:string;
+    var exp:BindForExpType;
     var mediatorCls:IMediatorConstructor;
-    var dataExp:string;
-    if(typeof arg1 === "string")
+    var dataExp:EvalExp;
+    if(typeof arg1 === "string" && (arg2 === "string" || arg2 instanceof Array))
     {
-        if(typeof arg2 === "string")
-        {
-            name = arg1;
-            exp = arg2;
-            mediatorCls = arg3;
-            dataExp = arg4;
-        }
-        else
-        {
-            exp = arg1;
-            mediatorCls = arg2;
-            dataExp = arg3;
-        }
+        // 是寻址方式，需要记录name
+        name = arg1;
+        exp = arg2;
+        mediatorCls = arg3;
+        dataExp = arg4;
+    }
+    else if(typeof arg1 === "string" || arg1 instanceof Array)
+    {
+        // 是无寻址方式，直接从exp开始记录
+        exp = <BindForExpType>arg1;
+        mediatorCls = arg2;
+        dataExp = arg3;
     }
     else
     {
+        // 是寻址集合方式
         uiDict = arg1;
     }
     return function(prototype:any, propertyKey:string):void
@@ -853,7 +864,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
                 if(!name)
                 {
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
-                    BindUtil.searchUIDepth({r: 13}, mediator, target, (currentTarget:any, target:any, _name:string, _exp:string, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
+                    BindUtil.searchUIDepth({r: 13}, mediator, target, (currentTarget:any, target:any, _name:string, _exp:BindForExpType, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                         // 添加编译指令
                         BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredMediatorCls, dataExp);
                         // 设置中断编译
@@ -863,10 +874,10 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
                 else
                 {
                     // 指定了寻址路径，需要寻址
-                    var uiDict:{[name:string]:any} = {};
+                    uiDict = {};
                     uiDict[name] = exp;
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                    BindUtil.searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:string, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
+                    BindUtil.searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:BindForExpType, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                         // 添加编译指令
                         BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
                         // 设置中断编译
@@ -877,7 +888,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
             else
             {
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
-                BindUtil.searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:string, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
+                BindUtil.searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:BindForExpType, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                     // 添加编译指令
                     BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
                     // 设置中断编译

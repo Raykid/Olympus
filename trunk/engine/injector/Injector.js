@@ -8,7 +8,7 @@ import Dictionary from "../../utils/Dictionary";
 import { replaceDisplay } from "../../utils/DisplayUtil";
 import { evalExp } from "../bind/Utils";
 import { bridgeManager } from "../bridge/BridgeManager";
-import Mediator, { registerModule } from "../mediator/Mediator";
+import Mediator, { getModuleName, registerModule } from "../mediator/Mediator";
 import MediatorStatus from "../mediator/MediatorStatus";
 import { netManager } from "../net/NetManager";
 import ResponseData from "../net/ResponseData";
@@ -245,8 +245,16 @@ export function SubMediator(arg1, arg2, arg3) {
     }
     else {
         // 有参数，分配参数
-        if (typeof arg1 === "string" && !arg2 && !arg3) {
-            dataExp = arg1;
+        if (!arg2 && !arg3) {
+            // 一个参数，需要判断该参数是否是Mediator类型
+            if (arg1 instanceof Function && getModuleName(arg1) != null) {
+                // 是Mediator类型
+                mediatorCls = arg1;
+            }
+            else {
+                // 不是Mediator类型，认为是表达式
+                dataExp = arg1;
+            }
         }
         else if (arg1 instanceof Function) {
             mediatorCls = arg1;
@@ -552,20 +560,21 @@ export function BindFor(arg1, arg2, arg3, arg4) {
     var exp;
     var mediatorCls;
     var dataExp;
-    if (typeof arg1 === "string") {
-        if (typeof arg2 === "string") {
-            name = arg1;
-            exp = arg2;
-            mediatorCls = arg3;
-            dataExp = arg4;
-        }
-        else {
-            exp = arg1;
-            mediatorCls = arg2;
-            dataExp = arg3;
-        }
+    if (typeof arg1 === "string" && (arg2 === "string" || arg2 instanceof Array)) {
+        // 是寻址方式，需要记录name
+        name = arg1;
+        exp = arg2;
+        mediatorCls = arg3;
+        dataExp = arg4;
+    }
+    else if (typeof arg1 === "string" || arg1 instanceof Array) {
+        // 是无寻址方式，直接从exp开始记录
+        exp = arg1;
+        mediatorCls = arg2;
+        dataExp = arg3;
     }
     else {
+        // 是寻址集合方式
         uiDict = arg1;
     }
     return function (prototype, propertyKey) {
@@ -589,7 +598,7 @@ export function BindFor(arg1, arg2, arg3, arg4) {
                 }
                 else {
                     // 指定了寻址路径，需要寻址
-                    var uiDict = {};
+                    uiDict = {};
                     uiDict[name] = exp;
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                     BindUtil.searchUIDepth(uiDict, mediator, target, function (currentTarget, target, _name, _exp, leftHandlers, index) {

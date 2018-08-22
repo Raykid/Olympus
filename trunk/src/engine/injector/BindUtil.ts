@@ -1,7 +1,8 @@
 import IObservable from "../../core/observable/IObservable";
 import { listenApply } from '../../utils/ConstructUtil';
 import Dictionary from "../../utils/Dictionary";
-import { bindManager } from "../bind/BindManager";
+import { BindForExpType, bindManager } from "../bind/BindManager";
+import { EvalExp } from '../bind/Utils';
 import IBridge from '../bridge/IBridge';
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
@@ -328,7 +329,7 @@ export function compileIf(mediator:IMediator, currentTarget:ICompileTarget, targ
 /**
  * 编译bindFor命令，会中止编译，直到生成新的renderer实例时才会继续编译新实例
  */
-export function compileFor(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], name:string, exp:string, mediatorCls?:IMediatorConstructor, declaredMediatorCls?:IMediatorConstructor, dataExp?:string):void
+export function compileFor(mediator:IMediator, currentTarget:ICompileTarget, target:any, envModels:any[], name:string, exp:BindForExpType, mediatorCls?:IMediatorConstructor, declaredMediatorCls?:IMediatorConstructor, dataExp?:EvalExp):void
 {
     // 将后面的编译命令缓存起来
     var leftHandlers:IStopLeftHandler[] = target.__stop_left_handlers__;

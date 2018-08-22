@@ -329,22 +329,32 @@ export default class BindManager
      * @param {*} target 绑定命令本来所在的对象
      * @param {any[]} envModels 环境变量数组
      * @param {string} name 绑定本来所在的对象在Mediator中的名字
-     * @param {string} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式
+     * @param {BindForExpType} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式。或者以三元组形式提供，如["a", "in", "b"]，其中b可以是表达式，也可以是求值方法
      * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
      * @param {IMediatorConstructor} [declaredMediatorCls] 声明的Mediator类型
-     * @param {string} [dataExp] 提供给中介者包装器的数据表达式
+     * @param {EvalExp} [dataExp] 提供给中介者包装器的数据表达式
      * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    public bindFor(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:string, mediatorCls?:IMediatorConstructor, declaredMediatorCls?:IMediatorConstructor, dataExp?:string, callback?:(data:any, renderer:any, envModels:any[])=>void):void
+    public bindFor(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:BindForExpType, mediatorCls?:IMediatorConstructor, declaredMediatorCls?:IMediatorConstructor, dataExp?:EvalExp, callback?:(data:any, renderer:any, envModels:any[])=>void):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
         var subMediatorCache:IMediator[] = [];
         this.addBindHandler(mediator, ()=>{
-            // 解析表达式
-            var res:RegExpExecArray = this._regExp.exec(exp);
-            if(!res) return;
+            var expTuple:BindForExpTuple;
+            if(typeof exp === "string")
+            {
+                // 字符串形式，解析表达式
+                var res:RegExpExecArray = this._regExp.exec(exp);
+                if(!res) return;
+                expTuple = [res[1], <"in"|"of">res[2], res[5]];
+            }
+            else
+            {
+                // 元组形式，直接赋值
+                expTuple = exp;
+            }
             // 如果给出了声明的Mediator类型，则生成一个声明Mediator，替换掉mediator当前的皮肤
             var declaredMediator:IMediator
             if(declaredMediatorCls)
@@ -362,7 +372,7 @@ export default class BindManager
                     $parent: envModels[0] || mediator.viewModel
                 };
                 // 填入用户声明的属性
-                subScope[res[1]] = (res[2] == "in" ? key : value);
+                subScope[expTuple[0]] = (expTuple[1] == "in" ? key : value);
                 // 生成一个环境变量的副本
                 var subEnvModels:any[] = envModels.concat();
                 // 插入环境变量
@@ -415,7 +425,7 @@ export default class BindManager
             // 如果之前绑定过，则要先销毁之
             if(watcher) watcher.dispose();
             // 获得要遍历的数据集合
-            watcher = bindData.bind.createWatcher(currentTarget, target, res[5], (datas:any)=>{
+            watcher = bindData.bind.createWatcher(currentTarget, target, expTuple[2], (datas:any)=>{
                 // 如果遍历的对象是个数字，则伪造一个临时数组供使用
                 if(typeof datas === "number")
                 {
@@ -530,6 +540,12 @@ export default class BindManager
         }
     }
 }
+
+/** BindFor三元组形式 */
+export type BindForExpTuple = [string, "in"|"of", EvalExp];
+
+/** BindFor表达式可接受的类型 */
+export type BindForExpType = string | BindForExpTuple;
 
 export interface BindData
 {

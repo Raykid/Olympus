@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { BindForExpType } from '../bind/BindManager';
 import { EvalExp } from "../bind/Utils";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
 import { IResponseDataConstructor } from "../net/ResponseData";
@@ -31,9 +32,9 @@ export declare function GlobalResponseHandler(cls: IResponseDataConstructor): Me
 /** 处理全局通讯消息错误 */
 export declare function GlobalResponseErrorHandler(cls: IResponseDataConstructor): MethodDecorator;
 /** 添加子Mediator */
-export declare function SubMediator(dataExp?: string): PropertyDecorator;
-export declare function SubMediator(mediatorCls: IMediatorConstructor, dataExp?: string): PropertyDecorator;
-export declare function SubMediator(skin: any, mediatorCls?: IMediatorConstructor, dataExp?: string): PropertyDecorator;
+export declare function SubMediator(dataExp?: EvalExp): PropertyDecorator;
+export declare function SubMediator(mediatorCls: IMediatorConstructor, dataExp?: EvalExp): PropertyDecorator;
+export declare function SubMediator(skin: any, mediatorCls?: IMediatorConstructor, dataExp?: EvalExp): PropertyDecorator;
 export declare function SubMediator(prototype: any, propertyKey: string): void;
 /**
  * 一次绑定多个属性
@@ -162,10 +163,10 @@ export declare function BindFor(uiDict: {
  * @export
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
- * @param {string} [dataExp] 传递给中介者的数据表达式
+ * @param {EvalExp} [dataExp] 传递给中介者的数据表达式
  * @returns {PropertyDecorator}
  */
-export declare function BindFor(exp: string, mediatorCls?: IMediatorConstructor, dataExp?: string): PropertyDecorator;
+export declare function BindFor(exp: BindForExpType, mediatorCls?: IMediatorConstructor, dataExp?: EvalExp): PropertyDecorator;
 /**
  * 绑定数据集合到指定对象
  *
@@ -173,10 +174,10 @@ export declare function BindFor(exp: string, mediatorCls?: IMediatorConstructor,
  * @param {string} name ui属性名称
  * @param {string} exp 遍历表达式，形如："a in b"（a遍历b的key）或"a of b"（a遍历b的value）
  * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
- * @param {string} [dataExp] 传递给中介者的数据表达式
+ * @param {EvalExp} [dataExp] 传递给中介者的数据表达式
  * @returns {PropertyDecorator}
  */
-export declare function BindFor(name: string, exp: string, mediatorCls?: IMediatorConstructor, dataExp?: string): PropertyDecorator;
+export declare function BindFor(name: string, exp: BindForExpType, mediatorCls?: IMediatorConstructor, dataExp?: EvalExp): PropertyDecorator;
 /**
  * 一次绑定多个消息
  *
