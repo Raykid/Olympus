@@ -316,7 +316,7 @@ var EgretBridge = /** @class */ (function () {
                 };
             }
             // 资源版本号机制
-            if (this._initParams.hasAssetsVersion !== false) {
+            if (self._initParams.hasAssetsVersion !== false) {
                 RES.registerVersionController(new ResourceVersionController());
             }
             // 启动Egret引擎

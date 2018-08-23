@@ -342,7 +342,7 @@ export default class EgretBridge implements IBridge
                 }
             }
             // 资源版本号机制
-            if(this._initParams.hasAssetsVersion !== false)
+            if(self._initParams.hasAssetsVersion !== false)
             {
                 RES.registerVersionController(new ResourceVersionController());
             }
