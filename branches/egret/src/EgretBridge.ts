@@ -13,7 +13,7 @@ import SceneMessage from "olympus-r/engine/scene/SceneMessage";
 import { version } from 'olympus-r/engine/version/Version';
 import { load } from "olympus-r/utils/HTTPUtil";
 import { wrapAbsolutePath } from "olympus-r/utils/URLUtil";
-import AssetsLoader, { IResourceDict } from "./egret/AssetsLoader";
+import AssetsLoader, { IResourceDict, ResourceVersionController } from "./egret/AssetsLoader";
 import UpdateScreenSizeCommand from "./egret/command/UpdateScreenSizeCommand";
 import MaskEntity, { MaskData } from "./egret/mask/MaskEntity";
 import BackPanelPolicy from "./egret/panel/BackPanelPolicy";
@@ -340,6 +340,11 @@ export default class EgretBridge implements IBridge
                     // 返回结果
                     return result;
                 }
+            }
+            // 资源版本号机制
+            if(this._initParams.hasAssetsVersion !== false)
+            {
+                RES.registerVersionController(new ResourceVersionController());
             }
             // 启动Egret引擎
             egret.runEgret({
@@ -856,6 +861,8 @@ export interface IInitParams
     preloadGroups?:string[];
     /** 嵌入字体名称数组 */
     embededFonts?:string[];
+    /** 是否需要资源版本替换机制，默认为true */
+    hasAssetsVersion?:boolean;
 }
 
 class AssetAdapter implements eui.IAssetAdapter

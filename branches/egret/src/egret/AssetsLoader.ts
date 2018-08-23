@@ -1,4 +1,3 @@
-import { engine } from "olympus-r/engine/Engine";
 import { environment } from "olympus-r/engine/env/Environment";
 import { panelManager } from "olympus-r/engine/panel/PanelManager";
 import { platformManager } from "olympus-r/engine/platform/PlatformManager";
@@ -51,19 +50,14 @@ export class ResourceVersionController implements RES.IVersionController
 
     public getVirtualUrl(url:string):string
     {
-        if(engine.initParams.hasVersion !== false)
-        {
-            // 添加imgDomain
-            url = environment.toCDNHostURL(url);
-            // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
-            url = version.wrapHashUrl(url);
-        }
+        // 添加imgDomain
+        url = environment.toCDNHostURL(url);
+        // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
+        url = version.wrapHashUrl(url);
         // 返回url
         return url;
     }
 }
-// 这里直接注册一下
-RES.registerVersionController(new ResourceVersionController());
 
 export default class AssetsLoader
 {

@@ -356,4 +356,6 @@ export interface IInitParams {
     preloadGroups?: string[];
     /** 嵌入字体名称数组 */
     embededFonts?: string[];
+    /** 是否需要资源版本替换机制，默认为true */
+    hasAssetsVersion?: boolean;
 }
