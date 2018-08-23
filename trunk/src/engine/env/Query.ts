@@ -29,7 +29,7 @@ export default class Query
     public constructor()
     {
         this._params = {};
-        var query: string = window.location.search.substr(1);
+        var query: string = (window.location.search && window.location.search.substr(1)) || "";
         var vars: string[] = query.split('&');
         for (var i: number = 0, len: number = vars.length; i < len; i++)
         {

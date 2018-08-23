@@ -1,7 +1,7 @@
+import "../../libs/Reflect";
+import { listenConstruct } from "../../utils/ConstructUtil";
 import { core } from "../Core";
 import { decorateThis } from "../global/Patch";
-import { listenConstruct } from "../../utils/ConstructUtil";
-import "reflect-metadata";
 /**
  * @author Raykid
  * @email initial_r@qq.com

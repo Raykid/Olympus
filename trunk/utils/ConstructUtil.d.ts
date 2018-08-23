@@ -1,4 +1,5 @@
 import IConstructor from "../core/interfaces/IConstructor";
+import "../libs/Reflect";
 /**
  * 包装一个类型，监听类型的实例化操作
  *

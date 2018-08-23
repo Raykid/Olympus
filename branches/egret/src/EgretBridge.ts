@@ -344,7 +344,8 @@ export default class EgretBridge implements IBridge
             // 启动Egret引擎
             egret.runEgret({
                 renderMode: renderMode,
-                audioType: 0
+                audioType: 0,
+                entryClassName: "__EgretRoot__"
             });
         }
 

@@ -1,3 +1,4 @@
+import "../libs/Reflect";
 import Dictionary from "../utils/Dictionary";
 import { extendsClass } from "../utils/ObjectUtil";
 /**
@@ -34,7 +35,7 @@ export function wrapConstruct(cls) {
         // 使用Proxy监听类型构建
         return new Proxy(cls, {
             construct: function (target, args, newTarget) {
-                var result = Reflect.construct(target, args, newTarget);
+                var result = Reflect["construct"](target, args, newTarget);
                 if (newTarget)
                     result.constructor = newTarget;
                 handleInstance(result);
@@ -45,7 +46,14 @@ export function wrapConstruct(cls) {
     else {
         // 创建一个新的构造函数
         var func;
-        eval('func = function ' + cls["name"] + '(){onConstruct.call(this, arguments)}');
+        try {
+            // 尝试保持原始类型的名称
+            eval('func = function ' + cls["name"] + '(){onConstruct.call(this, arguments)}');
+        }
+        catch (err) {
+            // 尝试失败，使用无名类型
+            func = onConstruct;
+        }
         // 动态设置继承
         extendsClass(func, cls);
         // 为新的构造函数打一个标签，用以记录原始的构造函数

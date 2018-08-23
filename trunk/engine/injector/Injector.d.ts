@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import "../../libs/Reflect";
 import { BindForExpType } from '../bind/BindManager';
 import { EvalExp } from "../bind/Utils";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";

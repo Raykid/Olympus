@@ -1,4 +1,5 @@
 import * as tslib_1 from "tslib";
+import { engine } from "olympus-r/engine/Engine";
 import { environment } from "olympus-r/engine/env/Environment";
 import { panelManager } from "olympus-r/engine/panel/PanelManager";
 import { platformManager } from "olympus-r/engine/platform/PlatformManager";
@@ -14,10 +15,12 @@ var ResourceVersionController = /** @class */ (function () {
         });
     };
     ResourceVersionController.prototype.getVirtualUrl = function (url) {
-        // 添加imgDomain
-        url = environment.toCDNHostURL(url);
-        // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
-        url = version.wrapHashUrl(url);
+        if (engine.initParams.hasVersion !== false) {
+            // 添加imgDomain
+            url = environment.toCDNHostURL(url);
+            // 添加版本号，有哈希值就用哈希值加载，没有就用编译版本号加载
+            url = version.wrapHashUrl(url);
+        }
         // 返回url
         return url;
     };

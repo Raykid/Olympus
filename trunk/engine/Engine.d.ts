@@ -30,6 +30,14 @@ export declare enum InitStep {
 }
 export default class Engine {
     private _initParams;
+    /**
+     * 获取初始化参数
+     *
+     * @readonly
+     * @type {IInitParams}
+     * @memberof Engine
+     */
+    readonly initParams: IInitParams;
     private _loadElement;
     private _initStep;
     /**
@@ -89,6 +97,13 @@ export interface IInitParams {
      * @memberof IInitParams
      */
     env?: string;
+    /**
+     * 是否要使用版本机制，默认为true
+     *
+     * @type {boolean}
+     * @memberof IInitParams
+     */
+    hasVersion?: boolean;
     /**
      * 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
      *

@@ -42,6 +42,20 @@ var Engine = /** @class */ (function () {
     function Engine() {
         this._initStep = InitStep.Uninit;
     }
+    Object.defineProperty(Engine.prototype, "initParams", {
+        /**
+         * 获取初始化参数
+         *
+         * @readonly
+         * @type {IInitParams}
+         * @memberof Engine
+         */
+        get: function () {
+            return this._initParams;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Engine.prototype, "initStep", {
         /**
          * 获取框架初始化进程
@@ -89,7 +103,11 @@ var Engine = /** @class */ (function () {
             // 初始化环境参数
             environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 初始化版本号工具
-            version.initialize(function () {
+            if (params.hasVersion !== false)
+                version.initialize(afterInitVersion, params.version);
+            else
+                afterInitVersion();
+            function afterInitVersion() {
                 // 调用进度回调，版本号初始化完毕为20%
                 self._initStep = InitStep.VersionInited;
                 params.onInitProgress && params.onInitProgress(0.2, self._initStep);
@@ -97,7 +115,7 @@ var Engine = /** @class */ (function () {
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
                 bridgeManager.registerBridge.apply(bridgeManager, params.bridges);
-            }, params.version);
+            }
         }
     };
     /**

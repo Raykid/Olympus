@@ -183,7 +183,7 @@ export function getName(url:string):string
  */
 export function parseUrl(url:string):URLLocation
 {
-    var regExp:RegExp = /(([^:]+:)\/{2,}(([^:\/\?#]+)(:(\d+))?))(\/[^?#]*)?(\?[^#]*)?(#.*)?/;
+    var regExp:RegExp = /(([^:]+:)\/{2,}(([^:\/\?#]+)(:(\d+))?))?(\/[^?#]*)?(\?[^#]*)?(#.*)?/;
     var match:RegExpExecArray = regExp.exec(url);
     if(match)
     {

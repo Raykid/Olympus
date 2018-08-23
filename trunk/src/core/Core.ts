@@ -1,11 +1,10 @@
+import "../libs/Reflect";
 import Dictionary from "../utils/Dictionary";
-import IMessage from "./message/IMessage";
 import ICommandConstructor from "./command/ICommandConstructor";
+import * as Patch from "./global/Patch";
+import IMessage from "./message/IMessage";
 import IObservable from "./observable/IObservable";
 import Observable from "./observable/Observable";
-import * as Injector from "./injector/Injector";
-import "reflect-metadata";
-import * as Patch from "./global/Patch";
 Patch;
 
 /**

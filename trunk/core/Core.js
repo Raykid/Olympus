@@ -1,7 +1,7 @@
+import "../libs/Reflect";
 import Dictionary from "../utils/Dictionary";
-import Observable from "./observable/Observable";
-import "reflect-metadata";
 import * as Patch from "./global/Patch";
+import Observable from "./observable/Observable";
 Patch;
 /**
  * 核心上下文对象，负责内核消息转发、对象注入等核心功能的实现

@@ -163,7 +163,7 @@ export function getName(url) {
  * @returns {any} 解析后的URLLocation结构体
  */
 export function parseUrl(url) {
-    var regExp = /(([^:]+:)\/{2,}(([^:\/\?#]+)(:(\d+))?))(\/[^?#]*)?(\?[^#]*)?(#.*)?/;
+    var regExp = /(([^:]+:)\/{2,}(([^:\/\?#]+)(:(\d+))?))?(\/[^?#]*)?(\?[^#]*)?(#.*)?/;
     var match = regExp.exec(url);
     if (match) {
         return {

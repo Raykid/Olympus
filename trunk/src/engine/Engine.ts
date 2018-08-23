@@ -47,6 +47,19 @@ export enum InitStep
 export default class Engine
 {
     private _initParams:IInitParams;
+
+    /**
+     * 获取初始化参数
+     *
+     * @readonly
+     * @type {IInitParams}
+     * @memberof Engine
+     */
+    public get initParams():IInitParams
+    {
+        return this._initParams;
+    }
+
     private _loadElement:Element;
     
     private _initStep:InitStep = InitStep.Uninit;
@@ -94,7 +107,13 @@ export default class Engine
             // 初始化环境参数
             environment.initialize(params.env, params.hostsDict, params.cdnsDict);
             // 初始化版本号工具
-            version.initialize(()=>{
+            if(params.hasVersion !== false)
+                version.initialize(afterInitVersion, params.version);
+            else
+                afterInitVersion();
+            
+            function afterInitVersion():void
+            {
                 // 调用进度回调，版本号初始化完毕为20%
                 self._initStep = InitStep.VersionInited;
                 params.onInitProgress && params.onInitProgress(0.2, self._initStep);
@@ -102,7 +121,7 @@ export default class Engine
                 core.listen(BridgeMessage.BRIDGE_ALL_INIT, self.onAllBridgesInit, self);
                 // 注册并初始化表现层桥实例
                 bridgeManager.registerBridge(...params.bridges);
-            }, params.version);
+            }
         }
     }
 
@@ -229,6 +248,13 @@ export interface IInitParams
      * @memberof IInitParams
      */
     env?:string;
+    /**
+     * 是否要使用版本机制，默认为true
+     *
+     * @type {boolean}
+     * @memberof IInitParams
+     */
+    hasVersion?:boolean;
     /**
      * 加载version.cfg文件的版本号，不传则使用随机时间戳作为版本号
      * 

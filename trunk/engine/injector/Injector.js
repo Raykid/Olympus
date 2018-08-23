@@ -1,8 +1,8 @@
-import "reflect-metadata";
 import { core } from "../../core/Core";
 import { decorateThis } from "../../core/global/Patch";
 import { Injectable } from "../../core/injector/Injector";
 import Message from "../../core/message/Message";
+import "../../libs/Reflect";
 import { listenApply, listenConstruct, listenDispose, wrapConstruct } from "../../utils/ConstructUtil";
 import Dictionary from "../../utils/Dictionary";
 import { replaceDisplay } from "../../utils/DisplayUtil";

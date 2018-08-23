@@ -318,7 +318,8 @@ var EgretBridge = /** @class */ (function () {
             // 启动Egret引擎
             egret.runEgret({
                 renderMode: renderMode,
-                audioType: 0
+                audioType: 0,
+                entryClassName: "__EgretRoot__"
             });
         }
         function onRootInitialized(root) {

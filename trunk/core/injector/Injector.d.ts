@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import "../../libs/Reflect";
 /**
  * @author Raykid
  * @email initial_r@qq.com

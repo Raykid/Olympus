@@ -1,7 +1,7 @@
-import IMessage from "./message/IMessage";
+import "../libs/Reflect";
 import ICommandConstructor from "./command/ICommandConstructor";
+import IMessage from "./message/IMessage";
 import IObservable from "./observable/IObservable";
-import "reflect-metadata";
 /**
  * @author Raykid
  * @email initial_r@qq.com

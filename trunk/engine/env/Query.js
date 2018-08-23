@@ -12,7 +12,7 @@ import { Injectable } from "../../core/injector/Injector";
 var Query = /** @class */ (function () {
     function Query() {
         this._params = {};
-        var query = window.location.search.substr(1);
+        var query = (window.location.search && window.location.search.substr(1)) || "";
         var vars = query.split('&');
         for (var i = 0, len = vars.length; i < len; i++) {
             var pair = vars[i].split('=', 2);
