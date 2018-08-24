@@ -358,4 +358,6 @@ export interface IInitParams {
     embededFonts?: string[];
     /** 是否需要资源版本替换机制，默认为true */
     hasAssetsVersion?: boolean;
+    /** 是否加载主题配置文件，默认为true */
+    loadThemeConfig?: boolean;
 }

@@ -26,6 +26,7 @@ var ResourceVersionController = /** @class */ (function () {
 export { ResourceVersionController };
 var AssetsLoader = /** @class */ (function () {
     function AssetsLoader(handler) {
+        this._retryDict = {};
         this._handler = handler;
     }
     AssetsLoader.prototype.loadGroups = function (groups) {

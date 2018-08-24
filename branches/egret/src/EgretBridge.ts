@@ -393,14 +393,24 @@ export default class EgretBridge implements IBridge
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
-            RES.loadConfig(version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"), self._initParams.pathPrefix + "resource/");
+            if(this._initParams.loadThemeConfig !== false)
+                RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
+            else
+                RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onThemeLoadComplete, self);
+            if(this._initParams.hasAssetsVersion !== false)
+                RES.loadConfig(version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"), self._initParams.pathPrefix + "resource/");
+            else
+                RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
         }
 
         function onConfigLoadComplete() {
             RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
             // 加载主题配置
-            var url:string = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
+            var url:string;
+            if(this._initParams.hasAssetsVersion !== false)
+                url = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
+            else
+                url = self._initParams.pathPrefix + "resource/default.thm.json";
             var theme:eui.Theme = new eui.Theme(url, self._root.stage);
             theme.addEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
         }
@@ -863,6 +873,8 @@ export interface IInitParams
     embededFonts?:string[];
     /** 是否需要资源版本替换机制，默认为true */
     hasAssetsVersion?:boolean;
+    /** 是否加载主题配置文件，默认为true */
+    loadThemeConfig?:boolean;
 }
 
 class AssetAdapter implements eui.IAssetAdapter

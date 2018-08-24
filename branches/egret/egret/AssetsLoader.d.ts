@@ -34,6 +34,7 @@ export declare class ResourceVersionController implements RES.IVersionController
 }
 export default class AssetsLoader {
     private _handler;
+    private _retryDict;
     constructor(handler: ILoaderHandler);
     loadGroups(groups: (string | IGroupParams)[]): void;
 }

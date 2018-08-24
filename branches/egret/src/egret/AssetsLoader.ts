@@ -62,6 +62,7 @@ export class ResourceVersionController implements RES.IVersionController
 export default class AssetsLoader
 {
     private _handler:ILoaderHandler;
+    private _retryDict:{[name:string]:number} = {};
 
     public constructor(handler:ILoaderHandler)
     {
