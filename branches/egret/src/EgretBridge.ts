@@ -393,11 +393,11 @@ export default class EgretBridge implements IBridge
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            if(this._initParams.loadThemeConfig !== false)
+            if(self._initParams.loadThemeConfig !== false)
                 RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
             else
                 RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onThemeLoadComplete, self);
-            if(this._initParams.hasAssetsVersion !== false)
+            if(self._initParams.hasAssetsVersion !== false)
                 RES.loadConfig(version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"), self._initParams.pathPrefix + "resource/");
             else
                 RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
@@ -407,7 +407,7 @@ export default class EgretBridge implements IBridge
             RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
             // 加载主题配置
             var url:string;
-            if(this._initParams.hasAssetsVersion !== false)
+            if(self._initParams.hasAssetsVersion !== false)
                 url = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
             else
                 url = self._initParams.pathPrefix + "resource/default.thm.json";
@@ -419,7 +419,7 @@ export default class EgretBridge implements IBridge
         {
             evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
             // 加载预加载资源组
-            var preloadGroups:string[] = this._initParams.preloadGroups;
+            var preloadGroups:string[] = self._initParams.preloadGroups;
             self.loadAssets(preloadGroups, null, err=>complete(self));
         }
     }

@@ -364,11 +364,11 @@ var EgretBridge = /** @class */ (function () {
             egret.registerImplementation("eui.IAssetAdapter", new AssetAdapter());
             egret.registerImplementation("eui.IThemeAdapter", new ThemeAdapter(self._initParams));
             // 加载资源配置
-            if (this._initParams.loadThemeConfig !== false)
+            if (self._initParams.loadThemeConfig !== false)
                 RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
             else
                 RES.addEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onThemeLoadComplete, self);
-            if (this._initParams.hasAssetsVersion !== false)
+            if (self._initParams.hasAssetsVersion !== false)
                 RES.loadConfig(version.wrapHashUrl(self._initParams.pathPrefix + "resource/default.res.json"), self._initParams.pathPrefix + "resource/");
             else
                 RES.loadConfig(self._initParams.pathPrefix + "resource/default.res.json", self._initParams.pathPrefix + "resource/");
@@ -377,7 +377,7 @@ var EgretBridge = /** @class */ (function () {
             RES.removeEventListener(RES.ResourceEvent.CONFIG_COMPLETE, onConfigLoadComplete, self);
             // 加载主题配置
             var url;
-            if (this._initParams.hasAssetsVersion !== false)
+            if (self._initParams.hasAssetsVersion !== false)
                 url = wrapAbsolutePath(self._initParams.pathPrefix + "resource/default.thm.json", environment.curCDNHost);
             else
                 url = self._initParams.pathPrefix + "resource/default.thm.json";
@@ -387,7 +387,7 @@ var EgretBridge = /** @class */ (function () {
         function onThemeLoadComplete(evt) {
             evt.target.removeEventListener(eui.UIEvent.COMPLETE, onThemeLoadComplete, self);
             // 加载预加载资源组
-            var preloadGroups = this._initParams.preloadGroups;
+            var preloadGroups = self._initParams.preloadGroups;
             self.loadAssets(preloadGroups, null, function (err) { return complete(self); });
         }
     };
