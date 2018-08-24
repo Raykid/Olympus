@@ -1141,7 +1141,7 @@ catch(err)
 
 function rootage()
 {
-    var root = global || window;
+    var root = window || global;
     if(root) root.Reflect = _Reflect;
 }
 //# sourceMappingURL=Reflect.js.map
