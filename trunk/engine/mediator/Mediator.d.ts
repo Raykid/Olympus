@@ -43,6 +43,7 @@ export declare function getModule(moduleName: string): IMediatorConstructor;
  * @returns {string} 模块名
  */
 export declare function getModuleName(type: ModuleType): string;
+export declare function isMediator(target: any): boolean;
 export default class Mediator implements IMediator {
     private _status;
     /**

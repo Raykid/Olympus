@@ -47,6 +47,9 @@ export function getModuleName(type) {
     var cls = getConstructor(type instanceof Function ? type : type.constructor);
     return moduleNameDict.get(cls);
 }
+export function isMediator(target) {
+    return (target.delegateMediator instanceof Function && target.undelegateMediator instanceof Function);
+}
 var Mediator = /** @class */ (function () {
     function Mediator(skin) {
         this._status = MediatorStatus.UNOPEN;

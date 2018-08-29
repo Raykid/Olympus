@@ -7,6 +7,7 @@ import { extendObject, getObjectHashs } from "../../utils/ObjectUtil";
 import IBridge from "../bridge/IBridge";
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
+import { isMediator } from '../mediator/Mediator';
 import { netManager } from "../net/NetManager";
 import { IResponseDataConstructor } from "../net/ResponseData";
 import Bind from "./Bind";
@@ -331,12 +332,12 @@ export default class BindManager
      * @param {string} name 绑定本来所在的对象在Mediator中的名字
      * @param {BindForExpType} exp 循环表达式，形如："a in b"（表示a遍历b中的key）或"a of b"（表示a遍历b中的值）。b可以是个表达式。或者以三元组形式提供，如["a", "in", "b"]，其中b可以是表达式，也可以是求值方法
      * @param {IMediatorConstructor} [mediatorCls] 提供该参数将使用提供的中介者包装每一个渲染器
-     * @param {IMediatorConstructor} [declaredMediatorCls] 声明的Mediator类型
+     * @param {IConstructor} [declaredCls] 声明的类型
      * @param {EvalExp} [dataExp] 提供给中介者包装器的数据表达式
      * @param {(data:any, renderer:any, envModels:any[])=>void} [callback] 每次生成新的renderer实例时调用这个回调
      * @memberof BindManager
      */
-    public bindFor(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:BindForExpType, mediatorCls?:IMediatorConstructor, declaredMediatorCls?:IMediatorConstructor, dataExp?:EvalExp, callback?:(data:any, renderer:any, envModels:any[])=>void):void
+    public bindFor(mediator:IMediator, currentTarget:any, target:any, envModels:any[], name:string, exp:BindForExpType, mediatorCls?:IMediatorConstructor, declaredCls?:IConstructor, dataExp?:EvalExp, callback?:(data:any, renderer:any, envModels:any[])=>void):void
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
@@ -358,21 +359,24 @@ export default class BindManager
             }
             // 如果给出了声明的Mediator类型，则生成一个声明Mediator，替换掉mediator当前的皮肤
             var declaredMediator:IMediator
-            if(declaredMediatorCls)
+            if(isMediator(declaredCls.prototype))
             {
-                declaredMediator = new declaredMediatorCls(target);
+                declaredMediator = new declaredCls(target);
                 mediator.delegateMediator(declaredMediator);
                 mediator[name] = declaredMediator;
             }
-            else if(mediatorCls)
+            else if(declaredCls === Array)
             {
-                // 如果规定了变身中介者，则将该属性变成中介者列表
-                mediator[name] = subMediatorCache;
-            }
-            else
-            {
-                // 否则变成渲染器对象列表
-                mediator[name] = subTargetCache;
+                if(mediatorCls)
+                {
+                    // 如果规定了变身中介者，则将该属性变成中介者列表
+                    mediator[name] = subMediatorCache;
+                }
+                else
+                {
+                    // 否则变成渲染器对象列表
+                    mediator[name] = subTargetCache;
+                }
             }
             // 包装渲染器创建回调
             var memento:any = mediator.bridge.wrapBindFor(currentTarget, (key:any, value:any, renderer:any)=>{

@@ -13,7 +13,7 @@ import { bridgeManager } from "../bridge/BridgeManager";
 import IBridge from "../bridge/IBridge";
 import IMediator from "../mediator/IMediator";
 import IMediatorConstructor from "../mediator/IMediatorConstructor";
-import Mediator, { getModuleName, registerModule } from "../mediator/Mediator";
+import Mediator, { getModuleName, isMediator, registerModule } from "../mediator/Mediator";
 import MediatorStatus from "../mediator/MediatorStatus";
 import { netManager } from "../net/NetManager";
 import RequestData from '../net/RequestData';
@@ -295,11 +295,6 @@ function addSubHandler(instance:IMediator, handler:(instance?:IMediator)=>void):
     var handlers:((instance:IMediator)=>void)[] = subHandlerDict.get(instance);
     if(!handlers) subHandlerDict.set(instance, handlers = []);
     if(handlers.indexOf(handler) < 0) handlers.push(handler);
-}
-
-function isMediator(target:any):boolean
-{
-    return (target.delegateMediator instanceof Function && target.undelegateMediator instanceof Function);
 }
 
 /** 添加子Mediator */
@@ -852,9 +847,6 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
     return function(prototype:any, propertyKey:string):void
     {
         var declaredCls:any = Reflect.getMetadata("design:type", prototype, propertyKey);
-        var declaredMediatorCls:any;
-        if(isMediator(declaredCls.prototype))
-            declaredMediatorCls = declaredCls;
         BindUtil.listenOnOpen(prototype, (mediator:IMediator)=>{
             // 取到编译目标对象
             var target:any = mediator[propertyKey];
@@ -866,7 +858,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
                     // 没有指定寻址路径，就是要操作当前对象，但也要经过一次searchUIDepth操作
                     BindUtil.searchUIDepth({r: 13}, mediator, target, (currentTarget:any, target:any, _name:string, _exp:BindForExpType, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredMediatorCls, dataExp);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, exp, mediatorCls, declaredCls, dataExp);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     });
@@ -879,7 +871,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
                     // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                     BindUtil.searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:BindForExpType, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                         // 添加编译指令
-                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
+                        BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredCls, dataExp);
                         // 设置中断编译
                         target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                     }, true);
@@ -890,7 +882,7 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
                 // 遍历绑定的目标，将编译指令绑定到目标身上，而不是指令所在的显示对象身上
                 BindUtil.searchUIDepth(uiDict, mediator, target, (currentTarget:any, target:any, _name:string, _exp:BindForExpType, leftHandlers:BindUtil.IStopLeftHandler[], index?:number)=>{
                     // 添加编译指令
-                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredMediatorCls, dataExp);
+                    BindUtil.pushCompileCommand(currentTarget, target, BindUtil.compileFor, propertyKey, _exp, mediatorCls, declaredCls, dataExp);
                     // 设置中断编译
                     target.__stop_left_handlers__ = leftHandlers ? leftHandlers.splice(index + 1, leftHandlers.length - index - 1) : [];
                 }, true);

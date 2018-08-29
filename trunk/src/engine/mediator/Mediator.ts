@@ -75,6 +75,11 @@ export function getModuleName(type:ModuleType):string
     return moduleNameDict.get(cls);
 }
 
+export function isMediator(target:any):boolean
+{
+    return (target.delegateMediator instanceof Function && target.undelegateMediator instanceof Function);
+}
+
 export default class Mediator implements IMediator
 {
     private _status:MediatorStatus = MediatorStatus.UNOPEN;
