@@ -489,7 +489,7 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:EvalExp):any
                 if(mediator)
                 {
                     // 移除实例
-                    instance[propertyKey] = undefined;
+                    delete instance[propertyKey];
                 }
             });
         }

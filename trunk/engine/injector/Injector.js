@@ -390,7 +390,7 @@ export function SubMediator(arg1, arg2, arg3) {
                 var mediator = instance[propertyKey];
                 if (mediator) {
                     // 移除实例
-                    instance[propertyKey] = undefined;
+                    delete instance[propertyKey];
                 }
             });
         }
