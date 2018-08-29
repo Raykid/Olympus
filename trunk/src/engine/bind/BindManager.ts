@@ -340,6 +340,7 @@ export default class BindManager
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
+        var subTargetCache:any[] = [];
         var subMediatorCache:IMediator[] = [];
         this.addBindHandler(mediator, ()=>{
             var expTuple:BindForExpTuple;
@@ -362,6 +363,16 @@ export default class BindManager
                 declaredMediator = new declaredMediatorCls(target);
                 mediator.delegateMediator(declaredMediator);
                 mediator[name] = declaredMediator;
+            }
+            else if(mediatorCls)
+            {
+                // 如果规定了变身中介者，则将该属性变成中介者列表
+                mediator[name] = subMediatorCache;
+            }
+            else
+            {
+                // 否则变成渲染器对象列表
+                mediator[name] = subTargetCache;
             }
             // 包装渲染器创建回调
             var memento:any = mediator.bridge.wrapBindFor(currentTarget, (key:any, value:any, renderer:any)=>{
@@ -418,6 +429,11 @@ export default class BindManager
                     subMediator.open(data);
                     // 缓存子中介者
                     subMediatorCache.push(subMediator);
+                }
+                else
+                {
+                    // 缓存渲染器对象
+                    subTargetCache.push(renderer);
                 }
                 // 触发回调，进行内部编译
                 callback && callback(value, renderer, subEnvModels);
