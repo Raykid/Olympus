@@ -557,7 +557,7 @@ export function BindFor(arg1, arg2, arg3, arg4) {
     var exp;
     var mediatorCls;
     var dataExp;
-    if (typeof arg1 === "string" && (arg2 === "string" || arg2 instanceof Array)) {
+    if (typeof arg1 === "string" && (typeof arg2 === "string" || arg2 instanceof Array)) {
         // 是寻址方式，需要记录name
         name = arg1;
         exp = arg2;

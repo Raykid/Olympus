@@ -824,11 +824,11 @@ export function BindFor(arg1:{[name:string]:any}|string, arg2?:any, arg3?:any, a
     var exp:BindForExpType;
     var mediatorCls:IMediatorConstructor;
     var dataExp:EvalExp;
-    if(typeof arg1 === "string" && (arg2 === "string" || arg2 instanceof Array))
+    if(typeof arg1 === "string" && (typeof arg2 === "string" || arg2 instanceof Array))
     {
         // 是寻址方式，需要记录name
         name = arg1;
-        exp = arg2;
+        exp = <BindForExpType>arg2;
         mediatorCls = arg3;
         dataExp = arg4;
     }
