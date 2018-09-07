@@ -63,13 +63,7 @@ var Watcher = /** @class */ (function () {
             $target: this._target
         };
         // 表达式求值
-        try {
-            value = (_a = this._expFunc).call.apply(_a, [this._thisArg].concat(this._scopes, [commonScope]));
-        }
-        catch (err) {
-            // 输出错误日志
-            console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp);
-        }
+        value = (_a = this._expFunc).call.apply(_a, [this._thisArg].concat(this._scopes, [commonScope]));
         // 移除自身记录
         Watcher.updating = null;
         return value;

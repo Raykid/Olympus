@@ -1,5 +1,5 @@
-import { createEvalFunc, EvalExp } from "./Utils";
 import Bind from "./Bind";
+import { createEvalFunc, EvalExp } from "./Utils";
 
 /**
  * @author Raykid
@@ -78,15 +78,7 @@ export default class Watcher implements IWatcher
             $target: this._target
         };
         // 表达式求值
-        try
-        {
-            value = this._expFunc.call(this._thisArg, ...this._scopes, commonScope);
-        }
-        catch(err)
-        {
-            // 输出错误日志
-            console.warn("表达式求值错误\nerr: " + err.toString() + "\nexp：" + this._exp);
-        }
+        value = this._expFunc.call(this._thisArg, ...this._scopes, commonScope);
         // 移除自身记录
         Watcher.updating = null;
         return value;

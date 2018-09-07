@@ -1,5 +1,5 @@
-import { EvalExp } from "./Utils";
 import Bind from "./Bind";
+import { EvalExp } from "./Utils";
 /**
  * @author Raykid
  * @email initial_r@qq.com
