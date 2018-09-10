@@ -47,8 +47,7 @@ export function cloneObject(target:any, deep:boolean=false):any
             // 如果是深表复制，则需要递归复制子对象
             value = cloneObject(value, true);
         }
-        var desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(target, key);
-        Object.defineProperty(newObject, key, desc);
+        newObject[key] = value;
     }
     return newObject;
 }
