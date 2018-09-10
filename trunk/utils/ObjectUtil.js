@@ -48,6 +48,8 @@ export function cloneObject(target, deep) {
         }
         newObject[key] = value;
     }
+    if (newObject instanceof Array)
+        newObject.length = target.length;
     return newObject;
 }
 /**
