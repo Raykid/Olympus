@@ -37,7 +37,7 @@ export function cloneObject(target, deep) {
     if (deep === void 0) { deep = false; }
     if (target == null)
         return null;
-    var newObject = Object.create(Object.getPrototypeOf(target));
+    var newObject = target instanceof Array ? [] : Object.create(Object.getPrototypeOf(target));
     var keys = Object.keys(target);
     for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
         var key = keys_1[_i];
@@ -47,15 +47,6 @@ export function cloneObject(target, deep) {
             value = cloneObject(value, true);
         }
         newObject[key] = value;
-    }
-    // 如果是数组，则需要赋值一次length属性，否则length会是0
-    if (newObject instanceof Array) {
-        Object.defineProperty(newObject, "length", {
-            configurable: true,
-            enumerable: false,
-            writable: true,
-            value: target.length
-        });
     }
     return newObject;
 }
