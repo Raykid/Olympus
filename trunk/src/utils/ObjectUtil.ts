@@ -51,7 +51,14 @@ export function cloneObject(target:any, deep:boolean=false):any
     }
     // 如果是数组，则需要赋值一次length属性，否则length会是0
     if(newObject instanceof Array)
-        newObject.length = target.length;
+    {
+        Object.defineProperty(newObject, "length", {
+            configurable: true,
+            enumerable: false,
+            writable: true,
+            value: target.length
+        });
+    }
     return newObject;
 }
 
