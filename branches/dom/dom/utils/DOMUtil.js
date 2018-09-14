@@ -1,3 +1,4 @@
+import Dictionary from 'olympus-r/utils/Dictionary';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -29,4 +30,91 @@ export function getBoundingClientRect(target, parent) {
             return this.bottom - this.top;
         }
     };
+}
+var iframeResizeDict = new Dictionary();
+/**
+ * 监听Resize
+ *
+ * @export
+ * @param {HTMLElement} target 要监听的对象
+ * @param {(target:HTMLElement)=>void} callback Resize回调
+ */
+export function listenResize(target, callback) {
+    unlistenResize(target);
+    var lastWidth = target.offsetWidth;
+    var lastHeight = target.offsetHeight;
+    // 生成iframe
+    var iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.visibility = "hidden";
+    iframe.style.border = "0";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    target.insertBefore(iframe, target.children.item(0));
+    // 监听iframe的resize事件
+    if (iframe.contentWindow)
+        listenIframeResize();
+    else
+        iframe.addEventListener("load", listenIframeResize);
+    function listenIframeResize() {
+        // 移除监听
+        iframe.removeEventListener("load", listenIframeResize);
+        // 监听resize
+        iframe.contentWindow.addEventListener("resize", tryResize);
+        // 记录监听
+        iframeResizeDict.set(target, [iframe, tryResize]);
+        // 尝试触发一次
+        tryResize();
+    }
+    function tryResize() {
+        var curWidth = target.offsetWidth;
+        var curHeight = target.offsetHeight;
+        if (curWidth !== lastWidth || curHeight !== lastHeight) {
+            lastWidth = curWidth;
+            lastHeight = curHeight;
+            callback(target);
+        }
+    }
+}
+/**
+ * 移除Resize监听
+ *
+ * @export
+ * @param {HTMLElement} target 要移除监听的目标节点
+ */
+export function unlistenResize(target) {
+    var info = iframeResizeDict.get(target);
+    if (info) {
+        // 移除事件
+        info[0].contentWindow.removeEventListener("resize", info[1]);
+        // 移除显示
+        info[0].remove();
+        // 移除记录
+        iframeResizeDict.delete(target);
+    }
+}
+function isMesurable(target) {
+    return target.offsetWidth * target.offsetHeight > 0;
+}
+/**
+ * 当目标拥有尺寸时触发Promise
+ *
+ * @export
+ * @param {HTMLElement} target 要丈量的目标节点
+ * @returns {Promise<HTMLElement>}
+ */
+export function waitMeasurable(target) {
+    return new Promise(function (resolve) {
+        if (isMesurable(target)) {
+            resolve(target);
+        }
+        else {
+            listenResize(target, function () {
+                if (isMesurable(target)) {
+                    unlistenResize(target);
+                    resolve(target);
+                }
+            });
+        }
+    });
 }
