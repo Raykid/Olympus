@@ -122,8 +122,11 @@ export default class MaskEntityImpl implements IMaskEntity
         if(alpha == null) alpha = this._modalPanelAlpha;
         this._modalPanelMask.style.backgroundColor = "#000";
         this._modalPanelMask.style.opacity = alpha.toString();
+        this._modalPanelMask.style.position = "absolute";
         this._modalPanelMask.style.width = "100%";
         this._modalPanelMask.style.height = "100%";
+        this._modalPanelMask.style.top = "0";
+        this._modalPanelMask.style.left = "0";
         // 添加显示
         var entity:HTMLElement = panel.skin;
         var parent:HTMLElement = entity.parentElement;
