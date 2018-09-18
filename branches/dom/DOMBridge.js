@@ -1,13 +1,13 @@
 /// <amd-module name="DOMBridge"/>
 /// <reference types="tween.js"/>
-import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
+import * as TWEEN from "@tweenjs/tween.js";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
 import { system } from "olympus-r/engine/system/System";
+import { extendObject, getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import MaskEntity from "./dom/mask/MaskEntity";
-import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
-import * as TWEEN from "@tweenjs/tween.js";
+import { copyRef, isDOMPath, isDOMStr, toHTMLElement, wrapSkin } from "./dom/utils/SkinUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -339,9 +339,9 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 添加显示
      *
-     * @param {Element} parent 要添加到的父容器
-     * @param {Element} target 被添加的显示对象
-     * @return {Element} 返回被添加的显示对象
+     * @param {Node} parent 要添加到的父容器
+     * @param {Node} target 被添加的显示对象
+     * @return {Node} 返回被添加的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.addChild = function (parent, target) {
@@ -350,10 +350,10 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 按索引添加显示
      *
-     * @param {Element} parent 要添加到的父容器
-     * @param {Element} target 被添加的显示对象
+     * @param {Node} parent 要添加到的父容器
+     * @param {Node} target 被添加的显示对象
      * @param {number} index 要添加到的父级索引
-     * @return {Element} 返回被添加的显示对象
+     * @return {Node} 返回被添加的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.addChildAt = function (parent, target, index) {
@@ -362,9 +362,9 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 移除显示对象
      *
-     * @param {Element} parent 父容器
-     * @param {Element} target 被移除的显示对象
-     * @return {Element} 返回被移除的显示对象
+     * @param {Node} parent 父容器
+     * @param {Node} target 被移除的显示对象
+     * @return {Node} 返回被移除的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChild = function (parent, target) {
@@ -376,9 +376,9 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 按索引移除显示
      *
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @param {number} index 索引
-     * @return {Element} 返回被移除的显示对象
+     * @return {Node} 返回被移除的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChildAt = function (parent, index) {
@@ -387,46 +387,46 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 移除所有显示对象
      *
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChildren = function (parent) {
-        for (var i = 0, len = parent.children.length; i < len; i++) {
-            parent.removeChild(parent.children.item(i));
+        for (var i = 0, len = parent.childNodes.length; i < len; i++) {
+            parent.removeChild(parent.childNodes.item(i));
         }
     };
     /**
      * 获取父容器
      *
-     * @param {Element} target 目标对象
-     * @returns {Element} 父容器
+     * @param {Node} target 目标对象
+     * @returns {Node} 父容器
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getParent = function (target) {
-        return target.parentElement;
+        return target.parentNode;
     };
     /**
      * 获取指定索引处的显示对象
      *
      * @param {Element} parent 父容器
      * @param {number} index 指定父级索引
-     * @return {Element} 索引处的显示对象
+     * @return {Node} 索引处的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getChildAt = function (parent, index) {
-        return parent.children.item(index);
+        return parent.childNodes.item(index);
     };
     /**
      * 获取显示索引
      *
-     * @param {Element} parent 父容器
-     * @param {Element} target 子显示对象
+     * @param {Node} parent 父容器
+     * @param {Node} target 子显示对象
      * @return {number} target在parent中的索引
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getChildIndex = function (parent, target) {
-        for (var i = 0, len = parent.children.length; i < len; i++) {
-            if (target === parent.children.item(i))
+        for (var i = 0, len = parent.childNodes.length; i < len; i++) {
+            if (target === parent.childNodes.item(i))
                 return i;
         }
         return -1;
@@ -445,12 +445,12 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 获取子显示对象数量
      *
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @return {number} 子显示对象数量
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getChildCount = function (parent) {
-        return parent.childElementCount;
+        return parent.childNodes.length;
     };
     /**
      * 加载资源

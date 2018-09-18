@@ -1,10 +1,10 @@
 /// <amd-module name="DOMBridge" />
 import IBridge from "olympus-r/engine/bridge/IBridge";
-import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import IMediator from "olympus-r/engine/mediator/IMediator";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import { MaskData } from "./dom/mask/MaskEntity";
 /**
  * @author Raykid
@@ -18,7 +18,6 @@ export default class DOMBridge implements IBridge {
     /** 提供静态类型常量 */
     static TYPE: string;
     private _initParams;
-    private _promptPanel;
     /**
      * 获取表现层类型名称
      *
@@ -188,73 +187,73 @@ export default class DOMBridge implements IBridge {
     /**
      * 添加显示
      *
-     * @param {Element} parent 要添加到的父容器
-     * @param {Element} target 被添加的显示对象
-     * @return {Element} 返回被添加的显示对象
+     * @param {Node} parent 要添加到的父容器
+     * @param {Node} target 被添加的显示对象
+     * @return {Node} 返回被添加的显示对象
      * @memberof DOMBridge
      */
-    addChild(parent: Element, target: Element): Element;
+    addChild(parent: Node, target: Node): Node;
     /**
      * 按索引添加显示
      *
-     * @param {Element} parent 要添加到的父容器
-     * @param {Element} target 被添加的显示对象
+     * @param {Node} parent 要添加到的父容器
+     * @param {Node} target 被添加的显示对象
      * @param {number} index 要添加到的父级索引
-     * @return {Element} 返回被添加的显示对象
+     * @return {Node} 返回被添加的显示对象
      * @memberof DOMBridge
      */
-    addChildAt(parent: Element, target: Element, index: number): Element;
+    addChildAt(parent: Node, target: Node, index: number): Node;
     /**
      * 移除显示对象
      *
-     * @param {Element} parent 父容器
-     * @param {Element} target 被移除的显示对象
-     * @return {Element} 返回被移除的显示对象
+     * @param {Node} parent 父容器
+     * @param {Node} target 被移除的显示对象
+     * @return {Node} 返回被移除的显示对象
      * @memberof DOMBridge
      */
-    removeChild(parent: Element, target: Element): Element;
+    removeChild(parent: Node, target: Node): Node;
     /**
      * 按索引移除显示
      *
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @param {number} index 索引
-     * @return {Element} 返回被移除的显示对象
+     * @return {Node} 返回被移除的显示对象
      * @memberof DOMBridge
      */
-    removeChildAt(parent: Element, index: number): Element;
+    removeChildAt(parent: Node, index: number): Node;
     /**
      * 移除所有显示对象
      *
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @memberof DOMBridge
      */
-    removeChildren(parent: Element): void;
+    removeChildren(parent: Node): void;
     /**
      * 获取父容器
      *
-     * @param {Element} target 目标对象
-     * @returns {Element} 父容器
+     * @param {Node} target 目标对象
+     * @returns {Node} 父容器
      * @memberof DOMBridge
      */
-    getParent(target: Element): Element;
+    getParent(target: Node): Node;
     /**
      * 获取指定索引处的显示对象
      *
      * @param {Element} parent 父容器
      * @param {number} index 指定父级索引
-     * @return {Element} 索引处的显示对象
+     * @return {Node} 索引处的显示对象
      * @memberof DOMBridge
      */
-    getChildAt(parent: Element, index: number): Element;
+    getChildAt(parent: Node, index: number): Node;
     /**
      * 获取显示索引
      *
-     * @param {Element} parent 父容器
-     * @param {Element} target 子显示对象
+     * @param {Node} parent 父容器
+     * @param {Node} target 子显示对象
      * @return {number} target在parent中的索引
      * @memberof DOMBridge
      */
-    getChildIndex(parent: Element, target: Element): number;
+    getChildIndex(parent: Node, target: Node): number;
     /**
      * 通过名称获取显示对象
      *
@@ -267,11 +266,11 @@ export default class DOMBridge implements IBridge {
     /**
      * 获取子显示对象数量
      *
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @return {number} 子显示对象数量
      * @memberof DOMBridge
      */
-    getChildCount(parent: Element): number;
+    getChildCount(parent: Node): number;
     /**
      * 加载资源
      *

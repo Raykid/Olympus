@@ -1,21 +1,20 @@
 /// <amd-module name="DOMBridge"/>
 /// <reference types="tween.js"/>
 
-import IBridge from "olympus-r/engine/bridge/IBridge";
-import { getObjectHashs, extendObject } from "olympus-r/utils/ObjectUtil";
-import IPromptPanel, { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
-import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
-import IMediator from "olympus-r/engine/mediator/IMediator";
-import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import * as TWEEN from "@tweenjs/tween.js";
 import { assetsManager } from "olympus-r/engine/assets/AssetsManager";
+import IBridge from "olympus-r/engine/bridge/IBridge";
+import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
+import IMediator from "olympus-r/engine/mediator/IMediator";
+import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
+import { IPromptPanelConstructor } from "olympus-r/engine/panel/IPromptPanel";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import { system } from "olympus-r/engine/system/System";
+import { extendObject, getObjectHashs } from "olympus-r/utils/ObjectUtil";
 import MaskEntity, { MaskData } from "./dom/mask/MaskEntity";
-import * as Injector from "./dom/injector/Injector";
-import { copyRef, wrapSkin, isDOMStr, isDOMPath, toHTMLElement } from "./dom/utils/SkinUtil";
 import BackPanelPolicy from "./dom/panel/BackPanelPolicy";
 import FadeScenePolicy from "./dom/scene/FadeScenePolicy";
-import * as TWEEN from "@tweenjs/tween.js";
+import { copyRef, isDOMPath, isDOMStr, toHTMLElement, wrapSkin } from "./dom/utils/SkinUtil";
 
 /**
  * @author Raykid
@@ -31,7 +30,6 @@ export default class DOMBridge implements IBridge
     public static TYPE:string = "DOM";
 
     private _initParams:IInitParams;
-    private _promptPanel:IPromptPanel;
 
     /**
      * 获取表现层类型名称
@@ -357,12 +355,12 @@ export default class DOMBridge implements IBridge
     /**
      * 添加显示
      * 
-     * @param {Element} parent 要添加到的父容器
-     * @param {Element} target 被添加的显示对象
-     * @return {Element} 返回被添加的显示对象
+     * @param {Node} parent 要添加到的父容器
+     * @param {Node} target 被添加的显示对象
+     * @return {Node} 返回被添加的显示对象
      * @memberof DOMBridge
      */
-    public addChild(parent:Element, target:Element):Element
+    public addChild(parent:Node, target:Node):Node
     {
         return parent.appendChild(target);
     }
@@ -370,13 +368,13 @@ export default class DOMBridge implements IBridge
     /**
      * 按索引添加显示
      * 
-     * @param {Element} parent 要添加到的父容器
-     * @param {Element} target 被添加的显示对象
+     * @param {Node} parent 要添加到的父容器
+     * @param {Node} target 被添加的显示对象
      * @param {number} index 要添加到的父级索引
-     * @return {Element} 返回被添加的显示对象
+     * @return {Node} 返回被添加的显示对象
      * @memberof DOMBridge
      */
-    public addChildAt(parent:Element, target:Element, index:number):Element
+    public addChildAt(parent:Node, target:Node, index:number):Node
     {
         return parent.insertBefore(target, this.getChildAt(parent, index));
     }
@@ -384,12 +382,12 @@ export default class DOMBridge implements IBridge
     /**
      * 移除显示对象
      * 
-     * @param {Element} parent 父容器
-     * @param {Element} target 被移除的显示对象
-     * @return {Element} 返回被移除的显示对象
+     * @param {Node} parent 父容器
+     * @param {Node} target 被移除的显示对象
+     * @return {Node} 返回被移除的显示对象
      * @memberof DOMBridge
      */
-    public removeChild(parent:Element, target:Element):Element
+    public removeChild(parent:Node, target:Node):Node
     {
         if(parent && target && target.parentElement === parent)
             return parent.removeChild(target);
@@ -400,12 +398,12 @@ export default class DOMBridge implements IBridge
     /**
      * 按索引移除显示
      * 
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @param {number} index 索引
-     * @return {Element} 返回被移除的显示对象
+     * @return {Node} 返回被移除的显示对象
      * @memberof DOMBridge
      */
-    public removeChildAt(parent:Element, index:number):Element
+    public removeChildAt(parent:Node, index:number):Node
     {
         return this.removeChild(parent, this.getChildAt(parent, index));
     }
@@ -413,27 +411,27 @@ export default class DOMBridge implements IBridge
     /**
      * 移除所有显示对象
      * 
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @memberof DOMBridge
      */
-    public removeChildren(parent:Element):void
+    public removeChildren(parent:Node):void
     {
-        for(var i:number = 0, len:number = parent.children.length; i < len; i++)
+        for(var i:number = 0, len:number = parent.childNodes.length; i < len; i++)
         {
-            parent.removeChild(parent.children.item(i));
+            parent.removeChild(parent.childNodes.item(i));
         }
     }
     
     /**
      * 获取父容器
      * 
-     * @param {Element} target 目标对象
-     * @returns {Element} 父容器
+     * @param {Node} target 目标对象
+     * @returns {Node} 父容器
      * @memberof DOMBridge
      */
-    public getParent(target:Element):Element
+    public getParent(target:Node):Node
     {
-        return target.parentElement;
+        return target.parentNode;
     }
 
     /**
@@ -441,27 +439,27 @@ export default class DOMBridge implements IBridge
      * 
      * @param {Element} parent 父容器
      * @param {number} index 指定父级索引
-     * @return {Element} 索引处的显示对象
+     * @return {Node} 索引处的显示对象
      * @memberof DOMBridge
      */
-    public getChildAt(parent:Element, index:number):Element
+    public getChildAt(parent:Node, index:number):Node
     {
-        return parent.children.item(index);
+        return parent.childNodes.item(index);
     }
 
     /**
      * 获取显示索引
      * 
-     * @param {Element} parent 父容器
-     * @param {Element} target 子显示对象
+     * @param {Node} parent 父容器
+     * @param {Node} target 子显示对象
      * @return {number} target在parent中的索引
      * @memberof DOMBridge
      */
-    public getChildIndex(parent:Element, target:Element):number
+    public getChildIndex(parent:Node, target:Node):number
     {
-        for(var i:number = 0, len:number = parent.children.length; i < len; i++)
+        for(var i:number = 0, len:number = parent.childNodes.length; i < len; i++)
         {
-            if(target === parent.children.item(i)) return i;
+            if(target === parent.childNodes.item(i)) return i;
         }
         return -1;
     }
@@ -482,13 +480,13 @@ export default class DOMBridge implements IBridge
     /**
      * 获取子显示对象数量
      * 
-     * @param {Element} parent 父容器
+     * @param {Node} parent 父容器
      * @return {number} 子显示对象数量
      * @memberof DOMBridge
      */
-    public getChildCount(parent:Element):number
+    public getChildCount(parent:Node):number
     {
-        return parent.childElementCount;
+        return parent.childNodes.length;
     }
     
     /**
