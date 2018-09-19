@@ -111,6 +111,7 @@ import * as Version from "./engine/version/Version";
 
 
 import * as ArrayUtil from "./utils/ArrayUtil";
+import * as CheatUtil from "./utils/CheatUtil";
 import * as ConstructUtil from "./utils/ConstructUtil";
 import * as CookieUtil from "./utils/CookieUtil";
 import * as Dictionary from "./utils/Dictionary";
