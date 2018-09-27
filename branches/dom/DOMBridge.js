@@ -203,10 +203,10 @@ var DOMBridge = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    DOMBridge.prototype.createLayer = function () {
+    DOMBridge.prototype.createLayer = function (fixed) {
         // 生成一个父容器，不响应点击事件，但会撑起全屏幕范围
         var layer = document.createElement("div");
-        layer.style.position = "absolute";
+        layer.style.position = fixed ? "fixed" : "absolute";
         layer.style.top = "0%";
         layer.style.left = "0%";
         layer.style.width = "100%";
@@ -236,17 +236,17 @@ var DOMBridge = /** @class */ (function () {
             document.body.appendChild(this._initParams.container);
         }
         // 创建背景显示层
-        this._bgLayer = this.createLayer();
+        this._bgLayer = this.createLayer(false);
         // 创建场景显示层
-        this._sceneLayer = this.createLayer();
+        this._sceneLayer = this.createLayer(false);
         // 创建框架显示层
-        this._frameLayer = this.createLayer();
+        this._frameLayer = this.createLayer(true);
         // 创建弹出层
-        this._panelLayer = this.createLayer();
+        this._panelLayer = this.createLayer(true);
         // 创建遮罩层
-        this._maskLayer = this.createLayer();
+        this._maskLayer = this.createLayer(true);
         // 创建顶级显示层
-        this._topLayer = this.createLayer();
+        this._topLayer = this.createLayer(true);
         // 添加Tween.js驱动
         system.enterFrame(function () {
             // 每次使用最新的当前运行毫秒数更新Tween.js
