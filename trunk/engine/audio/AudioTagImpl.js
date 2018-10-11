@@ -88,8 +88,13 @@ var AudioTagImpl = /** @class */ (function () {
                     node.pause();
                 }
                 else {
+                    var params = data.playParams;
                     // 设置状态
                     data.status = AudioStatus.PLAYING;
+                    // 记录播放中
+                    _this._playingDict[toUrl] = params;
+                    // 派发播放开始事件
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
                     // 监听播放进度
                     _this.listenProgress(data);
                 }
