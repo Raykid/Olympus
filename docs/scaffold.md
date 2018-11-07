@@ -1,3 +1,3 @@
 # Olympus脚手架工具
 
-还没做出来呢，等会儿吧
+使用npx执行脚手架命令：`npx olympus-r-cli init [项目英文名]`;
