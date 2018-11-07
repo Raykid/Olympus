@@ -21,6 +21,12 @@ module.exports = function(source)
             source = `${source.substring(0, beginIndex)}maskManager.showLoading(0, "__load_module__");import(${importPath}).then(function(mod){maskManager.hideLoading("__load_module__");moduleManager.open(mod.${moduleName}${leftParams});})${source.substr(endIndex)}`;
             // 再移除静态import语句
             source = source.substring(0, resultImport.index) + source.substr(resultImport.index + resultImport[0].length);
+            // 最后判断是否有maskManager引用，没有则要加上
+            const regMaskManager = /import\s+{\s+maskManager\s+}/;
+            if(!regMaskManager.test(source))
+            {
+                source = "import { maskManager } from 'olympus-r/engine/mask/MaskManager';\n" + source;
+            }
         }
     }
     // 返回结果
