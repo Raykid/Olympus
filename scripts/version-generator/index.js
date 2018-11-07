@@ -3,46 +3,51 @@ const path = require("path");
 const crypto = require("crypto");
 
 // 为目录下所有文件（除了version.cfg以外）生成hash值，并替换文件名
-module.exports = function({ srcPath, hashLen })
+module.exports = function({ srcPath, hashLen, compileVersion })
 {
     const versions = [];
-    handle(versions, srcPath, srcPath, hashLen == null ? 10 : parseInt(hashLen));
+    handle(versions, srcPath, srcPath, hashLen == null ? 10 : parseInt(hashLen), compileVersion);
     // 写文件
     fs.writeFileSync(path.join(srcPath, "version.cfg"), versions.join("\n"));
 };
 
-function handle(versions, srcPath, rootPath, hashLen)
+function handle(versions, srcPath, rootPath, hashLen, compileVersion)
 {
     const stat = fs.statSync(srcPath);
     if(stat.isDirectory())
     {
-        handleDirectory(versions, srcPath, rootPath, hashLen);
+        handleDirectory(versions, srcPath, rootPath, hashLen, compileVersion);
     }
     else if(stat.isFile())
     {
-        handleFile(versions, srcPath, rootPath, hashLen);
+        handleFile(versions, srcPath, rootPath, hashLen, compileVersion);
     }
 }
 
-function handleDirectory(versions, dirPath, rootPath, hashLen)
+function handleDirectory(versions, dirPath, rootPath, hashLen, compileVersion)
 {
     for(let name of fs.readdirSync(dirPath))
     {
-        handle(versions, path.join(dirPath, name), rootPath, hashLen);
+        handle(versions, path.join(dirPath, name), rootPath, hashLen, compileVersion);
     }
 }
 
-function handleFile(versions, filePath, rootPath, hashLen)
+function handleFile(versions, filePath, rootPath, hashLen, compileVersion)
 {
-    // 如果是version.cfg本身则不处理
+    let hash;
+    // 如果是version.cfg本身则使用编译版本，否则使用文件版本
     if(filePath === path.join(rootPath, "version.cfg"))
     {
-        return;
+        if(!compileVersion) return;
+        hash = compileVersion;
     }
-    // 读取文件内容
-    const buffer = fs.readFileSync(filePath);
-    // 获取文件hash
-    const hash = crypto.createHash("md5").update(buffer).digest("hex").substr(0, hashLen);
+    else
+    {
+        // 读取文件内容
+        const buffer = fs.readFileSync(filePath);
+        // 获取文件hash
+        hash = crypto.createHash("md5").update(buffer).digest("hex").substr(0, hashLen);
+    }
     // 复制一份并改名
     fs.copyFileSync(filePath, joinVersion(filePath, hash));
     // 整理路径，分隔符为\的改成/，头部没有./的加上
