@@ -35,8 +35,7 @@ function init(appName)
 			let paths = [
 				"./build/release/index.html",
 				"./index.ts",
-				"./package.json",
-				"./package-lock.json"
+				"./package.json"
 			];
 			let vars = {
 				appName: appName,
