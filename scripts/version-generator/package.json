@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-version-generator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Olympus的version.cfg生成脚本",
   "bin": "./bin.js",
   "main": "index.js",

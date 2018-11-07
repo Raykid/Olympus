@@ -43,8 +43,8 @@ function handleFile(versions, filePath, rootPath, hashLen)
     const buffer = fs.readFileSync(filePath);
     // 获取文件hash
     const hash = crypto.createHash("md5").update(buffer).digest("hex").substr(0, hashLen);
-    // 改名
-    fs.renameSync(filePath, joinVersion(filePath, hash));
+    // 复制一份并改名
+    fs.copyFileSync(filePath, joinVersion(filePath, hash));
     // 整理路径，分隔符为\的改成/，头部没有./的加上
     filePath = filePath.replace(/\\+/g, "/");
     if(filePath.substr(0, 2) !== "./")
