@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="skins.HomepageSkin" width="720" height="1280" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+	<e:Rect left="0" right="0" top="0" bottom="0" fillColor="0x4c96a3"/>
+	<e:Label id="txt" text="" size="60" textAlign="center" left="0" right="0" top="254"/>
+	<e:Button id="btn" label="点我" anchorOffsetX="0" width="280" anchorOffsetY="0" height="102" bottom="174" horizontalCenter="0"/>
+</e:Skin>

@@ -1,0 +1,25 @@
+{
+  "name": "olympus-r-cli",
+  "version": "0.1.0",
+  "description": "Olympus cli工具",
+  "bin": {
+    "olympus-r-cli": "bin.js"
+  },
+  "files": [
+    "template/**/*",
+    "bin.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Olympus",
+    "cli"
+  ],
+  "author": "Raykid",
+  "license": "ISC",
+  "dependencies": {
+    "copy": "^0.3.2",
+    "npm": "^6.4.1"
+  }
+}

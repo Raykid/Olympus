@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="skins.PromptSkin" width="580" xmlns:e="http://ns.egret.com/eui" xmlns:w="http://ns.egret.com/wing">
+	<e:Rect left="0" right="0" top="0" bottom="0" fillColor="0xffffff"/>
+	<e:Label id="txt_title" text="消息" x="208" y="36" anchorOffsetX="0" width="168" textAlign="center" textColor="0x000000"/>
+	<e:Label id="txt_content" text="" anchorOffsetX="0" width="484" anchorOffsetY="0" lineSpacing="15" textAlign="center" size="28" bottom="150" horizontalCenter="0" top="130" textColor="0x000000"/>
+	<e:Button id="btn_close" label="X" width="40" height="40" top="10" right="10" skinName="skins.ButtonSkin"/>
+	<e:DataGroup id="lst_buttons" height="100" bottom="25" itemRendererSkinName="skins.ButtonSkin" horizontalCenter="0">
+		<e:layout>
+			<e:HorizontalLayout gap="10" horizontalAlign="center" verticalAlign="bottom"/>
+		</e:layout>
+	</e:DataGroup>
+</e:Skin>
