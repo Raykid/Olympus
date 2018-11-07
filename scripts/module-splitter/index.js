@@ -18,7 +18,7 @@ module.exports = function(source)
             const importPath = resultImport[4];
             const moduleName = resultImport[1] && resultImport[3] ? resultImport[2] : "default";
             // 先将语句替换为动态import语句
-            source = `${source.substring(0, beginIndex)}import(${importPath}).then(function(mod){moduleManager.open(mod.${moduleName}${leftParams});})${source.substr(endIndex)}`;
+            source = `${source.substring(0, beginIndex)}maskManager.showLoading(0, "__load_module__");import(${importPath}).then(function(mod){maskManager.hideLoading("__load_module__");moduleManager.open(mod.${moduleName}${leftParams});})${source.substr(endIndex)}`;
             // 再移除静态import语句
             source = source.substring(0, resultImport.index) + source.substr(resultImport.index + resultImport[0].length);
         }
