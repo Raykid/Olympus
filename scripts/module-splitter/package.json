@@ -1,0 +1,15 @@
+{
+  "name": "olympus-r-module-splitter",
+  "version": "0.1.0",
+  "description": "用于自动拆分模块体积",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "module",
+    "split"
+  ],
+  "author": "Raykid",
+  "license": "ISC"
+}
