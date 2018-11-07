@@ -30,6 +30,10 @@ export interface ILoaderHandler {
 }
 export declare class ResourceVersionController implements RES.IVersionController {
     init(): Promise<void>;
+    fetchVersion(callback: {
+        onSuccess: (data: any) => any;
+        onFail: (error: number, data: any) => any;
+    }): void;
     getVirtualUrl(url: string): string;
 }
 export default class AssetsLoader {

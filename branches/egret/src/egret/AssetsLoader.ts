@@ -48,6 +48,12 @@ export class ResourceVersionController implements RES.IVersionController
         // 无需任何准备
     }
 
+    public fetchVersion(callback:{onSuccess:(data:any)=>any, onFail:(error:number, data:any)=>any}):void
+    {
+        // 直接回调，版本号已于之前加载完毕
+        callback.onSuccess(null);
+    }
+
     public getVirtualUrl(url:string):string
     {
         // 添加imgDomain

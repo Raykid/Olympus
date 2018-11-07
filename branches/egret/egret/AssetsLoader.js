@@ -13,6 +13,10 @@ var ResourceVersionController = /** @class */ (function () {
             });
         });
     };
+    ResourceVersionController.prototype.fetchVersion = function (callback) {
+        // 直接回调，版本号已于之前加载完毕
+        callback.onSuccess(null);
+    };
     ResourceVersionController.prototype.getVirtualUrl = function (url) {
         // 添加imgDomain
         url = environment.toCDNHostURL(url);
