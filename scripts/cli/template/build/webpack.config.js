@@ -4,6 +4,8 @@ const buildConfig = require('./config');
 
 
 const webpackConfig = {
+    mode: 'production',
+
     entry: buildConfig.entry,
 
     output: {

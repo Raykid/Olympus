@@ -110,11 +110,24 @@ module.exports = function (data) {
 
         // webpack打包 index
         .then((data) => {
-            const prodConfig = require('./webpack.config');
             return new Promise((resolve, reject) => {
                 console.log("-----------------------------------------------");
                 console.log("开始执行webpack打包");
-                webpack(prodConfig, function (err, stats) {
+                const config = require('./webpack.config');
+                // 判断环境以调整打包策略
+                switch(buildConfig.env)
+                {
+                    // 默认dev环境下不压缩混淆，且生成source-map文件
+                    case "dev":
+                        config.mode = "development";
+                        config.devtool = "cheap-source-map";
+                        break;
+                    // 其他环境下压缩混淆，不生成source-map文件
+                    default:
+                        config.mode = "production";
+                        break;
+                }
+                webpack(config, function (err, stats) {
                     if (err) {
                         throw err;
                     }
