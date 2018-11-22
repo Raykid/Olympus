@@ -117,3 +117,15 @@ export declare function asyncLoad(params: IHTTPRequestParams): Promise<any | any
  * @returns {string} 转换结果字符串
  */
 export declare function toFormParams(data: any): string;
+export declare class XHRError extends Error {
+    private _xhr;
+    /**
+     * 获取错误对应的XMLHttpRequest对象
+     *
+     * @readonly
+     * @type {XMLHttpRequest}
+     * @memberof XHRError
+     */
+    readonly xhr: XMLHttpRequest;
+    constructor(xhr: XMLHttpRequest);
+}

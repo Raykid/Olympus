@@ -257,8 +257,7 @@ export function load(params:IHTTPRequestParams):void
             else
             {
                 // 切换完了还失败，则汇报错误
-                var err:Error = new Error(xhr.status ? xhr.status + " " + xhr.statusText : "请求错误，且无法获取错误信息");
-                params.onError && params.onError(err);
+                params.onError && params.onError(new XHRError(xhr));
             }
         }
     }
@@ -306,4 +305,26 @@ export function toFormParams(data:any):string
         return encodeURIComponent(key) + "=" + encodeURIComponent(data[key]);
     });
     return params.join("&");
+}
+
+export class XHRError extends Error
+{
+    private _xhr:XMLHttpRequest;
+    /**
+     * 获取错误对应的XMLHttpRequest对象
+     *
+     * @readonly
+     * @type {XMLHttpRequest}
+     * @memberof XHRError
+     */
+    public get xhr():XMLHttpRequest
+    {
+        return this._xhr;
+    }
+
+    public constructor(xhr:XMLHttpRequest)
+    {
+        super(xhr.status ? xhr.status + " " + xhr.statusText : "请求错误，且无法获取错误信息");
+        this._xhr = xhr;
+    }
 }

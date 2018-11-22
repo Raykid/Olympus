@@ -137,8 +137,7 @@ export function load(params) {
             }
             else {
                 // 切换完了还失败，则汇报错误
-                var err = new Error(xhr.status ? xhr.status + " " + xhr.statusText : "请求错误，且无法获取错误信息");
-                params.onError && params.onError(err);
+                params.onError && params.onError(new XHRError(xhr));
             }
         }
     }
@@ -185,3 +184,27 @@ export function toFormParams(data) {
     });
     return params.join("&");
 }
+var XHRError = /** @class */ (function (_super) {
+    tslib_1.__extends(XHRError, _super);
+    function XHRError(xhr) {
+        var _this = _super.call(this, xhr.status ? xhr.status + " " + xhr.statusText : "请求错误，且无法获取错误信息") || this;
+        _this._xhr = xhr;
+        return _this;
+    }
+    Object.defineProperty(XHRError.prototype, "xhr", {
+        /**
+         * 获取错误对应的XMLHttpRequest对象
+         *
+         * @readonly
+         * @type {XMLHttpRequest}
+         * @memberof XHRError
+         */
+        get: function () {
+            return this._xhr;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return XHRError;
+}(Error));
+export { XHRError };
