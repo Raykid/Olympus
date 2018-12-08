@@ -21,7 +21,7 @@ export function wrapSkin(mediator, skin) {
     var result = (skin instanceof HTMLElement ? skin : document.createElement("div"));
     // 判断中介者当前状态
     if (mediator.status < MediatorStatus.OPENING) {
-        listenApply(mediator, "onOpen", doWrapSkin);
+        listenApply(mediator, "__beforeOnOpen", doWrapSkin);
     }
     else {
         // 直接执行要执行的

@@ -37,7 +37,7 @@ export function DOMMediatorClass(moduleName:string, skin:string, ...skins:string
             // 先赋值桥
             mediator.bridge = bridgeManager.getBridge(DOMBridge.TYPE);
             // 然后监听onOpen，在onOpen中设置皮肤
-            listenApply(mediator, "onOpen", mediator=>{
+            listenApply(mediator, "__beforeOnOpen", mediator=>{
                 mediator.skin = finalSkin;
             });
         });

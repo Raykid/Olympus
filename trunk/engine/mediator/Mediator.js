@@ -1,3 +1,4 @@
+import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import Observable from "../../core/observable/Observable";
 import { unique } from "../../utils/ArrayUtil";
@@ -424,46 +425,58 @@ var Mediator = /** @class */ (function () {
                                 }
                                 else {
                                     // 加载js文件
-                                    _this.loadJsFiles(function (err) {
-                                        // 移除遮罩
-                                        hideMask();
-                                        // 判断错误
-                                        if (err) {
-                                            // 调用回调
-                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
-                                        }
-                                        else {
-                                            // 要先开启自身，再开启子中介者
-                                            // 调用回调
-                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
-                                            // 调用模板方法
-                                            _this.__beforeOnOpen.apply(_this, [data].concat(args));
-                                            // 调用自身onOpen方法
-                                            var result = _this.onOpen.apply(_this, [data].concat(args));
-                                            if (result !== undefined)
-                                                _this.data = data = result;
-                                            // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-                                            if (!_this._viewModel)
-                                                _this.viewModel = {};
-                                            // 记录子中介者数量，并监听其开启完毕事件
-                                            var subCount = _this._children.length;
-                                            if (subCount > 0) {
-                                                // 调用所有已托管中介者的open方法
-                                                for (var _i = 0, _a = _this._children; _i < _a.length; _i++) {
-                                                    var mediator = _a[_i];
-                                                    mediator.open(data);
-                                                }
+                                    _this.loadJsFiles(function (err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                                        var result, subCount, _i, _a, mediator;
+                                        return tslib_1.__generator(this, function (_b) {
+                                            switch (_b.label) {
+                                                case 0:
+                                                    // 移除遮罩
+                                                    hideMask();
+                                                    if (!err) return [3 /*break*/, 1];
+                                                    // 调用回调
+                                                    this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                                                    return [3 /*break*/, 5];
+                                                case 1:
+                                                    // 要先开启自身，再开启子中介者
+                                                    // 调用回调
+                                                    this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                                    // 调用模板方法
+                                                    return [4 /*yield*/, this.__beforeOnOpen.apply(this, [data].concat(args))];
+                                                case 2:
+                                                    // 调用模板方法
+                                                    _b.sent();
+                                                    return [4 /*yield*/, this.onOpen.apply(this, [data].concat(args))];
+                                                case 3:
+                                                    result = _b.sent();
+                                                    if (result !== undefined)
+                                                        this.data = data = result;
+                                                    // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+                                                    if (!this._viewModel)
+                                                        this.viewModel = {};
+                                                    subCount = this._children.length;
+                                                    if (subCount > 0) {
+                                                        // 调用所有已托管中介者的open方法
+                                                        for (_i = 0, _a = this._children; _i < _a.length; _i++) {
+                                                            mediator = _a[_i];
+                                                            mediator.open(data);
+                                                        }
+                                                    }
+                                                    // 修改状态
+                                                    this._status = MediatorStatus.OPENED;
+                                                    // 调用模板方法
+                                                    return [4 /*yield*/, this.__afterOnOpen.apply(this, [data].concat(args))];
+                                                case 4:
+                                                    // 调用模板方法
+                                                    _b.sent();
+                                                    // 调用回调
+                                                    this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
+                                                    // 派发事件
+                                                    this.dispatch(MediatorMessage.MEDIATOR_OPENED, this);
+                                                    _b.label = 5;
+                                                case 5: return [2 /*return*/];
                                             }
-                                            // 修改状态
-                                            _this._status = MediatorStatus.OPENED;
-                                            // 调用模板方法
-                                            _this.__afterOnOpen.apply(_this, [data].concat(args));
-                                            // 调用回调
-                                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
-                                            // 派发事件
-                                            _this.dispatch(MediatorMessage.MEDIATOR_OPENED, _this);
-                                        }
-                                    });
+                                        });
+                                    }); });
                                 }
                             });
                         }
@@ -573,7 +586,7 @@ var Mediator = /** @class */ (function () {
      *
      * @param {*} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
-     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
+     * @returns {any|Promise<any>} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
     Mediator.prototype.onOpen = function (data) {

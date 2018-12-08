@@ -25,7 +25,7 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
     // 判断中介者当前状态
     if(mediator.status < MediatorStatus.OPENING)
     {
-        listenApply(mediator, "onOpen", doWrapSkin);
+        listenApply(mediator, "__beforeOnOpen", doWrapSkin);
     }
     else
     {

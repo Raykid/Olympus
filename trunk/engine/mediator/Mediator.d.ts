@@ -205,8 +205,8 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     open(data?: any, ...args: any[]): any;
-    protected __beforeOnOpen(data?: any, ...args: any[]): void;
-    protected __afterOnOpen(data?: any, ...args: any[]): void;
+    protected __beforeOnOpen(data?: any, ...args: any[]): void | Promise<void>;
+    protected __afterOnOpen(data?: any, ...args: any[]): void | Promise<void>;
     /**
      * 关闭，为了实现IOpenClose接口
      *
@@ -223,10 +223,10 @@ export default class Mediator implements IMediator {
      *
      * @param {*} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
-     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
+     * @returns {any|Promise<any>} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
-    onOpen(data?: any, ...args: any[]): any;
+    onOpen(data?: any, ...args: any[]): any | Promise<any>;
     /**
      * 当关闭时调用
      *

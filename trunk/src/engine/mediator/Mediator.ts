@@ -505,7 +505,7 @@ export default class Mediator implements IMediator
                                 else
                                 {
                                     // 加载js文件
-                                    this.loadJsFiles((err?:Error)=>{
+                                    this.loadJsFiles(async (err?:Error)=>{
                                         // 移除遮罩
                                         hideMask();
                                         // 判断错误
@@ -520,9 +520,9 @@ export default class Mediator implements IMediator
                                             // 调用回调
                                             this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
                                             // 调用模板方法
-                                            this.__beforeOnOpen(data, ...args);
+                                            await this.__beforeOnOpen(data, ...args);
                                             // 调用自身onOpen方法
-                                            var result:any = this.onOpen(data, ...args);
+                                            var result:any = await this.onOpen(data, ...args);
                                             if(result !== undefined)
                                                 this.data = data = result;
                                             // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
@@ -540,7 +540,7 @@ export default class Mediator implements IMediator
                                             // 修改状态
                                             this._status = MediatorStatus.OPENED;
                                             // 调用模板方法
-                                            this.__afterOnOpen(data, ...args);
+                                            await this.__afterOnOpen(data, ...args);
                                             // 调用回调
                                             this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
                                             // 派发事件
@@ -571,12 +571,12 @@ export default class Mediator implements IMediator
         }
     }
 
-    protected __beforeOnOpen(data?:any, ...args:any[]):void
+    protected __beforeOnOpen(data?:any, ...args:any[]):void|Promise<void>
     {
         // 给子类用的模板方法
     }
 
-    protected __afterOnOpen(data?:any, ...args:any[]):void
+    protected __afterOnOpen(data?:any, ...args:any[]):void|Promise<void>
     {
         // 给子类用的模板方法
     }
@@ -652,10 +652,10 @@ export default class Mediator implements IMediator
      * 
      * @param {*} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
-     * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
+     * @returns {any|Promise<any>} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
-    public onOpen(data?:any, ...args:any[]):any
+    public onOpen(data?:any, ...args:any[]):any|Promise<any>
     {
         // 可重写
     }
