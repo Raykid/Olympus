@@ -52,6 +52,11 @@ function handleFile(versions, filePath, rootPath, hashLen)
     {
         filePath = "./" + filePath;
     }
+    // 去掉rootPath
+    if(filePath.indexOf(rootPath) === 0)
+    {
+        filePath = filePath.substr(rootPath.length + 1);
+    }
     versions.push(`${hash}  ${filePath}`);
 }
 
