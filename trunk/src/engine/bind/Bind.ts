@@ -1,4 +1,4 @@
-import { getObjectHashs } from "../../utils/ObjectUtil";
+import { getGUID, getObjectHashs } from "../../utils/ObjectUtil";
 import IMediator from "../mediator/IMediator";
 import { EvalExp } from "./Utils";
 import Watcher, { IWatcher, WatcherCallback } from "./Watcher";
@@ -46,7 +46,7 @@ export default class Bind
      */
     public createWatcher(currentTarget:any, target:any, exp:EvalExp, callback:WatcherCallback, thisArg:any, ...scopes:any[]):IWatcher
     {
-        var key:string = getObjectHashs(currentTarget, exp, ...scopes);
+        var key:string = getObjectHashs(currentTarget, exp, getGUID(), ...scopes);
         var watcher:Watcher = this._watcherDict[key];
         if(!watcher) this._watcherDict[key] = watcher = new Watcher(this, currentTarget, target, exp, callback, thisArg, ...scopes);
         return watcher;

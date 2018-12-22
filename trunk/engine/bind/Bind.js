@@ -1,4 +1,4 @@
-import { getObjectHashs } from "../../utils/ObjectUtil";
+import { getGUID, getObjectHashs } from "../../utils/ObjectUtil";
 import Watcher from "./Watcher";
 /**
  * @author Raykid
@@ -44,7 +44,7 @@ var Bind = /** @class */ (function () {
         for (var _i = 5; _i < arguments.length; _i++) {
             scopes[_i - 5] = arguments[_i];
         }
-        var key = getObjectHashs.apply(void 0, [currentTarget, exp].concat(scopes));
+        var key = getObjectHashs.apply(void 0, [currentTarget, exp, getGUID()].concat(scopes));
         var watcher = this._watcherDict[key];
         if (!watcher)
             this._watcherDict[key] = watcher = new (Watcher.bind.apply(Watcher, [void 0, this, currentTarget, target, exp, callback, thisArg].concat(scopes)))();
