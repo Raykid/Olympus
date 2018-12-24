@@ -1,4 +1,4 @@
-import { Tween, Easing } from "@tweenjs/tween.js";
+import { Easing, Tween } from "@tweenjs/tween.js";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -11,71 +11,52 @@ var FadeScenePolicy = /** @class */ (function () {
     function FadeScenePolicy() {
     }
     /**
-     * 准备切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
-     */
-    FadeScenePolicy.prototype.prepareSwitch = function (from, to) {
-        if (from != null) {
-            // 移除克隆节点
-            if (this._stageClone && this._stageClone.parentElement) {
-                this._stageClone.parentElement.removeChild(this._stageClone);
-            }
-            // 克隆当前屏幕
-            var stage = from.bridge.stage;
-            this._stageClone = stage.cloneNode(true);
-            this._stageClone.style.position = "absolute";
-            this._stageClone.style.left = "0";
-            this._stageClone.style.top = "0";
-            this._stageClone.style.zIndex = "2147483647"; // 层级要最高
-            this._stageClone.style.pointerEvents = "none"; // 要屏蔽点击事件
-            // 添加克隆节点
-            from.bridge.htmlWrapper.appendChild(this._stageClone);
-            // 移除from
-            var fromDisplay = from.skin;
-            if (fromDisplay.parentElement != null) {
-                fromDisplay.parentElement.removeChild(fromDisplay);
-            }
-        }
-    };
-    /**
      * 切换场景时调度
      * @param from 切出的场景
      * @param to 切入的场景
      * @param callback 切换完毕的回调方法
      */
     FadeScenePolicy.prototype.switch = function (from, to, callback) {
-        var _this = this;
         if (from != null) {
+            // 添加显示
+            var position = to.skin.style.position;
+            var left = to.skin.style.left;
+            var top = to.skin.style.top;
+            var width = to.skin.style.width;
+            var height = to.skin.style.height;
+            var opacity = to.skin.style.opacity;
+            var zIndex = to.skin.style.zIndex;
+            to.skin.style.position = "absolute";
+            to.skin.style.left = "0";
+            to.skin.style.top = "0";
+            to.skin.style.width = "100%";
+            to.skin.style.height = "100%";
+            to.skin.style.opacity = "0";
+            to.skin.style.display = "";
+            to.skin.style.zIndex = "2147483647";
             // 开始淡出
-            var key = "__tween__step__";
-            this._stageClone[key] = 1;
-            var props = {};
-            props[key] = 0;
-            new Tween(this._stageClone)
+            new Tween(to.skin.style)
                 .end()
                 .stop()
-                .to(props, 300)
+                .to({ opacity: opacity || "1" }, 300)
                 .easing(Easing.Linear.None)
-                .onUpdate(function () {
-                _this._stageClone.style.opacity = _this._stageClone[key];
-            })
                 .onComplete(function () {
-                delete _this._stageClone[key];
-                // 移除截屏
-                if (_this._stageClone.parentElement != null) {
-                    _this._stageClone.parentElement.removeChild(_this._stageClone);
-                }
+                // 恢复to
+                to.skin.style.position = position;
+                to.skin.style.left = left;
+                to.skin.style.top = top;
+                to.skin.style.width = width;
+                to.skin.style.height = height;
+                to.skin.style.opacity = opacity;
+                to.skin.style.zIndex = zIndex;
+                // 隐藏from
+                from.skin.style.display = "none";
                 // 调用回调
                 callback();
             })
                 .start();
         }
         else {
-            // 移除克隆节点
-            if (this._stageClone && this._stageClone.parentElement) {
-                this._stageClone.parentElement.removeChild(this._stageClone);
-            }
             // 调用回调
             callback();
         }
