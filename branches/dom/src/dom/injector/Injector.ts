@@ -69,10 +69,18 @@ function compileCSS(mediator:IMediator, currentTarget:ICompileTarget, target:any
         // 绑定新的订阅者，表达式为字典中的所有表达式组成的数组
         var exp:string = "[" + exps.join(",") + "]";
         watcher = bindData.bind.createWatcher(currentTarget, target, exp, (judges:boolean[])=>{
-            var resultNames:string[] = names.filter((name:string, index:number)=>judges[index]);
-            if(curClassName !== "") resultNames.unshift(curClassName);
-            // 为目标的className属性赋值
-            currentTarget["className"] = resultNames.join(" ");
+            names.forEach((name:string, index:number)=>{
+                if(judges[index])
+                {
+                    // 需要这个样式
+                    currentTarget.classList.add(name);
+                }
+                else
+                {
+                    // 不需要这个样式
+                    currentTarget.classList.remove(name);
+                }
+            });
         }, mediator.viewModel, ...envModels, mediator.viewModel);
     });
 }

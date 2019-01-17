@@ -64,11 +64,16 @@ function compileCSS(mediator, currentTarget, target, envModels, dict) {
         // 绑定新的订阅者，表达式为字典中的所有表达式组成的数组
         var exp = "[" + exps.join(",") + "]";
         watcher = (_a = bindData.bind).createWatcher.apply(_a, [currentTarget, target, exp, function (judges) {
-                var resultNames = names.filter(function (name, index) { return judges[index]; });
-                if (curClassName !== "")
-                    resultNames.unshift(curClassName);
-                // 为目标的className属性赋值
-                currentTarget["className"] = resultNames.join(" ");
+                names.forEach(function (name, index) {
+                    if (judges[index]) {
+                        // 需要这个样式
+                        currentTarget.classList.add(name);
+                    }
+                    else {
+                        // 不需要这个样式
+                        currentTarget.classList.remove(name);
+                    }
+                });
             }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
     });
 }
