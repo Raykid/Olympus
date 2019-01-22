@@ -36,7 +36,7 @@ export function getBoundingClientRect(target:HTMLElement, parent:HTMLElement):Cl
     };
 }
 
-const iframeResizeDict:Dictionary<HTMLElement, [HTMLIFrameElement, (evt:Event)=>void]> = new Dictionary();
+const iframeResizeDict:Dictionary<HTMLElement, [HTMLIFrameElement, Window, (evt:Event)=>void]> = new Dictionary();
 
 /**
  * 监听Resize
@@ -71,7 +71,7 @@ export function listenResize(target:HTMLElement, callback:(target:HTMLElement)=>
         // 监听resize
         iframe.contentWindow.addEventListener("resize", tryResize);
         // 记录监听
-        iframeResizeDict.set(target, [iframe, tryResize]);
+        iframeResizeDict.set(target, [iframe, iframe.contentWindow, tryResize]);
         // 尝试触发一次
         tryResize();
     }
@@ -97,11 +97,11 @@ export function listenResize(target:HTMLElement, callback:(target:HTMLElement)=>
  */
 export function unlistenResize(target:HTMLElement):void
 {
-    const info:[HTMLIFrameElement, (evt:Event)=>void] = iframeResizeDict.get(target);
+    const info:[HTMLIFrameElement, Window, (evt:Event)=>void] = iframeResizeDict.get(target);
     if(info)
     {
         // 移除事件
-        info[0].contentWindow.removeEventListener("resize", info[1]);
+        info[1].removeEventListener("resize", info[2]);
         // 移除显示
         info[0].remove();
         // 移除记录

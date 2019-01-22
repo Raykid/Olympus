@@ -62,7 +62,7 @@ export function listenResize(target, callback) {
         // 监听resize
         iframe.contentWindow.addEventListener("resize", tryResize);
         // 记录监听
-        iframeResizeDict.set(target, [iframe, tryResize]);
+        iframeResizeDict.set(target, [iframe, iframe.contentWindow, tryResize]);
         // 尝试触发一次
         tryResize();
     }
@@ -86,7 +86,7 @@ export function unlistenResize(target) {
     var info = iframeResizeDict.get(target);
     if (info) {
         // 移除事件
-        info[0].contentWindow.removeEventListener("resize", info[1]);
+        info[1].removeEventListener("resize", info[2]);
         // 移除显示
         info[0].remove();
         // 移除记录
