@@ -109,6 +109,8 @@ export default class AudioTagImpl implements IAudio
                 }
             };
             node.onended = ()=>{
+                // 设置状态
+                data.status = AudioStatus.PAUSED;
                 // 派发播放完毕事件
                 core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
                 // 如果循环则再开
