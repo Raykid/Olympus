@@ -166,24 +166,43 @@ var Engine = /** @class */ (function () {
         }
     };
     Engine.prototype.onPreloadOK = function () {
-        // 调用进度回调，打开首个模块为90%
-        this._initStep = InitStep.OpenFirstModule;
-        this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, this._initStep);
-        // 派发事件
-        core.dispatch(EngineMessage.INITIALIZED);
-        // 调用初始化完成回调
-        this._initParams.onInited && this._initParams.onInited();
-        // 监听首个模块开启
-        core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
-        // 打开首个模块
-        moduleManager.open(this._initParams.firstModule, hash.firstModuleParams);
-        // 如果有哈希模块则打开之
-        for (var i in hash.moduleDatas) {
-            var data = hash.moduleDatas[i];
-            // 如果模块没有名字则不进行操作
-            if (data.name)
-                moduleManager.open(data.name, data.params, data.direct);
-        }
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var _a, i, data;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        // 调用进度回调，打开首个模块为90%
+                        this._initStep = InitStep.OpenFirstModule;
+                        this._initParams.onInitProgress && this._initParams.onInitProgress(0.9, this._initStep);
+                        // 派发事件
+                        core.dispatch(EngineMessage.INITIALIZED);
+                        // 调用初始化完成回调
+                        _a = this._initParams.onInited;
+                        if (!_a) 
+                        // 调用初始化完成回调
+                        return [3 /*break*/, 2];
+                        return [4 /*yield*/, this._initParams.onInited()];
+                    case 1:
+                        _a = (_b.sent());
+                        _b.label = 2;
+                    case 2:
+                        // 调用初始化完成回调
+                        _a;
+                        // 监听首个模块开启
+                        core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
+                        // 打开首个模块
+                        moduleManager.open(this._initParams.firstModule, hash.firstModuleParams);
+                        // 如果有哈希模块则打开之
+                        for (i in hash.moduleDatas) {
+                            data = hash.moduleDatas[i];
+                            // 如果模块没有名字则不进行操作
+                            if (data.name)
+                                moduleManager.open(data.name, data.params, data.direct);
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     Engine.prototype.onModuleChange = function (from) {
         // 调用进度回调，全部过程完毕，100%

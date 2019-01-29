@@ -160,12 +160,12 @@ export interface IInitParams {
      */
     onInitProgress?: (progress?: number, step?: InitStep, ...args: any[]) => void;
     /**
-     * 框架初始化完毕时调用
+     * 框架初始化完毕时调用，可以返回Promise以异步执行后续流程
      *
-     * @type {()=>void}
+     * @type {()=>void|Promise<void>}
      * @memberof IInitParams
      */
-    onInited?: () => void;
+    onInited?: () => void | Promise<void>;
     /**
      * 项目出现报错时调用，提供Error对象和ErrorEvent对象
      *

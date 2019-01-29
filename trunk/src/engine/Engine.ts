@@ -177,7 +177,7 @@ export default class Engine
         }
     }
 
-    private onPreloadOK():void
+    private async onPreloadOK():Promise<void>
     {
         // 调用进度回调，打开首个模块为90%
         this._initStep = InitStep.OpenFirstModule;
@@ -185,7 +185,7 @@ export default class Engine
         // 派发事件
         core.dispatch(EngineMessage.INITIALIZED);
         // 调用初始化完成回调
-        this._initParams.onInited && this._initParams.onInited();
+        this._initParams.onInited && await this._initParams.onInited();
         // 监听首个模块开启
         core.listen(ModuleMessage.MODULE_CHANGE, this.onModuleChange, this);
         // 打开首个模块
@@ -305,12 +305,12 @@ export interface IInitParams
      */
     onInitProgress?:(progress?:number, step?:InitStep, ...args:any[])=>void;
     /**
-     * 框架初始化完毕时调用
+     * 框架初始化完毕时调用，可以返回Promise以异步执行后续流程
      * 
-     * @type {()=>void}
+     * @type {()=>void|Promise<void>}
      * @memberof IInitParams
      */
-    onInited?:()=>void;
+    onInited?:()=>void|Promise<void>;
     /**
      * 项目出现报错时调用，提供Error对象和ErrorEvent对象
      * 
