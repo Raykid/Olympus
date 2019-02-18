@@ -259,7 +259,7 @@ export default class BindManager
             var handler:Function = currentTarget[onHash];
             if(handler)
             {
-                mediator.bridge.unmapListener(currentTarget, type, handler, mediator.viewModel);
+                mediator.unmapListener(currentTarget, type, handler, mediator.viewModel);
                 handler = null;
             }
             // 先尝试用exp当做方法名去viewModel里寻找，如果找不到则把exp当做一个执行表达式处理，外面包一层方法
@@ -273,7 +273,7 @@ export default class BindManager
                     func.call(this, commonScope, ...envModels, mediator.viewModel, {$event: event});
                 };
             }
-            mediator.bridge.mapListener(currentTarget, type, handler, mediator.viewModel);
+            mediator.mapListener(currentTarget, type, handler, mediator.viewModel);
             // 将事件回调记录到显示对象上
             currentTarget[onHash] = handler;
             // 如果__bind_sub_events__列表存在，则将事件记录到其上
@@ -397,7 +397,7 @@ export default class BindManager
                 for(var i in events)
                 {
                     var data:BindEventData = events.pop();
-                    mediator.bridge.unmapListener(data.target, data.type, data.handler, data.thisArg);
+                    mediator.unmapListener(data.target, data.type, data.handler, data.thisArg);
                 }
                 // 为renderer设置子对象事件列表
                 if(!events) renderer.__bind_sub_events__ = [];
