@@ -61,6 +61,7 @@ var Bind = /** @class */ (function () {
             watcher.dispose();
             delete this._watcherDict[key];
         }
+        this._mediator = null;
     };
     return Bind;
 }());

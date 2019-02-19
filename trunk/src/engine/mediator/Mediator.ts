@@ -8,7 +8,7 @@ import { getConstructor } from "../../utils/ConstructUtil";
 import Dictionary from "../../utils/Dictionary";
 import { assetsManager } from "../assets/AssetsManager";
 import { bindManager } from "../bind/BindManager";
-import { mutate } from "../bind/Mutator";
+import { mutate, unmutate } from "../bind/Mutator";
 import { bridgeManager } from '../bridge/BridgeManager';
 import IBridge from "../bridge/IBridge";
 import { maskManager } from "../mask/MaskManager";
@@ -605,11 +605,12 @@ export default class Mediator implements IMediator
                 // 调用模板方法
                 this.__afterOnClose(data, ...args);
             };
-            var subCount:number = this._children.length;
+            var children:IMediator[] = this._children.concat();
+            var subCount:number = children.length;
             if(subCount > 0)
             {
                 var handler:(mediator:IMediator)=>void = (mediator:IMediator)=>{
-                    if(this._children.indexOf(mediator) >= 0 && --subCount === 0)
+                    if(children.indexOf(mediator) >= 0 && --subCount === 0)
                     {
                         // 取消监听
                         this.unlisten(MediatorMessage.MEDIATOR_CLOSED, handler);
@@ -619,7 +620,7 @@ export default class Mediator implements IMediator
                 };
                 this.listen(MediatorMessage.MEDIATOR_CLOSED, handler);
                 // 调用所有已托管中介者的close方法
-                for(var mediator of this._children.concat())
+                for(var mediator of children)
                 {
                     mediator.close(data);
                 }
@@ -1104,18 +1105,24 @@ export default class Mediator implements IMediator
         // 移除表现层桥
         this.bridge = null;
         // 移除ViewModel
+        unmutate(this._viewModel);
         this._viewModel = null;
         // 移除绑定目标数组
         this.bindTargets = null;
+        // 移除数据
+        this.data = null;
         // 移除皮肤
         this.skin = null;
         this.oriSkin = null;
+        // 移除父引用
+        this.parent = null;
+        // 移除其他无用对象
+        this.moduleOpenHandler = null;
         // 将所有子中介者销毁
-        for(var i:number = 0, len:number = this._children.length; i < len; i++)
+        const children:IMediator[] = this._children.concat();
+        for(let child of children)
         {
-            var mediator:IMediator = this._children.pop();
-            this.undelegateMediator(mediator);
-            mediator.dispose();
+            child.dispose();
         }
         // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息
         system.nextFrame(()=>{

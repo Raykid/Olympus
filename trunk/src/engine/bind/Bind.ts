@@ -65,5 +65,6 @@ export default class Bind
             watcher.dispose();
             delete this._watcherDict[key];
         }
+        this._mediator = null;
     }
 }

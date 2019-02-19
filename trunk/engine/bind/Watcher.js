@@ -86,7 +86,10 @@ var Watcher = /** @class */ (function () {
         if (this._disposed)
             return;
         this._value = null;
+        this._bind = null;
+        this._currentTarget = null;
         this._target = null;
+        this._thisArg = null;
         this._exp = null;
         this._scopes = null;
         this._expFunc = null;

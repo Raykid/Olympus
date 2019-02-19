@@ -46,6 +46,35 @@ export function mutate(data:any):any
     return data;
 }
 
+/**
+ * 反变异，将已经变异过的对象恢复原状
+ *
+ * @author Raykid
+ * @date 2019-02-19
+ * @export
+ * @param {*} data
+ * @returns {*}
+ */
+export function unmutate(data:any):any
+{
+    // 如果是简单类型，则啥也不做
+    if(!data || typeof data != "object") return data;
+    // 递归变异所有内部变量，及其__proto__下的属性，因为getter/setter会被定义在__proto__上，而不是当前对象上
+    var keys:string[] = Object.keys(data).concat(Object.keys(data.__proto__ || {}));
+    // 去重
+    var temp:any = {};
+    for(var key of keys)
+    {
+        if(!temp[key])
+        {
+            temp[key] = key;
+            // 递归反变异
+            unmutateObject(data, key);
+        }
+    }
+    return data;
+}
+
 function onGet(dep:Dep, result:any, mutateSub:boolean):void
 {
     // 如果Watcher.updating不是null，说明当前正在执行表达式，那么获取的变量自然是其需要依赖的
@@ -112,7 +141,7 @@ function mutateObject(data:any, key:string):void
                 // getter/setter属性的变异过程
                 Object.defineProperty(data, key, {
                     enumerable: true,
-                    configurable: false,
+                    configurable: true,
                     get: ()=>{
                         if(!desc.get) return;
                         // 获取get方法结果
@@ -139,8 +168,40 @@ function mutateObject(data:any, key:string):void
             value: dep,
             writable: false,
             enumerable: false,
-            configurable: false
+            configurable: true
         });
+        Object.defineProperty(data, depKey + "|oriDesc", {
+            value: desc,
+            writable: false,
+            enumerable: false,
+            configurable: true
+        });
+    }
+}
+
+function unmutateObject(data:any, key:string):void
+{
+    var depKey:string = getObjectHashs(data, key);
+    // 对每个复杂类型对象都要有一个对应的依赖列表
+    var dep:Dep = data[depKey];
+    if(dep)
+    {
+        var target:any = data[key];
+        // 深度优先递归反变异
+        if(target instanceof Array)
+        {
+            unmutateArray(target, dep);
+        }
+        else
+        {
+            unmutate(target);
+        }
+        // 开始反变异自身
+        var desc:PropertyDescriptor = data[depKey + "|oriDesc"];
+        Object.defineProperty(data, key, desc);
+        // 移除标记
+        delete data[depKey];
+        delete data[depKey + "|oriDesc"];
     }
 }
 
@@ -153,6 +214,17 @@ function mutateArray(arr:any[], dep:Dep):void
     {
         mutate(arr[i]);
     }
+}
+
+function unmutateArray(arr:any[], dep:Dep):void
+{
+    // 遍历当前数组，将内容对象全部反变异
+    for(var i:number = 0, len:number = arr.length; i < len; i++)
+    {
+        unmutate(arr[i]);
+    }
+    // 反变异当前数组
+    Object.setPrototypeOf(arr, Array.prototype);
 }
 
 function defineReactiveArray(dep:Dep):any[]
