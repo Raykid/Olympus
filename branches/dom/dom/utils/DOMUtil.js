@@ -85,12 +85,12 @@ export function listenResize(target, callback) {
 export function unlistenResize(target) {
     var info = iframeResizeDict.get(target);
     if (info) {
-        // 移除事件
-        info[1].removeEventListener("resize", info[2]);
-        // 移除显示
-        info[0].remove();
         // 移除记录
         iframeResizeDict.delete(target);
+        // 移除事件
+        !info[1].closed && info[1].removeEventListener("resize", info[2]);
+        // 移除显示
+        info[0].parentElement && info[0].parentElement.removeChild(info[0]);
     }
 }
 function isMesurable(target) {
