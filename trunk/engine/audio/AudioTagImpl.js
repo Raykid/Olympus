@@ -11,10 +11,18 @@ import AudioMessage from "./AudioMessage";
 */
 var AudioTagImpl = /** @class */ (function () {
     function AudioTagImpl() {
+        this._disposed = false;
         this._mute = false;
         this._playingDict = {};
         this._audioCache = {};
     }
+    Object.defineProperty(AudioTagImpl.prototype, "disposed", {
+        get: function () {
+            return this._disposed;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(AudioTagImpl.prototype, "mute", {
         /**
          * 静音状态
@@ -226,6 +234,12 @@ var AudioTagImpl = /** @class */ (function () {
         var data = this._audioCache[url];
         if (data)
             data.node.currentTime = time * 0.001;
+    };
+    AudioTagImpl.prototype.dispose = function () {
+        if (!this._disposed) {
+            this.stopAll();
+            this._disposed = true;
+        }
     };
     return AudioTagImpl;
 }());

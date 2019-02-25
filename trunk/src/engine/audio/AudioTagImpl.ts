@@ -13,6 +13,12 @@ import IAudio, { AudioPlayParams } from "./IAudio";
 */
 export default class AudioTagImpl implements IAudio
 {
+    private _disposed:boolean = false;
+    public get disposed():boolean
+    {
+        return this._disposed;
+    }
+
     private _mute:boolean = false;
     private _playingDict:{[url:string]:AudioPlayParams} = {};
     /**
@@ -247,6 +253,15 @@ export default class AudioTagImpl implements IAudio
     {
         var data:AudioData = this._audioCache[url];
         if(data) data.node.currentTime = time * 0.001;
+    }
+
+    public dispose():void
+    {
+        if(!this._disposed)
+        {
+            this.stopAll();
+            this._disposed = true;
+        }
     }
 }
 

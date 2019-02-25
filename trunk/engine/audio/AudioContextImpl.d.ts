@@ -8,6 +8,8 @@ import IAudio, { AudioPlayParams } from "./IAudio";
  * 使用AudioContext实现IAudio接口的实现类
 */
 export default class AudioContextImpl implements IAudio {
+    private _disposed;
+    readonly disposed: boolean;
     private _mute;
     private _playingDict;
     /**
@@ -18,8 +20,8 @@ export default class AudioContextImpl implements IAudio {
      */
     mute: boolean;
     private _context;
-    private _inited;
     private _audioCache;
+    private _onInit;
     constructor();
     /**
      * 加载音频
@@ -65,4 +67,5 @@ export default class AudioContextImpl implements IAudio {
      * @memberof AudioContextImpl
      */
     seek(url: string, time: number): void;
+    dispose(): void;
 }

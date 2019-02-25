@@ -47,6 +47,7 @@ export default class AudioManager
      */
     public registerSoundImpl(soundImpl:IAudio):void
     {
+        if(this._soundImpl) this._soundImpl.dispose();
         this._soundImpl = soundImpl;
     }
 
@@ -152,6 +153,7 @@ export default class AudioManager
      */
     public registerMusicImpl(musicImpl:IAudio):void
     {
+        if(this._musicImpl) this._musicImpl.dispose();
         this._musicImpl = musicImpl;
     }
 

@@ -38,6 +38,8 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.registerSoundImpl = function (soundImpl) {
+        if (this._soundImpl)
+            this._soundImpl.dispose();
         this._soundImpl = soundImpl;
     };
     Object.defineProperty(AudioManager.prototype, "muteSound", {
@@ -130,6 +132,8 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.registerMusicImpl = function (musicImpl) {
+        if (this._musicImpl)
+            this._musicImpl.dispose();
         this._musicImpl = musicImpl;
     };
     Object.defineProperty(AudioManager.prototype, "muteMusic", {

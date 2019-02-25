@@ -1,3 +1,4 @@
+import IDisposable from '../../core/interfaces/IDisposable';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -6,7 +7,7 @@
  *
  * 音频接口
 */
-export default interface IAudio {
+export default interface IAudio extends IDisposable {
     mute: boolean;
     /**
      * 加载音频

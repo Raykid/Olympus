@@ -14,14 +14,16 @@ import AudioMessage from "./AudioMessage";
 var AudioContextImpl = /** @class */ (function () {
     function AudioContextImpl() {
         var _this = this;
+        this._disposed = false;
         this._mute = false;
         this._playingDict = {};
-        this._inited = false;
         this._audioCache = {};
+        this._onInit = null;
         this._context = new (window["AudioContext"] || window["webkitAudioContext"])();
-        var onInit = function () {
-            window.removeEventListener("touchstart", onInit, true);
-            window.removeEventListener("mousedown", onInit, true);
+        this._onInit = function () {
+            window.removeEventListener("touchstart", _this._onInit, true);
+            window.removeEventListener("mousedown", _this._onInit, true);
+            _this._onInit = null;
             // 生成一个空的音频，播放并停止，用以解除限制
             var source = _this._context.createBufferSource();
             source.buffer = _this._context.createBuffer(1, 1, 44100);
@@ -30,8 +32,6 @@ var AudioContextImpl = /** @class */ (function () {
             source.stop();
             // 要先挂起
             _this._context.suspend();
-            // 设置标识符
-            _this._inited = true;
             // 如果当前有正在播放的音频，全部再播放一次
             for (var url in _this._audioCache) {
                 var data = _this._audioCache[url];
@@ -44,9 +44,16 @@ var AudioContextImpl = /** @class */ (function () {
             }
         };
         // 这里监听触摸事件，一定要使用捕获阶段，否则会被某些框架阻止，比如egret
-        window.addEventListener("touchstart", onInit, true);
-        window.addEventListener("mousedown", onInit, true);
+        window.addEventListener("touchstart", this._onInit, true);
+        window.addEventListener("mousedown", this._onInit, true);
     }
+    Object.defineProperty(AudioContextImpl.prototype, "disposed", {
+        get: function () {
+            return this._disposed;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(AudioContextImpl.prototype, "mute", {
         /**
          * 静音状态
@@ -269,6 +276,17 @@ var AudioContextImpl = /** @class */ (function () {
             else {
                 data.playTime = time;
             }
+        }
+    };
+    AudioContextImpl.prototype.dispose = function () {
+        if (!this._disposed) {
+            if (this._onInit) {
+                window.removeEventListener("touchstart", this._onInit, true);
+                window.removeEventListener("mousedown", this._onInit, true);
+                this._onInit = null;
+            }
+            this.stopAll();
+            this._disposed = true;
         }
     };
     return AudioContextImpl;

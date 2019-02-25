@@ -15,6 +15,12 @@ import IAudio, { AudioPlayParams } from "./IAudio";
 */
 export default class AudioContextImpl implements IAudio
 {
+    private _disposed:boolean = false;
+    public get disposed():boolean
+    {
+        return this._disposed;
+    }
+
     private _mute:boolean = false;
     private _playingDict:{[url:string]:AudioPlayParams} = {};
     /**
@@ -48,15 +54,16 @@ export default class AudioContextImpl implements IAudio
     }
 
     private _context:AudioContext;
-    private _inited:boolean = false;
     private _audioCache:{[url:string]:AudioData} = {};
+    private _onInit:()=>void = null;
 
     public constructor()
     {
         this._context = new (window["AudioContext"] || window["webkitAudioContext"])();
-        var onInit:()=>void = ()=>{
-            window.removeEventListener("touchstart", onInit, true);
-            window.removeEventListener("mousedown", onInit, true);
+        this._onInit = ()=>{
+            window.removeEventListener("touchstart", this._onInit, true);
+            window.removeEventListener("mousedown", this._onInit, true);
+            this._onInit = null;
             // 生成一个空的音频，播放并停止，用以解除限制
             var source: AudioBufferSourceNode = this._context.createBufferSource();
             source.buffer = this._context.createBuffer(1, 1, 44100);
@@ -65,8 +72,6 @@ export default class AudioContextImpl implements IAudio
             source.stop();
             // 要先挂起
             this._context.suspend();
-            // 设置标识符
-            this._inited = true;
             // 如果当前有正在播放的音频，全部再播放一次
             for(var url in this._audioCache)
             {
@@ -81,8 +86,8 @@ export default class AudioContextImpl implements IAudio
             }
         };
         // 这里监听触摸事件，一定要使用捕获阶段，否则会被某些框架阻止，比如egret
-        window.addEventListener("touchstart", onInit, true);
-        window.addEventListener("mousedown", onInit, true);
+        window.addEventListener("touchstart", this._onInit, true);
+        window.addEventListener("mousedown", this._onInit, true);
     }
 
     /**
@@ -300,6 +305,21 @@ export default class AudioContextImpl implements IAudio
             {
                 data.playTime = time;
             }
+        }
+    }
+
+    public dispose():void
+    {
+        if(!this._disposed)
+        {
+            if(this._onInit)
+            {
+                window.removeEventListener("touchstart", this._onInit, true);
+                window.removeEventListener("mousedown", this._onInit, true);
+                this._onInit = null;
+            }
+            this.stopAll();
+            this._disposed = true;
         }
     }
 }
