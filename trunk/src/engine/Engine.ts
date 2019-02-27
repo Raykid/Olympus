@@ -136,7 +136,7 @@ export default class Engine
         if(handler) window.addEventListener("error", handler);
     }
 
-    private onAllBridgesInit():void
+    private async onAllBridgesInit():Promise<void>
     {
         // 调用进度回调，表现层桥初始化完毕为30%
         this._initStep = InitStep.BridgesInited;
@@ -148,7 +148,7 @@ export default class Engine
         {
             for(var plugin of this._initParams.plugins)
             {
-                plugin.initPlugin();
+                await plugin.initPlugin();
             }
         }
         // 注册短名称

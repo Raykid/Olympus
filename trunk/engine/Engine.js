@@ -129,41 +129,55 @@ var Engine = /** @class */ (function () {
             window.addEventListener("error", handler);
     };
     Engine.prototype.onAllBridgesInit = function () {
-        var _this = this;
-        // 调用进度回调，表现层桥初始化完毕为30%
-        this._initStep = InitStep.BridgesInited;
-        this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, this._initStep);
-        // 注销监听
-        core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
-        // 初始化插件
-        if (this._initParams.plugins) {
-            for (var _i = 0, _a = this._initParams.plugins; _i < _a.length; _i++) {
-                var plugin = _a[_i];
-                plugin.initPlugin();
-            }
-        }
-        // 注册短名称
-        assetsManager.configPath(this._initParams.pathDict);
-        // 开始预加载过程
-        var preloads = this._initParams.preloads;
-        if (preloads) {
-            // 去加载
-            var curIndex = 0;
-            var totalCount = preloads.length;
-            assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this), null, function (key, value) {
-                curIndex++;
-                // 调用进度回调，每个预加载文件平分30%-90%的进度
-                var progress = 0.3 + 0.6 * curIndex / totalCount;
-                // 保留2位小数
-                progress = Math.round(progress * 100) * 0.01;
-                _this._initStep = InitStep.Preload;
-                _this._initParams.onInitProgress && _this._initParams.onInitProgress(progress, _this._initStep, key, value);
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var _i, _a, plugin, preloads, curIndex, totalCount;
+            var _this = this;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        // 调用进度回调，表现层桥初始化完毕为30%
+                        this._initStep = InitStep.BridgesInited;
+                        this._initParams.onInitProgress && this._initParams.onInitProgress(0.3, this._initStep);
+                        // 注销监听
+                        core.unlisten(BridgeMessage.BRIDGE_ALL_INIT, this.onAllBridgesInit, this);
+                        if (!this._initParams.plugins) return [3 /*break*/, 4];
+                        _i = 0, _a = this._initParams.plugins;
+                        _b.label = 1;
+                    case 1:
+                        if (!(_i < _a.length)) return [3 /*break*/, 4];
+                        plugin = _a[_i];
+                        return [4 /*yield*/, plugin.initPlugin()];
+                    case 2:
+                        _b.sent();
+                        _b.label = 3;
+                    case 3:
+                        _i++;
+                        return [3 /*break*/, 1];
+                    case 4:
+                        // 注册短名称
+                        assetsManager.configPath(this._initParams.pathDict);
+                        preloads = this._initParams.preloads;
+                        if (preloads) {
+                            curIndex = 0;
+                            totalCount = preloads.length;
+                            assetsManager.loadAssets(preloads, this.onPreloadOK.bind(this), null, function (key, value) {
+                                curIndex++;
+                                // 调用进度回调，每个预加载文件平分30%-90%的进度
+                                var progress = 0.3 + 0.6 * curIndex / totalCount;
+                                // 保留2位小数
+                                progress = Math.round(progress * 100) * 0.01;
+                                _this._initStep = InitStep.Preload;
+                                _this._initParams.onInitProgress && _this._initParams.onInitProgress(progress, _this._initStep, key, value);
+                            });
+                        }
+                        else {
+                            // 没有预加载，直接完成
+                            this.onPreloadOK();
+                        }
+                        return [2 /*return*/];
+                }
             });
-        }
-        else {
-            // 没有预加载，直接完成
-            this.onPreloadOK();
-        }
+        });
     };
     Engine.prototype.onPreloadOK = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
