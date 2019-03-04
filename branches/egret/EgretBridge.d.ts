@@ -15,7 +15,7 @@ import RenderMode from "./egret/RenderMode";
  *
  * Egret的表现层桥实现，当前Egret版本：5.0.7
 */
-export default class EgretBridge implements IBridge {
+export default class EgretBridge implements IBridge<egret.DisplayObject> {
     /** 提供静态类型常量 */
     static TYPE: string;
     private _initParams;
@@ -160,17 +160,17 @@ export default class EgretBridge implements IBridge {
      * @returns {egret.DisplayObject} 包装后的皮肤
      * @memberof EgretBridge
      */
-    wrapSkin(mediator: IMediator, skin: any): egret.DisplayObject;
+    wrapSkin(mediator: IMediator<egret.DisplayObject>, skin: any): egret.DisplayObject;
     /**
      * 替换皮肤，用于组件变身时不同表现层桥的处理
      *
      * @param {IMediator} mediator 中介者
-     * @param {*} current 当前皮肤
-     * @param {*} target 要替换的皮肤
-     * @returns {*} 替换完毕的皮肤
+     * @param {egret.DisplayObject} current 当前皮肤
+     * @param {egret.DisplayObject} target 要替换的皮肤
+     * @returns {egret.DisplayObject} 替换完毕的皮肤
      * @memberof EgretBridge
      */
-    replaceSkin(mediator: IMediator, current: egret.DisplayObject, target: any): any;
+    replaceSkin(mediator: IMediator<egret.DisplayObject>, current: egret.DisplayObject, target: egret.DisplayObject): egret.DisplayObject;
     /**
      * 同步皮肤，用于组件变身后的重新定位
      *

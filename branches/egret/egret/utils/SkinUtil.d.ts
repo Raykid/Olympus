@@ -7,4 +7,4 @@ import IMediator from "olympus-r/engine/mediator/IMediator";
  *
  * Egret皮肤工具集
 */
-export declare function wrapSkin(mediator: IMediator, skin: any): egret.DisplayObject;
+export declare function wrapSkin(mediator: IMediator<egret.DisplayObject>, skin: any): egret.DisplayObject;

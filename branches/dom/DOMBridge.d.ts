@@ -14,7 +14,7 @@ import { MaskData } from "./dom/mask/MaskEntity";
  *
  * 基于DOM的表现层桥实现
 */
-export default class DOMBridge implements IBridge {
+export default class DOMBridge implements IBridge<Element> {
     /** 提供静态类型常量 */
     static TYPE: string;
     private _initParams;
@@ -151,24 +151,24 @@ export default class DOMBridge implements IBridge {
      */
     isMySkin(skin: HTMLElement | string | string[]): boolean;
     /**
-     * 包装HTMLElement节点
+     * 包装Element节点
      *
-     * @param {IMediator} mediator 中介者
-     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
-     * @returns {HTMLElement} 包装后的HTMLElement节点
+     * @param {IMediator<Element>} mediator 中介者
+     * @param {Element|string|string[]} skin 原始Element节点
+     * @returns {HTMLElement} 包装后的Element节点
      * @memberof DOMBridge
      */
-    wrapSkin(mediator: IMediator, skin: HTMLElement | string | string[]): HTMLElement;
+    wrapSkin(mediator: IMediator<Element>, skin: Element | string | string[]): Element;
     /**
      * 替换皮肤，用于组件变身时不同表现层桥的处理
      *
-     * @param {IMediator} mediator 中介者
+     * @param {IMediator<Element>} mediator 中介者
      * @param {*} current 当前皮肤
-     * @param {HTMLElement|string|string[]} target 要替换的皮肤
+     * @param {Element|string|string[]} target 要替换的皮肤
      * @returns {*} 替换完毕的皮肤
      * @memberof DOMBridge
      */
-    replaceSkin(mediator: IMediator, current: HTMLElement, target: HTMLElement | string | string[]): any;
+    replaceSkin(mediator: IMediator<Element>, current: Element, target: Element | string | string[]): any;
     /**
      * 同步皮肤，用于组件变身后的重新定位
      *
@@ -187,73 +187,73 @@ export default class DOMBridge implements IBridge {
     /**
      * 添加显示
      *
-     * @param {Node} parent 要添加到的父容器
-     * @param {Node} target 被添加的显示对象
-     * @return {Node} 返回被添加的显示对象
+     * @param {Element} parent 要添加到的父容器
+     * @param {Element} target 被添加的显示对象
+     * @return {Element} 返回被添加的显示对象
      * @memberof DOMBridge
      */
-    addChild(parent: Node, target: Node): Node;
+    addChild(parent: Element, target: Element): Element;
     /**
      * 按索引添加显示
      *
-     * @param {Node} parent 要添加到的父容器
-     * @param {Node} target 被添加的显示对象
+     * @param {Element} parent 要添加到的父容器
+     * @param {Element} target 被添加的显示对象
      * @param {number} index 要添加到的父级索引
-     * @return {Node} 返回被添加的显示对象
+     * @return {Element} 返回被添加的显示对象
      * @memberof DOMBridge
      */
-    addChildAt(parent: Node, target: Node, index: number): Node;
+    addChildAt(parent: Element, target: Element, index: number): Element;
     /**
      * 移除显示对象
      *
-     * @param {Node} parent 父容器
-     * @param {Node} target 被移除的显示对象
-     * @return {Node} 返回被移除的显示对象
+     * @param {Element} parent 父容器
+     * @param {Element} target 被移除的显示对象
+     * @return {Element} 返回被移除的显示对象
      * @memberof DOMBridge
      */
-    removeChild(parent: Node, target: Node): Node;
+    removeChild(parent: Element, target: Element): Element;
     /**
      * 按索引移除显示
      *
-     * @param {Node} parent 父容器
+     * @param {Element} parent 父容器
      * @param {number} index 索引
-     * @return {Node} 返回被移除的显示对象
+     * @return {Element} 返回被移除的显示对象
      * @memberof DOMBridge
      */
-    removeChildAt(parent: Node, index: number): Node;
+    removeChildAt(parent: Element, index: number): Element;
     /**
      * 移除所有显示对象
      *
-     * @param {Node} parent 父容器
+     * @param {Element} parent 父容器
      * @memberof DOMBridge
      */
-    removeChildren(parent: Node): void;
+    removeChildren(parent: Element): void;
     /**
      * 获取父容器
      *
-     * @param {Node} target 目标对象
-     * @returns {Node} 父容器
+     * @param {Element} target 目标对象
+     * @returns {Element} 父容器
      * @memberof DOMBridge
      */
-    getParent(target: Node): Node;
+    getParent(target: Element): Element;
     /**
      * 获取指定索引处的显示对象
      *
      * @param {Element} parent 父容器
      * @param {number} index 指定父级索引
-     * @return {Node} 索引处的显示对象
+     * @return {Element} 索引处的显示对象
      * @memberof DOMBridge
      */
-    getChildAt(parent: Node, index: number): Node;
+    getChildAt(parent: Element, index: number): Element;
     /**
      * 获取显示索引
      *
-     * @param {Node} parent 父容器
-     * @param {Node} target 子显示对象
+     * @param {Element} parent 父容器
+     * @param {Element} target 子显示对象
      * @return {number} target在parent中的索引
      * @memberof DOMBridge
      */
-    getChildIndex(parent: Node, target: Node): number;
+    getChildIndex(parent: Element, target: Element): number;
     /**
      * 通过名称获取显示对象
      *
@@ -266,11 +266,11 @@ export default class DOMBridge implements IBridge {
     /**
      * 获取子显示对象数量
      *
-     * @param {Node} parent 父容器
+     * @param {Element} parent 父容器
      * @return {number} 子显示对象数量
      * @memberof DOMBridge
      */
-    getChildCount(parent: Node): number;
+    getChildCount(parent: Element): number;
     /**
      * 加载资源
      *
@@ -304,25 +304,25 @@ export default class DOMBridge implements IBridge {
     /**
      * 为绑定的列表显示对象包装一个渲染器创建回调
      *
-     * @param {HTMLElement} target BindFor指令指向的显示对象
-     * @param {(key?:any, value?:any, renderer?:HTMLElement)=>void} handler 渲染器创建回调
+     * @param {Element} target BindFor指令指向的显示对象
+     * @param {(key?:any, value?:any, renderer?:Element)=>void} handler 渲染器创建回调
      * @returns {*} 返回一个备忘录对象，会在赋值时提供
      * @memberof IBridge
      */
-    wrapBindFor(target: HTMLElement, handler: (key?: any, value?: any, renderer?: HTMLElement) => void): any;
+    wrapBindFor(target: Element, handler: (key?: any, value?: any, renderer?: Element) => void): any;
     /**
      * 为列表显示对象赋值
      *
-     * @param {HTMLElement} target BindFor指令指向的显示对象
+     * @param {Element} target BindFor指令指向的显示对象
      * @param {*} datas 数据集合
      * @param {*} memento wrapBindFor返回的备忘录对象
      * @memberof IBridge
      */
-    valuateBindFor(target: HTMLElement, datas: any, memento: any): void;
+    valuateBindFor(target: Element, datas: any, memento: any): void;
 }
 export interface IInitParams {
     /** DOM容器名称或引用，不传递则自动生成一个 */
-    container?: string | HTMLElement;
+    container?: string | Element;
     /** 通用提示框类型 */
     promptClass?: IPromptPanelConstructor;
     /** 遮罩皮肤 */

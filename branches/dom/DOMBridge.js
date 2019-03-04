@@ -282,11 +282,11 @@ var DOMBridge = /** @class */ (function () {
         return false;
     };
     /**
-     * 包装HTMLElement节点
+     * 包装Element节点
      *
-     * @param {IMediator} mediator 中介者
-     * @param {HTMLElement|string|string[]} skin 原始HTMLElement节点
-     * @returns {HTMLElement} 包装后的HTMLElement节点
+     * @param {IMediator<Element>} mediator 中介者
+     * @param {Element|string|string[]} skin 原始Element节点
+     * @returns {HTMLElement} 包装后的Element节点
      * @memberof DOMBridge
      */
     DOMBridge.prototype.wrapSkin = function (mediator, skin) {
@@ -295,9 +295,9 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 替换皮肤，用于组件变身时不同表现层桥的处理
      *
-     * @param {IMediator} mediator 中介者
+     * @param {IMediator<Element>} mediator 中介者
      * @param {*} current 当前皮肤
-     * @param {HTMLElement|string|string[]} target 要替换的皮肤
+     * @param {Element|string|string[]} target 要替换的皮肤
      * @returns {*} 替换完毕的皮肤
      * @memberof DOMBridge
      */
@@ -339,9 +339,9 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 添加显示
      *
-     * @param {Node} parent 要添加到的父容器
-     * @param {Node} target 被添加的显示对象
-     * @return {Node} 返回被添加的显示对象
+     * @param {Element} parent 要添加到的父容器
+     * @param {Element} target 被添加的显示对象
+     * @return {Element} 返回被添加的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.addChild = function (parent, target) {
@@ -350,10 +350,10 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 按索引添加显示
      *
-     * @param {Node} parent 要添加到的父容器
-     * @param {Node} target 被添加的显示对象
+     * @param {Element} parent 要添加到的父容器
+     * @param {Element} target 被添加的显示对象
      * @param {number} index 要添加到的父级索引
-     * @return {Node} 返回被添加的显示对象
+     * @return {Element} 返回被添加的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.addChildAt = function (parent, target, index) {
@@ -362,9 +362,9 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 移除显示对象
      *
-     * @param {Node} parent 父容器
-     * @param {Node} target 被移除的显示对象
-     * @return {Node} 返回被移除的显示对象
+     * @param {Element} parent 父容器
+     * @param {Element} target 被移除的显示对象
+     * @return {Element} 返回被移除的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChild = function (parent, target) {
@@ -376,9 +376,9 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 按索引移除显示
      *
-     * @param {Node} parent 父容器
+     * @param {Element} parent 父容器
      * @param {number} index 索引
-     * @return {Node} 返回被移除的显示对象
+     * @return {Element} 返回被移除的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChildAt = function (parent, index) {
@@ -387,7 +387,7 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 移除所有显示对象
      *
-     * @param {Node} parent 父容器
+     * @param {Element} parent 父容器
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChildren = function (parent) {
@@ -398,29 +398,29 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 获取父容器
      *
-     * @param {Node} target 目标对象
-     * @returns {Node} 父容器
+     * @param {Element} target 目标对象
+     * @returns {Element} 父容器
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getParent = function (target) {
-        return target.parentNode;
+        return target.parentElement;
     };
     /**
      * 获取指定索引处的显示对象
      *
      * @param {Element} parent 父容器
      * @param {number} index 指定父级索引
-     * @return {Node} 索引处的显示对象
+     * @return {Element} 索引处的显示对象
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getChildAt = function (parent, index) {
-        return parent.childNodes.item(index);
+        return parent.children.item(index);
     };
     /**
      * 获取显示索引
      *
-     * @param {Node} parent 父容器
-     * @param {Node} target 子显示对象
+     * @param {Element} parent 父容器
+     * @param {Element} target 子显示对象
      * @return {number} target在parent中的索引
      * @memberof DOMBridge
      */
@@ -445,7 +445,7 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 获取子显示对象数量
      *
-     * @param {Node} parent 父容器
+     * @param {Element} parent 父容器
      * @return {number} 子显示对象数量
      * @memberof DOMBridge
      */
@@ -526,8 +526,8 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 为绑定的列表显示对象包装一个渲染器创建回调
      *
-     * @param {HTMLElement} target BindFor指令指向的显示对象
-     * @param {(key?:any, value?:any, renderer?:HTMLElement)=>void} handler 渲染器创建回调
+     * @param {Element} target BindFor指令指向的显示对象
+     * @param {(key?:any, value?:any, renderer?:Element)=>void} handler 渲染器创建回调
      * @returns {*} 返回一个备忘录对象，会在赋值时提供
      * @memberof IBridge
      */
@@ -546,7 +546,7 @@ var DOMBridge = /** @class */ (function () {
     /**
      * 为列表显示对象赋值
      *
-     * @param {HTMLElement} target BindFor指令指向的显示对象
+     * @param {Element} target BindFor指令指向的显示对象
      * @param {*} datas 数据集合
      * @param {*} memento wrapBindFor返回的备忘录对象
      * @memberof IBridge

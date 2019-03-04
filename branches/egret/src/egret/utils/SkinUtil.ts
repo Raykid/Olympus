@@ -11,7 +11,7 @@ import { listenApply } from 'olympus-r/utils/ConstructUtil';
  * 
  * Egret皮肤工具集
 */
-export function wrapSkin(mediator:IMediator, skin:any):egret.DisplayObject
+export function wrapSkin(mediator:IMediator<egret.DisplayObject>, skin:any):egret.DisplayObject
 {
     var result:egret.DisplayObject;
     var comp:eui.Component = getComponent(skin);

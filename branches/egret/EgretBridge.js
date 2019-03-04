@@ -421,9 +421,9 @@ var EgretBridge = /** @class */ (function () {
      * 替换皮肤，用于组件变身时不同表现层桥的处理
      *
      * @param {IMediator} mediator 中介者
-     * @param {*} current 当前皮肤
-     * @param {*} target 要替换的皮肤
-     * @returns {*} 替换完毕的皮肤
+     * @param {egret.DisplayObject} current 当前皮肤
+     * @param {egret.DisplayObject} target 要替换的皮肤
+     * @returns {egret.DisplayObject} 替换完毕的皮肤
      * @memberof EgretBridge
      */
     EgretBridge.prototype.replaceSkin = function (mediator, current, target) {

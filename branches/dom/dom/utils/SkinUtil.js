@@ -14,11 +14,11 @@ import { listenApply } from 'olympus-r/utils/ConstructUtil';
  *
  * @export
  * @param {IMediator} mediator 中介者
- * @param {(HTMLElement|string|string[])} skin 皮肤，可以是HTMLElement，也可以是皮肤字符串，也可以是皮肤模板地址或地址数组
- * @returns {HTMLElement} 皮肤的HTMLElement形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
+ * @param {(Element|string|string[])} skin 皮肤，可以是Element，也可以是皮肤字符串，也可以是皮肤模板地址或地址数组
+ * @returns {Element} 皮肤的Element形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
  */
 export function wrapSkin(mediator, skin) {
-    var result = (skin instanceof HTMLElement ? skin : document.createElement("div"));
+    var result = (skin instanceof Element ? skin : document.createElement("div"));
     // 判断中介者当前状态
     if (mediator.status < MediatorStatus.OPENING) {
         listenApply(mediator, "__beforeOnOpen", doWrapSkin);
@@ -30,7 +30,7 @@ export function wrapSkin(mediator, skin) {
     // 同步返回皮肤
     return result;
     function doWrapSkin() {
-        if (skin instanceof HTMLElement) {
+        if (skin instanceof Element) {
             // 拷贝引用
             doCopyRef(result, skin.innerHTML, mediator);
         }
@@ -69,7 +69,7 @@ export function isDOMPath(path) {
  * 将from中的所有拥有id属性的节点引用复制到to对象上
  *
  * @export
- * @param {HTMLElement} from 复制源DOM节点
+ * @param {Element} from 复制源DOM节点
  * @param {*} to 复制目标对象
  */
 export function copyRef(from, to) {
@@ -85,14 +85,14 @@ function doCopyRef(fromEle, fromStr, to) {
     }
 }
 /**
- * 转换皮肤为HTMLElement
+ * 转换皮肤为Element
  *
  * @export
- * @param {(HTMLElement|string|string[])} skin 皮肤
- * @returns {HTMLElement}
+ * @param {(Element|string|string[])} skin 皮肤
+ * @returns {Element}
  */
 export function toHTMLElement(skin) {
-    if (skin instanceof HTMLElement)
+    if (skin instanceof Element)
         return skin;
     var result = document.createElement("div");
     result.innerHTML = getHTMLContent(skin);
