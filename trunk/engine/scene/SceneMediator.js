@@ -1,7 +1,7 @@
 import * as tslib_1 from "tslib";
 import Mediator from "../mediator/Mediator";
-import { sceneManager } from "./SceneManager";
 import MediatorMessage from "../mediator/MediatorMessage";
+import { sceneManager } from "./SceneManager";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -28,6 +28,8 @@ var SceneMediator = /** @class */ (function (_super) {
             oriOnAfterOut.call(_this, toScene, data);
             // 派发关闭事件
             _this.dispatch(MediatorMessage.MEDIATOR_CLOSED, _this);
+            // 在dispose之前执行promise
+            _this._resolveClose(data);
         };
         sceneManager.pop(this, data);
     };

@@ -464,7 +464,8 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         return false;
     }
 
-    private _resolveClose:(closeData:CD)=>void;
+    protected _resolveClose:(closeData:CD)=>void;
+    private _resolveCloseRun:boolean = false;
 
     /**
      * 打开，为了实现IOpenClose接口
@@ -576,7 +577,13 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         }
         // 返回关闭Promise
         return new Promise(resolve=>{
-            this._resolveClose = resolve;
+            this._resolveClose = data=>{
+                if(!this._resolveCloseRun)
+                {
+                    this._resolveCloseRun = true;
+                    resolve(data);
+                }
+            };
         });
 
         function hideMask():void
@@ -1103,6 +1110,12 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         if(this.status >= MediatorStatus.DISPOSING) return;
         // 修改状态
         this._status = MediatorStatus.DISPOSING;
+        // 如果还没结束则结束，保证外部流程畅通
+        if(!this._resolveCloseRun)
+        {
+            this._resolveClose(undefined);
+        }
+        this._resolveClose = null;
         // 移除绑定
         bindManager.unbind(this);
         // 注销事件监听
@@ -1133,7 +1146,6 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         // 移除父引用
         this.parent = null;
         // 移除其他无用对象
-        this._resolveClose = null;
         this.moduleOpenHandler = null;
         // 将所有子中介者销毁
         const children:IMediator[] = this._children.concat();

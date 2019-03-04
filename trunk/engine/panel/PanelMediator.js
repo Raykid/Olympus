@@ -1,7 +1,7 @@
 import * as tslib_1 from "tslib";
 import Mediator from "../mediator/Mediator";
-import { panelManager } from "./PanelManager";
 import MediatorMessage from "../mediator/MediatorMessage";
+import { panelManager } from "./PanelManager";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -35,6 +35,8 @@ var PanelMediator = /** @class */ (function (_super) {
             oriOnAfterDrop.call(_this, data, to);
             // 派发关闭事件
             _this.dispatch(MediatorMessage.MEDIATOR_CLOSED, _this);
+            // 在dispose之前执行promise
+            _this._resolveClose(data);
         };
         panelManager.drop(this, data, to);
     };

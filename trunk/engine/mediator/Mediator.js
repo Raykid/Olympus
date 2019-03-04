@@ -74,6 +74,7 @@ var Mediator = /** @class */ (function () {
          */
         this.bindTargets = [];
         this._openMask = true;
+        this._resolveCloseRun = false;
         this._listeners = [];
         this._disposeDict = new Dictionary();
         /**
@@ -503,7 +504,12 @@ var Mediator = /** @class */ (function () {
         }
         // 返回关闭Promise
         return new Promise(function (resolve) {
-            _this._resolveClose = resolve;
+            _this._resolveClose = function (data) {
+                if (!_this._resolveCloseRun) {
+                    _this._resolveCloseRun = true;
+                    resolve(data);
+                }
+            };
         });
         function hideMask() {
             // 隐藏Loading
@@ -975,6 +981,11 @@ var Mediator = /** @class */ (function () {
             return;
         // 修改状态
         this._status = MediatorStatus.DISPOSING;
+        // 如果还没结束则结束，保证外部流程畅通
+        if (!this._resolveCloseRun) {
+            this._resolveClose(undefined);
+        }
+        this._resolveClose = null;
         // 移除绑定
         bindManager.unbind(this);
         // 注销事件监听
@@ -1004,7 +1015,6 @@ var Mediator = /** @class */ (function () {
         // 移除父引用
         this.parent = null;
         // 移除其他无用对象
-        this._resolveClose = null;
         this.moduleOpenHandler = null;
         // 将所有子中介者销毁
         var children = this._children.concat();

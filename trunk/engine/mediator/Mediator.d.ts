@@ -208,7 +208,8 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @memberof Mediator
      */
     onGetResponses(responses: ResponseData[]): boolean;
-    private _resolveClose;
+    protected _resolveClose: (closeData: CD) => void;
+    private _resolveCloseRun;
     /**
      * 打开，为了实现IOpenClose接口
      *

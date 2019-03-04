@@ -1,8 +1,8 @@
 import Mediator from "../mediator/Mediator";
+import MediatorMessage from "../mediator/MediatorMessage";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import { sceneManager } from "./SceneManager";
-import MediatorMessage from "../mediator/MediatorMessage";
 
 /**
  * @author Raykid
@@ -41,6 +41,8 @@ export default class SceneMediator<S = any, OD = any, CD = any> extends Mediator
             oriOnAfterOut.call(this, toScene, data);
             // 派发关闭事件
             this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+            // 在dispose之前执行promise
+            this._resolveClose(data);
         };
         sceneManager.pop(this, data);
     }
