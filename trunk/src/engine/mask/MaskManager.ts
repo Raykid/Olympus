@@ -218,10 +218,10 @@ export default class MaskManager
     }
 }
 
-export interface IMaskEntity
+export interface IMaskEntity<S = any>
 {
     readonly maskData:IMaskData;
-    readonly loadingSkin:any;
+    readonly loadingSkin:S;
 
     showMask(alpha?:number):void;
     hideMask():void;
@@ -229,8 +229,8 @@ export interface IMaskEntity
     showLoading(alpha?:number):void;
     hideLoading():void;
 
-    showModalMask(popup:IPanel, alpha?:number):void;
-    hideModalMask(popup:IPanel):void;
+    showModalMask(popup:IPanel<S>, alpha?:number):void;
+    hideModalMask(popup:IPanel<S>):void;
 }
 /** 再额外导出一个单例 */
 export const maskManager:MaskManager = core.getInject(MaskManager);

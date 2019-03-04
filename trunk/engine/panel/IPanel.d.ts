@@ -10,40 +10,40 @@ import IOpenClose from "../../core/interfaces/IOpenClose";
  *
  * 弹窗接口
 */
-export default interface IPanel extends IHasBridge, IOpenClose, IDisposable {
+export default interface IPanel<S = any, OD = any, CD = any> extends IHasBridge, IOpenClose, IDisposable {
     /** 实际显示对象 */
-    skin: any;
+    skin: S;
     /** 弹出策略 */
-    policy: IPanelPolicy;
+    policy: IPanelPolicy<S>;
     /** 自定义弹窗遮罩透明度，不传则使用项目默认透明度 */
     maskAlpha?: number;
     /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
-    open(data?: any, isModel?: boolean, from?: {
+    open(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
-    }): IPanel;
+    }): IPanel<S, OD, CD>;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
-    close(data?: any, to?: {
+    close(data?: CD, to?: {
         x: number;
         y: number;
-    }): IPanel;
+    }): IPanel<S, OD, CD>;
     /** 在弹出前调用的方法 */
-    onBeforePop(data?: any, isModel?: boolean, from?: {
+    onBeforePop(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
     }): void;
     /** 在弹出后调用的方法 */
-    onAfterPop(data?: any, isModel?: boolean, from?: {
+    onAfterPop(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
     }): void;
     /** 在关闭前调用的方法 */
-    onBeforeDrop(data?: any, to?: {
+    onBeforeDrop(data?: CD, to?: {
         x: number;
         y: number;
     }): void;
     /** 在关闭后调用的方法 */
-    onAfterDrop(data?: any, to?: {
+    onAfterDrop(data?: CD, to?: {
         x: number;
         y: number;
     }): void;

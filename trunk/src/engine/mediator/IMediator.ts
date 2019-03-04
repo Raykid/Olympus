@@ -10,29 +10,39 @@ import ResponseData from "../net/ResponseData";
  * @email initial_r@qq.com
  * @create date 2017-09-04
  * @modify date 2017-09-04
+ * @export
+ * @interface IMediator
+ * @extends {IMediatorBasicPart<S, OD, CD>}
+ * @extends {IMediatorBindPart<S>}
+ * @extends {IMediatorTreePart}
+ * @extends {IMediatorModulePart<S>}
+ * @template S 皮肤类型
+ * @template OD 开启参数类型
+ * @template CD 关闭参数类型
  * 
  * 界面中介者接口
 */
-export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart, IMediatorTreePart, IMediatorModulePart
+
+export default interface IMediator<S = any, OD = any, CD = any> extends IMediatorBasicPart<S, OD, CD>, IMediatorBindPart<S>, IMediatorTreePart, IMediatorModulePart<S>
 {
     /**
      * 当打开时调用
      * 
-     * @param {*} [data] 可能的打开参数
+     * @param {OD} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
      * @returns {*} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof IMediator
      */
-    onOpen(data?:any, ...args:any[]):any;
+    onOpen(data?:OD, ...args:any[]):any;
 
     /**
      * 当关闭时调用
      * 
-     * @param {*} [data] 可能的关闭参数
+     * @param {CD} [data] 可能的关闭参数
      * @param {...any[]} args 其他参数
      * @memberof IMediator
      */
-    onClose(data?:any, ...args:any[]):void;
+    onClose(data?:CD, ...args:any[]):void;
     
     /**
      * 当所需资源加载完毕后调用
@@ -80,7 +90,7 @@ export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart
      * 
      * @param {(IMediator|undefined)} from 从哪个模块回到当前模块
      * @param {*} [data] 可能的参数传递
-     * @memberof IMediator
+     * @memberof IMediator<S, OD, CD>
      */
     onWakeUp(from:IMediator|undefined, data?:any):void;
 
@@ -89,16 +99,16 @@ export default interface IMediator extends IMediatorBasicPart, IMediatorBindPart
      * 
      * @param {(IMediator|undefined)} from 从哪个模块来到当前模块
      * @param {*} [data] 可能的参数传递
-     * @memberof IMediator
+     * @memberof IMediator<S, OD, CD>
      */
-    onActivate(from:IMediator|undefined, data?:any):void;
+    onActivate(from:IMediator|undefined, data?:OD|any):void;
 
     /**
      * 模块切换到后台时调用（close之后或者其他模块打开时）
      * 
      * @param {(IMediator|undefined)} to 将要去往哪个模块
      * @param {*} [data] 可能的参数传递
-     * @memberof IMediator
+     * @memberof IMediator<S, OD, CD>
      */
-    onDeactivate(to:IMediator|undefined, data?:any):void;
+    onDeactivate(to:IMediator|undefined, data?:CD|any):void;
 }

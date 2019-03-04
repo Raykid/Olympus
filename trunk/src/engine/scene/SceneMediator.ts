@@ -12,32 +12,32 @@ import MediatorMessage from "../mediator/MediatorMessage";
  * 
  * 实现了IScene接口的场景中介者基类
 */
-export default class SceneMediator extends Mediator implements IScene
+export default class SceneMediator<S = any, OD = any, CD = any> extends Mediator<S, OD, CD> implements IScene<S, OD, CD>
 {
     /**
      * 切换策略
      * 
-     * @type {IScenePolicy}
+     * @type {IScenePolicy<S>}
      * @memberof SceneMediator
      */
-    public policy:IScenePolicy;
+    public policy:IScenePolicy<S>;
 
-    public constructor(skin?:any, policy?:IScenePolicy)
+    public constructor(skin?:S, policy?:IScenePolicy<S>)
     {
         super(skin);
         this.policy = policy;
     }
 
-    protected __afterOnOpen(data?:any):void
+    protected __afterOnOpen(data?:OD):void
     {
         sceneManager.push(this, data);
     }
 
-    protected __afterOnClose(data?:any):void
+    protected __afterOnClose(data?:CD):void
     {
         // 篡改onAfterOut，等待关闭动画结束后再执行
-        var oriOnAfterOut:(toScene:IScene, data?:any)=>void = this.onAfterOut;
-        this.onAfterOut = (toScene:IScene, data?:any)=>{
+        var oriOnAfterOut:(toScene:IScene, data?:CD)=>void = this.onAfterOut;
+        this.onAfterOut = (toScene:IScene, data?:CD)=>{
             oriOnAfterOut.call(this, toScene, data);
             // 派发关闭事件
             this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
@@ -50,7 +50,7 @@ export default class SceneMediator extends Mediator implements IScene
      * @param fromScene 从哪个场景切入
      * @param data 切场景时可能的参数
      */
-    public onBeforeIn(fromScene:IScene, data?:any):void
+    public onBeforeIn(fromScene:IScene, data?:OD):void
     {
         // 可重写
     }
@@ -60,7 +60,7 @@ export default class SceneMediator extends Mediator implements IScene
      * @param fromScene 从哪个场景切入
      * @param data 切场景时可能的参数
      */
-    public onAfterIn(fromScene:IScene, data?:any):void
+    public onAfterIn(fromScene:IScene, data?:OD):void
     {
         // 可重写
     }
@@ -70,7 +70,7 @@ export default class SceneMediator extends Mediator implements IScene
      * @param toScene 要切入到哪个场景
      * @param data 切场景时可能的参数
      */
-    public onBeforeOut(toScene:IScene, data?:any):void
+    public onBeforeOut(toScene:IScene, data?:CD):void
     {
         // 可重写
     }
@@ -79,7 +79,7 @@ export default class SceneMediator extends Mediator implements IScene
      * @param toScene 要切入到哪个场景
      * @param data 切场景时可能的参数
      */
-    public onAfterOut(toScene:IScene, data?:any):void
+    public onAfterOut(toScene:IScene, data?:CD):void
     {
         // 可重写
     }

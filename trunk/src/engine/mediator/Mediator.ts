@@ -80,7 +80,19 @@ export function isMediator(target:any):boolean
     return (target.delegateMediator instanceof Function && target.undelegateMediator instanceof Function);
 }
 
-export default class Mediator implements IMediator
+/**
+ * 中介者基类
+ *
+ * @author Raykid
+ * @date 2019-03-04
+ * @export
+ * @class Mediator
+ * @implements {IMediator<S, OD, CD>}
+ * @template S 皮肤类型
+ * @template OD 开启参数类型
+ * @template CD 关闭参数类型
+ */
+export default class Mediator<S = any, OD = any, CD = any> implements IMediator<S, OD, CD>
 {
     private _status:MediatorStatus = MediatorStatus.UNOPEN;
     /**
@@ -101,7 +113,7 @@ export default class Mediator implements IMediator
      * @type {IBridge}
      * @memberof Mediator
      */
-    public bridge:IBridge;
+    public bridge:IBridge<S>;
     
     private _viewModel:any;
     /**
@@ -125,20 +137,20 @@ export default class Mediator implements IMediator
     /**
      * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
      * 
-     * @type {Dictionary<any, any>[]}
+     * @type {Dictionary<S, S>[]}
      * @memberof Mediator
      */
-    public bindTargets:Dictionary<any, any>[] = [];
+    public bindTargets:Dictionary<S, S>[] = [];
 
     /**
      * 皮肤
      * 
-     * @type {*}
+     * @type {S}
      * @memberof Mediator
      */
-    public skin:any;
+    public skin:S;
 
-    private oriSkin:any;
+    private oriSkin:S;
     
     /**
      * 获取中介者是否已被销毁
@@ -155,10 +167,10 @@ export default class Mediator implements IMediator
     /**
      * 打开时传递的data对象
      * 
-     * @type {*}
+     * @type {OD}
      * @memberof Mediator
      */
-    public data:any;
+    public data:OD;
 
     private _openMask:boolean = true;
     /**
@@ -222,7 +234,7 @@ export default class Mediator implements IMediator
      */
     public moduleOpenHandler:(status:ModuleOpenStatus, err?:Error)=>void;
 
-    public constructor(skin?:any)
+    public constructor(skin?:S)
     {
         // 赋值模块名称
         this._moduleName = getModuleName(this);
@@ -455,12 +467,12 @@ export default class Mediator implements IMediator
     /**
      * 打开，为了实现IOpenClose接口
      * 
-     * @param {*} [data] 开启数据
+     * @param {OD} [data] 开启数据
      * @param {...any[]} args 其他数据
-     * @returns {*} 返回自身引用
+     * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    public open(data?:any, ...args:any[]):any
+    public open(data?:OD, ...args:any[]):this
     {
         // 判断状态
         if(this._status === MediatorStatus.UNOPEN)
@@ -571,12 +583,12 @@ export default class Mediator implements IMediator
         }
     }
 
-    protected __beforeOnOpen(data?:any, ...args:any[]):void|Promise<void>
+    protected __beforeOnOpen(data?:OD, ...args:any[]):void|Promise<void>
     {
         // 给子类用的模板方法
     }
 
-    protected __afterOnOpen(data?:any, ...args:any[]):void|Promise<void>
+    protected __afterOnOpen(data?:OD, ...args:any[]):void|Promise<void>
     {
         // 给子类用的模板方法
     }
@@ -584,12 +596,12 @@ export default class Mediator implements IMediator
     /**
      * 关闭，为了实现IOpenClose接口
      * 
-     * @param {*} [data] 关闭数据
+     * @param {CD} [data] 关闭数据
      * @param {...any[]} args 其他参数
-     * @returns {*} 返回自身引用
+     * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    public close(data?:any, ...args:any[]):any
+    public close(data?:CD, ...args:any[]):this
     {
         if(this._status === MediatorStatus.OPENED)
         {
@@ -635,12 +647,12 @@ export default class Mediator implements IMediator
         return this;
     }
 
-    protected __beforeOnClose(data?:any, ...args:any[]):void
+    protected __beforeOnClose(data?:CD, ...args:any[]):void
     {
         // 给子类用的模板方法
     }
 
-    protected __afterOnClose(data?:any, ...args:any[]):void
+    protected __afterOnClose(data?:CD, ...args:any[]):void
     {
         // 派发关闭事件
         this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
@@ -651,12 +663,12 @@ export default class Mediator implements IMediator
     /**
      * 当打开时调用
      * 
-     * @param {*} [data] 可能的打开参数
+     * @param {OD} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
      * @returns {any|Promise<any>} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
-    public onOpen(data?:any, ...args:any[]):any|Promise<any>
+    public onOpen(data?:OD, ...args:any[]):any|Promise<any>
     {
         // 可重写
     }
@@ -664,11 +676,11 @@ export default class Mediator implements IMediator
     /**
      * 当关闭时调用
      * 
-     * @param {*} [data] 可能的关闭参数
+     * @param {CD} [data] 可能的关闭参数
      * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
-    public onClose(data?:any, ...args:any[]):void
+    public onClose(data?:CD, ...args:any[]):void
     {
         // 可重写
     }
@@ -677,13 +689,13 @@ export default class Mediator implements IMediator
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof Mediator
      */
-    public mapListener(target:any, type:string, handler:Function, thisArg?:any):void
+    public mapListener(target:S, type:string, handler:Function, thisArg?:any):void
     {
         for(var i:number = 0, len:number = this._listeners.length; i < len; i++)
         {
@@ -703,13 +715,13 @@ export default class Mediator implements IMediator
     /**
      * 注销监听事件
      * 
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof Mediator
      */
-    public unmapListener(target:any, type:string, handler:Function, thisArg?:any):void
+    public unmapListener(target:S, type:string, handler:Function, thisArg?:any):void
     {
         for(var i:number = 0, len:number = this._listeners.length; i < len; i++)
         {

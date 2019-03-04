@@ -7,19 +7,19 @@ import IPanel from "./IPanel";
  *
  * 弹窗动画策略，负责将弹窗动画与弹窗实体解耦
 */
-export default interface IPanelPolicy {
+export default interface IPanelPolicy<S = any> {
     /**
      * 添加显示前准备阶段调用
      * @param panel 弹出框对象
      */
-    prepare?(panel: IPanel): void;
+    prepare?(panel: IPanel<S>): void;
     /**
      * 显示时调用
      * @param panel 弹出框对象
      * @param callback 完成回调，必须调用
      * @param from 动画起始点
      */
-    pop(panel: IPanel, callback: () => void, from?: {
+    pop(panel: IPanel<S>, callback: () => void, from?: {
         x: number;
         y: number;
     }): void;
@@ -29,7 +29,7 @@ export default interface IPanelPolicy {
      * @param callback 完成回调，必须调用
      * @param to 动画完结点
      */
-    drop(panel: IPanel, callback: () => void, to?: {
+    drop(panel: IPanel<S>, callback: () => void, to?: {
         x: number;
         y: number;
     }): void;

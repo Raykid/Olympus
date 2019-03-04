@@ -44,7 +44,19 @@ export declare function getModule(moduleName: string): IMediatorConstructor;
  */
 export declare function getModuleName(type: ModuleType): string;
 export declare function isMediator(target: any): boolean;
-export default class Mediator implements IMediator {
+/**
+ * 中介者基类
+ *
+ * @author Raykid
+ * @date 2019-03-04
+ * @export
+ * @class Mediator
+ * @implements {IMediator<S, OD, CD>}
+ * @template S 皮肤类型
+ * @template OD 开启参数类型
+ * @template CD 关闭参数类型
+ */
+export default class Mediator<S = any, OD = any, CD = any> implements IMediator<S, OD, CD> {
     private _status;
     /**
      * 获取中介者状态
@@ -60,7 +72,7 @@ export default class Mediator implements IMediator {
      * @type {IBridge}
      * @memberof Mediator
      */
-    bridge: IBridge;
+    bridge: IBridge<S>;
     private _viewModel;
     /**
      * 获取或设置ViewModel
@@ -72,17 +84,17 @@ export default class Mediator implements IMediator {
     /**
      * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
      *
-     * @type {Dictionary<any, any>[]}
+     * @type {Dictionary<S, S>[]}
      * @memberof Mediator
      */
-    bindTargets: Dictionary<any, any>[];
+    bindTargets: Dictionary<S, S>[];
     /**
      * 皮肤
      *
-     * @type {*}
+     * @type {S}
      * @memberof Mediator
      */
-    skin: any;
+    skin: S;
     private oriSkin;
     /**
      * 获取中介者是否已被销毁
@@ -95,10 +107,10 @@ export default class Mediator implements IMediator {
     /**
      * 打开时传递的data对象
      *
-     * @type {*}
+     * @type {OD}
      * @memberof Mediator
      */
-    data: any;
+    data: OD;
     private _openMask;
     /**
      * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
@@ -130,7 +142,7 @@ export default class Mediator implements IMediator {
      * @memberof Mediator
      */
     moduleOpenHandler: (status: ModuleOpenStatus, err?: Error) => void;
-    constructor(skin?: any);
+    constructor(skin?: S);
     /**
      * 加载从listAssets中获取到的所有资源
      *
@@ -199,63 +211,63 @@ export default class Mediator implements IMediator {
     /**
      * 打开，为了实现IOpenClose接口
      *
-     * @param {*} [data] 开启数据
+     * @param {OD} [data] 开启数据
      * @param {...any[]} args 其他数据
-     * @returns {*} 返回自身引用
+     * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    open(data?: any, ...args: any[]): any;
-    protected __beforeOnOpen(data?: any, ...args: any[]): void | Promise<void>;
-    protected __afterOnOpen(data?: any, ...args: any[]): void | Promise<void>;
+    open(data?: OD, ...args: any[]): this;
+    protected __beforeOnOpen(data?: OD, ...args: any[]): void | Promise<void>;
+    protected __afterOnOpen(data?: OD, ...args: any[]): void | Promise<void>;
     /**
      * 关闭，为了实现IOpenClose接口
      *
-     * @param {*} [data] 关闭数据
+     * @param {CD} [data] 关闭数据
      * @param {...any[]} args 其他参数
-     * @returns {*} 返回自身引用
+     * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    close(data?: any, ...args: any[]): any;
-    protected __beforeOnClose(data?: any, ...args: any[]): void;
-    protected __afterOnClose(data?: any, ...args: any[]): void;
+    close(data?: CD, ...args: any[]): this;
+    protected __beforeOnClose(data?: CD, ...args: any[]): void;
+    protected __afterOnClose(data?: CD, ...args: any[]): void;
     /**
      * 当打开时调用
      *
-     * @param {*} [data] 可能的打开参数
+     * @param {OD} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
      * @returns {any|Promise<any>} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
      */
-    onOpen(data?: any, ...args: any[]): any | Promise<any>;
+    onOpen(data?: OD, ...args: any[]): any | Promise<any>;
     /**
      * 当关闭时调用
      *
-     * @param {*} [data] 可能的关闭参数
+     * @param {CD} [data] 可能的关闭参数
      * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
-    onClose(data?: any, ...args: any[]): void;
+    onClose(data?: CD, ...args: any[]): void;
     private _listeners;
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      *
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof Mediator
      */
-    mapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+    mapListener(target: S, type: string, handler: Function, thisArg?: any): void;
     /**
      * 注销监听事件
      *
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof Mediator
      */
-    unmapListener(target: any, type: string, handler: Function, thisArg?: any): void;
+    unmapListener(target: S, type: string, handler: Function, thisArg?: any): void;
     /**
      * 注销所有注册在当前中介者上的事件监听
      *

@@ -6,43 +6,50 @@ import IPanelPolicy from "./IPanelPolicy";
  * @email initial_r@qq.com
  * @create date 2017-09-06
  * @modify date 2017-09-06
+ * @export
+ * @class PanelMediator
+ * @extends {Mediator<S, OD, CD>}
+ * @implements {IPanel<S, OD, CD>}
+ * @template S 皮肤类型
+ * @template OD 开启参数类型
+ * @template CD 关闭参数类型
  *
  * 实现了IPanel接口的弹窗中介者基类
 */
-export default class PanelMediator extends Mediator implements IPanel {
+export default class PanelMediator<S = any, OD = any, CD = any> extends Mediator<S, OD, CD> implements IPanel<S, OD, CD> {
     /**
      * 弹出策略
      *
-     * @type {IPanelPolicy}
+     * @type {IPanelPolicy<S>}
      * @memberof PanelMediator
      */
-    policy: IPanelPolicy;
-    constructor(skin?: any, policy?: IPanelPolicy);
-    __afterOnOpen(data?: any, isModel?: boolean, from?: {
+    policy: IPanelPolicy<S>;
+    constructor(skin?: S, policy?: IPanelPolicy<S>);
+    __afterOnOpen(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
     }): void;
-    __afterOnClose(data?: any, to?: {
+    __afterOnClose(data?: CD, to?: {
         x: number;
         y: number;
     }): void;
     /** 在弹出前调用的方法 */
-    onBeforePop(data?: any, isModel?: boolean, from?: {
+    onBeforePop(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
     }): void;
     /** 在弹出后调用的方法 */
-    onAfterPop(data?: any, isModel?: boolean, from?: {
+    onAfterPop(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
     }): void;
     /** 在关闭前调用的方法 */
-    onBeforeDrop(data?: any, to?: {
+    onBeforeDrop(data?: CD, to?: {
         x: number;
         y: number;
     }): void;
     /** 在关闭后调用的方法 */
-    onAfterDrop(data?: any, to?: {
+    onAfterDrop(data?: CD, to?: {
         x: number;
         y: number;
     }): void;

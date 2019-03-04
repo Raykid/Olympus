@@ -51,13 +51,25 @@ export function getModuleName(type) {
 export function isMediator(target) {
     return (target.delegateMediator instanceof Function && target.undelegateMediator instanceof Function);
 }
+/**
+ * 中介者基类
+ *
+ * @author Raykid
+ * @date 2019-03-04
+ * @export
+ * @class Mediator
+ * @implements {IMediator<S, OD, CD>}
+ * @template S 皮肤类型
+ * @template OD 开启参数类型
+ * @template CD 关闭参数类型
+ */
 var Mediator = /** @class */ (function () {
     function Mediator(skin) {
         this._status = MediatorStatus.UNOPEN;
         /**
          * 绑定目标数组，第一层key是调用层级，第二层是该层级需要编译的对象数组
          *
-         * @type {Dictionary<any, any>[]}
+         * @type {Dictionary<S, S>[]}
          * @memberof Mediator
          */
         this.bindTargets = [];
@@ -378,9 +390,9 @@ var Mediator = /** @class */ (function () {
     /**
      * 打开，为了实现IOpenClose接口
      *
-     * @param {*} [data] 开启数据
+     * @param {OD} [data] 开启数据
      * @param {...any[]} args 其他数据
-     * @returns {*} 返回自身引用
+     * @returns {this} 返回自身引用
      * @memberof Mediator
      */
     Mediator.prototype.open = function (data) {
@@ -515,9 +527,9 @@ var Mediator = /** @class */ (function () {
     /**
      * 关闭，为了实现IOpenClose接口
      *
-     * @param {*} [data] 关闭数据
+     * @param {CD} [data] 关闭数据
      * @param {...any[]} args 其他参数
-     * @returns {*} 返回自身引用
+     * @returns {this} 返回自身引用
      * @memberof Mediator
      */
     Mediator.prototype.close = function (data) {
@@ -585,7 +597,7 @@ var Mediator = /** @class */ (function () {
     /**
      * 当打开时调用
      *
-     * @param {*} [data] 可能的打开参数
+     * @param {OD} [data] 可能的打开参数
      * @param {...any[]} args 其他参数
      * @returns {any|Promise<any>} 若返回对象则使用该对象替换传入的data进行后续开启操作
      * @memberof Mediator
@@ -600,7 +612,7 @@ var Mediator = /** @class */ (function () {
     /**
      * 当关闭时调用
      *
-     * @param {*} [data] 可能的关闭参数
+     * @param {CD} [data] 可能的关闭参数
      * @param {...any[]} args 其他参数
      * @memberof Mediator
      */
@@ -614,7 +626,7 @@ var Mediator = /** @class */ (function () {
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      *
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
@@ -636,7 +648,7 @@ var Mediator = /** @class */ (function () {
     /**
      * 注销监听事件
      *
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象

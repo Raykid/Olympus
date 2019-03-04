@@ -49,15 +49,15 @@ export default class MaskManager {
     /** 当前是否在显示模态窗口遮罩 */
     isShowingModalMask(popup: IPanel): boolean;
 }
-export interface IMaskEntity {
+export interface IMaskEntity<S = any> {
     readonly maskData: IMaskData;
-    readonly loadingSkin: any;
+    readonly loadingSkin: S;
     showMask(alpha?: number): void;
     hideMask(): void;
     showLoading(alpha?: number): void;
     hideLoading(): void;
-    showModalMask(popup: IPanel, alpha?: number): void;
-    hideModalMask(popup: IPanel): void;
+    showModalMask(popup: IPanel<S>, alpha?: number): void;
+    hideModalMask(popup: IPanel<S>): void;
 }
 /** 再额外导出一个单例 */
 export declare const maskManager: MaskManager;

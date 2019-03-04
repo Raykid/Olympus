@@ -18,7 +18,7 @@ export enum ModuleOpenStatus
     AfterOpen
 }
 
-export default interface IMediatorModulePart
+export default interface IMediatorModulePart<S = any>
 {
     /**
      * 获取模块名
@@ -31,34 +31,34 @@ export default interface IMediatorModulePart
     /**
      * 模块打开结果回调函数，由moduleManager调用，不要手动调用
      * 
-     * @memberof IMediatorModulePart
+     * @memberof IMediatorModulePart<S>
      */
     moduleOpenHandler:(status:ModuleOpenStatus, err?:Error)=>void;
     
     /**
      * 其他模块被关闭回到当前模块时调用
      * 
-     * @param {(IMediator|undefined)} from 从哪个模块回到当前模块
+     * @param {(IMediator<S>|undefined)} from 从哪个模块回到当前模块
      * @param {*} [data] 可能的参数传递
-     * @memberof IMediatorModulePart
+     * @memberof IMediatorModulePart<S>
      */
-    wakeUp(from:IMediator|undefined, data?:any):void;
+    wakeUp(from:IMediator<S>|undefined, data?:any):void;
 
     /**
      * 模块切换到前台时调用（与wakeUp的区别是open时activate会触发，但wakeUp不会）
      * 
-     * @param {(IMediator|undefined)} from 从哪个模块来到当前模块
+     * @param {(IMediator<S>|undefined)} from 从哪个模块来到当前模块
      * @param {*} [data] 可能的参数传递
-     * @memberof IMediatorModulePart
+     * @memberof IMediatorModulePart<S>
      */
-    activate(from:IMediator|undefined, data?:any):void;
+    activate(from:IMediator<S>|undefined, data?:any):void;
 
     /**
      * 模块切换到后台时调用（close之后或者其他模块打开时）
      * 
-     * @param {(IMediator|undefined)} to 将要去往哪个模块
+     * @param {(IMediator<S>|undefined)} to 将要去往哪个模块
      * @param {*} [data] 可能的参数传递
-     * @memberof IMediatorModulePart
+     * @memberof IMediatorModulePart<S>
      */
-    deactivate(to:IMediator|undefined, data?:any):void;
+    deactivate(to:IMediator<S>|undefined, data?:any):void;
 }

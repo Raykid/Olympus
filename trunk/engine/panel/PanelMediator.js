@@ -7,6 +7,13 @@ import MediatorMessage from "../mediator/MediatorMessage";
  * @email initial_r@qq.com
  * @create date 2017-09-06
  * @modify date 2017-09-06
+ * @export
+ * @class PanelMediator
+ * @extends {Mediator<S, OD, CD>}
+ * @implements {IPanel<S, OD, CD>}
+ * @template S 皮肤类型
+ * @template OD 开启参数类型
+ * @template CD 关闭参数类型
  *
  * 实现了IPanel接口的弹窗中介者基类
 */

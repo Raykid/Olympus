@@ -13,7 +13,7 @@ import MediatorStatus from "./MediatorStatus";
  * 
  * 该接口规定了中介者具有的基础功能
 */
-export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDisposable
+export default interface IMediatorBasicPart<S = any, OD = any, CD = any> extends IHasBridge, IOpenClose, IDisposable
 {
     /**
      * 获取中介者状态
@@ -26,10 +26,10 @@ export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDis
     /**
      * 打开时传递的data
      * 
-     * @type {*}
+     * @type {OD}
      * @memberof IMediatorBasicPart
      */
-    data:any;
+    data:OD;
 
     /**
      * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
@@ -43,10 +43,10 @@ export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDis
      * 皮肤
      * 
      * @readonly
-     * @type {*}
+     * @type {S}
      * @memberof IMediatorBasicPart
      */
-    skin:any;
+    skin:S;
     /**
      * 模块初始消息的返回数据
      * 
@@ -122,24 +122,24 @@ export default interface IMediatorBasicPart extends IHasBridge, IOpenClose, IDis
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof IMediator
      */
-    mapListener(target:any, type:string, handler:Function, thisArg?:any):void;
+    mapListener(target:S, type:string, handler:Function, thisArg?:any):void;
     
     /**
      * 注销监听事件
      * 
-     * @param {*} target 事件目标对象
+     * @param {S} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof IMediator
      */
-    unmapListener(target:any, type:string, handler:Function, thisArg?:any):void;
+    unmapListener(target:S, type:string, handler:Function, thisArg?:any):void;
     
     /**
      * 注销所有注册在当前中介者上的事件监听
