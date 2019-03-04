@@ -16,12 +16,12 @@ import { listenApply } from 'olympus-r/utils/ConstructUtil';
  * 
  * @export
  * @param {IMediator} mediator 中介者
- * @param {(HTMLElement|string|string[])} skin 皮肤，可以是HTMLElement，也可以是皮肤字符串，也可以是皮肤模板地址或地址数组
- * @returns {HTMLElement} 皮肤的HTMLElement形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
+ * @param {(Element|string|string[])} skin 皮肤，可以是Element，也可以是皮肤字符串，也可以是皮肤模板地址或地址数组
+ * @returns {Element} 皮肤的Element形式，可能会稍后再填充内容，如果想在皮肤加载完毕后再拿到皮肤请使用complete参数
  */
-export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):HTMLElement
+export function wrapSkin(mediator:IMediator<Element>, skin:Element|string|string[]):Element
 {
-    var result:HTMLElement = (skin instanceof HTMLElement ? skin : document.createElement("div"));
+    var result:Element = (skin instanceof Element ? skin : document.createElement("div"));
     // 判断中介者当前状态
     if(mediator.status < MediatorStatus.OPENING)
     {
@@ -37,7 +37,7 @@ export function wrapSkin(mediator:IMediator, skin:HTMLElement|string|string[]):H
 
     function doWrapSkin():void
     {
-        if(skin instanceof HTMLElement)
+        if(skin instanceof Element)
         {
             // 拷贝引用
             doCopyRef(result, skin.innerHTML, mediator);
@@ -83,15 +83,15 @@ export function isDOMPath(path:string):boolean
  * 将from中的所有拥有id属性的节点引用复制到to对象上
  * 
  * @export
- * @param {HTMLElement} from 复制源DOM节点
+ * @param {Element} from 复制源DOM节点
  * @param {*} to 复制目标对象
  */
-export function copyRef(from:HTMLElement, to:any):void
+export function copyRef(from:Element, to:any):void
 {
     doCopyRef(from, from.innerHTML, to);
 }
 
-function doCopyRef(fromEle:HTMLElement, fromStr:string, to:any):void
+function doCopyRef(fromEle:Element, fromStr:string, to:any):void
 {
     // 使用正则表达式将拥有id的节点赋值给mediator
     var reg:RegExp = /id=("([^"]+)"|'([^']+)')/g;
@@ -104,16 +104,16 @@ function doCopyRef(fromEle:HTMLElement, fromStr:string, to:any):void
 }
 
 /**
- * 转换皮肤为HTMLElement
+ * 转换皮肤为Element
  * 
  * @export
- * @param {(HTMLElement|string|string[])} skin 皮肤
- * @returns {HTMLElement} 
+ * @param {(Element|string|string[])} skin 皮肤
+ * @returns {Element} 
  */
-export function toHTMLElement(skin:HTMLElement|string|string[]):HTMLElement
+export function toHTMLElement(skin:Element|string|string[]):Element
 {
-    if(skin instanceof HTMLElement) return skin;
-    var result:HTMLElement = document.createElement("div");
+    if(skin instanceof Element) return skin;
+    var result:Element = document.createElement("div");
     result.innerHTML = getHTMLContent(skin);
     return result;
 }
