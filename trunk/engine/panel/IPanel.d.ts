@@ -1,7 +1,7 @@
 import IDisposable from "../../core/interfaces/IDisposable";
+import IOpenClose from "../../core/interfaces/IOpenClose";
 import IHasBridge from "../bridge/IHasBridge";
 import IPanelPolicy from "./IPanelPolicy";
-import IOpenClose from "../../core/interfaces/IOpenClose";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -10,7 +10,7 @@ import IOpenClose from "../../core/interfaces/IOpenClose";
  *
  * 弹窗接口
 */
-export default interface IPanel<S = any, OD = any, CD = any> extends IHasBridge, IOpenClose, IDisposable {
+export default interface IPanel<S = any, OD = any, CD = any> extends IHasBridge<S>, IOpenClose<OD, CD>, IDisposable {
     /** 实际显示对象 */
     skin: S;
     /** 弹出策略 */
@@ -21,12 +21,12 @@ export default interface IPanel<S = any, OD = any, CD = any> extends IHasBridge,
     open(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
-    }): IPanel<S, OD, CD>;
+    }): Promise<CD>;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
     close(data?: CD, to?: {
         x: number;
         y: number;
-    }): IPanel<S, OD, CD>;
+    }): void;
     /** 在弹出前调用的方法 */
     onBeforePop(data?: OD, isModel?: boolean, from?: {
         x: number;

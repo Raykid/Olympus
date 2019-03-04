@@ -1,7 +1,7 @@
 import IDisposable from "../../core/interfaces/IDisposable";
+import IOpenClose from "../../core/interfaces/IOpenClose";
 import IHasBridge from "../bridge/IHasBridge";
 import IScenePolicy from "./IScenePolicy";
-import IOpenClose from "../../core/interfaces/IOpenClose";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -10,15 +10,15 @@ import IOpenClose from "../../core/interfaces/IOpenClose";
  *
  * 场景接口
 */
-export default interface IScene<S = any, OD = any, CD = any> extends IHasBridge, IOpenClose, IDisposable {
+export default interface IScene<S = any, OD = any, CD = any> extends IHasBridge<S>, IOpenClose<OD, CD>, IDisposable {
     /** 显示对象 */
     skin: S;
     /** 切换策略 */
     policy: IScenePolicy<S>;
     /** 打开当前场景（相当于调用SceneManager.push方法） */
-    open(data?: OD): IScene<S, OD, CD>;
+    open(data?: OD): Promise<CD>;
     /** 关闭当前场景（相当于调用SceneManager.pop方法） */
-    close(data?: CD): IScene<S, OD, CD>;
+    close(data?: CD): void;
     /**
      * 切入场景开始前调用
      * @param fromScene 从哪个场景切入

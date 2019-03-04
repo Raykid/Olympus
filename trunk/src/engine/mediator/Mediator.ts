@@ -464,6 +464,8 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         return false;
     }
 
+    private _resolveClose:(closeData:CD)=>void;
+
     /**
      * 打开，为了实现IOpenClose接口
      * 
@@ -472,7 +474,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    public open(data?:OD, ...args:any[]):this
+    public open(data?:OD, ...args:any[]):Promise<CD>
     {
         // 判断状态
         if(this._status === MediatorStatus.UNOPEN)
@@ -572,8 +574,10 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                 maskFlag = false;
             }
         }
-        // 返回自身引用
-        return this;
+        // 返回关闭Promise
+        return new Promise(resolve=>{
+            this._resolveClose = resolve;
+        });
 
         function hideMask():void
         {
@@ -601,7 +605,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    public close(data?:CD, ...args:any[]):this
+    public close(data?:CD, ...args:any[]):void
     {
         if(this._status === MediatorStatus.OPENED)
         {
@@ -643,8 +647,6 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                 doClose();
             }
         }
-        // 返回自身引用
-        return this;
     }
 
     protected __beforeOnClose(data?:CD, ...args:any[]):void
@@ -656,6 +658,8 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
     {
         // 派发关闭事件
         this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+        // 在dispose之前执行promise
+        this._resolveClose(data);
         // 给子类用的模板方法
         this.dispose();
     }
@@ -1129,6 +1133,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         // 移除父引用
         this.parent = null;
         // 移除其他无用对象
+        this._resolveClose = null;
         this.moduleOpenHandler = null;
         // 将所有子中介者销毁
         const children:IMediator[] = this._children.concat();

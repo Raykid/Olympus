@@ -208,6 +208,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @memberof Mediator
      */
     onGetResponses(responses: ResponseData[]): boolean;
+    private _resolveClose;
     /**
      * 打开，为了实现IOpenClose接口
      *
@@ -216,7 +217,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    open(data?: OD, ...args: any[]): this;
+    open(data?: OD, ...args: any[]): Promise<CD>;
     protected __beforeOnOpen(data?: OD, ...args: any[]): void | Promise<void>;
     protected __afterOnOpen(data?: OD, ...args: any[]): void | Promise<void>;
     /**
@@ -227,7 +228,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @returns {this} 返回自身引用
      * @memberof Mediator
      */
-    close(data?: CD, ...args: any[]): this;
+    close(data?: CD, ...args: any[]): void;
     protected __beforeOnClose(data?: CD, ...args: any[]): void;
     protected __afterOnClose(data?: CD, ...args: any[]): void;
     /**

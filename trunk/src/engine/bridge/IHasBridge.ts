@@ -8,10 +8,10 @@ import IBridge from "./IBridge";
  * 
  * 标识拥有表现层桥的接口
 */
-export default interface IHasMediatorBridge
+export default interface IHasMediatorBridge<S = any>
 {
     /**
      * 表现层桥
      */
-    bridge:IBridge;
+    bridge:IBridge<S>;
 }

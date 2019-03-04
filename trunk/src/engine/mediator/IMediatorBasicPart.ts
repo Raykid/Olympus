@@ -1,5 +1,5 @@
-import IOpenClose from "../../core/interfaces/IOpenClose";
 import IDisposable from "../../core/interfaces/IDisposable";
+import IOpenClose from "../../core/interfaces/IOpenClose";
 import IHasBridge from "../bridge/IHasBridge";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
@@ -13,7 +13,7 @@ import MediatorStatus from "./MediatorStatus";
  * 
  * 该接口规定了中介者具有的基础功能
 */
-export default interface IMediatorBasicPart<S = any, OD = any, CD = any> extends IHasBridge, IOpenClose, IDisposable
+export default interface IMediatorBasicPart<S = any, OD = any, CD = any> extends IHasBridge<S>, IOpenClose<OD, CD>, IDisposable
 {
     /**
      * 获取中介者状态

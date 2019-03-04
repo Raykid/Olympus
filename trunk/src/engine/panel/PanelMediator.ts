@@ -37,7 +37,7 @@ export default class PanelMediator<S = any, OD = any, CD = any> extends Mediator
 
     public __afterOnOpen(data?:OD, isModel?:boolean, from?:{x:number, y:number}):void
     {
-        panelManager.pop(this, data, isModel, from)
+        panelManager.pop(this, data, isModel, from);
     }
 
     public __afterOnClose(data?:CD, to?:{x:number, y:number}):void

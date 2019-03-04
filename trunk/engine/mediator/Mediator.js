@@ -501,8 +501,10 @@ var Mediator = /** @class */ (function () {
                 maskFlag = false;
             }
         }
-        // 返回自身引用
-        return this;
+        // 返回关闭Promise
+        return new Promise(function (resolve) {
+            _this._resolveClose = resolve;
+        });
         function hideMask() {
             // 隐藏Loading
             if (!maskFlag)
@@ -574,8 +576,6 @@ var Mediator = /** @class */ (function () {
                 doClose();
             }
         }
-        // 返回自身引用
-        return this;
     };
     Mediator.prototype.__beforeOnClose = function (data) {
         var args = [];
@@ -591,6 +591,8 @@ var Mediator = /** @class */ (function () {
         }
         // 派发关闭事件
         this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+        // 在dispose之前执行promise
+        this._resolveClose(data);
         // 给子类用的模板方法
         this.dispose();
     };
@@ -1002,6 +1004,7 @@ var Mediator = /** @class */ (function () {
         // 移除父引用
         this.parent = null;
         // 移除其他无用对象
+        this._resolveClose = null;
         this.moduleOpenHandler = null;
         // 将所有子中介者销毁
         var children = this._children.concat();

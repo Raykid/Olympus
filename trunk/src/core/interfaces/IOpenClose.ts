@@ -6,18 +6,18 @@
  * 
  * 可开关的接口
 */
-export default interface IOpenClose
+export default interface IOpenClose<OD = any, CD = any>
 {
     /**
      * 打开时传递的data对象
      * 
-     * @type {*}
+     * @type {OD}
      * @memberof IOpenClose
      */
-    data:any;
+    data:OD;
 
     /** 开 */
-    open(data?:any, ...args:any[]):any;
+    open(data?:OD, ...args:any[]):Promise<CD>;
     /** 关 */
-    close(data?:any, ...args:any[]):any;
+    close(data?:CD, ...args:any[]):void;
 }
