@@ -48,8 +48,6 @@ export default class PanelMediator<S = any, OD = any, CD = any> extends Mediator
             oriOnAfterDrop.call(this, data, to);
             // 派发关闭事件
             this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
-            // 在dispose之前执行promise
-            this._resolveClose(data);
         };
         panelManager.drop(this, data, to);
     }

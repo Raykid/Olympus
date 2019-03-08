@@ -16,9 +16,9 @@ export default interface IScene<S = any, OD = any, CD = any> extends IHasBridge<
     /** 切换策略 */
     policy: IScenePolicy<S>;
     /** 打开当前场景（相当于调用SceneManager.push方法） */
-    open(data?: OD): Promise<CD>;
+    open(data?: OD): Promise<any>;
     /** 关闭当前场景（相当于调用SceneManager.pop方法） */
-    close(data?: CD): void;
+    close(data?: CD): Promise<any>;
     /**
      * 切入场景开始前调用
      * @param fromScene 从哪个场景切入

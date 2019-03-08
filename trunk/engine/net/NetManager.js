@@ -91,7 +91,7 @@ var NetManager = /** @class */ (function () {
     /**
      * 发送多条请求，并且等待返回结果（如果有的话），调用回调
      *
-     * @param {RequestData[]} [requests 要发送的请求列表
+     * @param {RequestData[]} [requests] 要发送的请求列表
      * @param {(responses?:ResponseData[]|Error)=>void} [handler] 收到返回结果或错误后的回调函数
      * @param {*} [thisArg] this指向
      * @param {IObservable} [observable] 要发送到的内核
@@ -145,6 +145,31 @@ var NetManager = /** @class */ (function () {
                 handler && handler.call(thisArg, responses);
             }
         }
+    };
+    /**
+     * 异步版本的sendMultiRequests
+     *
+     * @author Raykid
+     * @date 2019-03-08
+     * @param {RequestData[]} [requests] 要发送的请求列表
+     * @param {IObservable} [observable] 要发送到的内核
+     * @returns {Promise<ResponseData[]>} 返回一个Promise用于异步监听回调
+     * @memberof NetManager
+     */
+    NetManager.prototype.sendMultiRequestsAsync = function (requests, observable) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this.sendMultiRequests(requests, function (responses) {
+                if (responses instanceof Error) {
+                    // 错误
+                    reject(responses);
+                }
+                else {
+                    // 正确
+                    resolve(responses);
+                }
+            }, _this, observable);
+        });
     };
     /** 这里导出不希望用户使用的方法，供框架内使用 */
     NetManager.prototype.__onResponse = function (type, result, request) {

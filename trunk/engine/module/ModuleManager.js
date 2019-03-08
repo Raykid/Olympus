@@ -144,97 +144,155 @@ var ModuleManager = /** @class */ (function () {
     ModuleManager.prototype.open = function (module, data, replace) {
         var _this = this;
         if (replace === void 0) { replace = false; }
-        // 如果是字符串则获取引用
-        var type = (typeof module == "string" ? getModule(module) : module);
-        // 非空判断
-        if (!type)
-            return;
-        // 判断是否正在打开模块
-        if (this._busy) {
-            this._openCache.push([type, data, replace]);
-            return;
-        }
-        this._busy = true;
-        // 取到类型
-        var cls = getConstructor(type instanceof Function ? type : type.constructor);
-        var after = this.getAfter(cls);
-        if (!after) {
-            // 记录正在打开的模块类型
-            this._opening = type;
-            // 尚未打开过，正常开启模块
-            var target = type instanceof Function ? new cls() : type;
-            // 赋值打开参数
-            target.data = data;
-            // 数据先行
-            var from = this.getCurrent();
-            var fromModule = from && from[1];
-            var moduleData = [cls, target, null];
-            this._moduleStack.unshift(moduleData);
-            // 设置回调
-            target.moduleOpenHandler = function (status, err) {
-                switch (status) {
-                    case ModuleOpenStatus.Stop:
-                        // 需要判断是否是最后一个模块，最后一个模块不允许被销毁
-                        if (_this._moduleStack.length > 1) {
-                            // 移除先行数据
-                            var tempData = _this._moduleStack.shift();
-                            // 销毁模块
-                            tempData[1].dispose();
+        return new Promise(function (resolve) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var type, cls, after, target, from, fromModule, moduleData, openData, i, len, closeData;
+            var _this = this;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        type = (typeof module == "string" ? getModule(module) : module);
+                        // 非空判断
+                        if (!type)
+                            return [2 /*return*/];
+                        // 判断是否正在打开模块
+                        if (this._busy) {
+                            this._openCache.push([type, data, replace, resolve]);
+                            return [2 /*return*/];
                         }
-                        // 派发失败消息
-                        core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
+                        this._busy = true;
+                        cls = getConstructor(type instanceof Function ? type : type.constructor);
+                        after = this.getAfter(cls);
+                        if (!!after) return [3 /*break*/, 2];
+                        // 记录正在打开的模块类型
+                        this._opening = type;
+                        target = type instanceof Function ? new cls() : type;
+                        // 赋值打开参数
+                        target.data = data;
+                        from = this.getCurrent();
+                        fromModule = from && from[1];
+                        moduleData = [cls, target, null];
+                        this._moduleStack.unshift(moduleData);
+                        // 设置回调
+                        target.moduleOpenHandler = function (status, err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                            var _a, tempData;
+                            return tslib_1.__generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        _a = status;
+                                        switch (_a) {
+                                            case ModuleOpenStatus.Stop: return [3 /*break*/, 1];
+                                            case ModuleOpenStatus.BeforeOpen: return [3 /*break*/, 3];
+                                            case ModuleOpenStatus.AfterOpen: return [3 /*break*/, 4];
+                                        }
+                                        return [3 /*break*/, 6];
+                                    case 1:
+                                        // 需要判断是否是最后一个模块，最后一个模块不允许被销毁
+                                        if (this._moduleStack.length > 1) {
+                                            tempData = this._moduleStack.shift();
+                                            // 销毁模块
+                                            tempData[1].dispose();
+                                        }
+                                        // 派发失败消息
+                                        core.dispatch(ModuleMessage.MODULE_CHANGE_FAILED, cls, from && from[0], err);
+                                        // 结束一次模块开启
+                                        return [4 /*yield*/, this.onFinishOpen()];
+                                    case 2:
+                                        // 结束一次模块开启
+                                        _b.sent();
+                                        return [3 /*break*/, 6];
+                                    case 3:
+                                        // 这里要优先关闭标识符，否则在开启的模块的onOpen方法里如果有操作Mask的动作就会被这个标识阻塞住
+                                        this._opening = null;
+                                        // 篡改target的close方法，使其改为触发ModuleManager的close
+                                        moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
+                                        target.close = function (data) {
+                                            return tslib_1.__awaiter(this, void 0, void 0, function () {
+                                                return tslib_1.__generator(this, function (_a) {
+                                                    switch (_a.label) {
+                                                        case 0: return [4 /*yield*/, moduleManager.close(target, data)];
+                                                        case 1: return [2 /*return*/, _a.sent()];
+                                                    }
+                                                });
+                                            });
+                                        };
+                                        return [3 /*break*/, 6];
+                                    case 4:
+                                        // 调用onDeactivate接口
+                                        this.deactivateModule(fromModule, target, data);
+                                        // 调用onActivate接口
+                                        this.activateModule(target, fromModule, data);
+                                        // 如果replace是true，则关掉上一个模块
+                                        if (replace)
+                                            this.close(from && from[0], data);
+                                        // 派发消息
+                                        core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
+                                        // 结束一次模块开启
+                                        return [4 /*yield*/, this.onFinishOpen()];
+                                    case 5:
+                                        // 结束一次模块开启
+                                        _b.sent();
+                                        return [3 /*break*/, 6];
+                                    case 6: return [2 /*return*/];
+                                }
+                            });
+                        }); };
+                        return [4 /*yield*/, target.open(data)];
+                    case 1:
+                        openData = _a.sent();
+                        // 调用resolve
+                        resolve(openData);
+                        return [3 /*break*/, 7];
+                    case 2:
+                        if (!(after.length > 0)) return [3 /*break*/, 5];
+                        // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
+                        for (i = 1, len = after.length; i < len; i++) {
+                            this.close(after[i][0], data);
+                        }
+                        return [4 /*yield*/, this.close(after[0][0], data)];
+                    case 3:
+                        closeData = _a.sent();
                         // 结束一次模块开启
-                        _this.onFinishOpen();
-                        break;
-                    case ModuleOpenStatus.BeforeOpen:
-                        // 这里要优先关闭标识符，否则在开启的模块的onOpen方法里如果有操作Mask的动作就会被这个标识阻塞住
-                        _this._opening = null;
-                        // 篡改target的close方法，使其改为触发ModuleManager的close
-                        moduleData[2] = target.hasOwnProperty("close") ? target.close : null;
-                        target.close = function (data) {
-                            moduleManager.close(target, data);
-                        };
-                        break;
-                    case ModuleOpenStatus.AfterOpen:
-                        // 调用onDeactivate接口
-                        _this.deactivateModule(fromModule, target, data);
-                        // 调用onActivate接口
-                        _this.activateModule(target, fromModule, data);
-                        // 如果replace是true，则关掉上一个模块
-                        if (replace)
-                            _this.close(from && from[0], data);
-                        // 派发消息
-                        core.dispatch(ModuleMessage.MODULE_CHANGE, cls, fromModule);
+                        return [4 /*yield*/, this.onFinishOpen()];
+                    case 4:
                         // 结束一次模块开启
-                        _this.onFinishOpen();
-                        break;
+                        _a.sent();
+                        // 调用resolve
+                        resolve(closeData);
+                        return [3 /*break*/, 7];
+                    case 5: 
+                    // 结束一次模块开启
+                    return [4 /*yield*/, this.onFinishOpen()];
+                    case 6:
+                        // 结束一次模块开启
+                        _a.sent();
+                        // 调用resolve
+                        resolve();
+                        _a.label = 7;
+                    case 7: return [2 /*return*/];
                 }
-            };
-            // 调用open接口
-            target.open(data);
-        }
-        else if (after.length > 0) {
-            // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
-            for (var i = 1, len = after.length; i < len; i++) {
-                this.close(after[i][0], data);
-            }
-            // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
-            this.close(after[0][0], data);
-            // 结束一次模块开启
-            this.onFinishOpen();
-        }
-        else {
-            // 结束一次模块开启
-            this.onFinishOpen();
-        }
+            });
+        }); });
     };
     ModuleManager.prototype.onFinishOpen = function () {
-        // 关闭标识符
-        this._opening = null;
-        this._busy = false;
-        // 如果有缓存的模块需要打开则打开之
-        if (this._openCache.length > 0)
-            this.open.apply(this, this._openCache.shift());
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var openCache, openData;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // 关闭标识符
+                        this._opening = null;
+                        this._busy = false;
+                        if (!(this._openCache.length > 0)) return [3 /*break*/, 2];
+                        openCache = this._openCache.shift();
+                        return [4 /*yield*/, this.open.apply(this, openCache.slice(0, 3))];
+                    case 1:
+                        openData = _a.sent();
+                        openCache[3](openData);
+                        _a.label = 2;
+                    case 2: return [2 /*return*/];
+                }
+            });
+        });
     };
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
@@ -244,53 +302,62 @@ var ModuleManager = /** @class */ (function () {
      * @memberof ModuleManager
      */
     ModuleManager.prototype.close = function (module, data) {
-        // 如果是字符串则获取引用
-        var type = (typeof module == "string" ? getModule(module) : module);
-        // 非空判断
-        if (!type)
-            return;
-        // 数量判断，不足一个模块时不关闭
-        if (this.activeCount <= 1)
-            return;
-        // 取到类型
-        var cls = getConstructor(type instanceof Function ? type : type.constructor);
-        // 存在性判断
-        var index = this.getIndex(cls);
-        if (index < 0)
-            return;
-        // 取到目标模块
-        var moduleData = this._moduleStack[index];
-        var target = moduleData[1];
-        // 恢复原始close方法
-        var oriClose = moduleData[2];
-        if (oriClose)
-            target.close = oriClose;
-        else
-            delete target.close;
-        // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
-        if (index == 0) {
-            // 数据先行
-            this._moduleStack.shift();
-            // 获取前一个模块
-            var to = this._moduleStack[0];
-            var toModule = to && to[1];
-            // 调用onDeactivate接口
-            this.deactivateModule(target, toModule, data);
-            // 调用close接口
-            target.close(data);
-            // 调用onActivate接口
-            this.activateModule(toModule, target, data);
-            // 调用onWakeUp接口
-            toModule.wakeUp(target, data);
-            // 派发消息
-            core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
-        }
-        else {
-            // 数据先行
-            this._moduleStack.splice(index, 1);
-            // 调用close接口
-            target.close(data);
-        }
+        var _this = this;
+        return new Promise(function (resolve) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var type, cls, index, moduleData, target, oriClose, closeData, to, toModule;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        type = (typeof module == "string" ? getModule(module) : module);
+                        // 非空判断
+                        if (!type)
+                            return [2 /*return*/];
+                        // 数量判断，不足一个模块时不关闭
+                        if (this.activeCount <= 1)
+                            return [2 /*return*/];
+                        cls = getConstructor(type instanceof Function ? type : type.constructor);
+                        index = this.getIndex(cls);
+                        if (index < 0)
+                            return [2 /*return*/];
+                        moduleData = this._moduleStack[index];
+                        target = moduleData[1];
+                        oriClose = moduleData[2];
+                        if (oriClose)
+                            target.close = oriClose;
+                        else
+                            delete target.close;
+                        if (!(index == 0)) return [3 /*break*/, 2];
+                        // 数据先行
+                        this._moduleStack.shift();
+                        to = this._moduleStack[0];
+                        toModule = to && to[1];
+                        // 调用onDeactivate接口
+                        this.deactivateModule(target, toModule, data);
+                        return [4 /*yield*/, target.close(data)];
+                    case 1:
+                        // 调用close接口
+                        closeData = _a.sent();
+                        // 调用onActivate接口
+                        this.activateModule(toModule, target, data);
+                        // 调用onWakeUp接口
+                        toModule.wakeUp(target, data);
+                        // 派发消息
+                        core.dispatch(ModuleMessage.MODULE_CHANGE, to && to[0], cls);
+                        return [3 /*break*/, 4];
+                    case 2:
+                        // 数据先行
+                        this._moduleStack.splice(index, 1);
+                        return [4 /*yield*/, target.close(data)];
+                    case 3:
+                        // 调用close接口
+                        closeData = _a.sent();
+                        _a.label = 4;
+                    case 4:
+                        resolve(closeData);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
     };
     ModuleManager = tslib_1.__decorate([
         Injectable

@@ -17,7 +17,7 @@ export default interface IOpenClose<OD = any, CD = any>
     data:OD;
 
     /** 开 */
-    open(data?:OD, ...args:any[]):Promise<CD>;
+    open(data?:OD, ...args:any[]):Promise<any>;
     /** 关 */
-    close(data?:CD, ...args:any[]):void;
+    close(data?:CD, ...args:any[]):Promise<any>;
 }

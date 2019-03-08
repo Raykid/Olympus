@@ -74,7 +74,7 @@ export default class ModuleManager {
      * @param {boolean} [replace=false] 是否替换当前模块
      * @memberof ModuleManager
      */
-    open(module: ModuleType | string, data?: any, replace?: boolean): void;
+    open(module: ModuleType | string, data?: any, replace?: boolean): Promise<any>;
     private onFinishOpen;
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
@@ -83,7 +83,7 @@ export default class ModuleManager {
      * @param {*} [data] 参数
      * @memberof ModuleManager
      */
-    close(module: ModuleType | string, data?: any): void;
+    close(module: ModuleType | string, data?: any): Promise<any>;
 }
 /** 再额外导出一个单例 */
 export declare const moduleManager: ModuleManager;

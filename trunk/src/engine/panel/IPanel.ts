@@ -20,9 +20,9 @@ export default interface IPanel<S = any, OD = any, CD = any> extends IHasBridge<
     /** 自定义弹窗遮罩透明度，不传则使用项目默认透明度 */
     maskAlpha?:number;
     /** 弹出当前弹窗（等同于调用PanelManager.pop方法） */
-    open(data?:OD, isModel?:boolean, from?:{x:number, y:number}):Promise<CD>;
+    open(data?:OD, isModel?:boolean, from?:{x:number, y:number}):Promise<any>;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
-    close(data?:CD, to?:{x:number, y:number}):void;
+    close(data?:CD, to?:{x:number, y:number}):Promise<any>;
     /** 在弹出前调用的方法 */
     onBeforePop(data?:OD, isModel?:boolean, from?:{x:number, y:number}):void;
     /** 在弹出后调用的方法 */

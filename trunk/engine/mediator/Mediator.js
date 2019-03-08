@@ -74,7 +74,7 @@ var Mediator = /** @class */ (function () {
          */
         this.bindTargets = [];
         this._openMask = true;
-        this._resolveCloseRun = false;
+        this._closeCache = [];
         this._listeners = [];
         this._disposeDict = new Dictionary();
         /**
@@ -393,7 +393,7 @@ var Mediator = /** @class */ (function () {
      *
      * @param {OD} [data] 开启数据
      * @param {...any[]} args 其他数据
-     * @returns {this} 返回自身引用
+     * @returns {Promise<any>} 异步返回onOpen时返回的参数
      * @memberof Mediator
      */
     Mediator.prototype.open = function (data) {
@@ -402,121 +402,129 @@ var Mediator = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        // 判断状态
-        if (this._status === MediatorStatus.UNOPEN) {
-            // 修改状态
-            this._status = MediatorStatus.OPENING;
-            // 赋值参数
-            this.data = data;
-            // 记一个是否需要遮罩的flag
-            var maskFlag = this.openMask;
-            // 发送初始化消息
-            this.sendInitRequests(function (err) {
-                if (err) {
-                    // 移除遮罩
-                    hideMask();
-                    // 调用回调
-                    _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
-                }
-                else {
-                    // 加载所有已托管中介者的资源
-                    _this.loadAssets(function (err) {
-                        if (err) {
-                            // 移除遮罩
-                            hideMask();
-                            // 调用回调
-                            _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
-                        }
-                        else {
-                            // 加载css文件
-                            _this.loadStyleFiles(function (err) {
-                                if (err) {
-                                    // 移除遮罩
-                                    hideMask();
-                                    // 调用回调
-                                    _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
-                                }
-                                else {
-                                    // 加载js文件
-                                    _this.loadJsFiles(function (err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                                        var result, subCount, _i, _a, mediator;
-                                        return tslib_1.__generator(this, function (_b) {
-                                            switch (_b.label) {
-                                                case 0:
-                                                    // 移除遮罩
-                                                    hideMask();
-                                                    if (!err) return [3 /*break*/, 1];
-                                                    // 调用回调
-                                                    this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
-                                                    return [3 /*break*/, 5];
-                                                case 1:
-                                                    // 要先开启自身，再开启子中介者
-                                                    // 调用回调
-                                                    this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
-                                                    // 调用模板方法
-                                                    return [4 /*yield*/, this.__beforeOnOpen.apply(this, [data].concat(args))];
-                                                case 2:
-                                                    // 调用模板方法
-                                                    _b.sent();
-                                                    return [4 /*yield*/, this.onOpen.apply(this, [data].concat(args))];
-                                                case 3:
-                                                    result = _b.sent();
-                                                    if (result !== undefined)
-                                                        this.data = data = result;
-                                                    // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
-                                                    if (!this._viewModel)
-                                                        this.viewModel = {};
-                                                    subCount = this._children.length;
-                                                    if (subCount > 0) {
-                                                        // 调用所有已托管中介者的open方法
-                                                        for (_i = 0, _a = this._children; _i < _a.length; _i++) {
-                                                            mediator = _a[_i];
-                                                            mediator.open(data);
+        return new Promise(function (resolve, reject) {
+            // 判断状态
+            if (_this._status === MediatorStatus.UNOPEN) {
+                // 修改状态
+                _this._status = MediatorStatus.OPENING;
+                // 赋值参数
+                _this.data = data;
+                // 记一个是否需要遮罩的flag
+                var maskFlag = _this.openMask;
+                // 发送初始化消息
+                _this.sendInitRequests(function (err) {
+                    if (err) {
+                        // 移除遮罩
+                        hideMask();
+                        // 调用回调
+                        _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                        // 调用reject
+                        reject(err);
+                    }
+                    else {
+                        // 加载所有已托管中介者的资源
+                        _this.loadAssets(function (err) {
+                            if (err) {
+                                // 移除遮罩
+                                hideMask();
+                                // 调用回调
+                                _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                                // 调用reject
+                                reject(err);
+                            }
+                            else {
+                                // 加载css文件
+                                _this.loadStyleFiles(function (err) {
+                                    if (err) {
+                                        // 移除遮罩
+                                        hideMask();
+                                        // 调用回调
+                                        _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                                        // 调用reject
+                                        reject(err);
+                                    }
+                                    else {
+                                        // 加载js文件
+                                        _this.loadJsFiles(function (err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                                            var result, subCount, _i, _a, mediator, err_1;
+                                            return tslib_1.__generator(this, function (_b) {
+                                                switch (_b.label) {
+                                                    case 0:
+                                                        // 移除遮罩
+                                                        hideMask();
+                                                        if (!err) return [3 /*break*/, 1];
+                                                        // 调用回调
+                                                        this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
+                                                        // 调用reject
+                                                        reject(err);
+                                                        return [3 /*break*/, 6];
+                                                    case 1:
+                                                        _b.trys.push([1, 5, , 6]);
+                                                        // 要先开启自身，再开启子中介者
+                                                        // 调用回调
+                                                        this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
+                                                        // 调用模板方法
+                                                        return [4 /*yield*/, this.__beforeOnOpen.apply(this, [data].concat(args))];
+                                                    case 2:
+                                                        // 调用模板方法
+                                                        _b.sent();
+                                                        return [4 /*yield*/, this.onOpen.apply(this, [data].concat(args))];
+                                                    case 3:
+                                                        result = _b.sent();
+                                                        if (result !== undefined)
+                                                            this.data = data = result;
+                                                        // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
+                                                        if (!this._viewModel)
+                                                            this.viewModel = {};
+                                                        subCount = this._children.length;
+                                                        if (subCount > 0) {
+                                                            // 调用所有已托管中介者的open方法
+                                                            for (_i = 0, _a = this._children; _i < _a.length; _i++) {
+                                                                mediator = _a[_i];
+                                                                mediator.open(data);
+                                                            }
                                                         }
-                                                    }
-                                                    // 修改状态
-                                                    this._status = MediatorStatus.OPENED;
-                                                    // 调用模板方法
-                                                    return [4 /*yield*/, this.__afterOnOpen.apply(this, [data].concat(args))];
-                                                case 4:
-                                                    // 调用模板方法
-                                                    _b.sent();
-                                                    // 调用回调
-                                                    this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
-                                                    // 派发事件
-                                                    this.dispatch(MediatorMessage.MEDIATOR_OPENED, this);
-                                                    _b.label = 5;
-                                                case 5: return [2 /*return*/];
-                                            }
-                                        });
-                                    }); });
-                                }
-                            });
-                        }
-                    });
+                                                        // 修改状态
+                                                        this._status = MediatorStatus.OPENED;
+                                                        // 调用模板方法
+                                                        return [4 /*yield*/, this.__afterOnOpen.apply(this, [data].concat(args))];
+                                                    case 4:
+                                                        // 调用模板方法
+                                                        _b.sent();
+                                                        // 调用回调
+                                                        this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.AfterOpen);
+                                                        // 派发事件
+                                                        this.dispatch(MediatorMessage.MEDIATOR_OPENED, this);
+                                                        // 调用resolve
+                                                        resolve(this.data);
+                                                        return [3 /*break*/, 6];
+                                                    case 5:
+                                                        err_1 = _b.sent();
+                                                        reject(err_1);
+                                                        return [3 /*break*/, 6];
+                                                    case 6: return [2 /*return*/];
+                                                }
+                                            });
+                                        }); });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+                // 显示Loading
+                if (maskFlag) {
+                    maskManager.showLoading(null, "mediatorOpen");
+                    maskFlag = false;
                 }
-            });
-            // 显示Loading
-            if (maskFlag) {
-                maskManager.showLoading(null, "mediatorOpen");
+            }
+            function hideMask() {
+                // 隐藏Loading
+                if (!maskFlag)
+                    maskManager.hideLoading("mediatorOpen");
                 maskFlag = false;
             }
-        }
-        // 返回关闭Promise
-        return new Promise(function (resolve) {
-            _this._resolveClose = function (data) {
-                if (!_this._resolveCloseRun) {
-                    _this._resolveCloseRun = true;
-                    resolve(data);
-                }
-            };
         });
-        function hideMask() {
-            // 隐藏Loading
-            if (!maskFlag)
-                maskManager.hideLoading("mediatorOpen");
-            maskFlag = false;
-        }
     };
     Mediator.prototype.__beforeOnOpen = function (data) {
         var args = [];
@@ -532,12 +540,36 @@ var Mediator = /** @class */ (function () {
         }
         // 给子类用的模板方法
     };
+    Object.defineProperty(Mediator.prototype, "closeData", {
+        /**
+         * 异步获取关闭参数
+         *
+         * @readonly
+         * @type {Promise<CD>}
+         * @memberof Mediator
+         */
+        get: function () {
+            var _this = this;
+            return new Promise(function (resolve, reject) {
+                if (_this.status < MediatorStatus.CLOSED) {
+                    // 没有关闭完成，等待完成
+                    _this._closeCache.push([resolve, reject]);
+                }
+                else {
+                    // 已经关闭完成，直接resolve
+                    resolve(_this._closeData);
+                }
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 关闭，为了实现IOpenClose接口
      *
      * @param {CD} [data] 关闭数据
      * @param {...any[]} args 其他参数
-     * @returns {this} 返回自身引用
+     * @returns {Promise<any>} 异步返回onClose时返回的参数
      * @memberof Mediator
      */
     Mediator.prototype.close = function (data) {
@@ -546,42 +578,65 @@ var Mediator = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        if (this._status === MediatorStatus.OPENED) {
-            var doClose = function () {
-                // 调用模板方法
-                _this.__beforeOnClose.apply(_this, [data].concat(args));
-                // 修改状态
-                _this._status = MediatorStatus.CLOSING;
-                // 调用自身onClose方法
-                _this.onClose.apply(_this, [data].concat(args));
-                // 修改状态
-                _this._status = MediatorStatus.CLOSED;
-                // 调用模板方法
-                _this.__afterOnClose.apply(_this, [data].concat(args));
-            };
-            var children = this._children.concat();
-            var subCount = children.length;
-            if (subCount > 0) {
-                var handler = function (mediator) {
-                    if (children.indexOf(mediator) >= 0 && --subCount === 0) {
-                        // 取消监听
-                        _this.unlisten(MediatorMessage.MEDIATOR_CLOSED, handler);
-                        // 执行关闭
-                        doClose();
-                    }
-                };
-                this.listen(MediatorMessage.MEDIATOR_CLOSED, handler);
-                // 调用所有已托管中介者的close方法
-                for (var _a = 0, children_1 = children; _a < children_1.length; _a++) {
-                    var mediator = children_1[_a];
-                    mediator.close(data);
+        return new Promise(function (resolve, reject) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var children, result, err_2;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(this._status === MediatorStatus.OPENED)) return [3 /*break*/, 6];
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 4, , 5]);
+                        this._closeData = data;
+                        children = this._children.concat();
+                        return [4 /*yield*/, Promise.all(children.map(function (child) { return child.close(); }))];
+                    case 2:
+                        _a.sent();
+                        // 关闭自身
+                        // 调用模板方法
+                        this.__beforeOnClose.apply(this, [data].concat(args));
+                        // 修改状态
+                        this._status = MediatorStatus.CLOSING;
+                        return [4 /*yield*/, this.onClose.apply(this, [data].concat(args))];
+                    case 3:
+                        result = _a.sent();
+                        if (result) {
+                            this._closeData = result;
+                        }
+                        // 修改状态
+                        this._status = MediatorStatus.CLOSED;
+                        // 调用模板方法
+                        this.__afterOnClose.apply(this, [data].concat(args));
+                        // 调用resolve
+                        resolve(this._closeData);
+                        // 调用所有cache中的resolve
+                        while (this._closeCache.length > 0) {
+                            this._closeCache.shift()[0](this._closeData);
+                        }
+                        return [3 /*break*/, 5];
+                    case 4:
+                        err_2 = _a.sent();
+                        reject(err_2);
+                        // 调用所有cache中的reject
+                        while (this._closeCache.length > 0) {
+                            this._closeCache.shift()[1](this._closeData);
+                        }
+                        return [3 /*break*/, 5];
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
+                        if (this._status < MediatorStatus.CLOSED) {
+                            // 还没开启呢，放入缓存
+                            this._closeCache.push([resolve, reject]);
+                        }
+                        else {
+                            // 已经关闭过了，直接resolve
+                            resolve(this._closeData);
+                        }
+                        _a.label = 7;
+                    case 7: return [2 /*return*/];
                 }
-            }
-            else {
-                // 没有子中介者，直接执行
-                doClose();
-            }
-        }
+            });
+        }); });
     };
     Mediator.prototype.__beforeOnClose = function (data) {
         var args = [];
@@ -597,8 +652,6 @@ var Mediator = /** @class */ (function () {
         }
         // 派发关闭事件
         this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
-        // 在dispose之前执行promise
-        this._resolveClose(data);
         // 给子类用的模板方法
         this.dispose();
     };
@@ -622,6 +675,7 @@ var Mediator = /** @class */ (function () {
      *
      * @param {CD} [data] 可能的关闭参数
      * @param {...any[]} args 其他参数
+     * @returns {any|Promise<any>} 若返回对象则使用该对象当做close操作的返回值
      * @memberof Mediator
      */
     Mediator.prototype.onClose = function (data) {
@@ -981,11 +1035,6 @@ var Mediator = /** @class */ (function () {
             return;
         // 修改状态
         this._status = MediatorStatus.DISPOSING;
-        // 如果还没结束则结束，保证外部流程畅通
-        if (!this._resolveCloseRun) {
-            this._resolveClose(undefined);
-        }
-        this._resolveClose = null;
         // 移除绑定
         bindManager.unbind(this);
         // 注销事件监听
@@ -1018,8 +1067,8 @@ var Mediator = /** @class */ (function () {
         this.moduleOpenHandler = null;
         // 将所有子中介者销毁
         var children = this._children.concat();
-        for (var _i = 0, children_2 = children; _i < children_2.length; _i++) {
-            var child = children_2[_i];
+        for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
+            var child = children_1[_i];
             child.dispose();
         }
         // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息

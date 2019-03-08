@@ -208,28 +208,36 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @memberof Mediator
      */
     onGetResponses(responses: ResponseData[]): boolean;
-    protected _resolveClose: (closeData: CD) => void;
-    private _resolveCloseRun;
     /**
      * 打开，为了实现IOpenClose接口
      *
      * @param {OD} [data] 开启数据
      * @param {...any[]} args 其他数据
-     * @returns {this} 返回自身引用
+     * @returns {Promise<any>} 异步返回onOpen时返回的参数
      * @memberof Mediator
      */
-    open(data?: OD, ...args: any[]): Promise<CD>;
+    open(data?: OD, ...args: any[]): Promise<any>;
     protected __beforeOnOpen(data?: OD, ...args: any[]): void | Promise<void>;
     protected __afterOnOpen(data?: OD, ...args: any[]): void | Promise<void>;
+    private _closeCache;
+    private _closeData;
+    /**
+     * 异步获取关闭参数
+     *
+     * @readonly
+     * @type {Promise<CD>}
+     * @memberof Mediator
+     */
+    readonly closeData: Promise<CD>;
     /**
      * 关闭，为了实现IOpenClose接口
      *
      * @param {CD} [data] 关闭数据
      * @param {...any[]} args 其他参数
-     * @returns {this} 返回自身引用
+     * @returns {Promise<any>} 异步返回onClose时返回的参数
      * @memberof Mediator
      */
-    close(data?: CD, ...args: any[]): void;
+    close(data?: CD, ...args: any[]): Promise<any>;
     protected __beforeOnClose(data?: CD, ...args: any[]): void;
     protected __afterOnClose(data?: CD, ...args: any[]): void;
     /**
@@ -246,9 +254,10 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      *
      * @param {CD} [data] 可能的关闭参数
      * @param {...any[]} args 其他参数
+     * @returns {any|Promise<any>} 若返回对象则使用该对象当做close操作的返回值
      * @memberof Mediator
      */
-    onClose(data?: CD, ...args: any[]): void;
+    onClose(data?: CD, ...args: any[]): any | Promise<any>;
     private _listeners;
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听

@@ -21,12 +21,12 @@ export default interface IPanel<S = any, OD = any, CD = any> extends IHasBridge<
     open(data?: OD, isModel?: boolean, from?: {
         x: number;
         y: number;
-    }): Promise<CD>;
+    }): Promise<any>;
     /** 关闭当前弹窗（等同于调用PanelManager.drop方法） */
     close(data?: CD, to?: {
         x: number;
         y: number;
-    }): void;
+    }): Promise<any>;
     /** 在弹出前调用的方法 */
     onBeforePop(data?: OD, isModel?: boolean, from?: {
         x: number;
