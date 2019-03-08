@@ -64,10 +64,11 @@ export default class NetManager {
      * @date 2019-03-08
      * @param {RequestData[]} [requests] 要发送的请求列表
      * @param {IObservable} [observable] 要发送到的内核
+     * @param {boolean} [canReject=false] 是否允许reject，默认false，即允许重试
      * @returns {Promise<ResponseData[]>} 返回一个Promise用于异步监听回调
      * @memberof NetManager
      */
-    sendMultiRequestsAsync(requests?: RequestData[], observable?: IObservable): Promise<ResponseData[]>;
+    sendMultiRequestsAsync(requests?: RequestData[], observable?: IObservable, canReject?: boolean): Promise<ResponseData[]>;
     /** 这里导出不希望用户使用的方法，供框架内使用 */
     __onResponse(type: string, result: any, request?: RequestData): void | never;
     __onError(type: string, err: Error, request?: RequestData): void;
