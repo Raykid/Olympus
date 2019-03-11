@@ -1,10 +1,11 @@
-import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
-import { load } from "../../utils/HTTPUtil";
-import { trimURL, isAbsolutePath } from "../../utils/URLUtil";
-import { version } from "../version/Version";
-import { environment } from "../env/Environment";
+import { Injectable } from "../../core/injector/Injector";
+import JSFile, { JSFileData, JSLoadMode } from '../../core/interfaces/JSFile';
 import { unique } from "../../utils/ArrayUtil";
+import { load } from "../../utils/HTTPUtil";
+import { isAbsolutePath } from "../../utils/URLUtil";
+import { environment } from "../env/Environment";
+import { version } from "../version/Version";
 
 /**
  * @author Raykid
@@ -340,21 +341,6 @@ export default class AssetsManager
         }
     }
 }
-
-export enum JSLoadMode
-{
-    AUTO,
-    JSONP,
-    TAG
-}
-
-export interface JSFileData
-{
-    url:string;
-    mode?:JSLoadMode;
-}
-
-export type JSFile = string | JSFileData;
 
 /** 再额外导出一个单例 */
 export const assetsManager:AssetsManager = core.getInject(AssetsManager);

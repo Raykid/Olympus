@@ -1,3 +1,4 @@
+import JSFile from '../../core/interfaces/JSFile';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -63,15 +64,5 @@ export default class AssetsManager {
      */
     loadJsFiles(jsFiles: JSFile[], handler: (err?: Error) => void, ordered?: boolean): void;
 }
-export declare enum JSLoadMode {
-    AUTO = 0,
-    JSONP = 1,
-    TAG = 2
-}
-export interface JSFileData {
-    url: string;
-    mode?: JSLoadMode;
-}
-export declare type JSFile = string | JSFileData;
 /** 再额外导出一个单例 */
 export declare const assetsManager: AssetsManager;

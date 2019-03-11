@@ -1,5 +1,6 @@
 import ICommandConstructor from "../../core/command/ICommandConstructor";
 import { core } from "../../core/Core";
+import JSFile from '../../core/interfaces/JSFile';
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
 import Observable from "../../core/observable/Observable";
@@ -348,7 +349,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
             }
         };
         // 开始加载js文件
-        var jsFiles:string[] = this.listJsFiles();
+        var jsFiles:JSFile[] = this.listJsFiles();
         // 去重
         jsFiles = unique(jsFiles);
         // 加载
@@ -998,10 +999,10 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
     /**
      * 列出所需JS资源URL，可重写
      * 
-     * @returns {string[]} 
+     * @returns {JSFile[]} 
      * @memberof Mediator
      */
-    public listJsFiles():string[]
+    public listJsFiles():JSFile[]
     {
         return null;
     }

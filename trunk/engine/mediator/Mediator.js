@@ -909,7 +909,7 @@ var Mediator = /** @class */ (function () {
     /**
      * 列出所需JS资源URL，可重写
      *
-     * @returns {string[]}
+     * @returns {JSFile[]}
      * @memberof Mediator
      */
     Mediator.prototype.listJsFiles = function () {

@@ -1,8 +1,9 @@
 import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import { JSLoadMode } from '../../core/interfaces/JSFile';
 import { validateProtocol } from '../../utils/URLUtil';
-import { assetsManager, JSLoadMode } from "../assets/AssetsManager";
+import { assetsManager } from "../assets/AssetsManager";
 import AudioTagImpl from "../audio/AudioTagImpl";
 import { environment } from "./Environment";
 /**

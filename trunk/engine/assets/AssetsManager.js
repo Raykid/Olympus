@@ -1,11 +1,12 @@
 import * as tslib_1 from "tslib";
-import { Injectable } from "../../core/injector/Injector";
 import { core } from "../../core/Core";
+import { Injectable } from "../../core/injector/Injector";
+import { JSLoadMode } from '../../core/interfaces/JSFile';
+import { unique } from "../../utils/ArrayUtil";
 import { load } from "../../utils/HTTPUtil";
 import { isAbsolutePath } from "../../utils/URLUtil";
-import { version } from "../version/Version";
 import { environment } from "../env/Environment";
-import { unique } from "../../utils/ArrayUtil";
+import { version } from "../version/Version";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -288,11 +289,5 @@ var AssetsManager = /** @class */ (function () {
     return AssetsManager;
 }());
 export default AssetsManager;
-export var JSLoadMode;
-(function (JSLoadMode) {
-    JSLoadMode[JSLoadMode["AUTO"] = 0] = "AUTO";
-    JSLoadMode[JSLoadMode["JSONP"] = 1] = "JSONP";
-    JSLoadMode[JSLoadMode["TAG"] = 2] = "TAG";
-})(JSLoadMode || (JSLoadMode = {}));
 /** 再额外导出一个单例 */
 export var assetsManager = core.getInject(AssetsManager);

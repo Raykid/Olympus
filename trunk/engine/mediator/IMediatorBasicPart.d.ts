@@ -1,5 +1,6 @@
 import IDisposable from "../../core/interfaces/IDisposable";
 import IOpenClose from "../../core/interfaces/IOpenClose";
+import JSFile from '../../core/interfaces/JSFile';
 import IHasBridge from "../bridge/IHasBridge";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
@@ -66,10 +67,10 @@ export default interface IMediatorBasicPart<S = any, OD = any, CD = any> extends
     /**
      * 列出所需JS资源URL
      *
-     * @returns {string[]}
+     * @returns {JSFile[]}
      * @memberof IMediatorBasicPart
      */
-    listJsFiles(): string[];
+    listJsFiles(): JSFile[];
     /**
      * 列出模块初始化请求
      *

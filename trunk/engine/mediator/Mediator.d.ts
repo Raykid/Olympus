@@ -1,4 +1,5 @@
 import ICommandConstructor from "../../core/command/ICommandConstructor";
+import JSFile from '../../core/interfaces/JSFile';
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
 import Dictionary from "../../utils/Dictionary";
@@ -372,10 +373,10 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
     /**
      * 列出所需JS资源URL，可重写
      *
-     * @returns {string[]}
+     * @returns {JSFile[]}
      * @memberof Mediator
      */
-    listJsFiles(): string[];
+    listJsFiles(): JSFile[];
     /**
      * 列出模块初始化请求，可重写
      *
