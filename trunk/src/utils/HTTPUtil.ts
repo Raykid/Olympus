@@ -169,7 +169,7 @@ export function load(params:IHTTPRequestParams):void
 
     function send():void
     {
-        var sendData:string = null;
+        var sendData:BodyInit = null;
         // 根据发送方式组织数据格式
         switch(method)
         {
@@ -177,9 +177,19 @@ export function load(params:IHTTPRequestParams):void
                 switch(params.headerDict && params.headerDict["Content-Type"])
                 {
                     case "application/x-www-form-urlencoded":
+                        // 使用webform格式（即query结构）字符串
                         sendData = toFormParams(data);
                         break;
+                    case "multipart/form-data":
+                        // 使用FormData对数据进行包装
+                        sendData = new FormData();
+                        for(let key in data)
+                        {
+                            sendData.append(key, data[key]);
+                        }
+                        break;
                     default:
+                        // 其他都使用json包装为字符串
                         sendData = JSON.stringify(data);
                         break;
                 }
