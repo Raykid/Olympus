@@ -652,8 +652,6 @@ var Mediator = /** @class */ (function () {
         }
         // 派发关闭事件
         this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
-        // 给子类用的模板方法
-        this.dispose();
     };
     /**
      * 当打开时调用

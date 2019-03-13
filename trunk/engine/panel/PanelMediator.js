@@ -35,6 +35,8 @@ var PanelMediator = /** @class */ (function (_super) {
             oriOnAfterDrop.call(_this, data, to);
             // 派发关闭事件
             _this.dispatch(MediatorMessage.MEDIATOR_CLOSED, _this);
+            // 调用销毁
+            _this.dispose();
         };
         panelManager.drop(this, data, to);
     };

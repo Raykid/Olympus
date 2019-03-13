@@ -28,6 +28,8 @@ var SceneMediator = /** @class */ (function (_super) {
             oriOnAfterOut.call(_this, toScene, data);
             // 派发关闭事件
             _this.dispatch(MediatorMessage.MEDIATOR_CLOSED, _this);
+            // 调用销毁
+            _this.dispose();
         };
         sceneManager.pop(this, data);
     };

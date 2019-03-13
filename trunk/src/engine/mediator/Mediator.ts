@@ -710,8 +710,6 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
     {
         // 派发关闭事件
         this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
-        // 给子类用的模板方法
-        this.dispose();
     }
     
     /**

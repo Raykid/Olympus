@@ -41,6 +41,8 @@ export default class SceneMediator<S = any, OD = any, CD = any> extends Mediator
             oriOnAfterOut.call(this, toScene, data);
             // 派发关闭事件
             this.dispatch(MediatorMessage.MEDIATOR_CLOSED, this);
+            // 调用销毁
+            this.dispose();
         };
         sceneManager.pop(this, data);
     }
