@@ -1,16 +1,15 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../core/injector/Injector"
+import { Injectable } from "../../core/injector/Injector";
 import IConstructor from "../../core/interfaces/IConstructor";
+import Dictionary from "../../utils/Dictionary";
+import { bridgeManager } from "../bridge/BridgeManager";
 import IBridge from "../bridge/IBridge";
+import { maskManager } from "../mask/MaskManager";
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
+import IPromptPanel, { ButtonType, IPromptHandler, IPromptPanelConstructor, IPromptParams } from "./IPromptPanel";
 import none from "./NonePanelPolicy";
 import PanelMessage from "./PanelMessage";
-import IPromptPanel, { IPromptParams, IPromptHandler, ButtonType, IPromptPanelConstructor } from "./IPromptPanel";
-import { system } from "../system/System";
-import { bridgeManager } from "../bridge/BridgeManager";
-import { maskManager } from "../mask/MaskManager";
-import Dictionary from "../../utils/Dictionary";
 
 /**
  * @author Raykid
@@ -158,12 +157,6 @@ export default class PanelManager
                 panel.onAfterDrop(data, to);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
-                // 移除显示
-                var bridge:IBridge = panel.bridge;
-                var parent:any = bridge.getParent(panel.skin);
-                if(parent) bridge.removeChild(parent, panel.skin);
-                // 调用接口
-                panel.dispose();
             }, to);
             // 移除优先级数据
             this._priorities.delete(panel);

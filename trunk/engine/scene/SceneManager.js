@@ -1,9 +1,9 @@
 import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import { notify, wait } from "../../utils/SyncUtil";
 import none from "./NoneScenePolicy";
 import SceneMessage from "./SceneMessage";
-import { wait, notify } from "../../utils/SyncUtil";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -79,13 +79,10 @@ var SceneManager = /** @class */ (function () {
             return this.push(scene, data);
         // 同步执行
         wait(SYNC_NAME, this.doChange, this, this.currentScene, scene, data, scene.policy || scene.bridge.defaultScenePolicy || none, ChangeType.Switch, function () {
-            var lastScene = _this._sceneStack[0];
             // 数据先行
             _this._sceneStack[0] = scene;
             // 派发消息
             core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-            // 销毁
-            lastScene && lastScene.dispose();
         });
         return scene;
     };
@@ -149,9 +146,6 @@ var SceneManager = /** @class */ (function () {
             _this._sceneStack.splice(_this._sceneStack.indexOf(scene), 1);
             // 派发消息
             core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-        }, function () {
-            // 销毁
-            scene.dispose();
         });
     };
     SceneManager.prototype.doChange = function (from, to, data, policy, type, begin, complete) {

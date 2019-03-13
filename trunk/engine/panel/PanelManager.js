@@ -1,12 +1,12 @@
 import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
-import none from "./NonePanelPolicy";
-import PanelMessage from "./PanelMessage";
-import { ButtonType } from "./IPromptPanel";
+import Dictionary from "../../utils/Dictionary";
 import { bridgeManager } from "../bridge/BridgeManager";
 import { maskManager } from "../mask/MaskManager";
-import Dictionary from "../../utils/Dictionary";
+import { ButtonType } from "./IPromptPanel";
+import none from "./NonePanelPolicy";
+import PanelMessage from "./PanelMessage";
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -143,13 +143,6 @@ var PanelManager = /** @class */ (function () {
                 panel.onAfterDrop(data, to);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
-                // 移除显示
-                var bridge = panel.bridge;
-                var parent = bridge.getParent(panel.skin);
-                if (parent)
-                    bridge.removeChild(parent, panel.skin);
-                // 调用接口
-                panel.dispose();
             }, to);
             // 移除优先级数据
             this._priorities.delete(panel);

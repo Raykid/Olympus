@@ -1,11 +1,10 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../core/injector/Injector"
-import IConstructor from "../../core/interfaces/IConstructor";
+import { Injectable } from "../../core/injector/Injector";
+import { notify, wait } from "../../utils/SyncUtil";
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import none from "./NoneScenePolicy";
 import SceneMessage from "./SceneMessage";
-import { wait, notify } from "../../utils/SyncUtil";
 
 /**
  * @author Raykid
@@ -92,13 +91,10 @@ export default class SceneManager
             scene.policy || scene.bridge.defaultScenePolicy || none,
             ChangeType.Switch,
             ()=>{
-                var lastScene:IScene = this._sceneStack[0];
                 // 数据先行
                 this._sceneStack[0] = scene;
                 // 派发消息
                 core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-                // 销毁
-                lastScene && lastScene.dispose();
             }
         );
         return scene;
@@ -189,10 +185,6 @@ export default class SceneManager
                 this._sceneStack.splice(this._sceneStack.indexOf(scene), 1);
                 // 派发消息
                 core.dispatch(SceneMessage.SCENE_STACK_CHANGE);
-            },
-            ()=>{
-                // 销毁
-                scene.dispose();
             }
         );
     }

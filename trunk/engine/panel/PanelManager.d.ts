@@ -1,6 +1,6 @@
 import IConstructor from "../../core/interfaces/IConstructor";
 import IPanel from "./IPanel";
-import IPromptPanel, { IPromptParams, IPromptHandler, IPromptPanelConstructor } from "./IPromptPanel";
+import IPromptPanel, { IPromptHandler, IPromptPanelConstructor, IPromptParams } from "./IPromptPanel";
 /**
  * @author Raykid
  * @email initial_r@qq.com
