@@ -232,6 +232,8 @@ export default class SceneManager
         to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 调用切换接口
         doFunc.call(policy, from, to, ()=>{
+            // 完成步骤
+            notify(SYNC_NAME);
             // 移除显示
             to && from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
             // 后置处理
@@ -241,8 +243,6 @@ export default class SceneManager
             to && core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, to, from);
             // 调用回调
             complete && complete();
-            // 完成步骤
-            notify(SYNC_NAME);
         });
     }
 }

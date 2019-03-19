@@ -190,6 +190,8 @@ var SceneManager = /** @class */ (function () {
         to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 调用切换接口
         doFunc.call(policy, from, to, function () {
+            // 完成步骤
+            notify(SYNC_NAME);
             // 移除显示
             to && from && from.bridge.removeChild(from.bridge.sceneLayer, from.skin);
             // 后置处理
@@ -199,8 +201,6 @@ var SceneManager = /** @class */ (function () {
             to && core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, to, from);
             // 调用回调
             complete && complete();
-            // 完成步骤
-            notify(SYNC_NAME);
         });
     };
     SceneManager = tslib_1.__decorate([
