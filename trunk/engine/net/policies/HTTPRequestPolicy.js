@@ -25,8 +25,8 @@ var HTTPRequestPolicy = /** @class */ (function () {
         // 修改数据
         var httpParams = extendObject({
             url: environment.toHostURL(params.path, params.hostIndex),
-            onResponse: function (result) { return netManager.__onResponse(request.__params.response.type, result, request); },
-            onError: function (err) { return netManager.__onError(request.__params.response.type, err, request); },
+            onResponse: function (result) { return netManager.__onResponse(request.__params.response, result, request); },
+            onError: function (err) { return netManager.__onError(request.__params.response, err, request); },
             headerDict: {}
         }, params);
         // 发送

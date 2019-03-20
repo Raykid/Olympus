@@ -19,7 +19,6 @@ export default class NetManager {
     /**
      * 注册一个返回结构体
      *
-     * @param {string} type 返回类型
      * @param {IResponseDataConstructor} cls 返回结构体构造器
      * @memberof NetManager
      */
@@ -70,8 +69,8 @@ export default class NetManager {
      */
     sendMultiRequestsAsync(requests?: RequestData[], observable?: IObservable, canReject?: boolean): Promise<ResponseData[]>;
     /** 这里导出不希望用户使用的方法，供框架内使用 */
-    __onResponse(type: string, result: any, request?: RequestData): void | never;
-    __onError(type: string, err: Error, request?: RequestData): void;
+    __onResponse(responseCls: IResponseDataConstructor, result: any, request?: RequestData): void | never;
+    __onError(responseCls: IResponseDataConstructor, err: Error, request?: RequestData): void;
     private recurseResponse;
 }
 /** 再额外导出一个单例 */

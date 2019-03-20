@@ -3,6 +3,7 @@ import { Injectable } from "../../core/injector/Injector";
 import CoreMessage from "../../core/message/CoreMessage";
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
+import Dictionary from '../../utils/Dictionary';
 import { extendObject } from "../../utils/ObjectUtil";
 import { maskManager } from "../mask/MaskManager";
 import NetMessage from "./NetMessage";
@@ -52,7 +53,6 @@ export default class NetManager
     /**
      * 注册一个返回结构体
      * 
-     * @param {string} type 返回类型
      * @param {IResponseDataConstructor} cls 返回结构体构造器
      * @memberof NetManager
      */
@@ -61,7 +61,7 @@ export default class NetManager
         this._responseDict[cls.type] = cls;
     }
 
-    private _responseListeners:{[type:string]:[ResponseHandler, any, boolean, IObservable][]} = {};
+    private _responseListeners:Dictionary<IResponseDataConstructor, [ResponseHandler, any, boolean, IObservable][]> = new Dictionary();
     /**
      * 添加一个通讯返回监听
      * 
@@ -75,9 +75,9 @@ export default class NetManager
     public listenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
-        var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
-        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
-        if(!listeners) this._responseListeners[type] = listeners = [];
+        var cls:IResponseDataConstructor = (typeof clsOrType == "string" ? this._responseDict[clsOrType] : clsOrType);
+        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners.get(cls);
+        if(!listeners) this._responseListeners.set(cls, listeners = []);
         for(var listener of listeners)
         {
             if(handler == listener[0] && thisArg == listener[1] && once == listener[2])
@@ -99,8 +99,8 @@ export default class NetManager
     public unlistenResponse(clsOrType:IResponseDataConstructor|string, handler:ResponseHandler, thisArg?:any, once:boolean=false, observable?:IObservable):void
     {
         if(!observable) observable = core.observable;
-        var type:string = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
-        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
+        var cls:IResponseDataConstructor = (typeof clsOrType == "string" ? this._responseDict[clsOrType] : clsOrType);
+        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners.get(cls);
         if(listeners)
         {
             for(var i:number = 0, len:number = listeners.length; i < len; i++)
@@ -214,15 +214,14 @@ export default class NetManager
     }
 
     /** 这里导出不希望用户使用的方法，供框架内使用 */
-    public __onResponse(type:string, result:any, request?:RequestData):void|never
+    public __onResponse(responseCls:IResponseDataConstructor, result:any, request?:RequestData):void|never
     {
         // 移除遮罩
         if(request && request.__useMask) maskManager.hideLoading("net");
         // 解析结果
-        var cls:IResponseDataConstructor = this._responseDict[type];
-        if(cls)
+        if(responseCls)
         {
-            var response:ResponseData = new cls();
+            var response:ResponseData = new responseCls();
             // 执行解析
             response.parse(result);
             // 设置配对请求和发送内核
@@ -241,15 +240,15 @@ export default class NetManager
             // 派发事件
             observable.dispatch(NetMessage.NET_RESPONSE, response, request);
             // 递归处理事件监听
-            this.recurseResponse(type, response, request, observable);
+            this.recurseResponse(responseCls, response, request, observable);
         }
         else
         {
-            console.warn("没有找到返回结构体定义：" + type);
+            console.warn("没有找到返回结构体定义：" + responseCls.type);
         }
     }
 
-    public __onError(type:string, err:Error, request?:RequestData):void
+    public __onError(responseCls:IResponseDataConstructor, err:Error, request?:RequestData):void
     {
         // 移除遮罩
         if(request && request.__useMask) maskManager.hideLoading("net");
@@ -258,18 +257,18 @@ export default class NetManager
         // 派发事件
         observable.dispatch(NetMessage.NET_ERROR, err, request);
         // 递归处理事件监听
-        this.recurseResponse(type, err, request, observable);
+        this.recurseResponse(responseCls, err, request, observable);
     }
 
-    private recurseResponse(type:string, response:ResponseData|Error, request:RequestData, observable:IObservable):void
+    private recurseResponse(responseCls:IResponseDataConstructor, response:ResponseData|Error, request:RequestData, observable:IObservable):void
     {
         // 先递归父级，与消息发送时顺序相反
         if(observable.parent)
         {
-            this.recurseResponse(type, response, request, observable.parent);
+            this.recurseResponse(responseCls, response, request, observable.parent);
         }
         // 触发事件形式监听
-        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners[type];
+        var listeners:[ResponseHandler, any, boolean, IObservable][] = this._responseListeners.get(responseCls);
         if(listeners)
         {
             listeners = listeners.concat();
@@ -280,7 +279,7 @@ export default class NetManager
                     // 必须是同核消息才能触发回调
                     listener[0].call(listener[1], response, request);
                     // 如果是一次性监听则移除之
-                    if(listener[2]) this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
+                    if(listener[2]) this.unlistenResponse(responseCls, listener[0], listener[1], listener[2], listener[3]);
                 }
             }
         }

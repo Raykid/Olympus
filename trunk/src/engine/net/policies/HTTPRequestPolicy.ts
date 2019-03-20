@@ -28,8 +28,8 @@ export class HTTPRequestPolicy implements IRequestPolicy
         // 修改数据
         var httpParams:IHTTPRequestParams = extendObject({
             url: environment.toHostURL(params.path, params.hostIndex),
-            onResponse: result=>netManager.__onResponse(request.__params.response.type, result, request),
-            onError: err=>netManager.__onError(request.__params.response.type, err, request),
+            onResponse: result=>netManager.__onResponse(request.__params.response, result, request),
+            onError: err=>netManager.__onError(request.__params.response, err, request),
             headerDict: {}
         }, params);
         // 发送

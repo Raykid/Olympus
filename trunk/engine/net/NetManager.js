@@ -2,6 +2,7 @@ import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import CoreMessage from "../../core/message/CoreMessage";
+import Dictionary from '../../utils/Dictionary';
 import { extendObject } from "../../utils/ObjectUtil";
 import { maskManager } from "../mask/MaskManager";
 import NetMessage from "./NetMessage";
@@ -9,7 +10,7 @@ import RequestData, { commonData } from "./RequestData";
 var NetManager = /** @class */ (function () {
     function NetManager() {
         this._responseDict = {};
-        this._responseListeners = {};
+        this._responseListeners = new Dictionary();
         core.listen(CoreMessage.MESSAGE_DISPATCHED, this.onMsgDispatched, core);
     }
     NetManager.prototype.onMsgDispatched = function (msg) {
@@ -30,7 +31,6 @@ var NetManager = /** @class */ (function () {
     /**
      * 注册一个返回结构体
      *
-     * @param {string} type 返回类型
      * @param {IResponseDataConstructor} cls 返回结构体构造器
      * @memberof NetManager
      */
@@ -51,10 +51,10 @@ var NetManager = /** @class */ (function () {
         if (once === void 0) { once = false; }
         if (!observable)
             observable = core.observable;
-        var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
-        var listeners = this._responseListeners[type];
+        var cls = (typeof clsOrType == "string" ? this._responseDict[clsOrType] : clsOrType);
+        var listeners = this._responseListeners.get(cls);
         if (!listeners)
-            this._responseListeners[type] = listeners = [];
+            this._responseListeners.set(cls, listeners = []);
         for (var _i = 0, listeners_1 = listeners; _i < listeners_1.length; _i++) {
             var listener = listeners_1[_i];
             if (handler == listener[0] && thisArg == listener[1] && once == listener[2])
@@ -76,8 +76,8 @@ var NetManager = /** @class */ (function () {
         if (once === void 0) { once = false; }
         if (!observable)
             observable = core.observable;
-        var type = (typeof clsOrType == "string" ? clsOrType : clsOrType.type);
-        var listeners = this._responseListeners[type];
+        var cls = (typeof clsOrType == "string" ? this._responseDict[clsOrType] : clsOrType);
+        var listeners = this._responseListeners.get(cls);
         if (listeners) {
             for (var i = 0, len = listeners.length; i < len; i++) {
                 var listener = listeners[i];
@@ -174,14 +174,13 @@ var NetManager = /** @class */ (function () {
         });
     };
     /** 这里导出不希望用户使用的方法，供框架内使用 */
-    NetManager.prototype.__onResponse = function (type, result, request) {
+    NetManager.prototype.__onResponse = function (responseCls, result, request) {
         // 移除遮罩
         if (request && request.__useMask)
             maskManager.hideLoading("net");
         // 解析结果
-        var cls = this._responseDict[type];
-        if (cls) {
-            var response = new cls();
+        if (responseCls) {
+            var response = new responseCls();
             // 执行解析
             response.parse(result);
             // 设置配对请求和发送内核
@@ -200,13 +199,13 @@ var NetManager = /** @class */ (function () {
             // 派发事件
             observable.dispatch(NetMessage.NET_RESPONSE, response, request);
             // 递归处理事件监听
-            this.recurseResponse(type, response, request, observable);
+            this.recurseResponse(responseCls, response, request, observable);
         }
         else {
-            console.warn("没有找到返回结构体定义：" + type);
+            console.warn("没有找到返回结构体定义：" + responseCls.type);
         }
     };
-    NetManager.prototype.__onError = function (type, err, request) {
+    NetManager.prototype.__onError = function (responseCls, err, request) {
         // 移除遮罩
         if (request && request.__useMask)
             maskManager.hideLoading("net");
@@ -215,15 +214,15 @@ var NetManager = /** @class */ (function () {
         // 派发事件
         observable.dispatch(NetMessage.NET_ERROR, err, request);
         // 递归处理事件监听
-        this.recurseResponse(type, err, request, observable);
+        this.recurseResponse(responseCls, err, request, observable);
     };
-    NetManager.prototype.recurseResponse = function (type, response, request, observable) {
+    NetManager.prototype.recurseResponse = function (responseCls, response, request, observable) {
         // 先递归父级，与消息发送时顺序相反
         if (observable.parent) {
-            this.recurseResponse(type, response, request, observable.parent);
+            this.recurseResponse(responseCls, response, request, observable.parent);
         }
         // 触发事件形式监听
-        var listeners = this._responseListeners[type];
+        var listeners = this._responseListeners.get(responseCls);
         if (listeners) {
             listeners = listeners.concat();
             for (var _i = 0, listeners_2 = listeners; _i < listeners_2.length; _i++) {
@@ -233,7 +232,7 @@ var NetManager = /** @class */ (function () {
                     listener[0].call(listener[1], response, request);
                     // 如果是一次性监听则移除之
                     if (listener[2])
-                        this.unlistenResponse(type, listener[0], listener[1], listener[2], listener[3]);
+                        this.unlistenResponse(responseCls, listener[0], listener[1], listener[2], listener[3]);
                 }
             }
         }
