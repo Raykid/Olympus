@@ -74,7 +74,6 @@ var Mediator = /** @class */ (function () {
          */
         this.bindTargets = [];
         this._openMask = true;
-        this._closeCache = [];
         this._listeners = [];
         this._disposeDict = new Dictionary();
         /**
@@ -388,6 +387,20 @@ var Mediator = /** @class */ (function () {
     Mediator.prototype.onGetResponses = function (responses) {
         return false;
     };
+    Object.defineProperty(Mediator.prototype, "openData", {
+        /**
+         * 异步获取开启数据
+         *
+         * @readonly
+         * @type {Promise<OD>}
+         * @memberof Mediator
+         */
+        get: function () {
+            return this._openPromise;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * 打开，为了实现IOpenClose接口
      *
@@ -407,6 +420,21 @@ var Mediator = /** @class */ (function () {
             if (_this._status === MediatorStatus.UNOPEN) {
                 // 修改状态
                 _this._status = MediatorStatus.OPENING;
+                // 生成开启Promise数据
+                var openResolve_1;
+                var openReject_1;
+                _this._openPromise = new Promise(function (resolve, reject) {
+                    openResolve_1 = resolve;
+                    openReject_1 = reject;
+                });
+                // 生成关闭Promise数据
+                var closeResolve_1;
+                var closeReject_1;
+                var closePromise = new Promise(function (resolve, reject) {
+                    closeResolve_1 = resolve;
+                    closeReject_1 = reject;
+                });
+                _this._closePromiseData = [closePromise, closeResolve_1, closeReject_1];
                 // 赋值参数
                 _this.data = data;
                 // 记一个是否需要遮罩的flag
@@ -420,6 +448,7 @@ var Mediator = /** @class */ (function () {
                         _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                         // 调用reject
                         reject(err);
+                        openReject_1(err);
                     }
                     else {
                         // 加载所有已托管中介者的资源
@@ -431,6 +460,7 @@ var Mediator = /** @class */ (function () {
                                 _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                 // 调用reject
                                 reject(err);
+                                openReject_1(err);
                             }
                             else {
                                 // 加载css文件
@@ -442,6 +472,7 @@ var Mediator = /** @class */ (function () {
                                         _this.moduleOpenHandler && _this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                         // 调用reject
                                         reject(err);
+                                        openReject_1(err);
                                     }
                                     else {
                                         // 加载js文件
@@ -457,6 +488,7 @@ var Mediator = /** @class */ (function () {
                                                         this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                                         // 调用reject
                                                         reject(err);
+                                                        openReject_1(err);
                                                         return [3 /*break*/, 6];
                                                     case 1:
                                                         _b.trys.push([1, 5, , 6]);
@@ -497,10 +529,12 @@ var Mediator = /** @class */ (function () {
                                                         this.dispatch(MediatorMessage.MEDIATOR_OPENED, this);
                                                         // 调用resolve
                                                         resolve(this.data);
+                                                        openResolve_1(this.data);
                                                         return [3 /*break*/, 6];
                                                     case 5:
                                                         err_1 = _b.sent();
                                                         reject(err_1);
+                                                        openReject_1(err_1);
                                                         return [3 /*break*/, 6];
                                                     case 6: return [2 /*return*/];
                                                 }
@@ -549,17 +583,7 @@ var Mediator = /** @class */ (function () {
          * @memberof Mediator
          */
         get: function () {
-            var _this = this;
-            return new Promise(function (resolve, reject) {
-                if (_this.status < MediatorStatus.CLOSED) {
-                    // 没有关闭完成，等待完成
-                    _this._closeCache.push([resolve, reject]);
-                }
-                else {
-                    // 已经关闭完成，直接resolve
-                    resolve(_this._closeData);
-                }
-            });
+            return this._closePromiseData[0];
         },
         enumerable: true,
         configurable: true
@@ -609,24 +633,20 @@ var Mediator = /** @class */ (function () {
                         this.__afterOnClose.apply(this, [data].concat(args));
                         // 调用resolve
                         resolve(this._closeData);
-                        // 调用所有cache中的resolve
-                        while (this._closeCache.length > 0) {
-                            this._closeCache.shift()[0](this._closeData);
-                        }
+                        // 调用cache中的resolve
+                        this._closePromiseData[1](this._closeData);
                         return [3 /*break*/, 5];
                     case 4:
                         err_2 = _a.sent();
                         reject(err_2);
-                        // 调用所有cache中的reject
-                        while (this._closeCache.length > 0) {
-                            this._closeCache.shift()[1](this._closeData);
-                        }
+                        // 调用cache中的reject
+                        this._closePromiseData[2](err_2);
                         return [3 /*break*/, 5];
                     case 5: return [3 /*break*/, 7];
                     case 6:
                         if (this._status < MediatorStatus.CLOSED) {
-                            // 还没开启呢，放入缓存
-                            this._closeCache.push([resolve, reject]);
+                            // 还没开启呢，等待Promise
+                            this._closePromiseData[0].then(resolve).catch(reject);
                         }
                         else {
                             // 已经关闭过了，直接resolve

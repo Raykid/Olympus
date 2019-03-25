@@ -465,6 +465,19 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         return false;
     }
 
+    private _openPromise:Promise<OD>;
+    /**
+     * 异步获取开启数据
+     *
+     * @readonly
+     * @type {Promise<OD>}
+     * @memberof Mediator
+     */
+    public get openData():Promise<OD>
+    {
+        return this._openPromise;
+    }
+
     /**
      * 打开，为了实现IOpenClose接口
      * 
@@ -481,6 +494,21 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
             {
                 // 修改状态
                 this._status = MediatorStatus.OPENING;
+                // 生成开启Promise数据
+                let openResolve:(data:OD)=>void;
+                let openReject:(reason:any)=>void;
+                this._openPromise = new Promise((resolve, reject)=>{
+                    openResolve = resolve;
+                    openReject = reject;
+                });
+                // 生成关闭Promise数据
+                let closeResolve:(data:CD)=>void;
+                let closeReject:(reason:any)=>void;
+                const closePromise:Promise<CD> = new Promise((resolve, reject)=>{
+                    closeResolve = resolve;
+                    closeReject = reject;
+                });
+                this._closePromiseData = [closePromise, closeResolve, closeReject];
                 // 赋值参数
                 this.data = data;
                 // 记一个是否需要遮罩的flag
@@ -495,6 +523,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                         this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                         // 调用reject
                         reject(err);
+                        openReject(err);
                     }
                     else
                     {
@@ -508,6 +537,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                 this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                 // 调用reject
                                 reject(err);
+                                openReject(err);
                             }
                             else
                             {
@@ -521,6 +551,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                         this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                         // 调用reject
                                         reject(err);
+                                        openReject(err);
                                     }
                                     else
                                     {
@@ -535,6 +566,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                                 this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                                 // 调用reject
                                                 reject(err);
+                                                openReject(err);
                                             }
                                             else
                                             {
@@ -571,10 +603,12 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                                     this.dispatch(MediatorMessage.MEDIATOR_OPENED, this);
                                                     // 调用resolve
                                                     resolve(this.data);
+                                                    openResolve(this.data);
                                                 }
                                                 catch(err)
                                                 {
                                                     reject(err);
+                                                    openReject(err);
                                                 }
                                             }
                                         });
@@ -611,7 +645,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         // 给子类用的模板方法
     }
 
-    private _closeCache:[(data?:any)=>void, (reason?:any)=>void][] = [];
+    private _closePromiseData:[Promise<CD>, (data?:CD)=>void, (reason?:any)=>void];
     private _closeData:CD;
     /**
      * 异步获取关闭参数
@@ -622,18 +656,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      */
     public get closeData():Promise<CD>
     {
-        return new Promise((resolve, reject)=>{
-            if(this.status < MediatorStatus.CLOSED)
-            {
-                // 没有关闭完成，等待完成
-                this._closeCache.push([resolve, reject]);
-            }
-            else
-            {
-                // 已经关闭完成，直接resolve
-                resolve(this._closeData);
-            }
-        });
+        return this._closePromiseData[0];
     }
 
     /**
@@ -672,26 +695,20 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                     this.__afterOnClose(data, ...args);
                     // 调用resolve
                     resolve(this._closeData);
-                    // 调用所有cache中的resolve
-                    while(this._closeCache.length > 0)
-                    {
-                        this._closeCache.shift()[0](this._closeData);
-                    }
+                    // 调用cache中的resolve
+                    this._closePromiseData[1](this._closeData);
                 }
                 catch(err)
                 {
                     reject(err);
-                    // 调用所有cache中的reject
-                    while(this._closeCache.length > 0)
-                    {
-                        this._closeCache.shift()[1](this._closeData);
-                    }
+                    // 调用cache中的reject
+                    this._closePromiseData[2](err);
                 }
             }
             else if(this._status < MediatorStatus.CLOSED)
             {
-                // 还没开启呢，放入缓存
-                this._closeCache.push([resolve, reject]);
+                // 还没开启呢，等待Promise
+                this._closePromiseData[0].then(resolve).catch(reject);
             }
             else
             {
@@ -1183,6 +1200,8 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         this.parent = null;
         // 移除其他无用对象
         this.moduleOpenHandler = null;
+        this._openPromise = null;
+        this._closePromiseData = null;
         // 将所有子中介者销毁
         const children:IMediator[] = this._children.concat();
         for(let child of children)
