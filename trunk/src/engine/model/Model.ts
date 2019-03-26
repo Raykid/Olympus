@@ -1,7 +1,8 @@
+import ICommandConstructor from "../../core/command/ICommandConstructor";
 import { core } from "../../core/Core";
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
-import ICommandConstructor from "../../core/command/ICommandConstructor";
+import { engine, InitStep } from '../Engine';
 import EngineMessage from "../message/EngineMessage";
 
 /**
@@ -51,7 +52,16 @@ export default abstract class Model implements IObservable
 
     public constructor()
     {
-        core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
+        if(engine.initStep < InitStep.OpenFirstModule)
+        {
+            // Olympus还没初始化完成，等待之
+            core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
+        }
+        else
+        {
+            // Olympu已经初始化完毕，直接初始化
+            this.onInitialized();
+        }
     }
 
     /**

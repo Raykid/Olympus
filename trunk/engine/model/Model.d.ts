@@ -1,6 +1,6 @@
+import ICommandConstructor from "../../core/command/ICommandConstructor";
 import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
-import ICommandConstructor from "../../core/command/ICommandConstructor";
 /**
  * @author Raykid
  * @email initial_r@qq.com

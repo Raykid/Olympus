@@ -1,4 +1,5 @@
 import { core } from "../../core/Core";
+import { engine, InitStep } from '../Engine';
 import EngineMessage from "../message/EngineMessage";
 /**
  * @author Raykid
@@ -10,7 +11,14 @@ import EngineMessage from "../message/EngineMessage";
 */
 var Model = /** @class */ (function () {
     function Model() {
-        core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
+        if (engine.initStep < InitStep.OpenFirstModule) {
+            // Olympus还没初始化完成，等待之
+            core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
+        }
+        else {
+            // Olympu已经初始化完毕，直接初始化
+            this.onInitialized();
+        }
     }
     Object.defineProperty(Model.prototype, "disposed", {
         /**
