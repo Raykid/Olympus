@@ -108,8 +108,7 @@ var AudioTagImpl = /** @class */ (function () {
                 }
             };
             node.onended = function () {
-                // 设置状态
-                data.status = AudioStatus.PAUSED;
+                _this.stop(url);
                 // 派发播放完毕事件
                 core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
                 // 如果循环则再开
@@ -176,8 +175,8 @@ var AudioTagImpl = /** @class */ (function () {
     };
     AudioTagImpl.prototype._doStop = function (url, time) {
         var toUrl = environment.toCDNHostURL(url);
-        var data = this._audioCache[toUrl];
-        if (data) {
+        if (this._playingDict[toUrl]) {
+            var data = this._audioCache[toUrl];
             data.node.autoplay = false;
             data.node.pause();
             // 设置停止时间

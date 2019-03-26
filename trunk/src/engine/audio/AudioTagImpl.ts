@@ -115,8 +115,7 @@ export default class AudioTagImpl implements IAudio
                 }
             };
             node.onended = ()=>{
-                // 设置状态
-                data.status = AudioStatus.PAUSED;
+                this.stop(url);
                 // 派发播放完毕事件
                 core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
                 // 如果循环则再开
@@ -187,9 +186,9 @@ export default class AudioTagImpl implements IAudio
     private _doStop(url:string, time?:number):void
     {
         var toUrl:string = environment.toCDNHostURL(url);
-        var data:AudioData = this._audioCache[toUrl];
-        if(data)
+        if(this._playingDict[toUrl])
         {
+            var data:AudioData = this._audioCache[toUrl];
             data.node.autoplay = false;
             data.node.pause();
             // 设置停止时间

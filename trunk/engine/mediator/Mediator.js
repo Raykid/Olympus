@@ -1083,6 +1083,8 @@ var Mediator = /** @class */ (function () {
         this.parent = null;
         // 移除其他无用对象
         this.moduleOpenHandler = null;
+        this._openPromise = null;
+        this._closePromiseData = null;
         // 将所有子中介者销毁
         var children = this._children.concat();
         for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
