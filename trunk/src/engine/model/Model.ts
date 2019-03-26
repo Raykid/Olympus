@@ -4,6 +4,7 @@ import IMessage from "../../core/message/IMessage";
 import IObservable from "../../core/observable/IObservable";
 import { engine, InitStep } from '../Engine';
 import EngineMessage from "../message/EngineMessage";
+import { system } from '../system/System';
 
 /**
  * @author Raykid
@@ -59,8 +60,10 @@ export default abstract class Model implements IObservable
         }
         else
         {
-            // Olympu已经初始化完毕，直接初始化
-            this.onInitialized();
+            // Olympus已经初始化完毕，直接初始化
+            system.nextFrame(()=>{
+                this.onInitialized();
+            });
         }
     }
 

@@ -1,6 +1,7 @@
 import { core } from "../../core/Core";
 import { engine, InitStep } from '../Engine';
 import EngineMessage from "../message/EngineMessage";
+import { system } from '../system/System';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -11,13 +12,16 @@ import EngineMessage from "../message/EngineMessage";
 */
 var Model = /** @class */ (function () {
     function Model() {
+        var _this = this;
         if (engine.initStep < InitStep.OpenFirstModule) {
             // Olympus还没初始化完成，等待之
             core.listen(EngineMessage.INITIALIZED, this.onInitialized, this);
         }
         else {
-            // Olympu已经初始化完毕，直接初始化
-            this.onInitialized();
+            // Olympus已经初始化完毕，直接初始化
+            system.nextFrame(function () {
+                _this.onInitialized();
+            });
         }
     }
     Object.defineProperty(Model.prototype, "disposed", {
