@@ -1,3 +1,4 @@
+import { numToStr } from './NumberUtil';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -108,22 +109,4 @@ function formatFromData(data, format) {
         format = format.replace(/S+/g, data.millisecond + "");
     }
     return format;
-}
-function numToStr(num, len) {
-    if (len === void 0) { len = 1; }
-    var numStr = num + "";
-    // 如果长度不大于1，则该多长就多长
-    if (len <= 1)
-        return numStr;
-    // 否则截短或者在前面补0
-    var numLen = numStr.length;
-    if (len <= numLen) {
-        return numStr.substr(numLen - len);
-    }
-    else {
-        for (var i = 0, lenI = len - numLen; i < lenI; i++) {
-            numStr = "0" + numStr;
-        }
-        return numStr;
-    }
 }

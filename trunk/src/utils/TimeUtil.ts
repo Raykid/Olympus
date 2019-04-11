@@ -1,3 +1,5 @@
+import { numToStr } from './NumberUtil';
+
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -113,27 +115,6 @@ function formatFromData(data:DateData, format:string):string
         format = format.replace(/S+/g, data.millisecond + "");
     }
     return format;
-}
-
-function numToStr(num:number, len:number=1):string
-{
-    let numStr:string = num + "";
-    // 如果长度不大于1，则该多长就多长
-    if(len <= 1) return numStr;
-    // 否则截短或者在前面补0
-    const numLen:number = numStr.length;
-    if(len <= numLen)
-    {
-        return numStr.substr(numLen - len);
-    }
-    else
-    {
-        for(let i:number = 0, lenI:number = len - numLen; i < lenI; i++)
-        {
-            numStr = "0" + numStr;
-        }
-        return numStr;
-    }
 }
 
 interface DateData
