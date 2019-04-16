@@ -209,7 +209,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @memberof Mediator
      */
     onGetResponses(responses: ResponseData[]): boolean;
-    private _openPromise;
+    private _openPromiseData;
     /**
      * 异步获取开启数据
      *

@@ -249,6 +249,22 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         this.oriSkin = skin;
         // 初始化绑定
         bindManager.bind(this);
+        // 生成开启Promise数据
+        let openResolve:(data:OD)=>void;
+        let openReject:(reason:any)=>void;
+        const openPromise:Promise<OD> = new Promise((resolve, reject)=>{
+            openResolve = resolve;
+            openReject = reject;
+        });
+        this._openPromiseData = [openPromise, openResolve, openReject];
+        // 生成关闭Promise数据
+        let closeResolve:(data:CD)=>void;
+        let closeReject:(reason:any)=>void;
+        const closePromise:Promise<CD> = new Promise((resolve, reject)=>{
+            closeResolve = resolve;
+            closeReject = reject;
+        });
+        this._closePromiseData = [closePromise, closeResolve, closeReject];
     }
 
     /**
@@ -465,7 +481,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         return false;
     }
 
-    private _openPromise:Promise<OD>;
+    private _openPromiseData:[Promise<OD>, (data?:OD)=>void, (reason?:any)=>void];;
     /**
      * 异步获取开启数据
      *
@@ -475,7 +491,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      */
     public get openData():Promise<OD>
     {
-        return this._openPromise;
+        return this._openPromiseData[0];
     }
 
     /**
@@ -494,21 +510,6 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
             {
                 // 修改状态
                 this._status = MediatorStatus.OPENING;
-                // 生成开启Promise数据
-                let openResolve:(data:OD)=>void;
-                let openReject:(reason:any)=>void;
-                this._openPromise = new Promise((resolve, reject)=>{
-                    openResolve = resolve;
-                    openReject = reject;
-                });
-                // 生成关闭Promise数据
-                let closeResolve:(data:CD)=>void;
-                let closeReject:(reason:any)=>void;
-                const closePromise:Promise<CD> = new Promise((resolve, reject)=>{
-                    closeResolve = resolve;
-                    closeReject = reject;
-                });
-                this._closePromiseData = [closePromise, closeResolve, closeReject];
                 // 赋值参数
                 this.data = data;
                 // 记一个是否需要遮罩的flag
@@ -523,7 +524,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                         this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                         // 调用reject
                         reject(err);
-                        openReject(err);
+                        this._openPromiseData[2](err);
                     }
                     else
                     {
@@ -537,7 +538,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                 this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                 // 调用reject
                                 reject(err);
-                                openReject(err);
+                                this._openPromiseData[2](err);
                             }
                             else
                             {
@@ -551,7 +552,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                         this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                         // 调用reject
                                         reject(err);
-                                        openReject(err);
+                                        this._openPromiseData[2](err);
                                     }
                                     else
                                     {
@@ -566,7 +567,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                                 this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.Stop, err);
                                                 // 调用reject
                                                 reject(err);
-                                                openReject(err);
+                                                this._openPromiseData[2](err);
                                             }
                                             else
                                             {
@@ -603,12 +604,12 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                                     this.dispatch(MediatorMessage.MEDIATOR_OPENED, this);
                                                     // 调用resolve
                                                     resolve(this.data);
-                                                    openResolve(this.data);
+                                                    this._openPromiseData[1](this.data);
                                                 }
                                                 catch(err)
                                                 {
                                                     reject(err);
-                                                    openReject(err);
+                                                    this._openPromiseData[2](err);
                                                 }
                                             }
                                         });
@@ -1200,7 +1201,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         this.parent = null;
         // 移除其他无用对象
         this.moduleOpenHandler = null;
-        this._openPromise = null;
+        this._openPromiseData = null;
         this._closePromiseData = null;
         // 将所有子中介者销毁
         const children:IMediator[] = this._children.concat();
