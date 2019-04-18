@@ -70,9 +70,9 @@ function getModuleOpenResult(source, fromIndex)
     }
     return {
         moduleName: resultAnalyse[1],
-        leftParams: resultAnalyse[2] || "",
+        leftParams: resultAnalyse[2],
         beginIndex: result.index,
-        endIndex: paramStartIndex + openParamStr.length + 2
+        endIndex: paramStartIndex + openParamStr.length + 1
     };
 }
 
