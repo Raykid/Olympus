@@ -100,7 +100,7 @@ module.exports = function(source)
                 const mod = await import(${importPath});
                 maskManager.hideLoading("__load_module__");
                 return await moduleManager.open(mod.${moduleName}${leftParams});
-            })())`;
+            })()`;
             // 确保引用了maskManager
             if(!regMaskManager.test(source))
             {
