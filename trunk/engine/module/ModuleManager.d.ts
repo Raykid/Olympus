@@ -72,18 +72,20 @@ export default class ModuleManager {
      * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
+     * @returns {Promise<IMediator>} 开启成功后返回被开启模块引用
      * @memberof ModuleManager
      */
-    open(module: ModuleType | string, data?: any, replace?: boolean): Promise<any>;
+    open(module: ModuleType | string, data?: any, replace?: boolean): Promise<IMediator>;
     private onFinishOpen;
     /**
      * 关闭模块，只有关闭的是当前模块时才会触发onDeactivate和onActivate，否则只会触发close
      *
      * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
+     * @returns {Promise<IMediator>} 关闭成功后返回被关闭的模块引用
      * @memberof ModuleManager
      */
-    close(module: ModuleType | string, data?: any): Promise<any>;
+    close(module: ModuleType | string, data?: any): Promise<IMediator>;
 }
 /** 再额外导出一个单例 */
 export declare const moduleManager: ModuleManager;

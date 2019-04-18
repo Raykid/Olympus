@@ -1201,8 +1201,6 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         this.parent = null;
         // 移除其他无用对象
         this.moduleOpenHandler = null;
-        this._openPromiseData = null;
-        this._closePromiseData = null;
         // 将所有子中介者销毁
         const children:IMediator[] = this._children.concat();
         for(let child of children)

@@ -33,6 +33,22 @@ export default interface IMediatorBasicPart<S = any, OD = any, CD = any> extends
     data:OD;
 
     /**
+     * 等待获取打开时的参数，可用来等待开启成功的时刻
+     *
+     * @type {Promise<OD>}
+     * @memberof IMediatorBasicPart
+     */
+    readonly openData:Promise<OD>;
+
+    /**
+     * 等待获取关闭时的参数，可用来等待关闭成功的时刻
+     *
+     * @type {Promise<CD>}
+     * @memberof IMediatorBasicPart
+     */
+    readonly closeData:Promise<CD>;
+
+    /**
      * 开启时是否触发全屏遮罩，防止用户操作，设置操作会影响所有子孙中介者。默认是true
      * 
      * @type {boolean}

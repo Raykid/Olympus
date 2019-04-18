@@ -153,9 +153,10 @@ export default class ModuleManager
      * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
+     * @returns {Promise<IMediator>} 开启成功后返回被开启模块引用
      * @memberof ModuleManager
      */
-    public open(module:ModuleType|string, data?:any, replace:boolean=false):Promise<any>
+    public open(module:ModuleType|string, data?:any, replace:boolean=false):Promise<IMediator>
     {
         return new Promise(async resolve=>{
             // 如果是字符串则获取引用
@@ -228,30 +229,26 @@ export default class ModuleManager
                     }
                 };
                 // 调用open接口
-                const openData:any = await target.open(data);
+                await target.open(data);
                 // 调用resolve
-                resolve(openData);
-            }
-            else if(after.length > 0)
-            {
-                // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
-                for(var i :number = 1, len:number = after.length; i < len; i++)
-                {
-                    this.close(after[i][0], data);
-                }
-                // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
-                const closeData:any = await this.close(after[0][0], data);
-                // 结束一次模块开启
-                await this.onFinishOpen();
-                // 调用resolve
-                resolve(closeData);
+                resolve(target);
             }
             else
             {
+                if(after.length > 0)
+                {
+                    // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
+                    for(var i :number = 1, len:number = after.length; i < len; i++)
+                    {
+                        this.close(after[i][0], data);
+                    }
+                    // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
+                    await this.close(after[0][0], data);
+                }
                 // 结束一次模块开启
                 await this.onFinishOpen();
-                // 调用resolve
-                resolve();
+                // 调用resolve，返回当前模块
+                resolve(this._moduleStack[0][1]);
             }
         });
     }
@@ -275,9 +272,10 @@ export default class ModuleManager
      * 
      * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
+     * @returns {Promise<IMediator>} 关闭成功后返回被关闭的模块引用
      * @memberof ModuleManager
      */
-    public close(module:ModuleType|string, data?:any):Promise<any>
+    public close(module:ModuleType|string, data?:any):Promise<IMediator>
     {
         return new Promise(async resolve=>{
             // 如果是字符串则获取引用
@@ -299,7 +297,6 @@ export default class ModuleManager
             if(oriClose) target.close = oriClose;
             else delete target.close;
             // 如果是当前模块，则需要调用onDeactivate和onActivate接口，否则不用
-            let closeData:any;
             if(index == 0)
             {
                 // 数据先行
@@ -310,7 +307,7 @@ export default class ModuleManager
                 // 调用onDeactivate接口
                 this.deactivateModule(target, toModule, data);
                 // 调用close接口
-                closeData = await target.close(data);
+                await target.close(data);
                 // 调用onActivate接口
                 this.activateModule(toModule, target, data);
                 // 调用onWakeUp接口
@@ -323,9 +320,9 @@ export default class ModuleManager
                 // 数据先行
                 this._moduleStack.splice(index, 1);
                 // 调用close接口
-                closeData = await target.close(data);
+                await target.close(data);
             }
-            resolve(closeData);
+            resolve(target);
         });
     }
 }

@@ -139,13 +139,14 @@ var ModuleManager = /** @class */ (function () {
      * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
      * @param {boolean} [replace=false] 是否替换当前模块
+     * @returns {Promise<IMediator>} 开启成功后返回被开启模块引用
      * @memberof ModuleManager
      */
     ModuleManager.prototype.open = function (module, data, replace) {
         var _this = this;
         if (replace === void 0) { replace = false; }
         return new Promise(function (resolve) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            var type, cls, after, target, from, fromModule, moduleData, openData, i, len, closeData;
+            var type, cls, after, target, from, fromModule, moduleData, i, len;
             var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
@@ -236,39 +237,36 @@ var ModuleManager = /** @class */ (function () {
                                 }
                             });
                         }); };
+                        // 调用open接口
                         return [4 /*yield*/, target.open(data)];
                     case 1:
-                        openData = _a.sent();
+                        // 调用open接口
+                        _a.sent();
                         // 调用resolve
-                        resolve(openData);
-                        return [3 /*break*/, 7];
+                        resolve(target);
+                        return [3 /*break*/, 6];
                     case 2:
-                        if (!(after.length > 0)) return [3 /*break*/, 5];
+                        if (!(after.length > 0)) return [3 /*break*/, 4];
                         // 已经打开且不是当前模块，先关闭当前模块到目标模块之间的所有模块
                         for (i = 1, len = after.length; i < len; i++) {
                             this.close(after[i][0], data);
                         }
+                        // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
                         return [4 /*yield*/, this.close(after[0][0], data)];
                     case 3:
-                        closeData = _a.sent();
-                        // 结束一次模块开启
-                        return [4 /*yield*/, this.onFinishOpen()];
-                    case 4:
-                        // 结束一次模块开启
+                        // 最后关闭当前模块，以实现从当前模块直接跳回到目标模块
                         _a.sent();
-                        // 调用resolve
-                        resolve(closeData);
-                        return [3 /*break*/, 7];
-                    case 5: 
+                        _a.label = 4;
+                    case 4: 
                     // 结束一次模块开启
                     return [4 /*yield*/, this.onFinishOpen()];
-                    case 6:
+                    case 5:
                         // 结束一次模块开启
                         _a.sent();
-                        // 调用resolve
-                        resolve();
-                        _a.label = 7;
-                    case 7: return [2 /*return*/];
+                        // 调用resolve，返回当前模块
+                        resolve(this._moduleStack[0][1]);
+                        _a.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         }); });
@@ -299,12 +297,13 @@ var ModuleManager = /** @class */ (function () {
      *
      * @param {ModuleType|string} clsOrName 模块类型或名称
      * @param {*} [data] 参数
+     * @returns {Promise<IMediator>} 关闭成功后返回被关闭的模块引用
      * @memberof ModuleManager
      */
     ModuleManager.prototype.close = function (module, data) {
         var _this = this;
         return new Promise(function (resolve) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            var type, cls, index, moduleData, target, oriClose, closeData, to, toModule;
+            var type, cls, index, moduleData, target, oriClose, to, toModule;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -333,10 +332,11 @@ var ModuleManager = /** @class */ (function () {
                         toModule = to && to[1];
                         // 调用onDeactivate接口
                         this.deactivateModule(target, toModule, data);
+                        // 调用close接口
                         return [4 /*yield*/, target.close(data)];
                     case 1:
                         // 调用close接口
-                        closeData = _a.sent();
+                        _a.sent();
                         // 调用onActivate接口
                         this.activateModule(toModule, target, data);
                         // 调用onWakeUp接口
@@ -347,13 +347,14 @@ var ModuleManager = /** @class */ (function () {
                     case 2:
                         // 数据先行
                         this._moduleStack.splice(index, 1);
+                        // 调用close接口
                         return [4 /*yield*/, target.close(data)];
                     case 3:
                         // 调用close接口
-                        closeData = _a.sent();
+                        _a.sent();
                         _a.label = 4;
                     case 4:
-                        resolve(closeData);
+                        resolve(target);
                         return [2 /*return*/];
                 }
             });
