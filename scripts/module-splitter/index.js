@@ -2,6 +2,8 @@ module.exports = function(source)
 {
     // 使用正则匹配moduleManager.open
     const regCode = /moduleManager\s*.\s*open\s*\((\w+)([^\)]*)\)/g;
+    // 声明一个匹配maskManager引用的正则表达式
+    const regMaskManager = /import\s+{\s*maskManager\s*}\s+from\s+["']\s*olympus\-r\/engine\/mask\/MaskManager\s*["'];?/;
     let resultCode;
     while(resultCode = regCode.exec(source))
     {
@@ -18,18 +20,22 @@ module.exports = function(source)
             const importPath = resultImport[4];
             const moduleName = resultImport[1] && resultImport[3] ? resultImport[2] : "default";
             // 将语句替换为动态import语句，无需移除静态引用，因为webpack会剔除掉无用引用
+            const tail = source.substr(endIndex);
             source = `${source.substring(0, beginIndex)}(async ()=>{
                 maskManager.showLoading(null, "__load_module__");
                 const mod = await import(${importPath});
                 maskManager.hideLoading("__load_module__");
                 return await moduleManager.open(mod.${moduleName}${leftParams});
-            })()${source.substr(endIndex)}`;
-            // 最后判断是否有maskManager引用，没有则要加上
-            const regMaskManager = /import\s+{\s+maskManager\s+}/;
+            })()`;
+            // 确保引用了maskManager
             if(!regMaskManager.test(source))
             {
                 source = "import { maskManager } from 'olympus-r/engine/mask/MaskManager';\n" + source;
             }
+            // 修改moduleManager.open正则表达式的匹配位置
+            regCode.lastIndex = source.length;
+            // 最后把尾部加上去
+            source += tail;
         }
     }
     // 返回结果
