@@ -86,7 +86,7 @@ module.exports = function(source)
     {
         const { moduleName, leftParams, beginIndex, endIndex } = resultCode;
         // 匹配静态import语句
-        const regImport = new RegExp(`\\s*import\\s+({\\s*)?(${moduleName})(\\s*})?\\s+from\\s+(["'].+["'])\\s*;?`);
+        const regImport = new RegExp(`\\s*import.*?({\\s*)?(${moduleName})(\\s*})?.*?from\\s+(["'].+["'])\\s*;?`);
         const resultImport = regImport.exec(source);
         if(resultImport)
         {
