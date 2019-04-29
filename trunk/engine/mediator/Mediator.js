@@ -432,9 +432,12 @@ var Mediator = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        return new Promise(function (resolve, reject) {
-            // 判断状态
-            if (_this._status === MediatorStatus.UNOPEN) {
+        // 判断状态
+        if (this._status !== MediatorStatus.UNOPEN) {
+            return this.openData;
+        }
+        else {
+            return new Promise(function (resolve, reject) {
                 // 修改状态
                 _this._status = MediatorStatus.OPENING;
                 // 赋值参数
@@ -479,7 +482,7 @@ var Mediator = /** @class */ (function () {
                                     else {
                                         // 加载js文件
                                         _this.loadJsFiles(function (err) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                                            var result, subCount, _i, _a, mediator, err_1;
+                                            var result, subOpenPromises, _i, _a, mediator, err_1;
                                             return tslib_1.__generator(this, function (_b) {
                                                 switch (_b.label) {
                                                     case 0:
@@ -491,9 +494,9 @@ var Mediator = /** @class */ (function () {
                                                         // 调用reject
                                                         reject(err);
                                                         this._openPromiseData[2](err);
-                                                        return [3 /*break*/, 6];
+                                                        return [3 /*break*/, 7];
                                                     case 1:
-                                                        _b.trys.push([1, 5, , 6]);
+                                                        _b.trys.push([1, 6, , 7]);
                                                         // 要先开启自身，再开启子中介者
                                                         // 调用回调
                                                         this.moduleOpenHandler && this.moduleOpenHandler(ModuleOpenStatus.BeforeOpen);
@@ -510,19 +513,21 @@ var Mediator = /** @class */ (function () {
                                                         // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
                                                         if (!this._viewModel)
                                                             this.viewModel = {};
-                                                        subCount = this._children.length;
-                                                        if (subCount > 0) {
-                                                            // 调用所有已托管中介者的open方法
-                                                            for (_i = 0, _a = this._children; _i < _a.length; _i++) {
-                                                                mediator = _a[_i];
-                                                                mediator.open(data);
-                                                            }
+                                                        subOpenPromises = [];
+                                                        for (_i = 0, _a = this._children; _i < _a.length; _i++) {
+                                                            mediator = _a[_i];
+                                                            subOpenPromises.push(mediator.open(data));
                                                         }
+                                                        // 等待子中介者开启完毕
+                                                        return [4 /*yield*/, Promise.all(subOpenPromises)];
+                                                    case 4:
+                                                        // 等待子中介者开启完毕
+                                                        _b.sent();
                                                         // 修改状态
                                                         this._status = MediatorStatus.OPENED;
                                                         // 调用模板方法
                                                         return [4 /*yield*/, this.__afterOnOpen.apply(this, [data].concat(args))];
-                                                    case 4:
+                                                    case 5:
                                                         // 调用模板方法
                                                         _b.sent();
                                                         // 调用回调
@@ -532,13 +537,13 @@ var Mediator = /** @class */ (function () {
                                                         // 调用resolve
                                                         resolve(this.data);
                                                         this._openPromiseData[1](this.data);
-                                                        return [3 /*break*/, 6];
-                                                    case 5:
+                                                        return [3 /*break*/, 7];
+                                                    case 6:
                                                         err_1 = _b.sent();
                                                         reject(err_1);
                                                         this._openPromiseData[2](err_1);
-                                                        return [3 /*break*/, 6];
-                                                    case 6: return [2 /*return*/];
+                                                        return [3 /*break*/, 7];
+                                                    case 7: return [2 /*return*/];
                                                 }
                                             });
                                         }); });
@@ -553,14 +558,14 @@ var Mediator = /** @class */ (function () {
                     maskManager.showLoading(null, "mediatorOpen");
                     maskFlag = false;
                 }
-            }
-            function hideMask() {
-                // 隐藏Loading
-                if (!maskFlag)
-                    maskManager.hideLoading("mediatorOpen");
-                maskFlag = false;
-            }
-        });
+                function hideMask() {
+                    // 隐藏Loading
+                    if (!maskFlag)
+                        maskManager.hideLoading("mediatorOpen");
+                    maskFlag = false;
+                }
+            });
+        }
     };
     Mediator.prototype.__beforeOnOpen = function (data) {
         var args = [];

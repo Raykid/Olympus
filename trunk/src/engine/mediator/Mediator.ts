@@ -504,10 +504,14 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      */
     public open(data?:OD, ...args:any[]):Promise<any>
     {
-        return new Promise((resolve, reject)=>{
-            // 判断状态
-            if(this._status === MediatorStatus.UNOPEN)
-            {
+        // 判断状态
+        if(this._status !== MediatorStatus.UNOPEN)
+        {
+            return this.openData;
+        }
+        else
+        {
+            return new Promise((resolve, reject)=>{
                 // 修改状态
                 this._status = MediatorStatus.OPENING;
                 // 赋值参数
@@ -584,16 +588,14 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                                                         this.data = data = result;
                                                     // 初始化绑定，如果子类并没有在onOpen中设置viewModel，则给一个默认值以启动绑定功能
                                                     if(!this._viewModel) this.viewModel = {};
-                                                    // 记录子中介者数量，并监听其开启完毕事件
-                                                    var subCount:number = this._children.length;
-                                                    if(subCount > 0)
+                                                    // 开启所有子中介者
+                                                    const subOpenPromises:Promise<any>[] = [];
+                                                    for(var mediator of this._children)
                                                     {
-                                                        // 调用所有已托管中介者的open方法
-                                                        for(var mediator of this._children)
-                                                        {
-                                                            mediator.open(data);
-                                                        }
+                                                        subOpenPromises.push(mediator.open(data));
                                                     }
+                                                    // 等待子中介者开启完毕
+                                                    await Promise.all(subOpenPromises);
                                                     // 修改状态
                                                     this._status = MediatorStatus.OPENED;
                                                     // 调用模板方法
@@ -625,15 +627,15 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
                     maskManager.showLoading(null, "mediatorOpen");
                     maskFlag = false;
                 }
-            }
 
-            function hideMask():void
-            {
-                // 隐藏Loading
-                if(!maskFlag) maskManager.hideLoading("mediatorOpen");
-                maskFlag = false;
-            }
-        });
+                function hideMask():void
+                {
+                    // 隐藏Loading
+                    if(!maskFlag) maskManager.hideLoading("mediatorOpen");
+                    maskFlag = false;
+                }
+            });
+        }
     }
 
     protected __beforeOnOpen(data?:OD, ...args:any[]):void|Promise<void>
