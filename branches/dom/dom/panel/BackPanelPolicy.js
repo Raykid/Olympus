@@ -21,10 +21,11 @@ var BackPanelPolicy = /** @class */ (function () {
         var entity = panel.skin;
         // scale变换如果加在父容器上会导致子对象宽高获取错误，所以要尽可能加在子对象上
         var subEntity = entity.childElementCount > 1 ? entity : entity.children[0];
+        subEntity.style.transform = "scale(1)";
         var tween = new Tween(entity).end().stop();
         entity.style.position = "absolute";
-        entity.style.left = "50%";
-        entity.style.top = "50%";
+        entity.style.left = "calc(50% - " + subEntity.offsetWidth * 0.5 + "px)";
+        entity.style.top = "calc(50% - " + subEntity.offsetHeight * 0.5 + "px)";
         subEntity.style.transform = "scale(0)";
         // 开始缓动
         var key = "__tween__step__";
