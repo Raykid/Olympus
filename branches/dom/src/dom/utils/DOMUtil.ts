@@ -1,3 +1,4 @@
+import { system } from 'olympus-r/engine/system/System';
 import Dictionary from 'olympus-r/utils/Dictionary';
 
 /**
@@ -124,19 +125,22 @@ function isMesurable(target:HTMLElement):boolean
 export function waitMeasurable(target:HTMLElement):Promise<HTMLElement>
 {
     return new Promise<HTMLElement>((resolve:(target:HTMLElement)=>void)=>{
-        if(isMesurable(target))
-        {
-            resolve(target);
-        }
-        else
-        {
-            listenResize(target, ()=>{
-                if(isMesurable(target))
-                {
-                    unlistenResize(target);
-                    resolve(target);
-                }
-            });
-        }
+        // 一定要延时，否则可能出现问题，因为resolve本身是延迟执行的
+        system.nextFrame(()=>{
+            if(isMesurable(target))
+            {
+                resolve(target);
+            }
+            else
+            {
+                listenResize(target, ()=>{
+                    if(isMesurable(target))
+                    {
+                        unlistenResize(target);
+                        resolve(target);
+                    }
+                });
+            }
+        });
     });
 }

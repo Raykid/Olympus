@@ -1,3 +1,4 @@
+import { system } from 'olympus-r/engine/system/System';
 import Dictionary from 'olympus-r/utils/Dictionary';
 /**
  * @author Raykid
@@ -105,16 +106,19 @@ function isMesurable(target) {
  */
 export function waitMeasurable(target) {
     return new Promise(function (resolve) {
-        if (isMesurable(target)) {
-            resolve(target);
-        }
-        else {
-            listenResize(target, function () {
-                if (isMesurable(target)) {
-                    unlistenResize(target);
-                    resolve(target);
-                }
-            });
-        }
+        // 一定要延时，否则可能出现问题，因为resolve本身是延迟执行的
+        system.nextFrame(function () {
+            if (isMesurable(target)) {
+                resolve(target);
+            }
+            else {
+                listenResize(target, function () {
+                    if (isMesurable(target)) {
+                        unlistenResize(target);
+                        resolve(target);
+                    }
+                });
+            }
+        });
     });
 }
