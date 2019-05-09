@@ -88,7 +88,7 @@ export default class SceneManager
             this.currentScene,
             scene,
             data,
-            scene.policy || scene.bridge.defaultScenePolicy || none,
+            this.getScenePolicy(scene),
             ChangeType.Switch,
             ()=>{
                 // 数据先行
@@ -120,7 +120,7 @@ export default class SceneManager
             this.currentScene,
             scene,
             data,
-            scene.policy || scene.bridge.defaultScenePolicy || none,
+            this.getScenePolicy(scene),
             ChangeType.Push,
             ()=>{
                 // 数据先行
@@ -167,7 +167,7 @@ export default class SceneManager
         }
         // 验证是否是当前场景，不是则直接移除，不使用Policy
         var to:IScene = this._sceneStack[1];
-        var policy:IScenePolicy = scene.policy || scene.bridge.defaultScenePolicy || none;
+        var policy:IScenePolicy = this.getScenePolicy(scene);
         if(this._sceneStack.indexOf(scene) != 0)
         {
             to = null;
@@ -188,22 +188,14 @@ export default class SceneManager
             }
         );
     }
-    
-    private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, begin?:()=>void, complete?:()=>void):void
+
+    private getScenePolicy(scene:IScene):IScenePolicy
     {
-        // 如果from和to有一个为null则policy为none
-        if(!from || !to) policy = none;
-        // to指定的场景必须要显示
-        if(to) to.bridge.htmlWrapper.style.display = "";
-        // 如果要交替的两个场景不是同一个类型的场景，则切换HTMLWrapper显示，且Policy也采用无切换策略
-        if(from && to && to.bridge.type != from.bridge.type)
-        {
-            from.bridge.htmlWrapper.style.display = "none";
-            policy = none;
-        }
-        // 调用回调
-        begin && begin();
-        // 获取接口引用
+        return scene.policy || scene.bridge.defaultScenePolicy || none;
+    }
+
+    private getPolicyFuncs(policy:IScenePolicy, type:ChangeType):[(from?:IScene, to?:IScene)=>void, (from?:IScene, to?:IScene)=>Promise<void>]
+    {
         var prepareFunc:(from?:IScene, to?:IScene)=>void;
         var doFunc:(from?:IScene, to?:IScene)=>Promise<void>;
         switch(type)
@@ -221,17 +213,59 @@ export default class SceneManager
                 doFunc = policy.pop || policy.switch;
                 break;
         }
+        return [prepareFunc, doFunc];
+    }
+    
+    private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, begin?:()=>void, complete?:()=>void):void
+    {
+        // 调用回调
+        begin && begin();
         // 前置处理
         to && from && from.onBeforeOut(to, data);
         to && to.onBeforeIn(from, data);
         // 派发事件
         to && core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, to, from);
-        // 调用准备接口
-        prepareFunc && prepareFunc.call(policy, from, to);
-        // 添加显示
-        to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
-        // 调用切换接口
-        doFunc.call(policy, from, to).then(()=>{
+        // 判断是否是两个不同类型场景切换
+        const changePromises:Promise<void>[] = [];
+        if(from && to && to.bridge.type != from.bridge.type)
+        {
+            // 是两个不同类型的场景切换，则应各个场景执行各个policy操作
+            if(from)
+            {
+                // from处理，不传递to
+                const fromPolicy:IScenePolicy = this.getScenePolicy(from);
+                const [fromPrepareFunc, fromDoFunc] = this.getPolicyFuncs(fromPolicy, type);
+                // 调用准备接口
+                fromPrepareFunc && fromPrepareFunc.call(fromPolicy, from, null);
+                // 调用切换接口
+                fromDoFunc && changePromises.push(fromDoFunc.call(fromPolicy, from, null));
+            }
+            if(to)
+            {
+                // to处理，不传递from
+                const toPolicy:IScenePolicy = this.getScenePolicy(to);
+                const [toPrepareFunc, toDoFunc] = this.getPolicyFuncs(toPolicy, type);
+                // 调用准备接口
+                toPrepareFunc && toPrepareFunc.call(toPolicy, null, to);
+                // 添加显示
+                to.bridge.addChild(to.bridge.sceneLayer, to.skin);
+                // 调用切换接口
+                toDoFunc && changePromises.push(toDoFunc.call(toPolicy, null, to));
+            }
+        }
+        else
+        {
+            // 场景类型相同，常规处理
+            const [prepareFunc, doFunc] = this.getPolicyFuncs(policy, type);
+            // 调用准备接口
+            prepareFunc && prepareFunc.call(policy, from, to);
+            // 添加显示
+            to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
+            // 调用切换接口
+            doFunc && changePromises.push(doFunc.call(policy, from, to));
+        }
+        // 等待所有切换动画结束后执行后续步骤
+        Promise.all(changePromises).then(()=>{
             // 完成步骤
             notify(SYNC_NAME);
             // 移除显示

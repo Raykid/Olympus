@@ -53,6 +53,8 @@ export default class SceneManager {
      */
     pop(scene: IScene, data?: any): IScene;
     private doPop;
+    private getScenePolicy;
+    private getPolicyFuncs;
     private doChange;
 }
 /** 再额外导出一个单例 */

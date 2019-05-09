@@ -54,6 +54,8 @@ export default class FadeScenePolicy implements IScenePolicy
         return new Promise(resolve=>{
             if(from != null)
             {
+                // from所在bridge应该在最上层显示
+                from.bridge.htmlWrapper.style.zIndex = "2147483647";
                 // 开始淡出
                 egret.Tween.removeTweens(this._tempSnapshot);
                 egret.Tween.get(this._tempSnapshot).to({
@@ -70,6 +72,8 @@ export default class FadeScenePolicy implements IScenePolicy
                         this._tempSnapshot.texture.dispose();
                         this._tempSnapshot.texture = null;
                     }
+                    // 恢复z-index
+                    from.bridge.htmlWrapper.style.zIndex = "";
                     // 调用回调
                     resolve();
                 });
