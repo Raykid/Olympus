@@ -416,9 +416,9 @@ export default class DOMBridge implements IBridge<Element>
      */
     public removeChildren(parent:Element):void
     {
-        for(var i:number = 0, len:number = parent.childNodes.length; i < len; i++)
+        for(var i:number = 0, len:number = parent.children.length; i < len; i++)
         {
-            parent.removeChild(parent.childNodes.item(i));
+            parent.removeChild(parent.children.item(i));
         }
     }
     
@@ -457,9 +457,9 @@ export default class DOMBridge implements IBridge<Element>
      */
     public getChildIndex(parent:Element, target:Element):number
     {
-        for(var i:number = 0, len:number = parent.childNodes.length; i < len; i++)
+        for(var i:number = 0, len:number = parent.children.length; i < len; i++)
         {
-            if(target === parent.childNodes.item(i)) return i;
+            if(target === parent.children.item(i)) return i;
         }
         return -1;
     }
@@ -486,7 +486,7 @@ export default class DOMBridge implements IBridge<Element>
      */
     public getChildCount(parent:Element):number
     {
-        return parent.childNodes.length;
+        return parent.children.length;
     }
     
     /**

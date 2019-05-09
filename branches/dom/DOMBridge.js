@@ -391,8 +391,8 @@ var DOMBridge = /** @class */ (function () {
      * @memberof DOMBridge
      */
     DOMBridge.prototype.removeChildren = function (parent) {
-        for (var i = 0, len = parent.childNodes.length; i < len; i++) {
-            parent.removeChild(parent.childNodes.item(i));
+        for (var i = 0, len = parent.children.length; i < len; i++) {
+            parent.removeChild(parent.children.item(i));
         }
     };
     /**
@@ -425,8 +425,8 @@ var DOMBridge = /** @class */ (function () {
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getChildIndex = function (parent, target) {
-        for (var i = 0, len = parent.childNodes.length; i < len; i++) {
-            if (target === parent.childNodes.item(i))
+        for (var i = 0, len = parent.children.length; i < len; i++) {
+            if (target === parent.children.item(i))
                 return i;
         }
         return -1;
@@ -450,7 +450,7 @@ var DOMBridge = /** @class */ (function () {
      * @memberof DOMBridge
      */
     DOMBridge.prototype.getChildCount = function (parent) {
-        return parent.childNodes.length;
+        return parent.children.length;
     };
     /**
      * 加载资源
