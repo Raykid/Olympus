@@ -221,10 +221,14 @@ export default class SceneManager
         // 调用回调
         begin && begin();
         // 前置处理
-        to && from && from.onBeforeOut(to, data);
-        to && to.onBeforeIn(from, data);
-        // 派发事件
-        to && core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, to, from);
+        if(to)
+        {
+            to.bridge.htmlWrapper.style.display = "";
+            from && from.onBeforeOut(to, data);
+            to.onBeforeIn(from, data);
+            // 派发事件
+            core.dispatch(SceneMessage.SCENE_BEFORE_CHANGE, to, from);
+        }
         // 判断是否是两个不同类型场景切换
         const changePromises:Promise<void>[] = [];
         if(from && to && to.bridge.type != from.bridge.type)
