@@ -1,5 +1,5 @@
-import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 import IScene from "olympus-r/engine/scene/IScene";
+import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 
 /**
  * @author Raykid
@@ -20,10 +20,10 @@ export default class FadeScenePolicy implements IScenePolicy
 
     /**
      * 准备切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
+     * @param {IScene<S>} [from] 切出的场景
+     * @param {IScene<S>} [to] 切入的场景
      */
-    public prepareSwitch(from:IScene, to:IScene):void
+    public prepareSwitch(from?:IScene, to?:IScene):void
     {
         if(from != null)
         {
@@ -45,44 +45,45 @@ export default class FadeScenePolicy implements IScenePolicy
 
     /**
      * 切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
-     * @param callback 切换完毕的回调方法
+     * @param {IScene<S>} [from] 切出的场景
+     * @param {IScene<S>} [to] 切入的场景
+     * @returns {Promise<void>}
      */
-    public switch(from:IScene, to:IScene, callback:()=>void):void
+    public switch(from:IScene, to:IScene):Promise<void>
     {
-        if(from != null)
-        {
-            // 开始淡出
-            egret.Tween.removeTweens(this._tempSnapshot);
-            egret.Tween.get(this._tempSnapshot).to({
-                alpha: 0
-            }, 300).call(function()
+        return new Promise(resolve=>{
+            if(from != null)
+            {
+                // 开始淡出
+                egret.Tween.removeTweens(this._tempSnapshot);
+                egret.Tween.get(this._tempSnapshot).to({
+                    alpha: 0
+                }, 300).call(()=>{
+                    // 移除截屏
+                    if(this._tempSnapshot.parent != null)
+                    {
+                        this._tempSnapshot.parent.removeChild(this._tempSnapshot);
+                    }
+                    // 回收资源
+                    if(this._tempSnapshot.texture != null)
+                    {
+                        this._tempSnapshot.texture.dispose();
+                        this._tempSnapshot.texture = null;
+                    }
+                    // 调用回调
+                    resolve();
+                });
+            }
+            else
             {
                 // 移除截屏
                 if(this._tempSnapshot.parent != null)
                 {
                     this._tempSnapshot.parent.removeChild(this._tempSnapshot);
                 }
-                // 回收资源
-                if(this._tempSnapshot.texture != null)
-                {
-                    this._tempSnapshot.texture.dispose();
-                    this._tempSnapshot.texture = null;
-                }
                 // 调用回调
-                callback();
-            }, this);
-        }
-        else
-        {
-            // 移除截屏
-            if(this._tempSnapshot.parent != null)
-            {
-                this._tempSnapshot.parent.removeChild(this._tempSnapshot);
+                resolve();
             }
-            // 调用回调
-            callback();
-        }
+        });
     }
 }

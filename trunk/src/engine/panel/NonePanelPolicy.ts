@@ -1,3 +1,4 @@
+import { system } from '../system/System';
 import IPanel from "./IPanel";
 import IPanelPolicy from "./IPanelPolicy";
 
@@ -11,14 +12,14 @@ import IPanelPolicy from "./IPanelPolicy";
 */
 export class NonePanelPolicy implements IPanelPolicy
 {
-    public pop(panel:IPanel, callback:()=>void, from?:{x:number, y:number}):void
+    public pop(panel:IPanel, from?:{x:number, y:number}):Promise<void>
     {
-        setTimeout(callback, 0);
+        return new Promise(resolve=>system.nextFrame(resolve));
     }
 
-    public drop(panel:IPanel, callback:()=>void, from?:{x:number, y:number}):void
+    public drop(panel:IPanel, from?:{x:number, y:number}):Promise<void>
     {
-        setTimeout(callback, 0);
+        return new Promise(resolve=>system.nextFrame(resolve));
     }
 }
 /** 默认导出实例 */

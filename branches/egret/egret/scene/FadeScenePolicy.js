@@ -12,8 +12,8 @@ var FadeScenePolicy = /** @class */ (function () {
     }
     /**
      * 准备切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
+     * @param {IScene<S>} [from] 切出的场景
+     * @param {IScene<S>} [to] 切入的场景
      */
     FadeScenePolicy.prototype.prepareSwitch = function (from, to) {
         if (from != null) {
@@ -33,38 +33,41 @@ var FadeScenePolicy = /** @class */ (function () {
     };
     /**
      * 切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
-     * @param callback 切换完毕的回调方法
+     * @param {IScene<S>} [from] 切出的场景
+     * @param {IScene<S>} [to] 切入的场景
+     * @returns {Promise<void>}
      */
-    FadeScenePolicy.prototype.switch = function (from, to, callback) {
-        if (from != null) {
-            // 开始淡出
-            egret.Tween.removeTweens(this._tempSnapshot);
-            egret.Tween.get(this._tempSnapshot).to({
-                alpha: 0
-            }, 300).call(function () {
+    FadeScenePolicy.prototype.switch = function (from, to) {
+        var _this = this;
+        return new Promise(function (resolve) {
+            if (from != null) {
+                // 开始淡出
+                egret.Tween.removeTweens(_this._tempSnapshot);
+                egret.Tween.get(_this._tempSnapshot).to({
+                    alpha: 0
+                }, 300).call(function () {
+                    // 移除截屏
+                    if (_this._tempSnapshot.parent != null) {
+                        _this._tempSnapshot.parent.removeChild(_this._tempSnapshot);
+                    }
+                    // 回收资源
+                    if (_this._tempSnapshot.texture != null) {
+                        _this._tempSnapshot.texture.dispose();
+                        _this._tempSnapshot.texture = null;
+                    }
+                    // 调用回调
+                    resolve();
+                });
+            }
+            else {
                 // 移除截屏
-                if (this._tempSnapshot.parent != null) {
-                    this._tempSnapshot.parent.removeChild(this._tempSnapshot);
-                }
-                // 回收资源
-                if (this._tempSnapshot.texture != null) {
-                    this._tempSnapshot.texture.dispose();
-                    this._tempSnapshot.texture = null;
+                if (_this._tempSnapshot.parent != null) {
+                    _this._tempSnapshot.parent.removeChild(_this._tempSnapshot);
                 }
                 // 调用回调
-                callback();
-            }, this);
-        }
-        else {
-            // 移除截屏
-            if (this._tempSnapshot.parent != null) {
-                this._tempSnapshot.parent.removeChild(this._tempSnapshot);
+                resolve();
             }
-            // 调用回调
-            callback();
-        }
+        });
     };
     return FadeScenePolicy;
 }());

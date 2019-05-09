@@ -204,8 +204,8 @@ export default class SceneManager
         // 调用回调
         begin && begin();
         // 获取接口引用
-        var prepareFunc:(from:IScene, to:IScene)=>void;
-        var doFunc:(from:IScene, to:IScene, callback:()=>void)=>void;
+        var prepareFunc:(from?:IScene, to?:IScene)=>void;
+        var doFunc:(from?:IScene, to?:IScene)=>Promise<void>;
         switch(type)
         {
             case ChangeType.Switch:
@@ -231,7 +231,7 @@ export default class SceneManager
         // 添加显示
         to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 调用切换接口
-        doFunc.call(policy, from, to, ()=>{
+        doFunc.call(policy, from, to).then(()=>{
             // 完成步骤
             notify(SYNC_NAME);
             // 移除显示

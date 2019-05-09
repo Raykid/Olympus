@@ -11,9 +11,9 @@ import IScenePolicy from "olympus-r/engine/scene/IScenePolicy";
 export default class FadeScenePolicy implements IScenePolicy {
     /**
      * 切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
-     * @param callback 切换完毕的回调方法
+     * @param {IScene<S>} [from] 切出的场景
+     * @param {IScene<S>} [to] 切入的场景
+     * @returns {Promise<void>}
      */
-    switch(from: IScene, to: IScene, callback: () => void): void;
+    switch(from?: IScene, to?: IScene): Promise<void>;
 }

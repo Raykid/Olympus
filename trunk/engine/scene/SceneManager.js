@@ -189,7 +189,7 @@ var SceneManager = /** @class */ (function () {
         // 添加显示
         to && to.bridge.addChild(to.bridge.sceneLayer, to.skin);
         // 调用切换接口
-        doFunc.call(policy, from, to, function () {
+        doFunc.call(policy, from, to).then(function () {
             // 完成步骤
             notify(SYNC_NAME);
             // 移除显示

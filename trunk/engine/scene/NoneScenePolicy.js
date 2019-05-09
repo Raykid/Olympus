@@ -1,3 +1,4 @@
+import { system } from '../system/System';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -11,21 +12,21 @@ var NoneScenePolicy = /** @class */ (function () {
     }
     /**
      * 准备切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
+     * @param {IScene<S>} [from] 切出的场景
+     * @param {IScene<S>} [to] 切入的场景
      */
     NoneScenePolicy.prototype.prepareSwitch = function (from, to) {
         // 这个策略里啥也不用准备
     };
     /**
      * 切换场景时调度
-     * @param from 切出的场景
-     * @param to 切入的场景
-     * @param callback 切换完毕的回调方法
+     * @param {IScene<S>} [from] 切出的场景
+     * @param {IScene<S>} [to] 切入的场景
+     * @returns {Promise<void>}
      */
-    NoneScenePolicy.prototype.switch = function (from, to, callback) {
+    NoneScenePolicy.prototype.switch = function (from, to) {
         // 直接延迟到下一帧回调（不能同步回调，否则可能会出问题）
-        setTimeout(callback, 0);
+        return new Promise(function (resolve) { return system.nextFrame(resolve); });
     };
     return NoneScenePolicy;
 }());

@@ -9,25 +9,28 @@ import IPanelPolicy from "olympus-r/engine/panel/IPanelPolicy";
  * 回弹效果
 */
 export default class BackPanelPolicy implements IPanelPolicy {
-    private _reg;
     /**
      * 显示时调用
-     * @param panel 弹出框对象
-     * @param callback 完成回调，必须调用
-     * @param from 动画起始点
+     *
+     * @param {IPanel<S>} panel 弹出框对象
+     * @param {{x:number, y:number}} [from] 动画起始点
+     * @returns {Promise<void>}
+     * @memberof IPanelPolicy
      */
-    pop(panel: IPanel, callback: () => void, from?: {
+    pop(panel: IPanel, from?: {
         x: number;
         y: number;
-    }): void;
+    }): Promise<void>;
     /**
      * 关闭时调用
-     * @param popup 弹出框对象
-     * @param callback 完成回调，必须调用
-     * @param to 动画完结点
+     *
+     * @param {IPanel<S>} panel 弹出框对象
+     * @param {{x:number, y:number}} [to] 动画完结点
+     * @returns {Promise<void>}
+     * @memberof IPanelPolicy
      */
-    drop(panel: IPanel, callback: () => void, to?: {
+    drop(panel: IPanel, to?: {
         x: number;
         y: number;
-    }): void;
+    }): Promise<void>;
 }

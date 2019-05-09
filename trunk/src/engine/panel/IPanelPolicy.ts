@@ -17,16 +17,19 @@ export default interface IPanelPolicy<S = any>
     prepare?(panel:IPanel<S>):void;
     /**
      * 显示时调用
-     * @param panel 弹出框对象
-     * @param callback 完成回调，必须调用
-     * @param from 动画起始点
+     * 
+     * @param {IPanel<S>} panel 弹出框对象
+     * @param {{x:number, y:number}} [from] 动画起始点
+     * @returns {Promise<void>}
+     * @memberof IPanelPolicy
      */
-    pop(panel:IPanel<S>, callback:()=>void, from?:{x:number, y:number}):void;
+    pop(panel:IPanel<S>, from?:{x:number, y:number}):Promise<void>;
     /**
      * 关闭时调用
-     * @param panel 弹出框对象
-     * @param callback 完成回调，必须调用
-     * @param to 动画完结点
+     * @param {IPanel<S>} panel 弹出框对象
+     * @param {{x:number, y:number}} [to] 动画完结点
+     * @returns {Promise<void>}
+     * @memberof IPanelPolicy
      */
-    drop(panel:IPanel<S>, callback:()=>void, to?:{x:number, y:number}):void;
+    drop(panel:IPanel<S>, to?:{x:number, y:number}):Promise<void>;
 }

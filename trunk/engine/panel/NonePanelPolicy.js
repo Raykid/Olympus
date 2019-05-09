@@ -1,3 +1,4 @@
+import { system } from '../system/System';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -9,11 +10,11 @@
 var NonePanelPolicy = /** @class */ (function () {
     function NonePanelPolicy() {
     }
-    NonePanelPolicy.prototype.pop = function (panel, callback, from) {
-        setTimeout(callback, 0);
+    NonePanelPolicy.prototype.pop = function (panel, from) {
+        return new Promise(function (resolve) { return system.nextFrame(resolve); });
     };
-    NonePanelPolicy.prototype.drop = function (panel, callback, from) {
-        setTimeout(callback, 0);
+    NonePanelPolicy.prototype.drop = function (panel, from) {
+        return new Promise(function (resolve) { return system.nextFrame(resolve); });
     };
     return NonePanelPolicy;
 }());

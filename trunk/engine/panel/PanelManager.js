@@ -104,12 +104,12 @@ var PanelManager = /** @class */ (function () {
                 temp.bridge.addChild(temp.bridge.panelLayer, temp.skin);
             }
             // 调用策略接口
-            policy.pop(panel, function () {
+            policy.pop(panel, from).then(function () {
                 // 调用回调
                 panel.onAfterPop(data, isModal, from);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModal, from);
-            }, from);
+            });
             // 记录模态数据
             this._modalDict.set(panel, isModal);
             // 更新模态遮罩
@@ -138,12 +138,12 @@ var PanelManager = /** @class */ (function () {
             // 派发消息
             core.dispatch(PanelMessage.PANEL_BEFORE_DROP, panel, to);
             // 调用策略接口
-            policy.drop(panel, function () {
+            policy.drop(panel, to).then(function () {
                 // 调用回调
                 panel.onAfterDrop(data, to);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
-            }, to);
+            });
             // 移除优先级数据
             this._priorities.delete(panel);
             // 移除模态数据

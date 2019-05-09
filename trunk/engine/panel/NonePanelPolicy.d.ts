@@ -9,14 +9,14 @@ import IPanelPolicy from "./IPanelPolicy";
  * 无任何动画的弹出策略，可应用于任何显示层实现
 */
 export declare class NonePanelPolicy implements IPanelPolicy {
-    pop(panel: IPanel, callback: () => void, from?: {
+    pop(panel: IPanel, from?: {
         x: number;
         y: number;
-    }): void;
-    drop(panel: IPanel, callback: () => void, from?: {
+    }): Promise<void>;
+    drop(panel: IPanel, from?: {
         x: number;
         y: number;
-    }): void;
+    }): Promise<void>;
 }
 declare const _default: NonePanelPolicy;
 /** 默认导出实例 */
