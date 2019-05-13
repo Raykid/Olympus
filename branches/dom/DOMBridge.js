@@ -334,7 +334,9 @@ var DOMBridge = /** @class */ (function () {
      * @memberof DOMBridge
      */
     DOMBridge.prototype.createEmptyDisplay = function () {
-        return document.createElement("div");
+        var empty = document.createElement("div");
+        empty.style.display = "none";
+        return empty;
     };
     /**
      * 添加显示
@@ -534,8 +536,8 @@ var DOMBridge = /** @class */ (function () {
     DOMBridge.prototype.wrapBindFor = function (target, handler) {
         var parent = target.parentElement;
         // 生成一个from节点和一个to节点，用来占位
-        var from = document.createElement("div");
-        var to = document.createElement("div");
+        var from = this.createEmptyDisplay();
+        var to = this.createEmptyDisplay();
         parent && parent.insertBefore(from, target);
         parent && parent.insertBefore(to, target);
         // 移除显示

@@ -349,7 +349,9 @@ export default class DOMBridge implements IBridge<Element>
      */
     public createEmptyDisplay():HTMLElement
     {
-        return document.createElement("div");
+        const empty:HTMLElement = document.createElement("div");
+        empty.style.display = "none";
+        return empty;
     }
 
     /**
@@ -586,8 +588,8 @@ export default class DOMBridge implements IBridge<Element>
     {
         var parent:Element = target.parentElement;
         // 生成一个from节点和一个to节点，用来占位
-        var from:Element = document.createElement("div");
-        var to:Element = document.createElement("div");
+        var from:Element = this.createEmptyDisplay();
+        var to:Element = this.createEmptyDisplay();
         parent && parent.insertBefore(from, target);
         parent && parent.insertBefore(to, target);
         // 移除显示
