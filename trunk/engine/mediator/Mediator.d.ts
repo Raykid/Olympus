@@ -6,6 +6,7 @@ import Dictionary from "../../utils/Dictionary";
 import IBridge from "../bridge/IBridge";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
+import { ICancelable } from "../system/System";
 import IMediator from "./IMediator";
 import IMediatorConstructor from "./IMediatorConstructor";
 import { ModuleOpenStatus } from "./IMediatorModulePart";
@@ -341,6 +342,25 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @memberof Mediator
      */
     containsMediator(mediator: IMediator): boolean;
+    private _cancelables;
+    /**
+     * 托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof Mediator
+     */
+    delegateCancelable(cancelable: ICancelable): void;
+    /**
+     * 取消托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof Mediator
+     */
+    undelegateCancelable(cancelable: ICancelable): void;
     /**
      * 其他模块被关闭回到当前模块时调用
      *

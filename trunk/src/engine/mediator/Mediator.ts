@@ -16,7 +16,7 @@ import { maskManager } from "../mask/MaskManager";
 import { netManager } from "../net/NetManager";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
-import { system } from "../system/System";
+import { ICancelable, system } from "../system/System";
 import IMediator from "./IMediator";
 import IMediatorConstructor from "./IMediatorConstructor";
 import { ModuleOpenStatus } from "./IMediatorModulePart";
@@ -937,6 +937,40 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         }
         return contains;
     }
+
+    private _cancelables:ICancelable[] = [];
+    /**
+     * 托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof Mediator
+     */
+    public delegateCancelable(cancelable:ICancelable):void
+    {
+        if(!~this._cancelables.indexOf(cancelable))
+        {
+            this._cancelables.push(cancelable);
+        }
+    }
+
+    /**
+     * 取消托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof Mediator
+     */
+    public undelegateCancelable(cancelable:ICancelable):void
+    {
+        const index:number = this._cancelables.indexOf(cancelable);
+        if(~index)
+        {
+            this._cancelables.splice(index, 1);
+        }
+    }
     
     /**
      * 其他模块被关闭回到当前模块时调用
@@ -1209,6 +1243,13 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         {
             child.dispose();
         }
+        this._children = null;
+        // 取消所有已托管的ICancelable
+        for(let cancel of this._cancelables)
+        {
+            cancel.cancel();
+        }
+        this._cancelables = null;
         // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息
         system.nextFrame(()=>{
             // 移除observable

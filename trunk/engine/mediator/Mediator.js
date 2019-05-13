@@ -84,6 +84,7 @@ var Mediator = /** @class */ (function () {
          */
         this.parent = null;
         this._children = [];
+        this._cancelables = [];
         /*********************** 下面是模块消息系统 ***********************/
         this._observable = new Observable(core);
         // 赋值模块名称
@@ -866,6 +867,33 @@ var Mediator = /** @class */ (function () {
         return contains;
     };
     /**
+     * 托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof Mediator
+     */
+    Mediator.prototype.delegateCancelable = function (cancelable) {
+        if (!~this._cancelables.indexOf(cancelable)) {
+            this._cancelables.push(cancelable);
+        }
+    };
+    /**
+     * 取消托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof Mediator
+     */
+    Mediator.prototype.undelegateCancelable = function (cancelable) {
+        var index = this._cancelables.indexOf(cancelable);
+        if (~index) {
+            this._cancelables.splice(index, 1);
+        }
+    };
+    /**
      * 其他模块被关闭回到当前模块时调用
      *
      * @param {(IMediator|undefined)} from 从哪个模块回到当前模块
@@ -1096,6 +1124,13 @@ var Mediator = /** @class */ (function () {
             var child = children_1[_i];
             child.dispose();
         }
+        this._children = null;
+        // 取消所有已托管的ICancelable
+        for (var _a = 0, _b = this._cancelables; _a < _b.length; _a++) {
+            var cancel = _b[_a];
+            cancel.cancel();
+        }
+        this._cancelables = null;
         // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息
         system.nextFrame(function () {
             // 移除observable
