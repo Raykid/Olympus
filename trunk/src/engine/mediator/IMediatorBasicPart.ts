@@ -4,6 +4,7 @@ import JSFile from '../../core/interfaces/JSFile';
 import IHasBridge from "../bridge/IHasBridge";
 import RequestData from "../net/RequestData";
 import ResponseData from "../net/ResponseData";
+import { ICancelable } from '../system/System';
 import MediatorStatus from "./MediatorStatus";
 
 /**
@@ -164,4 +165,24 @@ export default interface IMediatorBasicPart<S = any, OD = any, CD = any> extends
      * @memberof IMediator
      */
     unmapAllListeners():void;
+
+    /**
+     * 托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof IMediator
+     */
+    delegateCancelable(cancelable:ICancelable):void;
+
+    /**
+     * 取消托管ICancelable实例
+     *
+     * @author Raykid
+     * @date 2019-05-13
+     * @param {ICancelable} cancelable
+     * @memberof IMediator
+     */
+    undelegateCancelable(cancelable:ICancelable):void;
 }
