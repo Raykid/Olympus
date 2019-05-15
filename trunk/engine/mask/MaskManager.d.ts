@@ -31,6 +31,7 @@ export default class MaskManager {
     hideMask(): void;
     /**当前是否在显示遮罩*/
     isShowingMask(): boolean;
+    private _loadingEntitys;
     /**
      * 显示加载图
      */

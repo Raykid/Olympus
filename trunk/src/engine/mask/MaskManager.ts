@@ -111,6 +111,7 @@ export default class MaskManager
         return this._isShowingMask;
     }
 
+    private _loadingEntitys:IMaskEntity[] = [];
     /**
      * 显示加载图
      */
@@ -119,16 +120,16 @@ export default class MaskManager
         // 若当前你没有loading则显示loading
         if(this.getLoadingMaskCount() == 0)
         {
-            for(var bridge of bridgeManager.bridges)
+            const bridge:IBridge = bridgeManager.currentBridge;
+            var entity:IMaskEntity = this._entityDict[bridge.type];
+            if(entity != null)
             {
-                var entity:IMaskEntity = this._entityDict[bridge.type];
-                if(entity != null)
-                {
-                    // 显示遮罩
-                    entity.showLoading(alpha);
-                    // 调用回调
-                    entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
-                }
+                // 显示遮罩
+                entity.showLoading(alpha);
+                // 调用回调
+                entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
+                // 添加记录
+                this._loadingEntitys.push(entity);
             }
         }
         // 增计数
@@ -145,17 +146,14 @@ export default class MaskManager
         if(this.getLoadingMaskCount() == 0)
         {
             // 移除loading
-            for(var bridge of bridgeManager.bridges)
+            for(let entity of this._loadingEntitys)
             {
-                var entity:IMaskEntity = this._entityDict[bridge.type];
-                if(entity != null)
-                {
-                    // 调用回调
-                    entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
-                    // 隐藏遮罩
-                    entity.hideLoading();
-                }
+                // 调用回调
+                entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
+                // 隐藏遮罩
+                entity.hideLoading();
             }
+            this._loadingEntitys = [];
         }
     }
 

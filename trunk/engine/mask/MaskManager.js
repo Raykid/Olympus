@@ -16,6 +16,7 @@ var MaskManager = /** @class */ (function () {
         this._entityDict = {};
         this._loadingMaskDict = {};
         this._isShowingMask = false;
+        this._loadingEntitys = [];
         this._modalMaskDict = new Dictionary();
     }
     MaskManager.prototype.getLoadingMaskCount = function () {
@@ -103,15 +104,15 @@ var MaskManager = /** @class */ (function () {
         if (key === void 0) { key = null; }
         // 若当前你没有loading则显示loading
         if (this.getLoadingMaskCount() == 0) {
-            for (var _i = 0, _a = bridgeManager.bridges; _i < _a.length; _i++) {
-                var bridge = _a[_i];
-                var entity = this._entityDict[bridge.type];
-                if (entity != null) {
-                    // 显示遮罩
-                    entity.showLoading(alpha);
-                    // 调用回调
-                    entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
-                }
+            var bridge = bridgeManager.currentBridge;
+            var entity = this._entityDict[bridge.type];
+            if (entity != null) {
+                // 显示遮罩
+                entity.showLoading(alpha);
+                // 调用回调
+                entity.maskData.onShowLoading && entity.maskData.onShowLoading(entity.loadingSkin);
+                // 添加记录
+                this._loadingEntitys.push(entity);
             }
         }
         // 增计数
@@ -126,16 +127,14 @@ var MaskManager = /** @class */ (function () {
         this.minusLoadingMaskCount(key);
         if (this.getLoadingMaskCount() == 0) {
             // 移除loading
-            for (var _i = 0, _a = bridgeManager.bridges; _i < _a.length; _i++) {
-                var bridge = _a[_i];
-                var entity = this._entityDict[bridge.type];
-                if (entity != null) {
-                    // 调用回调
-                    entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
-                    // 隐藏遮罩
-                    entity.hideLoading();
-                }
+            for (var _i = 0, _a = this._loadingEntitys; _i < _a.length; _i++) {
+                var entity = _a[_i];
+                // 调用回调
+                entity.maskData.onHideLoading && entity.maskData.onHideLoading(entity.loadingSkin);
+                // 隐藏遮罩
+                entity.hideLoading();
             }
+            this._loadingEntitys = [];
         }
     };
     /**当前是否在显示loading*/
