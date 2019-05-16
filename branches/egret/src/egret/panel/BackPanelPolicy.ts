@@ -87,12 +87,7 @@ export default class BackPanelPolicy implements IPanelPolicy
                 y: toY,
                 scaleX: 0,
                 scaleY: 0
-            }, 300, egret.Ease.backIn).call(()=>{
-                // 恢复体积
-                entity.scaleX = 1;
-                entity.scaleY = 1;
-                resolve();
-            });
+            }, 300, egret.Ease.backIn).call(resolve);
         });
     }
 }

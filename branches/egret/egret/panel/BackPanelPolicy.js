@@ -76,12 +76,7 @@ var BackPanelPolicy = /** @class */ (function () {
                 y: toY,
                 scaleX: 0,
                 scaleY: 0
-            }, 300, egret.Ease.backIn).call(function () {
-                // 恢复体积
-                entity.scaleX = 1;
-                entity.scaleY = 1;
-                resolve();
-            });
+            }, 300, egret.Ease.backIn).call(resolve);
         });
     };
     return BackPanelPolicy;
