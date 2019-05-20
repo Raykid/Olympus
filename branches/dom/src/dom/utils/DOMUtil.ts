@@ -1,4 +1,4 @@
-import { system } from 'olympus-r/engine/system/System';
+import { ICancelable, system } from 'olympus-r/engine/system/System';
 import Dictionary from 'olympus-r/utils/Dictionary';
 
 /**
@@ -45,8 +45,9 @@ const iframeResizeDict:Dictionary<HTMLElement, [HTMLIFrameElement, Window, (evt:
  * @export
  * @param {HTMLElement} target 要监听的对象
  * @param {(target:HTMLElement)=>void} callback Resize回调
+ * @returns {ICancelable} 可随时取消
  */
-export function listenResize(target:HTMLElement, callback:(target:HTMLElement)=>void):void
+export function listenResize(target:HTMLElement, callback:(target:HTMLElement)=>void):ICancelable
 {
     unlistenResize(target);
     let lastWidth:number = target.offsetWidth;
@@ -64,6 +65,11 @@ export function listenResize(target:HTMLElement, callback:(target:HTMLElement)=>
         listenIframeResize();
     else
         iframe.addEventListener("load", listenIframeResize);
+    return {
+        cancel: ()=>{
+            unlistenResize(target);
+        }
+    };
 
     function listenIframeResize():void
     {

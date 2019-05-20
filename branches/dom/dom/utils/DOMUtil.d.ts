@@ -1,3 +1,4 @@
+import { ICancelable } from 'olympus-r/engine/system/System';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -21,8 +22,9 @@ export declare function getBoundingClientRect(target: HTMLElement, parent: HTMLE
  * @export
  * @param {HTMLElement} target 要监听的对象
  * @param {(target:HTMLElement)=>void} callback Resize回调
+ * @returns {ICancelable} 可随时取消
  */
-export declare function listenResize(target: HTMLElement, callback: (target: HTMLElement) => void): void;
+export declare function listenResize(target: HTMLElement, callback: (target: HTMLElement) => void): ICancelable;
 /**
  * 移除Resize监听
  *

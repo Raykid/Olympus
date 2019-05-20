@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-dom",
-  "version": "0.6.39",
+  "version": "0.6.40",
   "description": "Olympus的DOM表现层库",
   "files": [
     "dom/",

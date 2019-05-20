@@ -39,6 +39,7 @@ var iframeResizeDict = new Dictionary();
  * @export
  * @param {HTMLElement} target 要监听的对象
  * @param {(target:HTMLElement)=>void} callback Resize回调
+ * @returns {ICancelable} 可随时取消
  */
 export function listenResize(target, callback) {
     unlistenResize(target);
@@ -57,6 +58,11 @@ export function listenResize(target, callback) {
         listenIframeResize();
     else
         iframe.addEventListener("load", listenIframeResize);
+    return {
+        cancel: function () {
+            unlistenResize(target);
+        }
+    };
     function listenIframeResize() {
         // 移除监听
         iframe.removeEventListener("load", listenIframeResize);
