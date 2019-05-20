@@ -463,6 +463,11 @@ export default class BindManager
                     mediator.undelegateMediator(subMediator);
                     subMediator.dispose();
                 }
+                // 清空已有缓存对象
+                for(var i:number = 0, len:number = subTargetCache.length; i < len; i++)
+                {
+                    subTargetCache.shift();
+                }
                 // 赋值
                 mediator.bridge.valuateBindFor(currentTarget, datas, memento);
             }, mediator.viewModel, ...envModels, mediator.viewModel);

@@ -439,6 +439,10 @@ var BindManager = /** @class */ (function () {
                         mediator.undelegateMediator(subMediator);
                         subMediator.dispose();
                     }
+                    // 清空已有缓存对象
+                    for (var i = 0, len = subTargetCache.length; i < len; i++) {
+                        subTargetCache.shift();
+                    }
                     // 赋值
                     mediator.bridge.valuateBindFor(currentTarget, datas, memento);
                 }, mediator.viewModel].concat(envModels, [mediator.viewModel]));
