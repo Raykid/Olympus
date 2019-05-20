@@ -549,6 +549,17 @@ export default class EgretBridge implements IBridge<egret.DisplayObject>
     }
     
     /**
+     * 创建一个占位符
+     *
+     * @returns {egret.Sprite}
+     * @memberof EgretBridge
+     */
+    public createPlaceHolder():egret.Sprite
+    {
+        return this.createEmptyDisplay();
+    }
+    
+    /**
      * 添加显示
      * 
      * @param {egret.DisplayObjectContainer} parent 要添加到的父容器

@@ -1,8 +1,8 @@
-import { IPromptPanelConstructor } from "../panel/IPromptPanel";
-import IPanelPolicy from "../panel/IPanelPolicy";
-import IScenePolicy from "../scene/IScenePolicy";
-import IMediator from "../mediator/IMediator";
 import { IMaskEntity } from "../mask/MaskManager";
+import IMediator from "../mediator/IMediator";
+import IPanelPolicy from "../panel/IPanelPolicy";
+import { IPromptPanelConstructor } from "../panel/IPromptPanel";
+import IScenePolicy from "../scene/IScenePolicy";
 
 /**
  * @author Raykid
@@ -160,9 +160,18 @@ export default interface IBridge<S = any>
      */
     syncSkin(current:S, target:S):void;
     /**
-     * 创建一个空的显示对象
+     * 创建一个占位符
      * 
      * @returns {S} 
+     * @memberof IBridge
+     */
+    createPlaceHolder():S;
+    /**
+     * 创建一个空显示对象
+     *
+     * @author Raykid
+     * @date 2019-05-20
+     * @returns {S}
      * @memberof IBridge
      */
     createEmptyDisplay():S;

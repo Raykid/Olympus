@@ -350,6 +350,18 @@ export default class DOMBridge implements IBridge<Element>
     public createEmptyDisplay():HTMLElement
     {
         const empty:HTMLElement = document.createElement("div");
+        return empty;
+    }
+
+    /**
+     * 创建一个占位符
+     *
+     * @returns {HTMLElement}
+     * @memberof DOMBridge
+     */
+    public createPlaceHolder():HTMLElement
+    {
+        const empty:HTMLElement = this.createEmptyDisplay();
         empty.style.display = "none";
         return empty;
     }

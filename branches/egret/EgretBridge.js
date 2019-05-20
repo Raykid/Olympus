@@ -502,6 +502,15 @@ var EgretBridge = /** @class */ (function () {
         return new egret.Sprite();
     };
     /**
+     * 创建一个占位符
+     *
+     * @returns {egret.Sprite}
+     * @memberof EgretBridge
+     */
+    EgretBridge.prototype.createPlaceHolder = function () {
+        return this.createEmptyDisplay();
+    };
+    /**
      * 添加显示
      *
      * @param {egret.DisplayObjectContainer} parent 要添加到的父容器

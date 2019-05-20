@@ -185,6 +185,13 @@ export default class DOMBridge implements IBridge<Element> {
      */
     createEmptyDisplay(): HTMLElement;
     /**
+     * 创建一个占位符
+     *
+     * @returns {HTMLElement}
+     * @memberof DOMBridge
+     */
+    createPlaceHolder(): HTMLElement;
+    /**
      * 添加显示
      *
      * @param {Element} parent 要添加到的父容器

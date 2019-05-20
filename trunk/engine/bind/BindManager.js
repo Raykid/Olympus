@@ -290,7 +290,7 @@ var BindManager = /** @class */ (function () {
     BindManager.prototype.bindIf = function (mediator, currentTarget, target, envModels, exp, callback) {
         var watcher;
         var bindData = this._bindDict.get(mediator);
-        var replacer = mediator.bridge.createEmptyDisplay();
+        var replacer = mediator.bridge.createPlaceHolder();
         this.addBindHandler(mediator, function () {
             var _a;
             // 如果之前绑定过，则要先销毁之

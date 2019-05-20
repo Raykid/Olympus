@@ -335,6 +335,16 @@ var DOMBridge = /** @class */ (function () {
      */
     DOMBridge.prototype.createEmptyDisplay = function () {
         var empty = document.createElement("div");
+        return empty;
+    };
+    /**
+     * 创建一个占位符
+     *
+     * @returns {HTMLElement}
+     * @memberof DOMBridge
+     */
+    DOMBridge.prototype.createPlaceHolder = function () {
+        var empty = this.createEmptyDisplay();
         empty.style.display = "none";
         return empty;
     };

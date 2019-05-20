@@ -306,7 +306,7 @@ export default class BindManager
     {
         var watcher:IWatcher;
         var bindData:BindData = this._bindDict.get(mediator);
-        var replacer:any = mediator.bridge.createEmptyDisplay();
+        var replacer:any = mediator.bridge.createPlaceHolder();
         this.addBindHandler(mediator, ()=>{
             // 如果之前绑定过，则要先销毁之
             if(watcher) watcher.dispose();
