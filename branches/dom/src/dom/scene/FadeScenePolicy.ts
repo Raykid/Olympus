@@ -50,18 +50,21 @@ export default class FadeScenePolicy implements IScenePolicy
                     .to({ opacity: "0" }, 300)
                     .easing(Easing.Linear.None)
                     .onComplete(function () {
-                        // 隐藏from
-                        from.skin.display = "none";
-                        // 恢复from
-                        from.skin.style.position = position;
-                        from.skin.style.left = left;
-                        from.skin.style.top = top;
-                        from.skin.style.width = width;
-                        from.skin.style.height = height;
-                        from.skin.style.opacity = opacity;
-                        from.skin.style.zIndex = zIndex;
-                        // 恢复z-index
-                        from.bridge.htmlWrapper.style.zIndex = "";
+                        if(!from.disposed)
+                        {
+                            // 隐藏from
+                            from.skin.display = "none";
+                            // 恢复from
+                            from.skin.style.position = position;
+                            from.skin.style.left = left;
+                            from.skin.style.top = top;
+                            from.skin.style.width = width;
+                            from.skin.style.height = height;
+                            from.skin.style.opacity = opacity;
+                            from.skin.style.zIndex = zIndex;
+                            // 恢复z-index
+                            from.bridge.htmlWrapper.style.zIndex = "";
+                        }
                         // 调用回调
                         resolve();
                     })
