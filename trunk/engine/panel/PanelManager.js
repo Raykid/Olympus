@@ -77,6 +77,8 @@ var PanelManager = /** @class */ (function () {
         var _this = this;
         if (isModal === void 0) { isModal = true; }
         if (this._panels.indexOf(panel) < 0) {
+            // 添加遮罩
+            maskManager.showMask(0);
             // 数据先行
             this._panels.push(panel);
             // 弹窗所在的表现层必须要显示
@@ -109,6 +111,8 @@ var PanelManager = /** @class */ (function () {
                 panel.onAfterPop(data, isModal, from);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_POP, panel, isModal, from);
+                // 移除遮罩
+                maskManager.hideMask();
             });
             // 记录模态数据
             this._modalDict.set(panel, isModal);
@@ -129,6 +133,8 @@ var PanelManager = /** @class */ (function () {
     PanelManager.prototype.drop = function (panel, data, to) {
         var index = this._panels.indexOf(panel);
         if (index >= 0) {
+            // 添加遮罩
+            maskManager.showMask(0);
             // 数据先行
             this._panels.splice(index, 1);
             // 获取策略
@@ -143,6 +149,8 @@ var PanelManager = /** @class */ (function () {
                 panel.onAfterDrop(data, to);
                 // 派发消息
                 core.dispatch(PanelMessage.PANEL_AFTER_DROP, panel, to);
+                // 移除遮罩
+                maskManager.hideMask();
             });
             // 移除优先级数据
             this._priorities.delete(panel);

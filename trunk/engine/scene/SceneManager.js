@@ -2,6 +2,7 @@ import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import { notify, wait } from "../../utils/SyncUtil";
+import { maskManager } from '../mask/MaskManager';
 import none from "./NoneScenePolicy";
 import SceneMessage from "./SceneMessage";
 /**
@@ -171,6 +172,8 @@ var SceneManager = /** @class */ (function () {
         return [prepareFunc, doFunc];
     };
     SceneManager.prototype.doChange = function (from, to, data, policy, type, begin, complete) {
+        // 添加遮罩
+        maskManager.showMask(0);
         // 调用回调
         begin && begin();
         // 前置处理
@@ -229,6 +232,8 @@ var SceneManager = /** @class */ (function () {
             to && core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, to, from);
             // 调用回调
             complete && complete();
+            // 移除遮罩
+            maskManager.hideMask();
         });
     };
     SceneManager = tslib_1.__decorate([

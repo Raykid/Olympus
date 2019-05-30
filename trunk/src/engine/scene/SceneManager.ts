@@ -1,6 +1,7 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
 import { notify, wait } from "../../utils/SyncUtil";
+import { maskManager } from '../mask/MaskManager';
 import IScene from "./IScene";
 import IScenePolicy from "./IScenePolicy";
 import none from "./NoneScenePolicy";
@@ -218,6 +219,8 @@ export default class SceneManager
     
     private doChange(from:IScene, to:IScene, data:any, policy:IScenePolicy, type:ChangeType, begin?:()=>void, complete?:()=>void):void
     {
+        // 添加遮罩
+        maskManager.showMask(0);
         // 调用回调
         begin && begin();
         // 前置处理
@@ -281,6 +284,8 @@ export default class SceneManager
             to && core.dispatch(SceneMessage.SCENE_AFTER_CHANGE, to, from);
             // 调用回调
             complete && complete();
+            // 移除遮罩
+            maskManager.hideMask();
         });
     }
 }
