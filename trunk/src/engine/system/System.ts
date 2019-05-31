@@ -1,5 +1,5 @@
 import { core } from "../../core/Core";
-import { Injectable } from "../../core/injector/Injector"
+import { Injectable } from "../../core/injector/Injector";
 
 /**
  * @author Raykid
@@ -193,6 +193,29 @@ export default class System
             if(!canceled)
                 timeout = this.setTimeout(duration, onTimeout, this);
         }
+    }
+
+    /**
+     * 等待指定毫秒后resolve
+     *
+     * @author Raykid
+     * @date 2019-05-31
+     * @param {number} duration 要等待的毫秒数
+     * @returns {Promise<void>}
+     * @memberof System
+     */
+    public sleep(duration:number):Promise<void>
+    {
+        return new Promise(resolve=>{
+            if(duration <= 0)
+            {
+                resolve();
+            }
+            else
+            {
+                this.setTimeout(duration, resolve);
+            }
+        });
     }
 }
 

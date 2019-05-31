@@ -181,6 +181,26 @@ var System = /** @class */ (function () {
                 timeout = this.setTimeout(duration, onTimeout, this);
         }
     };
+    /**
+     * 等待指定毫秒后resolve
+     *
+     * @author Raykid
+     * @date 2019-05-31
+     * @param {number} duration 要等待的毫秒数
+     * @returns {Promise<void>}
+     * @memberof System
+     */
+    System.prototype.sleep = function (duration) {
+        var _this = this;
+        return new Promise(function (resolve) {
+            if (duration <= 0) {
+                resolve();
+            }
+            else {
+                _this.setTimeout(duration, resolve);
+            }
+        });
+    };
     System = tslib_1.__decorate([
         Injectable,
         tslib_1.__metadata("design:paramtypes", [])

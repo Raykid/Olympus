@@ -60,6 +60,16 @@ export default class System {
      * @memberof System
      */
     setInterval(duration: number, handler: Function, thisArg?: any, ...args: any[]): ICancelable;
+    /**
+     * 等待指定毫秒后resolve
+     *
+     * @author Raykid
+     * @date 2019-05-31
+     * @param {number} duration 要等待的毫秒数
+     * @returns {Promise<void>}
+     * @memberof System
+     */
+    sleep(duration: number): Promise<void>;
 }
 export interface ICancelable {
     cancel(): void;
