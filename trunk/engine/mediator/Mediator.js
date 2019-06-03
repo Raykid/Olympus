@@ -807,6 +807,10 @@ var Mediator = /** @class */ (function () {
      */
     Mediator.prototype.delegateMediator = function (mediator) {
         if (this._children.indexOf(mediator) < 0) {
+            // 如果已有父级，先移除关系
+            if (mediator.parent) {
+                mediator.parent.undelegateMediator(mediator);
+            }
             // 托管新的中介者
             this._children.push(mediator);
             // 设置关系
