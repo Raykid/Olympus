@@ -324,102 +324,102 @@ var BindManager = /** @class */ (function () {
      * @memberof BindManager
      */
     BindManager.prototype.bindFor = function (mediator, currentTarget, target, envModels, name, exp, mediatorCls, declaredCls, dataExp, callback) {
-        var _this = this;
         var watcher;
         var bindData = this._bindDict.get(mediator);
         var subTargetCache = [];
         var subMediatorCache = [];
-        this.addBindHandler(mediator, function () {
-            var _a;
-            var expTuple;
-            if (typeof exp === "string") {
-                // 字符串形式，解析表达式
-                var res = _this._regExp.exec(exp);
-                if (!res)
-                    return;
-                expTuple = [res[1], res[2], res[5]];
+        // 备忘录要在最一开始就生成好，以后就不动了
+        var expTuple;
+        if (typeof exp === "string") {
+            // 字符串形式，解析表达式
+            var res = this._regExp.exec(exp);
+            if (!res)
+                return;
+            expTuple = [res[1], res[2], res[5]];
+        }
+        else {
+            // 元组形式，直接赋值
+            expTuple = exp;
+        }
+        // 如果给出了声明的Mediator类型，则生成一个声明Mediator，替换掉mediator当前的皮肤
+        var declaredMediator;
+        if (isMediator(declaredCls.prototype)) {
+            declaredMediator = new declaredCls(target);
+            mediator.delegateMediator(declaredMediator);
+            mediator[name] = declaredMediator;
+        }
+        else if (declaredCls === Array) {
+            if (mediatorCls) {
+                // 如果规定了变身中介者，则将该属性变成中介者列表
+                mediator[name] = subMediatorCache;
             }
             else {
-                // 元组形式，直接赋值
-                expTuple = exp;
+                // 否则变成渲染器对象列表
+                mediator[name] = subTargetCache;
             }
-            // 如果给出了声明的Mediator类型，则生成一个声明Mediator，替换掉mediator当前的皮肤
-            var declaredMediator;
-            if (isMediator(declaredCls.prototype)) {
-                declaredMediator = new declaredCls(target);
-                mediator.delegateMediator(declaredMediator);
-                mediator[name] = declaredMediator;
+        }
+        // 包装渲染器创建回调
+        var memento = mediator.bridge.wrapBindFor(currentTarget, function (key, value, renderer) {
+            // 设置环境变量
+            var subScope = {
+                $key: key,
+                $value: value,
+                $parent: envModels[0] || mediator.viewModel
+            };
+            // 填入用户声明的属性
+            subScope[expTuple[0]] = (expTuple[1] == "in" ? key : value);
+            // 生成一个环境变量的副本
+            var subEnvModels = envModels.concat();
+            // 插入环境变量
+            subEnvModels.unshift(subScope);
+            // 如果renderer已经有事件列表了，说明renderer是被重用的，删除所有事件
+            var events = renderer.__bind_sub_events__;
+            for (var i in events) {
+                var data = events.pop();
+                mediator.unmapListener(data.target, data.type, data.handler, data.thisArg);
             }
-            else if (declaredCls === Array) {
-                if (mediatorCls) {
-                    // 如果规定了变身中介者，则将该属性变成中介者列表
-                    mediator[name] = subMediatorCache;
-                }
-                else {
-                    // 否则变成渲染器对象列表
-                    mediator[name] = subTargetCache;
-                }
-            }
-            // 包装渲染器创建回调
-            var memento = mediator.bridge.wrapBindFor(currentTarget, function (key, value, renderer) {
-                // 设置环境变量
-                var subScope = {
-                    $key: key,
-                    $value: value,
-                    $parent: envModels[0] || mediator.viewModel
+            // 为renderer设置子对象事件列表
+            if (!events)
+                renderer.__bind_sub_events__ = [];
+            // 为renderer套一个Mediator外壳
+            if (mediatorCls) {
+                var subMediator = new mediatorCls(renderer);
+                // 更新渲染器
+                if (subMediator.skin && subMediator.bridge === mediator.bridge)
+                    renderer = subMediator.skin;
+                // 托管子中介者，优先托管在声明出来的中间中介者上
+                (declaredMediator || mediator).delegateMediator(subMediator);
+                // 设置通用属性
+                var commonScope = {
+                    $this: mediator,
+                    $data: mediator.viewModel,
+                    $bridge: mediator.bridge,
+                    $currentTarget: currentTarget,
+                    $target: target
                 };
-                // 填入用户声明的属性
-                subScope[expTuple[0]] = (expTuple[1] == "in" ? key : value);
-                // 生成一个环境变量的副本
-                var subEnvModels = envModels.concat();
-                // 插入环境变量
-                subEnvModels.unshift(subScope);
-                // 如果renderer已经有事件列表了，说明renderer是被重用的，删除所有事件
-                var events = renderer.__bind_sub_events__;
-                for (var i in events) {
-                    var data = events.pop();
-                    mediator.unmapListener(data.target, data.type, data.handler, data.thisArg);
-                }
-                // 为renderer设置子对象事件列表
-                if (!events)
-                    renderer.__bind_sub_events__ = [];
-                // 为renderer套一个Mediator外壳
-                if (mediatorCls) {
-                    var subMediator = new mediatorCls(renderer);
-                    // 更新渲染器
-                    if (subMediator.skin && subMediator.bridge === mediator.bridge)
-                        renderer = subMediator.skin;
-                    // 托管子中介者，优先托管在声明出来的中间中介者上
-                    (declaredMediator || mediator).delegateMediator(subMediator);
-                    // 设置通用属性
-                    var commonScope = {
-                        $this: mediator,
-                        $data: mediator.viewModel,
-                        $bridge: mediator.bridge,
-                        $currentTarget: currentTarget,
-                        $target: target
-                    };
-                    // 开启该中介者，优先使用dataExp，如果没有则使用当前所有的数据
-                    var data_1;
-                    if (dataExp) {
-                        // 有数据表达式，求出数据表达式的值来
-                        data_1 = evalExp.apply(void 0, [dataExp, mediator.viewModel].concat(subEnvModels.concat().reverse(), [mediator.viewModel, commonScope]));
-                    }
-                    else {
-                        // 没有数据表达式，套用当前所在变量域，且要打平做成一个data
-                        data_1 = extendObject.apply(void 0, [{}, commonScope, mediator.viewModel].concat(subEnvModels));
-                    }
-                    subMediator.open(data_1);
-                    // 缓存子中介者
-                    subMediatorCache.push(subMediator);
+                // 开启该中介者，优先使用dataExp，如果没有则使用当前所有的数据
+                var data_1;
+                if (dataExp) {
+                    // 有数据表达式，求出数据表达式的值来
+                    data_1 = evalExp.apply(void 0, [dataExp, mediator.viewModel].concat(subEnvModels.concat().reverse(), [mediator.viewModel, commonScope]));
                 }
                 else {
-                    // 缓存渲染器对象
-                    subTargetCache.push(renderer);
+                    // 没有数据表达式，套用当前所在变量域，且要打平做成一个data
+                    data_1 = extendObject.apply(void 0, [{}, commonScope, mediator.viewModel].concat(subEnvModels));
                 }
-                // 触发回调，进行内部编译
-                callback && callback(value, renderer, subEnvModels);
-            });
+                subMediator.open(data_1);
+                // 缓存子中介者
+                subMediatorCache.push(subMediator);
+            }
+            else {
+                // 缓存渲染器对象
+                subTargetCache.push(renderer);
+            }
+            // 触发回调，进行内部编译
+            callback && callback(value, renderer, subEnvModels);
+        });
+        this.addBindHandler(mediator, function () {
+            var _a;
             // 如果之前绑定过，则要先销毁之
             if (watcher)
                 watcher.dispose();
