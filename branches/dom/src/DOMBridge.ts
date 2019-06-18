@@ -432,7 +432,7 @@ export default class DOMBridge implements IBridge<Element>
     {
         for(var i:number = 0, len:number = parent.children.length; i < len; i++)
         {
-            parent.removeChild(parent.children.item(i));
+            parent.removeChild(parent.children.item(0));
         }
     }
     

@@ -404,7 +404,7 @@ var DOMBridge = /** @class */ (function () {
      */
     DOMBridge.prototype.removeChildren = function (parent) {
         for (var i = 0, len = parent.children.length; i < len; i++) {
-            parent.removeChild(parent.children.item(i));
+            parent.removeChild(parent.children.item(0));
         }
     };
     /**
