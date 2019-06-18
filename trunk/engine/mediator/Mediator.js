@@ -897,6 +897,11 @@ var Mediator = /** @class */ (function () {
             this._cancelables.splice(index, 1);
         }
     };
+    Mediator.prototype.cancelAll = function () {
+        while (this._cancelables.length > 0) {
+            this._cancelables.pop().cancel();
+        }
+    };
     /**
      * 其他模块被关闭回到当前模块时调用
      *
@@ -1130,10 +1135,7 @@ var Mediator = /** @class */ (function () {
         }
         this._children = null;
         // 取消所有已托管的ICancelable
-        for (var _a = 0, _b = this._cancelables; _a < _b.length; _a++) {
-            var cancel = _b[_a];
-            cancel.cancel();
-        }
+        this.cancelAll();
         this._cancelables = null;
         // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息
         system.nextFrame(function () {

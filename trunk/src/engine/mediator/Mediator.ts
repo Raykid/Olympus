@@ -976,6 +976,14 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
             this._cancelables.splice(index, 1);
         }
     }
+
+    public cancelAll():void
+    {
+        while(this._cancelables.length > 0)
+        {
+            this._cancelables.pop().cancel();
+        }
+    }
     
     /**
      * 其他模块被关闭回到当前模块时调用
@@ -1250,10 +1258,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
         }
         this._children = null;
         // 取消所有已托管的ICancelable
-        for(let cancel of this._cancelables)
-        {
-            cancel.cancel();
-        }
+        this.cancelAll();
         this._cancelables = null;
         // 将observable的销毁拖延到下一帧，因为虽然执行了销毁，但有可能这之后还会使用observable发送消息
         system.nextFrame(()=>{

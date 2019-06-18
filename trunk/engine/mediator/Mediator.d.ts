@@ -361,6 +361,7 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @memberof Mediator
      */
     undelegateCancelable(cancelable: ICancelable): void;
+    cancelAll(): void;
     /**
      * 其他模块被关闭回到当前模块时调用
      *
