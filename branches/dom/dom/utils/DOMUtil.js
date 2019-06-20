@@ -52,6 +52,8 @@ export function listenResize(target, callback) {
     iframe.style.border = "0";
     iframe.style.width = "100%";
     iframe.style.height = "100%";
+    iframe.style.left = "0";
+    iframe.style.top = "0";
     target.insertBefore(iframe, target.children.item(0));
     // 监听iframe的resize事件
     if (iframe.contentWindow)
