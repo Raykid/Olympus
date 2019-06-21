@@ -7,9 +7,10 @@
  * 对象工具集
 */
 /**
- * populate properties
- * @param target        目标obj
- * @param sources       来源obj
+ * 合并属性，无递归
+ *
+ * @param {*} target 目标
+ * @param {...any[]} sources 来源数组
  */
 export declare function extendObject(target: any, ...sources: any[]): any;
 /**
@@ -19,6 +20,17 @@ export declare function extendObject(target: any, ...sources: any[]): any;
  * @returns {any} 复制后的对象
  */
 export declare function cloneObject(target: any, deep?: boolean): any;
+/**
+ * 递归混合属性
+ *
+ * @author Raykid
+ * @date 2019-06-21
+ * @export
+ * @param {*} target 目标
+ * @param {...any[]} sources 来源数组
+ * @returns {*}
+ */
+export declare function mergeObject(target: any, ...sources: any[]): any;
 /**
  * 生成一个随机ID
  */

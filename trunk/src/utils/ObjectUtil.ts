@@ -8,18 +8,18 @@
 */
 
 /**
- * populate properties
- * @param target        目标obj
- * @param sources       来源obj
+ * 合并属性，无递归
+ * 
+ * @param {*} target 目标
+ * @param {...any[]} sources 来源数组
  */
 export function extendObject(target:any, ...sources:any[]):any
 {
-    sources.forEach(function (source: Object): void
-    {
+    sources.forEach(source=>{
         if (!source) return;
-        for (let propName in source)
+        for(let propName in source)
         {
-            if (source.hasOwnProperty(propName))
+            if(source.hasOwnProperty(propName))
             {
                 target[propName] = source[propName];
             }
@@ -50,6 +50,51 @@ export function cloneObject(target:any, deep:boolean=false):any
         newObject[key] = value;
     }
     return newObject;
+}
+
+/**
+ * 递归混合属性
+ *
+ * @author Raykid
+ * @date 2019-06-21
+ * @export
+ * @param {*} target 目标
+ * @param {...any[]} sources 来源数组
+ * @returns {*}
+ */
+export function mergeObject(target:any, ...sources:any[]):any
+{
+    sources.forEach(source=>{
+        if (!source) return;
+        for(let propName in source)
+        {
+            if(source.hasOwnProperty(propName))
+            {
+                const targetProp:any = target[propName];
+                const sourceProp:any = source[propName];
+                if(sourceProp && typeof sourceProp === "object")
+                {
+                    // source对应属性是复杂对象，判断target对应属性是否为复杂对象
+                    if(targetProp && typeof targetProp === "object")
+                    {
+                        // 两边都是复杂对象，混合赋值
+                        mergeObject(targetProp, sourceProp);
+                    }
+                    else
+                    {
+                        // target对应属性是简单对象，赋值source的深度拷贝
+                        target[propName] = cloneObject(sourceProp, true);
+                    }
+                }
+                else
+                {
+                    // source对应属性是简单对象，直接赋值
+                    target[propName] = sourceProp;
+                }
+            }
+        }
+    });
+    return target;
 }
 
 /**

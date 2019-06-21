@@ -7,9 +7,10 @@
  * 对象工具集
 */
 /**
- * populate properties
- * @param target        目标obj
- * @param sources       来源obj
+ * 合并属性，无递归
+ *
+ * @param {*} target 目标
+ * @param {...any[]} sources 来源数组
  */
 export function extendObject(target) {
     var sources = [];
@@ -49,6 +50,48 @@ export function cloneObject(target, deep) {
         newObject[key] = value;
     }
     return newObject;
+}
+/**
+ * 递归混合属性
+ *
+ * @author Raykid
+ * @date 2019-06-21
+ * @export
+ * @param {*} target 目标
+ * @param {...any[]} sources 来源数组
+ * @returns {*}
+ */
+export function mergeObject(target) {
+    var sources = [];
+    for (var _i = 1; _i < arguments.length; _i++) {
+        sources[_i - 1] = arguments[_i];
+    }
+    sources.forEach(function (source) {
+        if (!source)
+            return;
+        for (var propName in source) {
+            if (source.hasOwnProperty(propName)) {
+                var targetProp = target[propName];
+                var sourceProp = source[propName];
+                if (sourceProp && typeof sourceProp === "object") {
+                    // source对应属性是复杂对象，判断target对应属性是否为复杂对象
+                    if (targetProp && typeof targetProp === "object") {
+                        // 两边都是复杂对象，混合赋值
+                        mergeObject(targetProp, sourceProp);
+                    }
+                    else {
+                        // target对应属性是简单对象，赋值source的深度拷贝
+                        target[propName] = cloneObject(sourceProp, true);
+                    }
+                }
+                else {
+                    // source对应属性是简单对象，直接赋值
+                    target[propName] = sourceProp;
+                }
+            }
+        }
+    });
+    return target;
 }
 /**
  * 生成一个随机ID
