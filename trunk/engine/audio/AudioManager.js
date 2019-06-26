@@ -1,9 +1,11 @@
 import * as tslib_1 from "tslib";
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import Dictionary from '../../utils/Dictionary';
 import Shell from "../env/Shell";
 import EngineMessage from "../message/EngineMessage";
 import AudioContextImpl from "./AudioContextImpl";
+import AudioMessage from './AudioMessage';
 import AudioTagImpl from "./AudioTagImpl";
 /**
  * @author Raykid
@@ -18,6 +20,8 @@ import AudioTagImpl from "./AudioTagImpl";
 var AudioManager = /** @class */ (function () {
     function AudioManager() {
         var _this = this;
+        this._loadTupleDict = {};
+        this._playTupleDict = new Dictionary();
         this._soundImpl = new AudioTagImpl();
         // 为WebAudio做兼容处理
         window["AudioContext"] = window["AudioContext"] || window["webkitAudioContext"] || window["mozAudioContext"] || window["msAudioContext"];
@@ -29,6 +33,22 @@ var AudioManager = /** @class */ (function () {
             _this.muteSound = (shell.localStorageGet(AudioManager_1.STORAGE_KEY_MUTE_SOUND) === "true");
             _this.muteMusic = (shell.localStorageGet(AudioManager_1.STORAGE_KEY_MUTE_MUSIC) === "true");
         });
+        core.listen(AudioMessage.AUDIO_LOAD_ENDED, function (url) {
+            var loadTuple = _this._loadTupleDict[url];
+            if (loadTuple) {
+                delete _this._loadTupleDict[url];
+                loadTuple[1]();
+            }
+        });
+        var playEndHandler = function (url, playParams) {
+            var playTuple = _this._playTupleDict.get(playParams);
+            if (playTuple) {
+                _this._playTupleDict.delete(playParams);
+                playTuple[1]();
+            }
+        };
+        core.listen(AudioMessage.AUDIO_PLAY_STOPPED, playEndHandler);
+        core.listen(AudioMessage.AUDIO_PLAY_ENDED, playEndHandler);
     }
     AudioManager_1 = AudioManager;
     /**
@@ -70,7 +90,18 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.loadSound = function (url) {
-        this._soundImpl.load(url);
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var tuple = _this._loadTupleDict[url];
+            if (tuple) {
+                tuple[0].then(resolve).catch(reject);
+            }
+            else {
+                _this._loadTupleDict[url] = [promise, resolve, reject];
+            }
+            _this._soundImpl.load(url);
+        });
+        return promise;
     };
     /**
      * 播放Sound音频，如果没有加载则会先行加载
@@ -79,15 +110,25 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.playSound = function (params) {
-        // 判断静音
-        if (this.muteSound)
-            return;
-        // 停止其他音频
-        if (params.stopOthers) {
-            this.stopAllSound();
-            this.stopAllMusics();
-        }
-        this._soundImpl.play(params);
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            // 判断静音
+            if (_this.muteSound) {
+                resolve();
+                return;
+            }
+            // 停止其他音频
+            if (params.stopOthers) {
+                _this.stopAllSound();
+                _this.stopAllMusics();
+            }
+            var tuple = _this._playTupleDict.get(params);
+            if (!tuple) {
+                _this._playTupleDict.set(params, [promise, resolve, reject]);
+                _this._soundImpl.play(params);
+            }
+        });
+        return promise;
     };
     /**
      * 跳转Sound音频进度
@@ -164,7 +205,18 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.loadMusic = function (url) {
-        this._musicImpl.load(url);
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var tuple = _this._loadTupleDict[url];
+            if (tuple) {
+                tuple[0].then(resolve).catch(reject);
+            }
+            else {
+                _this._loadTupleDict[url] = [promise, resolve, reject];
+            }
+            _this._musicImpl.load(url);
+        });
+        return promise;
     };
     /**
      * 播放Music音频，如果没有加载则会先行加载
@@ -173,15 +225,25 @@ var AudioManager = /** @class */ (function () {
      * @memberof AudioManager
      */
     AudioManager.prototype.playMusic = function (params) {
-        // 判断静音
-        if (this.muteMusic)
-            return;
-        // 停止其他音频
-        if (params.stopOthers) {
-            this.stopAllSound();
-            this.stopAllMusics();
-        }
-        this._musicImpl.play(params);
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            // 判断静音
+            if (_this.muteMusic) {
+                resolve();
+                return;
+            }
+            // 停止其他音频
+            if (params.stopOthers) {
+                _this.stopAllSound();
+                _this.stopAllMusics();
+            }
+            var tuple = _this._playTupleDict.get(params);
+            if (!tuple) {
+                _this._playTupleDict.set(params, [promise, resolve, reject]);
+                _this._musicImpl.play(params);
+            }
+        });
+        return promise;
     };
     /**
      * 跳转Music音频进度

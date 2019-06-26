@@ -163,7 +163,7 @@ var AudioContextImpl = /** @class */ (function () {
                             // 停止播放
                             _this.stop(params.url);
                             // 派发播放完毕事件
-                            core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url);
+                            core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, params.url, params);
                         }
                     };
                     // 要播放之前要起用
@@ -186,11 +186,11 @@ var AudioContextImpl = /** @class */ (function () {
                         if (data.status == AudioStatus.PLAYING) {
                             curTime += deltaTime * 1000;
                             var totalTime = data.node.buffer.duration * 1000;
-                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime);
+                            core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, params.url, curTime, totalTime, params);
                         }
                     });
                     // 派发播放开始事件
-                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url, params);
                     break;
             }
         }
@@ -217,7 +217,7 @@ var AudioContextImpl = /** @class */ (function () {
                     console.warn(err);
                 }
                 // 派发播放停止事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
+                core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url, data.playParams);
             }
         }
     };

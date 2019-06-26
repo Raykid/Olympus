@@ -61,7 +61,7 @@ export default class AudioTagImpl implements IAudio
                 var curTime:number = data.node.currentTime * 1000;
                 var totalTime:number = data.node.duration * 1000;
                 // 派发播放进度事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime);
+                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime, data.playParams);
             }
         };
     }
@@ -109,7 +109,7 @@ export default class AudioTagImpl implements IAudio
                     // 记录播放中
                     this._playingDict[toUrl] = params;
                     // 派发播放开始事件
-                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url, params);
                     // 监听播放进度
                     this.listenProgress(data);
                 }
@@ -117,7 +117,7 @@ export default class AudioTagImpl implements IAudio
             node.onended = ()=>{
                 this.stop(url);
                 // 派发播放完毕事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
+                core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url, data.playParams);
                 // 如果循环则再开
                 if(data.playParams.loop)
                     this.play(data.playParams);
@@ -177,7 +177,7 @@ export default class AudioTagImpl implements IAudio
                     // 记录播放中
                     this._playingDict[toUrl] = params;
                     // 派发播放开始事件
-                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url, params);
                     break;
             }
         }
@@ -196,7 +196,7 @@ export default class AudioTagImpl implements IAudio
             // 设置状态
             data.status = AudioStatus.PAUSED;
             // 派发播放停止事件
-            core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
+            core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url, data.playParams);
         }
     }
 

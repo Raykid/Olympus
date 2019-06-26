@@ -1,8 +1,10 @@
 import { core } from "../../core/Core";
 import { Injectable } from "../../core/injector/Injector";
+import Dictionary from '../../utils/Dictionary';
 import Shell from "../env/Shell";
 import EngineMessage from "../message/EngineMessage";
 import AudioContextImpl from "./AudioContextImpl";
+import AudioMessage from './AudioMessage';
 import AudioTagImpl from "./AudioTagImpl";
 import IAudio, { AudioPlayParams } from "./IAudio";
 
@@ -36,7 +38,28 @@ export default class AudioManager
             this.muteSound = (shell.localStorageGet(AudioManager.STORAGE_KEY_MUTE_SOUND) === "true");
             this.muteMusic = (shell.localStorageGet(AudioManager.STORAGE_KEY_MUTE_MUSIC) === "true");
         });
+        core.listen(AudioMessage.AUDIO_LOAD_ENDED, (url:string)=>{
+            const loadTuple = this._loadTupleDict[url];
+            if(loadTuple)
+            {
+                delete this._loadTupleDict[url];
+                loadTuple[1]();
+            }
+        });
+        const playEndHandler = (url:string, playParams:AudioPlayParams)=>{
+            const playTuple = this._playTupleDict.get(playParams);
+            if(playTuple)
+            {
+                this._playTupleDict.delete(playParams);
+                playTuple[1]();
+            }
+        };
+        core.listen(AudioMessage.AUDIO_PLAY_STOPPED, playEndHandler);
+        core.listen(AudioMessage.AUDIO_PLAY_ENDED, playEndHandler);
     }
+
+    private _loadTupleDict:{[url:string]:[Promise<void>, ()=>void, (reason:any)=>void]} = {};
+    private _playTupleDict:Dictionary<AudioPlayParams, [Promise<void>, ()=>void, (reason:any)=>void]> = new Dictionary();
 
     private _soundImpl:IAudio;
     /**
@@ -76,9 +99,21 @@ export default class AudioManager
      * @param {string} url 音频地址
      * @memberof AudioManager
      */
-    public loadSound(url:string):void
+    public loadSound(url:string):Promise<void>
     {
-        this._soundImpl.load(url);
+        const promise:Promise<void> = new Promise((resolve, reject)=>{
+            const tuple = this._loadTupleDict[url];
+            if(tuple)
+            {
+                tuple[0].then(resolve).catch(reject);
+            }
+            else
+            {
+                this._loadTupleDict[url] = [promise, resolve, reject];
+            }
+            this._soundImpl.load(url);
+        });
+        return promise;
     }
 
     /**
@@ -87,17 +122,29 @@ export default class AudioManager
      * @param {AudioPlayParams} params 音频播放参数
      * @memberof AudioManager
      */
-    public playSound(params:AudioPlayParams):void
+    public playSound(params:AudioPlayParams):Promise<void>
     {
-        // 判断静音
-        if(this.muteSound) return;
-        // 停止其他音频
-        if(params.stopOthers)
-        {
-            this.stopAllSound();
-            this.stopAllMusics();
-        }
-        this._soundImpl.play(params);
+        const promise:Promise<void> = new Promise((resolve, reject)=>{
+            // 判断静音
+            if(this.muteSound)
+            {
+                resolve();
+                return;
+            }
+            // 停止其他音频
+            if(params.stopOthers)
+            {
+                this.stopAllSound();
+                this.stopAllMusics();
+            }
+            const tuple = this._playTupleDict.get(params);
+            if(!tuple)
+            {
+                this._playTupleDict.set(params, [promise, resolve, reject]);
+                this._soundImpl.play(params);
+            }
+        });
+        return promise;
     }
 
     /**
@@ -182,9 +229,21 @@ export default class AudioManager
      * @param {string} url 音频地址
      * @memberof AudioManager
      */
-    public loadMusic(url:string):void
+    public loadMusic(url:string):Promise<void>
     {
-        this._musicImpl.load(url);
+        const promise:Promise<void> = new Promise((resolve, reject)=>{
+            const tuple = this._loadTupleDict[url];
+            if(tuple)
+            {
+                tuple[0].then(resolve).catch(reject);
+            }
+            else
+            {
+                this._loadTupleDict[url] = [promise, resolve, reject];
+            }
+            this._musicImpl.load(url);
+        });
+        return promise;
     }
 
     /**
@@ -193,17 +252,29 @@ export default class AudioManager
      * @param {AudioPlayParams} [params] 音频参数
      * @memberof AudioManager
      */
-    public playMusic(params:AudioPlayParams):void
+    public playMusic(params:AudioPlayParams):Promise<void>
     {
-        // 判断静音
-        if(this.muteMusic) return;
-        // 停止其他音频
-        if(params.stopOthers)
-        {
-            this.stopAllSound();
-            this.stopAllMusics();
-        }
-        this._musicImpl.play(params);
+        const promise:Promise<void> = new Promise((resolve, reject)=>{
+            // 判断静音
+            if(this.muteMusic)
+            {
+                resolve();
+                return;
+            }
+            // 停止其他音频
+            if(params.stopOthers)
+            {
+                this.stopAllSound();
+                this.stopAllMusics();
+            }
+            const tuple = this._playTupleDict.get(params);
+            if(!tuple)
+            {
+                this._playTupleDict.set(params, [promise, resolve, reject]);
+                this._musicImpl.play(params);
+            }
+        });
+        return promise;
     }
     
     /**

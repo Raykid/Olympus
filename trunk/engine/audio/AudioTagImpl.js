@@ -59,7 +59,7 @@ var AudioTagImpl = /** @class */ (function () {
                 var curTime = data.node.currentTime * 1000;
                 var totalTime = data.node.duration * 1000;
                 // 派发播放进度事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime);
+                core.dispatch(AudioMessage.AUDIO_PLAY_PROGRESS, data.playParams.url, curTime, totalTime, data.playParams);
             }
         };
     };
@@ -102,7 +102,7 @@ var AudioTagImpl = /** @class */ (function () {
                     // 记录播放中
                     _this._playingDict[toUrl] = params;
                     // 派发播放开始事件
-                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url, params);
                     // 监听播放进度
                     _this.listenProgress(data);
                 }
@@ -110,7 +110,7 @@ var AudioTagImpl = /** @class */ (function () {
             node.onended = function () {
                 _this.stop(url);
                 // 派发播放完毕事件
-                core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url);
+                core.dispatch(AudioMessage.AUDIO_PLAY_ENDED, url, data.playParams);
                 // 如果循环则再开
                 if (data.playParams.loop)
                     _this.play(data.playParams);
@@ -168,7 +168,7 @@ var AudioTagImpl = /** @class */ (function () {
                     // 记录播放中
                     this._playingDict[toUrl] = params;
                     // 派发播放开始事件
-                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url);
+                    core.dispatch(AudioMessage.AUDIO_PLAY_STARTED, params.url, params);
                     break;
             }
         }
@@ -185,7 +185,7 @@ var AudioTagImpl = /** @class */ (function () {
             // 设置状态
             data.status = AudioStatus.PAUSED;
             // 派发播放停止事件
-            core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url);
+            core.dispatch(AudioMessage.AUDIO_PLAY_STOPPED, url, data.playParams);
         }
     };
     /**

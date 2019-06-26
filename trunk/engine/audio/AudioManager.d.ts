@@ -13,6 +13,8 @@ export default class AudioManager {
     private static STORAGE_KEY_MUTE_SOUND;
     private static STORAGE_KEY_MUTE_MUSIC;
     constructor();
+    private _loadTupleDict;
+    private _playTupleDict;
     private _soundImpl;
     /**
      * 注册Sound音频实现对象
@@ -34,14 +36,14 @@ export default class AudioManager {
      * @param {string} url 音频地址
      * @memberof AudioManager
      */
-    loadSound(url: string): void;
+    loadSound(url: string): Promise<void>;
     /**
      * 播放Sound音频，如果没有加载则会先行加载
      *
      * @param {AudioPlayParams} params 音频播放参数
      * @memberof AudioManager
      */
-    playSound(params: AudioPlayParams): void;
+    playSound(params: AudioPlayParams): Promise<void>;
     /**
      * 跳转Sound音频进度
      *
@@ -91,14 +93,14 @@ export default class AudioManager {
      * @param {string} url 音频地址
      * @memberof AudioManager
      */
-    loadMusic(url: string): void;
+    loadMusic(url: string): Promise<void>;
     /**
      * 播放Music音频，如果没有加载则会先行加载
      *
      * @param {AudioPlayParams} [params] 音频参数
      * @memberof AudioManager
      */
-    playMusic(params: AudioPlayParams): void;
+    playMusic(params: AudioPlayParams): Promise<void>;
     /**
      * 跳转Music音频进度
      *
