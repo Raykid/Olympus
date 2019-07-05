@@ -11,8 +11,7 @@ if(!cmd) throw new Error("没有提供需要执行的命令");
 switch(cmd)
 {
 	case "init":
-		const appName = process.argv[3];
-		if(!appName) throw new Error("没有提供项目名称");
+		const appName = process.argv[3] || "";
 		init(appName);
 		break;
 	default:

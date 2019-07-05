@@ -12,8 +12,6 @@
 import FastClick from 'fastclick';
 import DOMBridge from 'olympus-r-dom/DOMBridge';
 import EgretBridge from "olympus-r-egret/EgretBridge";
-import JSFile, { JSLoadMode } from 'olympus-r/core/interfaces/JSFile';
-import { assetsManager } from 'olympus-r/engine/assets/AssetsManager';
 import { query } from "olympus-r/engine/env/Query";
 import NetMessage from "olympus-r/engine/net/NetMessage";
 import Olympus, { core } from "olympus-r/Olympus";
@@ -23,51 +21,7 @@ import { DOMPrompt, EgretPrompt } from './src/component/prompt/Prompt';
 import './src/global/global.scss';
 import Homepage from "./src/module/Homepage/Homepage";
 
-function asyncLoadJsFiles(jsFiles:JSFile[], ordered?:boolean):Promise<void>
-{
-    return new Promise((resolve, reject)=>{
-        assetsManager.loadJsFiles(jsFiles, err=>{
-            if(err)
-                reject(err);
-            else
-                resolve();
-        }, ordered);
-    });
-}
-
-async function importEgretLibs():Promise<void>
-{
-    await asyncLoadJsFiles([
-        {
-            url: "./egret/libs/modules/egret/egret.min.js",
-            mode: JSLoadMode.TAG
-        },
-        {
-            url: "./egret/libs/modules/egret/egret.web.min.js",
-            mode: JSLoadMode.TAG
-        },
-        {
-            url: "./egret/libs/modules/res/res.min.js",
-            mode: JSLoadMode.TAG
-        },
-        {
-            url: "./egret/libs/modules/eui/eui.min.js",
-            mode: JSLoadMode.TAG
-        },
-        {
-            url: "./egret/libs/modules/tween/tween.min.js",
-            mode: JSLoadMode.TAG
-        },
-        {
-            url: "./egret/libs/modules/game/game.min.js",
-            mode: JSLoadMode.TAG
-        }
-    ]);
-}
-
 (async ()=>{
-    // 加载egret
-    await importEgretLibs();
     // 启动Olympus
     Olympus.startup({
         bridges: [
