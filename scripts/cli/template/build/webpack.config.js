@@ -1,26 +1,22 @@
-'use strict';
+'use strict'
 const path = require('path');
 const buildConfig = require('./config');
-
+const webpack = require('webpack');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const webpackConfig = {
     mode: 'production',
-
     entry: buildConfig.entry,
-
     output: {
         filename: '[name].js',
         chunkFilename: 'bundle-[name].[chunkhash:10].js',
         path: path.join(__dirname, '../', buildConfig.distPath),
     },
-
     resolve: {
         extensions: ['.js', '.ts'],
     },
-
     externals: {
     },
-
     module: {
         rules: [
             {
@@ -37,16 +33,13 @@ const webpackConfig = {
                 }
             },
             {
-                test: /\.css$/,
+                test: /\.s?css$/,
                 use: [
                     {
                         loader: 'style-loader'
                     },
                     {
-                        loader: 'css-loader',
-                        options: {
-                            minimize: true,
-                        }
+                        loader: 'css-loader'
                     },
                     {
                         loader: 'postcss-loader',
@@ -87,7 +80,12 @@ const webpackConfig = {
             }
         ]
     },
-
+    plugins: [
+        new BundleAnalyzerPlugin({
+            analyzerMode: "static",
+            openAnalyzer: false
+        })
+    ],
     // 这个用来关闭webpack警告建议 T_T
     performance: {
         hints: false,

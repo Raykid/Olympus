@@ -1,6 +1,6 @@
 'use strict';
 const webpack = require('webpack');
-const webpackConfig = require('./webpack.config');
+const webpackConfig = require('./webpack.config.dev');
 const config = require('./config');
 const utils = require('./utils');
 const merge = require('webpack-merge');
@@ -28,6 +28,7 @@ module.exports = async () => {
                             warnings: false,
                             errors: true,
                         },
+                        proxy: {'/api': 'http://t1.6tiantian.com'},
                         publicPath: '/',
                         quiet: true,
                         watchOptions: {

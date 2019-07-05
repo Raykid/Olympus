@@ -72,7 +72,8 @@ module.exports = function (data) {
                 const json = path.join(publishPath, verName, "resource/**/*.json");
                 const png = path.join(publishPath, verName, "resource/**/*.png");
                 const jpg = path.join(publishPath, verName, "resource/**/*.jpg");
-                gulp.src([json, png, jpg])
+                const fnt = path.join(publishPath, verName, "resource/**/*.fnt");
+                gulp.src([json, png, jpg, fnt])
                     .pipe(gulp.dest(path.join(buildConfig.distPath, buildConfig.egretPath, "./resource")))
                     .once("end", (evt) => {
                         console.log("拷贝完毕，输出目录：" + buildConfig.distPath);
@@ -113,18 +114,15 @@ module.exports = function (data) {
             return new Promise((resolve, reject) => {
                 console.log("-----------------------------------------------");
                 console.log("开始执行webpack打包");
-                const config = require('./webpack.config');
+                let config;
                 // 判断环境以调整打包策略
                 switch(buildConfig.env)
                 {
-                    // 默认dev环境下不压缩混淆，且生成source-map文件
                     case "dev":
-                        config.mode = "development";
-                        config.devtool = "cheap-source-map";
+                        config  = require('./webpack.config.dev');
                         break;
-                    // 其他环境下压缩混淆，不生成source-map文件
                     default:
-                        config.mode = "production";
+                        config  = require('./webpack.config');
                         break;
                 }
                 webpack(config, function (err, stats) {
@@ -189,7 +187,7 @@ module.exports = function (data) {
                 console.log("-----------------------------------------------");
                 console.log("压缩PNG8");
                 if (buildConfig.usePngmin) {
-                    require('./build/pngmin')(buildConfig.pngminPath, buildConfig.distPath, () => {
+                    require('./pngmin')(buildConfig.pngminPath, buildConfig.distPath, () => {
                         resolve();
                     });
                 } else {

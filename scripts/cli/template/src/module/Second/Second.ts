@@ -3,19 +3,19 @@ import { BindOn, BindValue } from "olympus-r/engine/injector/Injector";
 import { moduleManager } from "olympus-r/engine/module/ModuleManager";
 import { panelManager } from "olympus-r/engine/panel/PanelManager";
 import SceneMediator from "olympus-r/engine/scene/SceneMediator";
-import "./Second.css";
-import template from "./Second.html";
+import skin from "./Second.html";
+import "./Second.scss";
 
-@DOMMediatorClass("Second", template)
+@DOMMediatorClass("Second", skin)
 export default class Second extends SceneMediator
 {
     @BindValue("textContent", "'这是第二个模块，是个DOM模块'")
-    private text:HTMLElement;
+    public text:HTMLElement;
     @BindOn("click", function(){
         panelManager.confirm(
             "回到首页？",
             ()=>moduleManager.close(Second)
         );
     })
-    private btn:HTMLElement;
+    public btn:HTMLElement;
 }

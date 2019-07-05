@@ -1,0 +1,17 @@
+body {
+    margin: 0;
+    font-family: san-francisco, sans-serif;
+    background: transparent !important;
+}
+
+* {
+    user-select: none;
+    // 禁止IOS、安卓长按图片下载
+    -webkit-touch-callout: none;
+    // 隐藏安卓点击的高亮背景
+    -webkit-tap-highlight-color: transparent;
+
+    input {
+        user-select: auto;
+    }
+}

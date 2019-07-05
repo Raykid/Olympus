@@ -1,27 +1,27 @@
-import { DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
-import { EgretMediatorClass } from "olympus-r-egret/egret/injector/Injector";
+import { BindCSS, DOMMediatorClass } from "olympus-r-dom/dom/injector/Injector";
+import { EgretMediatorClass } from 'olympus-r-egret/egret/injector/Injector';
 import { BindFor, BindIf, BindOn, BindValue } from "olympus-r/engine/injector/Injector";
 import IPromptPanel, { IPromptParams } from "olympus-r/engine/panel/IPromptPanel";
 import PanelMediator from "olympus-r/engine/panel/PanelMediator";
-import template from "./Prompt.html";
+import skin from "./Prompt.html";
+import './Prompt.scss';
 
-@DOMMediatorClass("DOMPrompt", template)
-export class DOMPrompt extends PanelMediator implements IPromptPanel
+@DOMMediatorClass("DOMPrompt", skin)
+export class DOMPrompt extends PanelMediator<HTMLElement> implements IPromptPanel
 {
     @BindIf("!params.handlers || params.handlers.length === 0")
     @BindOn("click", "$this.close()")
     public btn_close:HTMLElement;
     @BindIf("params.title != null")
-    public itm_title:HTMLElement;
     @BindValue("textContent", "params.title")
     public txt_title:HTMLElement;
     @BindValue("textContent", "params.msg")
     public txt_content:HTMLElement;
     @BindFor("handler of params.handlers")
-    @BindValue({
-        "txt_button.textContent": "handler.text || handler.data",
-        className: "'button ' + (handler.buttonType == 1 ? 'important' : 'normal')",
-        "style.left": "handleButtonLeft($key)"
+    @BindValue("textContent", "handler.text || handler.data")
+    @BindCSS({
+        important: "handler.buttonType === 1",
+        normal: "handler.buttonType !== 1"
     })
     @BindOn("click", `
         $this.close();
@@ -29,10 +29,12 @@ export class DOMPrompt extends PanelMediator implements IPromptPanel
     `)
     public lst_buttons:HTMLElement;
 
+    private _params:IPromptParams;
+
     public onOpen():void
     {
         this.viewModel = {
-            params: {
+            params: this._params || {
                 title: null,
                 msg: null,
                 handlers: []
@@ -54,7 +56,11 @@ export class DOMPrompt extends PanelMediator implements IPromptPanel
 
     public update(params:IPromptParams):void
     {
-        this.viewModel.params = params;
+        this._params = params;
+        if(this.viewModel)
+        {
+            this.viewModel.params = this._params;
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-cli",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Olympus cli工具",
   "bin": {
     "olympus-r-cli": "bin.js"
@@ -20,6 +20,6 @@
   "license": "ISC",
   "dependencies": {
     "copy": "^0.3.2",
-    "npm": "^6.4.1"
+    "npm": "^6.10.0"
   }
 }
