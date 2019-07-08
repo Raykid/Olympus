@@ -95,12 +95,7 @@ module.exports = function(source)
             const moduleName = resultImport[1] && resultImport[3] ? resultImport[2] : "default";
             // 将语句替换为动态import语句，无需移除静态引用，因为webpack会剔除掉无用引用
             const tail = source.substr(endIndex);
-            source = `${source.substring(0, beginIndex)}(async ()=>{
-                maskManager.showLoading(null, "__load_module__");
-                const mod = await import(${importPath});
-                maskManager.hideLoading("__load_module__");
-                return await moduleManager.open(mod.${moduleName}${leftParams});
-            })()`;
+            source = `${source.substring(0, beginIndex)}(async ()=>{maskManager.showLoading(null, "__load_module__");const mod = await import(${importPath});maskManager.hideLoading("__load_module__");return await moduleManager.open(mod.${moduleName}${leftParams});})()`;
             // 确保引用了maskManager
             if(!regMaskManager.test(source))
             {
