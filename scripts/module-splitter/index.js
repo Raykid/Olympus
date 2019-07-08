@@ -99,7 +99,8 @@ module.exports = function(source)
             // 确保引用了maskManager
             if(!regMaskManager.test(source))
             {
-                source = "import { maskManager } from 'olympus-r/engine/mask/MaskManager';\n" + source;
+                // 这里不能加空行，因为要保证不增加新的行以打乱js.map的断点行数
+                source = "import { maskManager } from 'olympus-r/engine/mask/MaskManager';" + source;
             }
             // 修改moduleManager.open正则表达式的匹配位置
             fromIndex = source.length;
