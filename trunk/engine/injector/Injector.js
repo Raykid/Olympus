@@ -80,6 +80,10 @@ export function MediatorClass(moduleName) {
                         // 不认识的皮肤类型，直接赋值
                         $skin = value;
                     }
+                    // 如果还没有原始皮肤，则给一个
+                    if ($skin && !oriSkin) {
+                        instance.oriSkin = oriSkin = $skin;
+                    }
                 }
             });
             // 如果本来就有皮肤，则赋值皮肤

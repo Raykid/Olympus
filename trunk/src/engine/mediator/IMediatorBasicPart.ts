@@ -65,6 +65,15 @@ export default interface IMediatorBasicPart<S = any, OD = any, CD = any> extends
      * @memberof IMediatorBasicPart
      */
     skin:S;
+    
+    /**
+     * 原始皮肤
+     *
+     * @type {S}
+     * @memberof IMediatorBasicPart
+     */
+    oriSkin:S;
+    
     /**
      * 模块初始消息的返回数据
      * 
