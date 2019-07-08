@@ -97,7 +97,13 @@ export default class Mediator<S = any, OD = any, CD = any> implements IMediator<
      * @memberof Mediator
      */
     skin: S;
-    private oriSkin;
+    /**
+     * 原始皮肤，即传入构造函数的皮肤
+     *
+     * @type {S}
+     * @memberof Mediator
+     */
+    oriSkin: S;
     /**
      * 获取中介者是否已被销毁
      *

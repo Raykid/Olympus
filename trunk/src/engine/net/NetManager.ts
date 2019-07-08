@@ -38,8 +38,8 @@ export default class NetManager
         // 如果消息是通讯消息则做处理
         if(msg instanceof RequestData)
         {
-            // 添加遮罩
-            if(msg.__useMask) maskManager.showLoading(null, "net");
+            // 需要有对应返回才能添加遮罩
+            if(msg.__useMask && msg.__params.response) maskManager.showLoading(null, "net");
             // 指定消息参数连接上公共参数作为参数
             extendObject(msg.__params.data, commonData);
             // 发送消息
