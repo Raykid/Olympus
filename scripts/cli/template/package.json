@@ -4,6 +4,7 @@
     "css-loader": "^3.0.0",
     "cssnano": "^4.1.7",
     "del": "^5.0.0",
+    "file-loader": "^4.0.0",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "gulp": "^4.0.2",
     "gulp-pngmin": "^0.2.1",
