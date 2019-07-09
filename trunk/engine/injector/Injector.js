@@ -80,10 +80,6 @@ export function MediatorClass(moduleName) {
                         // 不认识的皮肤类型，直接赋值
                         $skin = value;
                     }
-                    // 如果还没有原始皮肤，则给一个
-                    if ($skin && !oriSkin) {
-                        instance.oriSkin = oriSkin = $skin;
-                    }
                 }
             });
             // 如果本来就有皮肤，则赋值皮肤
@@ -280,6 +276,7 @@ export function SubMediator(arg1, arg2, arg3) {
                     declaredMediatorCls = declaredCls;
                 var mediator;
                 var temp = instance[propertyKey];
+                var cls;
                 // 篡改属性
                 Object.defineProperty(instance, propertyKey, {
                     configurable: true,
@@ -307,6 +304,10 @@ export function SubMediator(arg1, arg2, arg3) {
                         else if (value) {
                             // 赋值皮肤
                             skin = value;
+                            // 如果有声明类，实例化类
+                            if (cls) {
+                                instance[propertyKey] = temp = new cls(skin);
+                            }
                             // 如果存在中介者，则额外赋值中介者皮肤
                             if (mediator) {
                                 if (mediator.skin && mediator.status < MediatorStatus.OPENED) {
@@ -373,10 +374,9 @@ export function SubMediator(arg1, arg2, arg3) {
                 }
                 else if (temp === undefined) {
                     // 优先使用是中介者类的元数据类型，其次使用装饰器提供的中介者类型
-                    var cls = declaredMediatorCls || mediatorCls;
+                    cls = declaredMediatorCls || mediatorCls;
                     if (!cls)
                         throw new Error("必须在类型声明或装饰器中至少一处提供Mediator的类型");
-                    instance[propertyKey] = temp = new cls(skin);
                 }
                 // 执行回调
                 var handlers = subHandlerDict.get(mediator);

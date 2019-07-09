@@ -15,6 +15,9 @@
  * @param {*} target 替换成为的显示
  */
 export function replaceDisplay(bridge, current, target) {
+    // 如果俩皮肤一样，则啥也不干
+    if (current === target)
+        return;
     // 两个皮肤必须都是隶属桥的皮肤
     if (bridge.isMySkin(target) && bridge.isMySkin(current)) {
         var parent = bridge.getParent(current);

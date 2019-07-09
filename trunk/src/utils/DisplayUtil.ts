@@ -18,6 +18,8 @@ import IBridge from "../engine/bridge/IBridge";
  */
 export function replaceDisplay(bridge:IBridge, current:any, target:any):void
 {
+    // 如果俩皮肤一样，则啥也不干
+    if(current === target) return;
     // 两个皮肤必须都是隶属桥的皮肤
     if(bridge.isMySkin(target) && bridge.isMySkin(current))
     {
