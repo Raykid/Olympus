@@ -32,30 +32,16 @@ export function shuffle<T extends any[]>(a: T): T
  * @param begin 	起始位置，默认为0
  * @param end		结束位置，默认为数组长度
  */
-export function randomize<T extends any[]>(arr: T, count?: number, begin?: number, end?: number): T
+export function randomize<T extends any[]>(arr:T, count:number=-1, begin:number=-1, end:number=-1):T
 {
-    if (!arr || begin < 0) throw new Error("invalid argument");
+    if (!arr) throw new Error("invalid argument");
 
     arr = arr.concat() as T;
-    let len: number = arr.length;
+    const len: number = arr.length;
 
-    end = end >> 0;
-    if (!(end >= 0 && end <= len))
-    {
-        end = len;
-    }
-
-    begin = begin >> 0;
-    if (!(begin > 0))
-    {
-        begin = 0;
-    }
-
-    count = count >> 0;
-    if (!(count >= 0 && count < end - begin))
-    {
-        count = end - begin;
-    }
+    if(begin < 0) begin = 0;
+    if(end < 0) end = len;
+    if(count < 0) count = end - begin;
 
     let arr2: T = <T>[];
     let end2: number = begin + count;

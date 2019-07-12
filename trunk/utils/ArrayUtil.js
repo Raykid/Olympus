@@ -29,22 +29,19 @@ export function shuffle(a) {
  * @param end		结束位置，默认为数组长度
  */
 export function randomize(arr, count, begin, end) {
-    if (!arr || begin < 0)
+    if (count === void 0) { count = -1; }
+    if (begin === void 0) { begin = -1; }
+    if (end === void 0) { end = -1; }
+    if (!arr)
         throw new Error("invalid argument");
     arr = arr.concat();
     var len = arr.length;
-    end = end >> 0;
-    if (!(end >= 0 && end <= len)) {
-        end = len;
-    }
-    begin = begin >> 0;
-    if (!(begin > 0)) {
+    if (begin < 0)
         begin = 0;
-    }
-    count = count >> 0;
-    if (!(count >= 0 && count < end - begin)) {
+    if (end < 0)
+        end = len;
+    if (count < 0)
         count = end - begin;
-    }
     var arr2 = [];
     var end2 = begin + count;
     for (var i = begin; i < end2; i++) {
