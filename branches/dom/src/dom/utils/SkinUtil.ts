@@ -99,6 +99,24 @@ function doCopyRef(fromEle:Element, fromStr:string, to:any):void
     while(res = reg.exec(fromStr))
     {
         var id:string = res[2] || res[3];
+        let desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(to, id);
+        if(desc)
+        {
+            if(!desc.get && !desc.set)
+            {
+                desc.writable = true;
+            }
+        }
+        else
+        {
+            desc = {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: to[id]
+            };
+        }
+        Object.defineProperty(to, id, desc);
         to[id] = fromEle.querySelector("#" + id);
     }
 }

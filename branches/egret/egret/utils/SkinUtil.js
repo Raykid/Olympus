@@ -43,8 +43,24 @@ export function wrapSkin(mediator, skin) {
             for (var _i = 0, _a = comp.skin.skinParts; _i < _a.length; _i++) {
                 var name = _a[_i];
                 var target = comp[name];
-                if (!needJudgeDescendant || isDescendant(target, skin))
+                if (!needJudgeDescendant || isDescendant(target, skin)) {
+                    var desc = Object.getOwnPropertyDescriptor(mediator, name);
+                    if (desc) {
+                        if (!desc.get && !desc.set) {
+                            desc.writable = true;
+                        }
+                    }
+                    else {
+                        desc = {
+                            configurable: true,
+                            enumerable: true,
+                            writable: true,
+                            value: mediator[name]
+                        };
+                    }
+                    Object.defineProperty(mediator, name, desc);
                     mediator[name] = target;
+                }
             }
         }
     }

@@ -55,7 +55,27 @@ export function wrapSkin(mediator:IMediator<egret.DisplayObject>, skin:any):egre
             {
                 var target:egret.DisplayObject = comp[name];
                 if(!needJudgeDescendant || isDescendant(target, skin))
+                {
+                    let desc:PropertyDescriptor = Object.getOwnPropertyDescriptor(mediator, name);
+                    if(desc)
+                    {
+                        if(!desc.get && !desc.set)
+                        {
+                            desc.writable = true;
+                        }
+                    }
+                    else
+                    {
+                        desc = {
+                            configurable: true,
+                            enumerable: true,
+                            writable: true,
+                            value: mediator[name]
+                        };
+                    }
+                    Object.defineProperty(mediator, name, desc);
                     mediator[name] = target;
+                }
             }
         }
     }
