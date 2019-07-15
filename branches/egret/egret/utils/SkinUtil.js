@@ -45,21 +45,16 @@ export function wrapSkin(mediator, skin) {
                 var target = comp[name];
                 if (!needJudgeDescendant || isDescendant(target, skin)) {
                     var desc = Object.getOwnPropertyDescriptor(mediator, name);
-                    if (desc) {
-                        if (!desc.get && !desc.set) {
-                            desc.writable = true;
-                        }
+                    if (desc && desc.hasOwnProperty("value") && !desc.writable) {
+                        desc.writable = true;
                     }
-                    else {
-                        desc = {
-                            configurable: true,
-                            enumerable: true,
-                            writable: true,
-                            value: mediator[name]
-                        };
+                    try {
+                        if (desc)
+                            Object.defineProperty(mediator, name, desc);
+                        mediator[name] = target;
                     }
-                    Object.defineProperty(mediator, name, desc);
-                    mediator[name] = target;
+                    catch (err) {
+                    }
                 }
             }
         }
