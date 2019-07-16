@@ -133,8 +133,8 @@ export function load(params) {
         // 停止计时
         timeoutId && clearTimeout(timeoutId);
         timeoutId = 0;
-        // 失败重试
-        if (retryTimes > 0) {
+        // 失败重试，只有在状态码以5开头时才重试
+        if (Math.floor(xhr.status / 100) === 5 && retryTimes > 0) {
             // 没有超过重试上限则重试
             abortAndRetry();
         }
