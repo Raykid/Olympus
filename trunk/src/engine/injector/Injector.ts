@@ -395,6 +395,8 @@ export function SubMediator(arg1:any, arg2?:any, arg3?:EvalExp):any
                             if(cls)
                             {
                                 instance[propertyKey] = temp = new cls(skin);
+                                temp.skin = null;
+                                temp.skin = skin;
                             }
                             // 如果存在中介者，则额外赋值中介者皮肤
                             if(mediator)
