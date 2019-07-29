@@ -31,9 +31,9 @@
     "olympus-r-dom": "^0.6.26",
     "olympus-r-egret": "^0.7.6"
   },
-  "name": "interactivelive",
+  "name": "$a-{appname}",
   "version": "1.0.0",
-  "description": "InteractiveLive项目",
+  "description": "$a-{appName}项目",
   "main": "index.js",
   "scripts": {
     "dev": "node_modules/.bin/webpack-dev-server --inline --host 0.0.0.0 --progress --config build/dev-server.js",
