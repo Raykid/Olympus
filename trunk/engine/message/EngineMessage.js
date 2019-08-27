@@ -17,6 +17,14 @@ var EngineMessage = /** @class */ (function () {
      * @memberof EngineMessage
      */
     EngineMessage.INITIALIZED = "initialized";
+    /**
+     * 首模块开启完毕消息
+     *
+     * @static
+     * @type {string}
+     * @memberof EngineMessage
+     */
+    EngineMessage.FIRST_MODULE_OPENED = "firstModuleOpened";
     return EngineMessage;
 }());
 export default EngineMessage;

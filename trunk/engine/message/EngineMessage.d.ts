@@ -15,4 +15,12 @@ export default class EngineMessage {
      * @memberof EngineMessage
      */
     static INITIALIZED: string;
+    /**
+     * 首模块开启完毕消息
+     *
+     * @static
+     * @type {string}
+     * @memberof EngineMessage
+     */
+    static FIRST_MODULE_OPENED: string;
 }

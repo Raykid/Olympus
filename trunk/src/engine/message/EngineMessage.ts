@@ -16,4 +16,13 @@ export default class EngineMessage
      * @memberof EngineMessage
      */
     public static INITIALIZED:string = "initialized";
+
+    /**
+     * 首模块开启完毕消息
+     *
+     * @static
+     * @type {string}
+     * @memberof EngineMessage
+     */
+    public static FIRST_MODULE_OPENED:string = "firstModuleOpened";
 }

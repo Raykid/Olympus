@@ -213,6 +213,8 @@ export default class Engine
             var parent:Element = this._loadElement.parentElement;
             parent && parent.removeChild(this._loadElement);
         }
+        // 派发首模块开启完毕消息
+        core.dispatch(EngineMessage.FIRST_MODULE_OPENED);
     }
 }
 /** 再额外导出一个单例 */

@@ -229,6 +229,8 @@ var Engine = /** @class */ (function () {
             var parent = this._loadElement.parentElement;
             parent && parent.removeChild(this._loadElement);
         }
+        // 派发首模块开启完毕消息
+        core.dispatch(EngineMessage.FIRST_MODULE_OPENED);
     };
     Engine = tslib_1.__decorate([
         Injectable
