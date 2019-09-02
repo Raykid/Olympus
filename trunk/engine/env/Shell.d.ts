@@ -61,9 +61,14 @@ export default class Shell implements IShell {
     /**
      * 关闭窗口
      *
+     * @author Raykid
+     * @date 2019-09-02
+     * @param {{[key:string]:any}} [params]
      * @memberof Shell
      */
-    close(): void;
+    close(params?: {
+        [key: string]: any;
+    }): void;
     /*************************** 下面是本地存储接口 ***************************/
     /**
      * 获取本地存储

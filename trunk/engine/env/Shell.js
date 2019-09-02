@@ -107,11 +107,14 @@ var Shell = /** @class */ (function () {
     /**
      * 关闭窗口
      *
+     * @author Raykid
+     * @date 2019-09-02
+     * @param {{[key:string]:any}} [params]
      * @memberof Shell
      */
-    Shell.prototype.close = function () {
+    Shell.prototype.close = function (params) {
         if (this._proxy)
-            this._proxy.close();
+            this._proxy.close(params);
         else
             window.close();
     };

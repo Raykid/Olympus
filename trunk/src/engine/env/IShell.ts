@@ -58,7 +58,7 @@ export default interface IShell
      * 
      * @memberof IShell
      */
-    close():void;
+    close(params?:{[key:string]:any}):void;
 
     /*************************** 下面是本地存储接口 ***************************/
 

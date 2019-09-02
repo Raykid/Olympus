@@ -125,12 +125,15 @@ export default class Shell implements IShell
 
     /**
      * 关闭窗口
-     * 
+     *
+     * @author Raykid
+     * @date 2019-09-02
+     * @param {{[key:string]:any}} [params]
      * @memberof Shell
      */
-    public close():void
+    public close(params?:{[key:string]:any}):void
     {
-        if(this._proxy) this._proxy.close();
+        if(this._proxy) this._proxy.close(params);
         else window.close();
     }
 
