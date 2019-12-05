@@ -14,15 +14,17 @@ async function start(dict)
     // await run(wrapPath("../node_modules/typescript/bin/tsc"), "-p", wrapPath("../trunk/tsconfig_deploy.json"));
     // console.log("开始丑化 Olympus.js ==> Olympus.min.js");
     // await run(wrapPath("../node_modules/uglify-js/bin/uglifyjs"), wrapPath("../trunk/Olympus.js"), "-o", wrapPath("../trunk/Olympus.min.js"));
-    console.log("开始编译 DOM.js");
+    console.log("开始编译 DOM");
     await run(wrapPath("../node_modules/typescript/bin/tsc"), "-p", wrapPath("../branches/dom/tsconfig.json"));
     // console.log("开始丑化 DOM.js ==> DOM.min.js");
     // await run(wrapPath("../node_modules/uglify-js/bin/uglifyjs"), wrapPath("../branches/dom/DOM.js"), "-o", wrapPath("../branches/dom/DOM.min.js"));
-    console.log("开始编译 Egret.js");
+    console.log("开始编译 Egret");
     await run(wrapPath("../node_modules/typescript/bin/tsc"), "-p", wrapPath("../branches/egret/tsconfig.json"));
     // await run(wrapPath("../node_modules/typescript/bin/tsc"), "-p", wrapPath("../branches/egret/tsconfig_deploy.json"));
     // console.log("开始丑化 Egret.js ==> Egret.min.js");
     // await run(wrapPath("../node_modules/uglify-js/bin/uglifyjs"), wrapPath("../branches/egret/Egret.js"), "-o", wrapPath("../branches/egret/Egret.min.js"));
+    console.log("开始编译 PhaserCE");
+    await run(wrapPath("../node_modules/typescript/bin/tsc"), "-p", wrapPath("../branches/phaserce/tsconfig.json"));
     console.log("完成");
 }
 
