@@ -141,10 +141,6 @@ var BridgeManager = /** @class */ (function () {
                 var bridge = bridges_2[_b];
                 // 派发消息
                 core.dispatch(BridgeMessage.BRIDGE_BEFORE_INIT, bridge);
-                // 初始化Mask
-                maskManager.registerMask(bridge.type, bridge.maskEntity);
-                // 注册通用提示框
-                panelManager.registerPrompt(bridge.type, bridge.promptClass);
                 // 初始化该表现层实例
                 if (bridge.init)
                     bridge.init(afterInitBridge);
@@ -156,6 +152,10 @@ var BridgeManager = /** @class */ (function () {
             this.testAllInit();
         }
         function afterInitBridge(bridge) {
+            // 初始化Mask
+            maskManager.registerMask(bridge.type, bridge.maskEntity);
+            // 注册通用提示框
+            panelManager.registerPrompt(bridge.type, bridge.promptClass);
             // 派发消息
             core.dispatch(BridgeMessage.BRIDGE_AFTER_INIT, bridge);
             // 设置初始化完毕属性
