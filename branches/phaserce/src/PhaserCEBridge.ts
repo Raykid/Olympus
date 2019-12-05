@@ -237,6 +237,9 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject>
                 this._htmlWrapper = document.createElement("div");
                 document.body.appendChild(this._htmlWrapper);
             }
+            this._htmlWrapper.style.position = "absolute";
+            this._htmlWrapper.style.width = "100%";
+            this._htmlWrapper.style.height = "100%";
             this._initParams.gameConfig.parent = this._htmlWrapper;
             // 生成Game
             this._game = new Phaser.Game({
@@ -246,9 +249,8 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject>
                     create: (game:Phaser.Game)=>{
                         // 赋值stage
                         this._stage = game.stage;
-                        // 生成一个root节点
-                        this._root = game.add.sprite();
-                        this._stage.addChild(this._root);
+                        // world当做root
+                        this._root = game.world;
                         // 生成背景容器
                         this._bgLayer = game.add.sprite();
                         this._root.addChild(this._bgLayer);

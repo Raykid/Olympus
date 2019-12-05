@@ -22,7 +22,7 @@ export default class MaskEntityImpl implements IMaskEntity {
     private _modalPanelList;
     private _modalPanelMask;
     maskData: MaskData;
-    get loadingSkin(): PIXI.DisplayObject;
+    readonly loadingSkin: PIXI.DisplayObject;
     constructor(params: MaskData);
     /**
      * 显示遮罩

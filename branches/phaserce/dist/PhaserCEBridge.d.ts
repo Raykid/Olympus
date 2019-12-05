@@ -28,7 +28,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {string}
      * @memberof PhaserCEBridge
      */
-    get type(): string;
+    readonly type: string;
     /**
      * 获取表现层HTML包装器，可以对其样式进行自定义调整
      *
@@ -36,7 +36,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {HTMLElement}
      * @memberof PhaserCEBridge
      */
-    get htmlWrapper(): HTMLElement;
+    readonly htmlWrapper: HTMLElement;
     private _root;
     /**
      * 获取根显示节点
@@ -45,7 +45,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {PIXI.DisplayObjectContainer}
      * @memberof PhaserCEBridge
      */
-    get root(): PIXI.DisplayObjectContainer;
+    readonly root: PIXI.DisplayObjectContainer;
     private _stage;
     /**
      * 获取舞台引用
@@ -54,7 +54,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {Phaser.Stage}
      * @memberof PhaserCEBridge
      */
-    get stage(): Phaser.Stage;
+    readonly stage: Phaser.Stage;
     private _bgLayer;
     /**
      * 获取背景容器
@@ -63,7 +63,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {PIXI.DisplayObjectContainer}
      * @memberof PhaserCEBridge
      */
-    get bgLayer(): PIXI.DisplayObjectContainer;
+    readonly bgLayer: PIXI.DisplayObjectContainer;
     private _sceneLayer;
     /**
      * 获取场景容器
@@ -72,7 +72,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {PIXI.DisplayObjectContainer}
      * @memberof PhaserCEBridge
      */
-    get sceneLayer(): PIXI.DisplayObjectContainer;
+    readonly sceneLayer: PIXI.DisplayObjectContainer;
     private _frameLayer;
     /**
      * 获取框架容器
@@ -81,7 +81,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {PIXI.DisplayObjectContainer}
      * @memberof PhaserCEBridge
      */
-    get frameLayer(): PIXI.DisplayObjectContainer;
+    readonly frameLayer: PIXI.DisplayObjectContainer;
     private _panelLayer;
     /**
      * 获取弹窗容器
@@ -90,7 +90,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {PIXI.DisplayObjectContainer}
      * @memberof PhaserCEBridge
      */
-    get panelLayer(): PIXI.DisplayObjectContainer;
+    readonly panelLayer: PIXI.DisplayObjectContainer;
     private _maskLayer;
     /**
      * 获取遮罩容器
@@ -99,7 +99,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {PIXI.DisplayObjectContainer}
      * @memberof PhaserCEBridge
      */
-    get maskLayer(): PIXI.DisplayObjectContainer;
+    readonly maskLayer: PIXI.DisplayObjectContainer;
     private _topLayer;
     /**
      * 获取顶级容器
@@ -108,7 +108,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {PIXI.DisplayObjectContainer}
      * @memberof PhaserCEBridge
      */
-    get topLayer(): PIXI.DisplayObjectContainer;
+    readonly topLayer: PIXI.DisplayObjectContainer;
     /**
      * 获取通用提示框
      *
@@ -116,7 +116,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {IPromptPanelConstructor}
      * @memberof PhaserCEBridge
      */
-    get promptClass(): IPromptPanelConstructor;
+    readonly promptClass: IPromptPanelConstructor;
     /**
      * 获取遮罩实体
      *
@@ -124,7 +124,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * @type {IMaskEntity}
      * @memberof PhaserCEBridge
      */
-    get maskEntity(): IMaskEntity;
+    readonly maskEntity: IMaskEntity;
     /**
      * 默认弹窗策略
      *

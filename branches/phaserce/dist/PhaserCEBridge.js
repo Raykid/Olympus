@@ -1,6 +1,6 @@
 /// <reference types="phaser-ce/typescript/phaser"/>
 /// <amd-module name="PhaserCEBridge"/>
-import { __assign } from "tslib";
+import * as tslib_1 from "tslib";
 import nonePanelPolicy from 'olympus-r/engine/panel/NonePanelPolicy';
 import noneScenePolicy from 'olympus-r/engine/scene/NoneScenePolicy';
 import { getObjectHashs } from 'olympus-r/utils/ObjectUtil';
@@ -199,7 +199,7 @@ var PhaserCEBridge = /** @class */ (function () {
          * @memberof PhaserCEBridge
          */
         get: function () {
-            return new MaskEntity(__assign(__assign({}, this._initParams.maskData), { game: this._game }));
+            return new MaskEntity(tslib_1.__assign({}, this._initParams.maskData, { game: this._game }));
         },
         enumerable: true,
         configurable: true
@@ -231,14 +231,16 @@ var PhaserCEBridge = /** @class */ (function () {
                 _this._htmlWrapper = document.createElement("div");
                 document.body.appendChild(_this._htmlWrapper);
             }
+            _this._htmlWrapper.style.position = "absolute";
+            _this._htmlWrapper.style.width = "100%";
+            _this._htmlWrapper.style.height = "100%";
             _this._initParams.gameConfig.parent = _this._htmlWrapper;
             // 生成Game
-            _this._game = new Phaser.Game(__assign(__assign({}, _this._initParams.gameConfig), { state: __assign(__assign({}, _this._initParams.gameConfig.state), { create: function (game) {
+            _this._game = new Phaser.Game(tslib_1.__assign({}, _this._initParams.gameConfig, { state: tslib_1.__assign({}, _this._initParams.gameConfig.state, { create: function (game) {
                         // 赋值stage
                         _this._stage = game.stage;
-                        // 生成一个root节点
-                        _this._root = game.add.sprite();
-                        _this._stage.addChild(_this._root);
+                        // world当做root
+                        _this._root = game.world;
                         // 生成背景容器
                         _this._bgLayer = game.add.sprite();
                         _this._root.addChild(_this._bgLayer);
