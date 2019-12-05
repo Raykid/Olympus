@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-cli",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Olympus cli工具",
   "bin": {
     "olympus-r-cli": "bin.js"

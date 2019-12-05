@@ -1,4 +1,4 @@
-declare function __extends(d: any, b: any): void;
+// declare function __extends(d: any, b: any): void;// 这行和typescript从3.6.0-dev.20190810开始的版本有冲突，因此注释掉 —— Raykid
 declare let __define: any;
 declare namespace egret {
     /**
