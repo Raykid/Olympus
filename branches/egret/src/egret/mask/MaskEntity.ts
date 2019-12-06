@@ -71,7 +71,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(alpha == null) alpha = this._maskAlpha;
         this._mask.graphics.clear();
         this._mask.graphics.beginFill(0, alpha);
-        this._mask.graphics.drawRect(0, 0, bridge.root.stage.stageWidth, bridge.root.stage.stageHeight);
+        this._mask.graphics.drawRect(0, 0, bridge.stage.stageWidth, bridge.stage.stageHeight);
         this._mask.graphics.endFill();
         // 添加显示
         bridge.maskLayer.addChild(this._mask);
@@ -97,7 +97,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(alpha == null) alpha = this._loadingAlpha;
         this._loadingMask.graphics.clear();
         this._loadingMask.graphics.beginFill(0, alpha);
-        this._loadingMask.graphics.drawRect(0, 0, bridge.root.stage.stageWidth, bridge.root.stage.stageHeight);
+        this._loadingMask.graphics.drawRect(0, 0, bridge.stage.stageWidth, bridge.stage.stageHeight);
         this._loadingMask.graphics.endFill();
         // 添加显示
         bridge.maskLayer.addChild(this._loadingMask);
@@ -126,7 +126,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(alpha == null) alpha = this._modalPanelAlpha;
         this._modalPanelMask.graphics.clear();
         this._modalPanelMask.graphics.beginFill(0, alpha);
-        this._modalPanelMask.graphics.drawRect(0, 0, bridge.root.stage.stageWidth, bridge.root.stage.stageHeight);
+        this._modalPanelMask.graphics.drawRect(0, 0, bridge.stage.stageWidth, bridge.stage.stageHeight);
         this._modalPanelMask.graphics.endFill();
         // 添加显示
         var entity:egret.DisplayObject = panel.skin;

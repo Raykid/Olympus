@@ -1,13 +1,14 @@
 import { bridgeManager } from "olympus-r/engine/bridge/BridgeManager";
-import EgretBridge from "../../EgretBridge";
+import PhaserCEBridge from "../../PhaserCEBridge";
 /**
- * @author Raykid
- * @email initial_r@qq.com
- * @create date 2017-10-25
- * @modify date 2017-10-25
+ * PhaserCE遮罩实现
  *
- * Egret遮罩实现
-*/
+ * @author Raykid
+ * @date 2019-12-05
+ * @export
+ * @class MaskEntityImpl
+ * @implements {IMaskEntity}
+ */
 var MaskEntityImpl = /** @class */ (function () {
     function MaskEntityImpl(params) {
         this._maskAlpha = 0.5;
@@ -19,14 +20,11 @@ var MaskEntityImpl = /** @class */ (function () {
             this._modalPanelAlpha = (params.modalPanelAlpha != null ? params.modalPanelAlpha : 0.5);
             this._loadingSkinFactory = params.loadingSkinFactory;
         }
-        this.maskData = params || {};
-        this._mask = new egret.Shape();
-        this._mask.touchEnabled = true;
-        this._loadingMask = new egret.Shape();
-        this._loadingMask.touchEnabled = true;
+        this.maskData = params;
+        this._mask = params.game.add.graphics();
+        this._loadingMask = params.game.add.graphics();
         this._modalPanelList = [];
-        this._modalPanelMask = new egret.Shape();
-        this._modalPanelMask.touchEnabled = true;
+        this._modalPanelMask = params.game.add.graphics();
     }
     Object.defineProperty(MaskEntityImpl.prototype, "loadingSkin", {
         get: function () {
@@ -43,14 +41,14 @@ var MaskEntityImpl = /** @class */ (function () {
      */
     MaskEntityImpl.prototype.showMask = function (alpha) {
         // 显示
-        var bridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge = bridgeManager.getBridge(PhaserCEBridge.TYPE);
         // 绘制遮罩
         if (alpha == null)
             alpha = this._maskAlpha;
-        this._mask.graphics.clear();
-        this._mask.graphics.beginFill(0, alpha);
-        this._mask.graphics.drawRect(0, 0, bridge.stage.stageWidth, bridge.stage.stageHeight);
-        this._mask.graphics.endFill();
+        this._mask.clear();
+        this._mask.beginFill(0, alpha);
+        this._mask.drawRect(0, 0, bridge.stage.width, bridge.stage.height);
+        this._mask.endFill();
         // 添加显示
         bridge.maskLayer.addChild(this._mask);
     };
@@ -67,14 +65,14 @@ var MaskEntityImpl = /** @class */ (function () {
      */
     MaskEntityImpl.prototype.showLoading = function (alpha) {
         // 显示
-        var bridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge = bridgeManager.getBridge(PhaserCEBridge.TYPE);
         // 绘制遮罩
         if (alpha == null)
             alpha = this._loadingAlpha;
-        this._loadingMask.graphics.clear();
-        this._loadingMask.graphics.beginFill(0, alpha);
-        this._loadingMask.graphics.drawRect(0, 0, bridge.stage.stageWidth, bridge.stage.stageHeight);
-        this._loadingMask.graphics.endFill();
+        this._loadingMask.clear();
+        this._loadingMask.beginFill(0, alpha);
+        this._loadingMask.drawRect(0, 0, bridge.stage.width, bridge.stage.height);
+        this._loadingMask.endFill();
         // 添加显示
         bridge.maskLayer.addChild(this._loadingMask);
         // 添加loading皮肤
@@ -95,14 +93,14 @@ var MaskEntityImpl = /** @class */ (function () {
     MaskEntityImpl.prototype.showModalMask = function (panel, alpha) {
         this._modalPanelList.push(panel);
         // 显示
-        var bridge = bridgeManager.getBridge(EgretBridge.TYPE);
+        var bridge = bridgeManager.getBridge(PhaserCEBridge.TYPE);
         // 绘制遮罩
         if (alpha == null)
             alpha = this._modalPanelAlpha;
-        this._modalPanelMask.graphics.clear();
-        this._modalPanelMask.graphics.beginFill(0, alpha);
-        this._modalPanelMask.graphics.drawRect(0, 0, bridge.stage.stageWidth, bridge.stage.stageHeight);
-        this._modalPanelMask.graphics.endFill();
+        this._modalPanelMask.clear();
+        this._modalPanelMask.beginFill(0, alpha);
+        this._modalPanelMask.drawRect(0, 0, bridge.stage.width, bridge.stage.height);
+        this._modalPanelMask.endFill();
         // 添加显示
         var entity = panel.skin;
         var parent = entity.parent;

@@ -7,7 +7,7 @@ import IPanelPolicy from 'olympus-r/engine/panel/IPanelPolicy';
 import { IPromptPanelConstructor } from 'olympus-r/engine/panel/IPromptPanel';
 import IScenePolicy from 'olympus-r/engine/scene/IScenePolicy';
 import PIXI from 'phaser-ce/build/custom/pixi';
-import { MaskData } from './phaserce/MaskEntity';
+import { MaskData } from './phaserce/mask/MaskEntity';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -42,10 +42,10 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
      * 获取根显示节点
      *
      * @readonly
-     * @type {PIXI.DisplayObjectContainer}
+     * @type {Phaser.World}
      * @memberof PhaserCEBridge
      */
-    readonly root: PIXI.DisplayObjectContainer;
+    readonly root: Phaser.World;
     private _stage;
     /**
      * 获取舞台引用
@@ -295,23 +295,23 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject> {
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      *
-     * @param {PIXI.DisplayObject&PIXI.Mixin} target 事件目标对象
+     * @param {PIXI.DisplayObject} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof PhaserCEBridge
      */
-    mapListener(target: PIXI.DisplayObject & PIXI.Mixin, type: string, handler: Function, thisArg?: any): void;
+    mapListener(target: PIXI.DisplayObject, type: string, handler: Function, thisArg?: any): void;
     /**
      * 注销监听事件
      *
-     * @param {PIXI.DisplayObject&PIXI.Mixin} target 事件目标对象
+     * @param {PIXI.DisplayObject} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof PhaserCEBridge
      */
-    unmapListener(target: PIXI.DisplayObject & PIXI.Mixin, type: string, handler: Function, thisArg?: any): void;
+    unmapListener(target: PIXI.DisplayObject, type: string, handler: Function, thisArg?: any): void;
     /**
      * 为绑定的列表显示对象包装一个渲染器创建回调
      *

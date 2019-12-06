@@ -8,11 +8,11 @@ import IPanelPolicy from 'olympus-r/engine/panel/IPanelPolicy';
 import { IPromptPanelConstructor } from 'olympus-r/engine/panel/IPromptPanel';
 import nonePanelPolicy from 'olympus-r/engine/panel/NonePanelPolicy';
 import IScenePolicy from 'olympus-r/engine/scene/IScenePolicy';
-import noneScenePolicy from 'olympus-r/engine/scene/NoneScenePolicy';
 import { getObjectHashs } from 'olympus-r/utils/ObjectUtil';
 import p2 from 'phaser-ce/build/custom/p2';
 import PIXI from 'phaser-ce/build/custom/pixi';
-import MaskEntity, { MaskData } from './phaserce/MaskEntity';
+import MaskEntity, { MaskData } from './phaserce/mask/MaskEntity';
+import FadeScenePolicy from './phaserce/scene/FadeScenePolicy';
 
 /**
  * @author Raykid
@@ -54,15 +54,15 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject>
         return this._htmlWrapper;
     }
 
-    private _root:PIXI.DisplayObjectContainer;
+    private _root:Phaser.World;
     /**
      * 获取根显示节点
      * 
      * @readonly
-     * @type {PIXI.DisplayObjectContainer}
+     * @type {Phaser.World}
      * @memberof PhaserCEBridge
      */
-    public get root():PIXI.DisplayObjectContainer
+    public get root():Phaser.World
     {
         return this._root;
     }
@@ -196,7 +196,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject>
      * @type {IScenePolicy}
      * @memberof PhaserCEBridge
      */
-    public defaultScenePolicy:IScenePolicy = noneScenePolicy;
+    public defaultScenePolicy:IScenePolicy = new FadeScenePolicy();
     
     public constructor(params:IInitParams)
     {
@@ -244,6 +244,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject>
             // 生成Game
             this._game = new Phaser.Game({
                 ...this._initParams.gameConfig,
+                transparent: true,
                 state: {
                     ...this._initParams.gameConfig.state,
                     create: (game:Phaser.Game)=>{
@@ -354,7 +355,7 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject>
      */
     public createEmptyDisplay():PIXI.DisplayObject
     {
-        return new PIXI.Sprite(PIXI.Texture.emptyTexture);
+        return this._game.add.group();
     }
     
     /**
@@ -531,40 +532,48 @@ export default class PhaserCEBridge implements IBridge<PIXI.DisplayObject>
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      * 
-     * @param {PIXI.DisplayObject&PIXI.Mixin} target 事件目标对象
+     * @param {PIXI.DisplayObject} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof PhaserCEBridge
      */
-    public mapListener(target:PIXI.DisplayObject&PIXI.Mixin, type:string, handler:Function, thisArg?:any):void
+    public mapListener(target:PIXI.DisplayObject, type:string, handler:Function, thisArg?:any):void
     {
         const hash:string = getObjectHashs(target, type, handler, thisArg);
         if(!this._listenerDict[hash])
         {
-            const wrappedHandler:Function = thisArg ? handler.bind(thisArg) : handler;
-            this._listenerDict[hash] = wrappedHandler;
-            target.on(type, wrappedHandler);
+            const signal:Phaser.Signal = target[type];
+            if(signal)
+            {
+                const wrappedHandler:Function = thisArg ? handler.bind(thisArg) : handler;
+                this._listenerDict[hash] = wrappedHandler;
+                signal.add(wrappedHandler);
+            }
         }
     }
     
     /**
      * 注销监听事件
      * 
-     * @param {PIXI.DisplayObject&PIXI.Mixin} target 事件目标对象
+     * @param {PIXI.DisplayObject} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
      * @memberof PhaserCEBridge
      */
-    public unmapListener(target:PIXI.DisplayObject&PIXI.Mixin, type:string, handler:Function, thisArg?:any):void
+    public unmapListener(target:PIXI.DisplayObject, type:string, handler:Function, thisArg?:any):void
     {
         const hash:string = getObjectHashs(target, type, handler, thisArg);
         const wrappedHandler:Function = this._listenerDict[hash];
         if(wrappedHandler)
         {
-            target.off(type, wrappedHandler);
-            delete this._listenerDict[hash];
+            const signal:Phaser.Signal = target[type];
+            if(signal)
+            {
+                signal.remove(wrappedHandler);
+                delete this._listenerDict[hash];
+            }
         }
     }
 

@@ -3,7 +3,7 @@ import IBridge from "olympus-r/engine/bridge/IBridge";
 import IMaskData from "olympus-r/engine/mask/IMaskData";
 import { IMaskEntity } from "olympus-r/engine/mask/MaskManager";
 import IPanel from "olympus-r/engine/panel/IPanel";
-import PhaserCEBridge from "../PhaserCEBridge";
+import PhaserCEBridge from "../../PhaserCEBridge";
 
 /**
  * PhaserCE遮罩实现
@@ -94,7 +94,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(alpha == null) alpha = this._loadingAlpha;
         this._loadingMask.clear();
         this._loadingMask.beginFill(0, alpha);
-        this._loadingMask.drawRect(0, 0, bridge.root.stage.stageWidth, bridge.root.stage.stageHeight);
+        this._loadingMask.drawRect(0, 0, bridge.stage.width, bridge.stage.height);
         this._loadingMask.endFill();
         // 添加显示
         bridge.maskLayer.addChild(this._loadingMask);
@@ -123,7 +123,7 @@ export default class MaskEntityImpl implements IMaskEntity
         if(alpha == null) alpha = this._modalPanelAlpha;
         this._modalPanelMask.clear();
         this._modalPanelMask.beginFill(0, alpha);
-        this._modalPanelMask.drawRect(0, 0, bridge.root.stage.stageWidth, bridge.root.stage.stageHeight);
+        this._modalPanelMask.drawRect(0, 0, bridge.stage.width, bridge.stage.height);
         this._modalPanelMask.endFill();
         // 添加显示
         var entity:PIXI.DisplayObject = panel.skin;

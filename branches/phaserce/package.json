@@ -1,6 +1,6 @@
 {
   "name": "olympus-r-phaserce",
-  "version": "0.1.0-dev.20191205193559",
+  "version": "0.1.0",
   "description": "Olympus的Phaserce表现层库",
   "main": "PhaserCEBridge.js",
   "files": [
@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/Raykid/Olympus#readme",
   "devDependencies": {
-    "olympus-r": "^0.8.10"
+    "olympus-r": "^0.8.12"
   },
   "dependencies": {
     "phaser-ce": "^2.13.3"

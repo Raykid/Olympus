@@ -1,6 +1,9 @@
 /// <reference types="olympus-r"/>
 /// <reference types="olympus-r-dom"/>
 /// <reference types="olympus-r-egret"/>
+/// <reference types="phaser-ce/typescript/p2"/>
+/// <reference types="phaser-ce/typescript/pixi"/>
+/// <reference types="phaser-ce/typescript/phaser"/>
 /// <reference path="egret/libs/modules/egret/egret.d.ts"/>
 /// <reference path="egret/libs/modules/game/game.d.ts"/>
 /// <reference path="egret/libs/modules/res/res.d.ts"/>
@@ -12,6 +15,7 @@
 import FastClick from 'fastclick';
 import DOMBridge from 'olympus-r-dom/DOMBridge';
 import EgretBridge from "olympus-r-egret/EgretBridge";
+import PhaserCEBridge from 'olympus-r-phaserce/dist/PhaserCEBridge';
 import { query } from "olympus-r/engine/env/Query";
 import NetMessage from "olympus-r/engine/net/NetMessage";
 import Olympus, { core } from "olympus-r/Olympus";
@@ -44,6 +48,13 @@ import Homepage from "./src/module/Homepage/Homepage";
                     loadingAlpha: 0
                 },
                 promptClass: EgretPrompt,
+            }),
+            new PhaserCEBridge({
+                gameConfig: {
+                    width: 720,
+                    height: 1280,
+                    parent: "rootPhaserCE",
+                },
             }),
         ],
         firstModule: Homepage,

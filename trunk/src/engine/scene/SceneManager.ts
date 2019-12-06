@@ -245,7 +245,9 @@ export default class SceneManager
                 // 调用准备接口
                 fromPrepareFunc && fromPrepareFunc.call(fromPolicy, from, null);
                 // 调用切换接口
-                fromDoFunc && changePromises.push(fromDoFunc.call(fromPolicy, from, null));
+                fromDoFunc && changePromises.push(fromDoFunc.call(fromPolicy, from, null).then(()=>{
+                    from.bridge.htmlWrapper.style.display = "none";
+                }));
             }
             if(to)
             {

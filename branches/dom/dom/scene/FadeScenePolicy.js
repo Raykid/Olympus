@@ -23,7 +23,7 @@ var FadeScenePolicy = /** @class */ (function () {
                 from.bridge.htmlWrapper.style.zIndex = "2147483647";
                 // 显示to
                 if (to)
-                    to.skin.display = "";
+                    to.skin.style.display = "";
                 // 添加显示
                 var position = from.skin.style.position;
                 var left = from.skin.style.left;
@@ -49,7 +49,7 @@ var FadeScenePolicy = /** @class */ (function () {
                     .onComplete(function () {
                     if (!from.disposed) {
                         // 隐藏from
-                        from.skin.display = "none";
+                        from.skin.style.display = "none";
                         // 恢复from
                         from.skin.style.position = position;
                         from.skin.style.left = left;

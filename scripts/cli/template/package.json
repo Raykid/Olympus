@@ -27,16 +27,17 @@
   },
   "dependencies": {
     "fastclick": "^1.0.6",
-    "olympus-r": "^0.8.1",
-    "olympus-r-dom": "^0.6.26",
-    "olympus-r-egret": "^0.7.6"
+    "olympus-r": "^0.8.12",
+    "olympus-r-dom": "^0.6.46",
+    "olympus-r-egret": "^0.7.15",
+    "olympus-r-phaserce": "^0.1.0"
   },
-  "name": "$a-{appname}",
+  "name": "testolympusphaser",
   "version": "1.0.0",
-  "description": "$a-{appName}项目",
+  "description": "TestOlympusPhaser项目",
   "main": "index.js",
   "scripts": {
-    "dev": "node_modules/.bin/webpack-dev-server --inline --host 0.0.0.0 --progress --config build/dev-server.js",
+    "start": "node_modules/.bin/webpack-dev-server --inline --host 0.0.0.0 --progress --config build/dev-server.js",
     "build": "node build/build.js --env-prod",
     "pngmin": "node build/pngmin.js --path"
   },

@@ -26,7 +26,7 @@ export default class FadeScenePolicy implements IScenePolicy
                 // from所在bridge应该在最上层显示
                 from.bridge.htmlWrapper.style.zIndex = "2147483647";
                 // 显示to
-                if(to) to.skin.display = "";
+                if(to) to.skin.style.display = "";
                 // 添加显示
                 var position = from.skin.style.position;
                 var left = from.skin.style.left;
@@ -53,7 +53,7 @@ export default class FadeScenePolicy implements IScenePolicy
                         if(!from.disposed)
                         {
                             // 隐藏from
-                            from.skin.display = "none";
+                            from.skin.style.display = "none";
                             // 恢复from
                             from.skin.style.position = position;
                             from.skin.style.left = left;
@@ -70,7 +70,8 @@ export default class FadeScenePolicy implements IScenePolicy
                     })
                     .start();
             }
-            else {
+            else
+            {
                 // 调用回调
                 resolve();
             }

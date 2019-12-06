@@ -5,6 +5,7 @@ import { panelManager } from "olympus-r/engine/panel/PanelManager";
 import SceneMediator from "olympus-r/engine/scene/SceneMediator";
 import skin from "./Second.html";
 import "./Second.scss";
+import Third from '../Third/Third';
 
 @DOMMediatorClass("Second", skin)
 export default class Second extends SceneMediator
@@ -12,10 +13,11 @@ export default class Second extends SceneMediator
     @BindValue("textContent", "'这是第二个模块，是个DOM模块'")
     public text:HTMLElement;
     @BindOn("click", function(){
-        panelManager.confirm(
-            "回到首页？",
-            ()=>moduleManager.close(Second)
-        );
+        // panelManager.confirm(
+        //     "回到首页？",
+        //     ()=>moduleManager.close(Second)
+        // );
+        moduleManager.open(Third);
     })
     public btn:HTMLElement;
 }

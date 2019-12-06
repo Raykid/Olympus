@@ -2,11 +2,11 @@
 /// <amd-module name="PhaserCEBridge"/>
 import * as tslib_1 from "tslib";
 import nonePanelPolicy from 'olympus-r/engine/panel/NonePanelPolicy';
-import noneScenePolicy from 'olympus-r/engine/scene/NoneScenePolicy';
 import { getObjectHashs } from 'olympus-r/utils/ObjectUtil';
 import p2 from 'phaser-ce/build/custom/p2';
 import PIXI from 'phaser-ce/build/custom/pixi';
-import MaskEntity from './phaserce/MaskEntity';
+import MaskEntity from './phaserce/mask/MaskEntity';
+import FadeScenePolicy from './phaserce/scene/FadeScenePolicy';
 /**
  * @author Raykid
  * @email initial_r@qq.com
@@ -29,7 +29,7 @@ var PhaserCEBridge = /** @class */ (function () {
          * @type {IScenePolicy}
          * @memberof PhaserCEBridge
          */
-        this.defaultScenePolicy = noneScenePolicy;
+        this.defaultScenePolicy = new FadeScenePolicy();
         this._listenerDict = {};
         this._initParams = params;
         if (!this._initParams.gameConfig) {
@@ -69,7 +69,7 @@ var PhaserCEBridge = /** @class */ (function () {
          * 获取根显示节点
          *
          * @readonly
-         * @type {PIXI.DisplayObjectContainer}
+         * @type {Phaser.World}
          * @memberof PhaserCEBridge
          */
         get: function () {
@@ -236,7 +236,7 @@ var PhaserCEBridge = /** @class */ (function () {
             _this._htmlWrapper.style.height = "100%";
             _this._initParams.gameConfig.parent = _this._htmlWrapper;
             // 生成Game
-            _this._game = new Phaser.Game(tslib_1.__assign({}, _this._initParams.gameConfig, { state: tslib_1.__assign({}, _this._initParams.gameConfig.state, { create: function (game) {
+            _this._game = new Phaser.Game(tslib_1.__assign({}, _this._initParams.gameConfig, { transparent: true, state: tslib_1.__assign({}, _this._initParams.gameConfig.state, { create: function (game) {
                         // 赋值stage
                         _this._stage = game.stage;
                         // world当做root
@@ -335,7 +335,7 @@ var PhaserCEBridge = /** @class */ (function () {
      * @memberof PhaserCEBridge
      */
     PhaserCEBridge.prototype.createEmptyDisplay = function () {
-        return new PIXI.Sprite(PIXI.Texture.emptyTexture);
+        return this._game.add.group();
     };
     /**
      * 创建一个占位符
@@ -486,7 +486,7 @@ var PhaserCEBridge = /** @class */ (function () {
     /**
      * 监听事件，从这个方法监听的事件会在中介者销毁时被自动移除监听
      *
-     * @param {PIXI.DisplayObject&PIXI.Mixin} target 事件目标对象
+     * @param {PIXI.DisplayObject} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
@@ -495,15 +495,18 @@ var PhaserCEBridge = /** @class */ (function () {
     PhaserCEBridge.prototype.mapListener = function (target, type, handler, thisArg) {
         var hash = getObjectHashs(target, type, handler, thisArg);
         if (!this._listenerDict[hash]) {
-            var wrappedHandler = thisArg ? handler.bind(thisArg) : handler;
-            this._listenerDict[hash] = wrappedHandler;
-            target.on(type, wrappedHandler);
+            var signal = target[type];
+            if (signal) {
+                var wrappedHandler = thisArg ? handler.bind(thisArg) : handler;
+                this._listenerDict[hash] = wrappedHandler;
+                signal.add(wrappedHandler);
+            }
         }
     };
     /**
      * 注销监听事件
      *
-     * @param {PIXI.DisplayObject&PIXI.Mixin} target 事件目标对象
+     * @param {PIXI.DisplayObject} target 事件目标对象
      * @param {string} type 事件类型
      * @param {Function} handler 事件处理函数
      * @param {*} [thisArg] this指向对象
@@ -513,8 +516,11 @@ var PhaserCEBridge = /** @class */ (function () {
         var hash = getObjectHashs(target, type, handler, thisArg);
         var wrappedHandler = this._listenerDict[hash];
         if (wrappedHandler) {
-            target.off(type, wrappedHandler);
-            delete this._listenerDict[hash];
+            var signal = target[type];
+            if (signal) {
+                signal.remove(wrappedHandler);
+                delete this._listenerDict[hash];
+            }
         }
     };
     /**

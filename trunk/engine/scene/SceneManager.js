@@ -195,7 +195,9 @@ var SceneManager = /** @class */ (function () {
                 // 调用准备接口
                 fromPrepareFunc && fromPrepareFunc.call(fromPolicy, from, null);
                 // 调用切换接口
-                fromDoFunc && changePromises.push(fromDoFunc.call(fromPolicy, from, null));
+                fromDoFunc && changePromises.push(fromDoFunc.call(fromPolicy, from, null).then(function () {
+                    from.bridge.htmlWrapper.style.display = "none";
+                }));
             }
             if (to) {
                 // to处理，不传递from

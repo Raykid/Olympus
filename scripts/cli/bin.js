@@ -69,7 +69,11 @@ function init(appName)
 					// 更新库到可用的最新版本
 					npm.commands.update([], ()=>{
 						// 汇报状态
-						console.log("done.");
+						console.log("");
+						console.log("");
+						console.log("脚手架生成完毕。");
+						console.log("启动本地调试，请执行“npm run start”");
+						console.log("发布打包，请执行“npm run build”");
 					});
 				});
 			});
