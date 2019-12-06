@@ -2,7 +2,7 @@
   "name": "olympus-r-phaserce",
   "version": "0.1.0",
   "description": "Olympus的Phaserce表现层库",
-  "main": "PhaserCEBridge.js",
+  "main": "dist/PhaserCEBridge.js",
   "files": [
     "dist"
   ],

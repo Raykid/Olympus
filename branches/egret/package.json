@@ -8,7 +8,7 @@
     "EgretBridge.d.ts",
     "EgretBridge.js"
   ],
-  "main": "Egret.js",
+  "main": "EgretBridge.js",
   "types": "index.d.ts",
   "scripts": {
     "typedoc": "node_modules/.bin/typedoc --readme none --mode modules --theme minimal --out docs src/"
